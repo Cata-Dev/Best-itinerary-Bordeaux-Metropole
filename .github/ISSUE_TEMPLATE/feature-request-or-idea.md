@@ -7,7 +7,7 @@ assignees: Catatomik
 
 ---
 
-* Project part : 
-* Resources needed : 
-* Description : 
-* Additional notes :
+* **Project part** : 
+* **Resources needed** : 
+* **Description** : 
+* **Additional notes** : 
