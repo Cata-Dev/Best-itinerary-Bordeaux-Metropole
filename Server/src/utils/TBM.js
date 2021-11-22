@@ -1,7 +1,5 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
-const bURL = 'https://data.bordeaux-metropole.fr/'
-
 function degreesToRadians(degrees) {
 	return degrees * Math.PI / 180;
 }
@@ -28,6 +26,18 @@ function distance(lon1, lat1, lon2, lat2) {
 	return earthRadiusKm * c * 1000;
 }
 
+/**
+ * Fetch data from TBM API
+ * @param {String} id dataset identifier
+ * @returns {Obejct}
+ */
+async function getData(id) {
+	const bURL = 'https://data.bordeaux-metropole.fr/'
+	const url = `geojson?key=${app.get('TBMkey')}&typename=${id}`
+	const res = await fetch(`${bURL}${url}`)
+	return (await res.json()).features
+}
+
 module.exports = (app) => {
 
 	console.info(`Initializing TBM models...`)
@@ -42,9 +52,7 @@ module.exports = (app) => {
 	return {
 
 		refreshIntersections: async () => {
-			const url = `geojson?key=${app.get('TBMkey')}&typename=fv_carre_p`
-			const res = await fetch(`${bURL}${url}`)
-			let intersections = (await res.json()).features
+			let intersections = await getData('fv_carre_p')
 			intersections = intersections.map(intersection => {
 				return new Intersection({
 					geo_point: intersection.geometry.coordinates,
@@ -57,9 +65,7 @@ module.exports = (app) => {
 		},
 
 		refreshSections: async () => {
-			const url = `geojson?key=${app.get('TBMkey')}&typename=fv_tronc_l`
-			const res = await fetch(`${bURL}${url}`)
-			let sections = (await res.json()).features
+			let sections = await getData('fv_tronc_l')
 			sections = sections.map(section => {
 				return new Section({
 					distance: section.geometry.coordinates.reduce((acc, v, i, arr) => {
@@ -79,9 +85,7 @@ module.exports = (app) => {
 		},
 
 		refreshStops: async () => {
-			const url = `geojson?key=${app.get('TBMkey')}&typename=sv_arret_p`
-			const res = await fetch(`${bURL}${url}`)
-			let stops = (await res.json()).features
+			let stops = await getData('sv_arret_p')
 			stops = stops.map(stop => {
 				return new Stop({
 					geo_point: stop.geometry?.coordinates || [NaN, NaN], //out of BM
@@ -97,9 +101,7 @@ module.exports = (app) => {
 		},
 
 		refreshLines: async () => {
-			const url = `geojson?key=${app.get('TBMkey')}&typename=sv_ligne_a`
-			const res = await fetch(`${bURL}${url}`)
-			let lines = (await res.json()).features
+			let lines = await getData('sv_ligne_a')
 			lines = lines.map(line => {
 				return new Line({
 					gid: Number(line.properties.gid),

@@ -21,7 +21,7 @@ module.exports = async (app) => {
         }
     }
 
-    await refresh()
+    // await refresh()
     setInterval(refresh, 24*3600*1000);
 
 }
