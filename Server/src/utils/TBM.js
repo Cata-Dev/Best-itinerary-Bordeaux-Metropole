@@ -21,21 +21,9 @@ function distance(lon1, lat1, lon2, lat2) {
 	lat1 = degreesToRadians(lat1);
 	lat2 = degreesToRadians(lat2);
 
-	var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+	var a = Math.sin(dLat/2) ** 2 + Math.sin(dLon/2) ** 2 * Math.cos(lat1) * Math.cos(lat2); 
 	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
 	return earthRadiusKm * c * 1000;
-}
-
-/**
- * Fetch data from TBM API
- * @param {String} id dataset identifier
- * @returns {Obejct}
- */
-async function getData(id) {
-	const bURL = 'https://data.bordeaux-metropole.fr/'
-	const url = `geojson?key=${app.get('TBMkey')}&typename=${id}`
-	const res = await fetch(`${bURL}${url}`)
-	return (await res.json()).features
 }
 
 module.exports = (app) => {
@@ -49,9 +37,22 @@ module.exports = (app) => {
 
 	console.log(`Models initialized.`)
 
+	/**
+	 * Fetch data from TBM API
+	 * @param {String} id dataset identifier
+	 * @returns {Obejct}
+	 */
+	async function getData(id) {
+		const bURL = 'https://data.bordeaux-metropole.fr/'
+		const url = `geojson?key=${app.get('TBMkey')}&typename=${id}`
+		const res = await fetch(`${bURL}${url}`)
+		return (await res.json()).features
+	}
+
 	return {
 
-		refreshIntersections: async () => {
+		Intersections: async () => {
+			console.info(`Refreshing Intersections...`)
 			let intersections = await getData('fv_carre_p')
 			intersections = intersections.map(intersection => {
 				return new Intersection({
@@ -62,9 +63,12 @@ module.exports = (app) => {
 			})
 			await Intersection.deleteMany({})
 			await Intersection.bulkSave(intersections)
+			console.info(`Intersections refreshed.`)
+			return true
 		},
 
-		refreshSections: async () => {
+		Sections: async () => {
+			console.info(`Refreshing Sections...`)
 			let sections = await getData('fv_tronc_l')
 			sections = sections.map(section => {
 				return new Section({
@@ -82,9 +86,12 @@ module.exports = (app) => {
 			})
 			await Section.deleteMany({})
 			await Section.bulkSave(sections)
+			console.info(`Sections refreshed.`)
+			return true
 		},
 
-		refreshStops: async () => {
+		Stops: async () => {
+			console.info(`Refreshing Stops...`)
 			let stops = await getData('sv_arret_p')
 			stops = stops.map(stop => {
 				return new Stop({
@@ -98,9 +105,12 @@ module.exports = (app) => {
 			})
 			await Stop.deleteMany({})
 			await Stop.bulkSave(stops)
+			console.info(`Stops refreshed.`)
+			return true
 		},
 
-		refreshLines: async () => {
+		Lines: async () => {
+			console.info(`Refreshing Lines...`)
 			let lines = await getData('sv_ligne_a')
 			lines = lines.map(line => {
 				return new Line({
@@ -112,10 +122,18 @@ module.exports = (app) => {
 			})
 			await Line.deleteMany({})
 			await Line.bulkSave(lines)
+			console.info(`Lines refreshed.`)
+			return true
 		},
 
-		Section,
-		Intersection,
-
+		endpoints: { //every API endpoints we can update + their actualization rate (in seconds)
+			Intersections: 24*3600,
+			Sections: 24*3600,
+			Stops: 24*3600,
+			Lines: 24*3600,
+			Schedules: 10,
+			Vehicles: 10*60,
+			Lines_routes: 3600,
+		}
 	}
 }
