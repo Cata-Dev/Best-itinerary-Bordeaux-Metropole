@@ -22,14 +22,15 @@ exports.RefreshData = class RefreshData {
 
 		const TBM = this.app.utils.get('TBM')
 		const waitForUpdate = params.query?.waitForUpdate === 'true'
+		const matchingEndpoint = TBM.endpoints.find(endpoint => endpoint.name === id)
 		
 		if (id == 'all') {
 		
 			let c = 0
-			for (const endpoint of Object.keys(TBM.endpoints)) {
+			for (const endpoint of TBM.endpoints) {
 				let r = false
 				try {
-					r = (await this.get(endpoint, params)).Actualized //update every endpoint
+					r = (await this.get(endpoint.name, params)).Actualized //update every endpoint
 				} catch(_) {}
 				if (r) c++
 			}
@@ -37,21 +38,24 @@ exports.RefreshData = class RefreshData {
 				"Actualized": waitForUpdate ? c : null,
 			};
 		
-		} else if (Object.keys(TBM.endpoints).includes(id)) {
+		} else if (matchingEndpoint) {
 
-			if ( Date.now() - (await TBM.Models[id.substr(0, id.length-1)].findOne()).createdAt < TBM.endpoints[id] * 1000) return {
+			if (matchingEndpoint.fetching) throw new Error({
+				"Actualized": false,
+				"Reason": "Actualization is ongoing.",
+			})
+			if ((params.query.force !== "true") && (Date.now() - ((await matchingEndpoint.model.findOne())?.createdAt || 0) < matchingEndpoint.rate * 1000)) throw new Error({
 				"Actualized": false,
 				"Reason": "Actualization is on cooldown.",
-			}
+			})
 
 			/**
 			 * @type {Function}
 			 */
-			const refreshFunction = TBM[id]
 			let r = false
 			try {
-				r = waitForUpdate ? await refreshFunction() : refreshFunction()
-			} catch(_) {}
+				r = waitForUpdate ? await matchingEndpoint.fetch() : matchingEndpoint.fetch()
+			} catch(e) {console.error(e)}
 
 			return {
 				"Actualized": waitForUpdate ? r : null
