@@ -34,17 +34,21 @@ module.exports = (app) => {
 	const Section = require('../models/sections.model')(app)
 	const Stop = require('../models/stops.model')(app)
 	const Line = require('../models/lines.model')(app)
+	const Schedule = require('../models/schedules.model')(app)
+	const Vehicle = require('../models/vehicles.model')(app)
+	const Lines_route = require('../models/lines_routes.model')(app)
 
 	console.log(`Models initialized.`)
 
 	/**
 	 * Fetch data from TBM API
 	 * @param {String} id dataset identifier
+	 * @param {Array} queries array or queries to apply
 	 * @returns {Obejct}
 	 */
-	async function getData(id) {
+	async function getData(id, queries = []) {
 		const bURL = 'https://data.bordeaux-metropole.fr/'
-		const url = `geojson?key=${app.get('TBMkey')}&typename=${id}`
+		const url = `geojson?key=${app.get('TBMkey')}&typename=${id}&${queries.join('&')}`
 		const res = await fetch(`${bURL}${url}`)
 		return (await res.json()).features
 	}
@@ -124,6 +128,93 @@ module.exports = (app) => {
 			await Line.bulkSave(lines)
 			console.info(`Lines refreshed.`)
 			return true
+		},
+
+		Schedules: async () => {
+			console.info(`Refreshing Schedules...`)
+			const date = (new Date()).toJSON().substr(0, 19)
+			let schedules = await getData('sv_horai_a', ["filter="+JSON.stringify({
+				"$or": [
+					{
+						"hor_theo": {
+							"$gte": date
+						}
+					}, {
+						"hor_app": {
+							"$gte": date
+						},
+					}, {
+					"hor_estime": {
+							"$gte": date
+						},
+					}
+				]
+			})])
+			schedules = schedules.map(schedule => {
+				return new Schedule({
+					gid: Number(schedule.properties.gid),
+					hor_theo: new Date(schedule.properties.hor_theo),
+					hor_app: new Date(schedule.properties.hor_app),
+					hor_estime: new Date(schedule.properties.hor_estime),
+					etat: schedule.properties.etat,
+					type: schedule.properties.type,
+					rs_sv_arret_p_id: Number(schedule.properties.rs_sv_arret_p),
+					rs_sv_cours_a_id: Number(schedule.properties.rs_sv_cours_a),
+				})
+			})
+			await Schedule.deleteMany({})
+			await Schedule.bulkSave(schedules)
+			console.info(`Schedules refreshed.`)
+			return true
+		},
+
+		Vehicles: async () => {
+			console.info(`Refreshing Vehicles...`)
+			let vehicles = await getData('sv_cours_a')
+			vehicles = vehicles.map(vehicle => {
+				return new Vehicle({
+					gid: Number(vehicle.properties.gid),
+					etat: vehicle.properties.etat,
+					rg_sv_arret_p_nd_id: Number(vehicle.properties.rg_sv_arret_p_nd),
+					rg_sv_arret_p_na_id: Number(vehicle.properties.rg_sv_arret_p_na),
+					rs_sv_ligne_a_id: Number(vehicle.properties.rs_sv_ligne_a),
+					rg_sv_chem_l_id: Number(vehicle.properties.rs_sv_chem_l),
+				})
+			})
+			await Vehicle.deleteMany({})
+			await Vehicle.bulkSave(vehicles)
+			console.info(`Vehicles refreshed.`)
+			return true
+		},
+
+		Lines_routes: async () => {
+			console.info(`Refreshing Lines_routes...`)
+			let lines_routes = await getData('sv_chem_l')
+			lines_routes = lines_routes.map(lines_route => {
+				return new Lines_route({
+					gid: Number(lines_route.properties.gid),
+					libelle: lines_route.properties.libelle,
+					sens: lines_route.properties.sens,
+					vehicule: lines_route.properties.vehicule,
+					rs_sv_ligne_a_id: Number(lines_route.properties.rs_sv_ligne_a),
+					rg_sv_arret_p_nd_id: Number(lines_route.properties.rg_sv_arret_p_nd),
+					rg_sv_arret_p_na_id: Number(lines_route.properties.rg_sv_arret_p_na),
+				})
+			})
+			await Lines_route.deleteMany({})
+			await Lines_route.bulkSave(lines_routes)
+			console.info(`Lines_routes refreshed.`)
+			return true
+		},
+
+		Models: {
+			Intersection,
+			Section,
+			Stop,
+			Line,
+			Schedule,
+			Vehicle,
+			Lines_route,
 		},
 
 		endpoints: { //every API endpoints we can update + their actualization rate (in seconds)
