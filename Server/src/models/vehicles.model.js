@@ -9,10 +9,10 @@ module.exports = function (app) {
 	const schema = new Schema({
 		gid: { type: Number, required: true, unique: true },
 		etat: { type: String, required: true },
-		rs_sv_ligne_a_id: { type: String, required: true },
-		rg_sv_arret_p_nd_id: { type: String, required: true },
-		rg_sv_arret_p_na_id: { type: String, required: true },
-		rg_sv_chem_l_id: { type: String, required: true },
+		rs_sv_ligne_a_id: { type: Number, required: true },
+		rg_sv_arret_p_nd_id: { type: Number, required: true },
+		rg_sv_arret_p_na_id: { type: Number, required: true },
+		rg_sv_chem_l_id: { type: Number, required: true },
 	}, {
 		timestamps: true,
 		toObject: { virtuals: true },

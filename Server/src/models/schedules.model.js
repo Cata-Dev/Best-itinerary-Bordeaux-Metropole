@@ -13,8 +13,8 @@ module.exports = function (app) {
 		hor_estime: { type: Date, required: true },
 		etat: { type: String, required: true },
 		type: { type: String, required: true }, //donnée incertaine
-		rs_sv_arret_p_id: { type: String, required: true },
-		rs_sv_cours_a_id: { type: String, required: true },
+		rs_sv_arret_p_id: { type: Number, required: true },
+		rs_sv_cours_a_id: { type: Number, required: true },
 	}, {
 		timestamps: true,
 		toObject: { virtuals: true },
