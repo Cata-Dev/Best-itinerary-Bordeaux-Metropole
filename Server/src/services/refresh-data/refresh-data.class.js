@@ -12,6 +12,12 @@ exports.RefreshData = class RefreshData {
 		return new BadRequest(`This path is disabled.`);
 	}
 
+	/**
+	 * 
+	 * @param {String} id 
+	 * @param {Object} params 
+	 * @returns 
+	 */
 	async get(id, params) {
 
 		const TBM = this.app.utils.get('TBM')
@@ -32,6 +38,11 @@ exports.RefreshData = class RefreshData {
 			};
 		
 		} else if (Object.keys(TBM.endpoints).includes(id)) {
+
+			if ( Date.now() - (await TBM.Models[id.substr(0, id.length-1)].findOne()).createdAt < TBM.endpoints[id] * 1000) return {
+				"Actualized": false,
+				"Reason": "Actualization is on cooldown.",
+			}
 
 			/**
 			 * @type {Function}
