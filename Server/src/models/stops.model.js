@@ -8,7 +8,7 @@ module.exports = function (app) {
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
         geo_point: { type: Array, required: true },
-		gid: { type: Number, required: true, unique: true },
+		_id: { type: Number },
 		libelle: { type: String, required: true },
 		vehicule: { type: String, required: true },
 		type: { type: String, required: true },
