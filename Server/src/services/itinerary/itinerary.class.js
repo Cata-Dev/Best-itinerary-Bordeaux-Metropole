@@ -17,9 +17,9 @@ exports.Itinerary = class Itinerary {
 
                 const TBM = this.app.utils.get('TBM')
                 //ask for possible non-daily data actualization
-                for (const endpoint of Object.keys(TBM.endpoints).filter((endpoint) => TBM.endpoints[endpoint] < 24*3600)) {
+                for (const endpoint of TBM.endpoints.filter((endpoint) => endpoint.rate < 24*3600)) {
                     try {
-                        this.app.service('refresh-data').get(endpoint) //await for update ?
+                        this.app.service('refresh-data').get(endpoint.name) //await for update ?
                     } catch(_) {}
                 }
                 //call rust path calc

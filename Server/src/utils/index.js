@@ -6,16 +6,18 @@ module.exports = async (app) => {
     app.utils.set('TBM', TBM)
 
     async function refresh() {
-        for (const endpoint of Object.keys(TBM.endpoints).filter((endpoint) => TBM.endpoints[endpoint] < 24*3600)) {
+        for (const endpoint of TBM.endpoints.filter((endpoint) => endpoint.rate >= 24*3600)) {
+            endpoint.fetching = true
             try {
-                await TBM[endpoint]()
+                await endpoint.fetch()
             } catch(e) {
                 console.error(e)
             }
+            endpoint.fetching = false
         }
     }
 
-    await refresh()
-    setInterval(refresh, Math.max(...Object.values(TBM.endpoints)) * 1000);
+    // await refresh()
+    setInterval(refresh, Math.max(...TBM.endpoints.map(endpoint => endpoint.rate)) * 1000);
 
 }
