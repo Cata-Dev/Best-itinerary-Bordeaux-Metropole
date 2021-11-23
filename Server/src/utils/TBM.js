@@ -64,11 +64,11 @@ module.exports = (app) => {
 					intersections = intersections.map(intersection => {
 						return new Intersection({
 							geo_point: intersection.geometry.coordinates,
-							gid: Number(intersection.properties.gid),
+							_id: Number(intersection.properties.gid),
 							nature: intersection.properties.nature,
 						})
 					})
-					await Intersection.deleteMany({})
+					await Intersection.deleteMany({ _id: { "$nin": intersections.map(l_r => l_r.gid) } })
 					await Intersection.bulkSave(intersections)
 					console.info(`Intersections refreshed.`)
 					return true
@@ -86,15 +86,15 @@ module.exports = (app) => {
 								if (i < arr.length - 1) return acc+distance(...v, ...arr[i+1])
 								return acc
 							}, 0),
-							gid: Number(section.properties.gid),
+							_id: Number(section.properties.gid),
 							domanial: Number(section.properties.domanial),
 							groupe: section.properties.groupe || 0,
 							nom_voie: section.properties.nom_voie,
-							rg_fv_graph_nd_id: section.properties.rg_fv_graph_nd,
-							rg_fv_graph_na_id: section.properties.rg_fv_graph_na,
+							rg_fv_graph_nd: section.properties.rg_fv_graph_nd,
+							rg_fv_graph_na: section.properties.rg_fv_graph_na,
 						})
 					})
-					await Section.deleteMany({})
+					await Section.deleteMany({ _id: { "$nin": sections.map(l_r => l_r.gid) } })
 					await Section.bulkSave(sections)
 					console.info(`Sections refreshed.`)
 					return true
@@ -109,14 +109,14 @@ module.exports = (app) => {
 					stops = stops.map(stop => {
 						return new Stop({
 							geo_point: stop.geometry?.coordinates || [NaN, NaN], //out of BM
-							gid: Number(stop.properties.gid),
+							_id: Number(stop.properties.gid),
 							libelle: stop.properties.libelle,
 							vehicule: stop.properties.vehicule,
 							type: stop.properties.type,
 							actif: stop.properties.actif,
 						})
 					})
-					await Stop.deleteMany({})
+					await Stop.deleteMany({ _id: { "$nin": stops.map(l_r => l_r.gid) } })
 					await Stop.bulkSave(stops)
 					console.info(`Stops refreshed.`)
 					return true
@@ -130,13 +130,13 @@ module.exports = (app) => {
 					let lines = await getData('sv_ligne_a')
 					lines = lines.map(line => {
 						return new Line({
-							gid: Number(line.properties.gid),
+							_id: Number(line.properties.gid),
 							libelle: line.properties.libelle,
 							vehicule: line.properties.vehicule,
 							active: line.properties.active,
 						})
 					})
-					await Line.deleteMany({})
+					await Line.deleteMany({ _id: { "$nin": lines.map(l_r => l_r.gid) } })
 					await Line.bulkSave(lines)
 					console.info(`Lines refreshed.`)
 					return true
@@ -167,17 +167,17 @@ module.exports = (app) => {
 					})])
 					schedules = schedules.map(schedule => {
 						return new Schedule({
-							gid: Number(schedule.properties.gid),
+							_id: Number(schedule.properties.gid),
 							hor_theo: new Date(schedule.properties.hor_theo),
 							hor_app: new Date(schedule.properties.hor_app),
 							hor_estime: new Date(schedule.properties.hor_estime),
 							etat: schedule.properties.etat,
 							type: schedule.properties.type,
-							rs_sv_arret_p_id: Number(schedule.properties.rs_sv_arret_p),
-							rs_sv_cours_a_id: Number(schedule.properties.rs_sv_cours_a),
+							rs_sv_arret_p: Number(schedule.properties.rs_sv_arret_p),
+							rs_sv_cours_a: Number(schedule.properties.rs_sv_cours_a),
 						})
 					})
-					await Schedule.deleteMany({})
+					await Schedule.deleteMany({ _id: { "$nin": schedules.map(l_r => l_r.gid) } })
 					await Schedule.bulkSave(schedules)
 					console.info(`Schedules refreshed.`)
 					return true
@@ -188,18 +188,22 @@ module.exports = (app) => {
 				name: "Vehicles", rate: 10*60, fetching: false,
 				fetch: async () => {
 					console.info(`Refreshing Vehicles...`)
-					let vehicles = await getData('sv_cours_a')
+					let vehicles = await getData('sv_cours_a', ["filter="+JSON.stringify({
+						"etat": {
+							"$in": [ "NON_COMMENCE", "EN_COURS" ]
+						}
+					})])
 					vehicles = vehicles.map(vehicle => {
 						return new Vehicle({
-							gid: Number(vehicle.properties.gid),
+							_id: Number(vehicle.properties.gid),
 							etat: vehicle.properties.etat,
-							rg_sv_arret_p_nd_id: Number(vehicle.properties.rg_sv_arret_p_nd),
-							rg_sv_arret_p_na_id: Number(vehicle.properties.rg_sv_arret_p_na),
-							rs_sv_ligne_a_id: Number(vehicle.properties.rs_sv_ligne_a),
-							rg_sv_chem_l_id: Number(vehicle.properties.rs_sv_chem_l),
+							rg_sv_arret_p_nd: Number(vehicle.properties.rg_sv_arret_p_nd),
+							rg_sv_arret_p_na: Number(vehicle.properties.rg_sv_arret_p_na),
+							rs_sv_ligne_a: Number(vehicle.properties.rs_sv_ligne_a),
+							rs_sv_chem_l: Number(vehicle.properties.rs_sv_chem_l),
 						})
 					})
-					await Vehicle.deleteMany({})
+					await Vehicle.deleteMany({ _id: { "$nin": vehicles.map(l_r => l_r.gid) } })
 					await Vehicle.bulkSave(vehicles)
 					console.info(`Vehicles refreshed.`)
 					return true
@@ -215,16 +219,16 @@ module.exports = (app) => {
 					])])
 					lines_routes = lines_routes.map(lines_route => {
 						return new Lines_route({
-							gid: Number(lines_route.properties.gid),
+							_id: Number(lines_route.properties.gid),
 							libelle: lines_route.properties.libelle,
 							sens: lines_route.properties.sens,
 							vehicule: lines_route.properties.vehicule,
-							rs_sv_ligne_a_id: Number(lines_route.properties.rs_sv_ligne_a),
-							rg_sv_arret_p_nd_id: Number(lines_route.properties.rg_sv_arret_p_nd),
-							rg_sv_arret_p_na_id: Number(lines_route.properties.rg_sv_arret_p_na),
+							rs_sv_ligne_a: Number(lines_route.properties.rs_sv_ligne_a),
+							rg_sv_arret_p_nd: Number(lines_route.properties.rg_sv_arret_p_nd),
+							rg_sv_arret_p_na: Number(lines_route.properties.rg_sv_arret_p_na),
 						})
 					})
-					await Lines_route.deleteMany({})
+					await Lines_route.deleteMany({ _id: { "$nin": lines_routes.map(l_r => l_r.gid) } })
 					await Lines_route.bulkSave(lines_routes)
 					console.info(`Lines_routes refreshed.`)
 					return true
