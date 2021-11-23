@@ -1,0 +1,11 @@
+{
+  "host": "localhost",
+  "port": 3030,
+  "TBMkey": "",
+  "SNCFkey": "",
+  "mongodb": "mongodb://localhost:27017/bibm",
+  "ssl": {
+    "key": "",
+    "cert": ""
+  }
+}
