@@ -12,7 +12,7 @@ module.exports = function (app) {
 		vehicule: { type: String, required: true },
 		active: { type: Number, required: true },
 	}, {
-		timestamps: false
+		timestamps: true
 	});
 
 	// This is necessary to avoid model compilation errors in watch mode

@@ -15,7 +15,7 @@ module.exports = function (app) {
         rg_fv_graph_nd_id: { type: Number, required: true },
         rg_fv_graph_na_id: { type: Number, required: true },
 	}, {
-		timestamps: false,
+		timestamps: true,
 		toObject: { virtuals: true },
 	});
 

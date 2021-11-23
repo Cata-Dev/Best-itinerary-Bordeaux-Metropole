@@ -14,7 +14,7 @@ module.exports = function (app) {
 		type: { type: String, required: true },
 		actif: { type: Number, required: true },
 	}, {
-		timestamps: false
+		timestamps: true
 	});
 
 	// This is necessary to avoid model compilation errors in watch mode

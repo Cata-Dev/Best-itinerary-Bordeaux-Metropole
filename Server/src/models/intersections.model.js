@@ -11,7 +11,7 @@ module.exports = function (app) {
 		gid: { type: Number, required: true, unique: true },
 		nature: { type: String, required: true },
 	}, {
-		timestamps: false
+		timestamps: true
 	});
 
 	// This is necessary to avoid model compilation errors in watch mode
