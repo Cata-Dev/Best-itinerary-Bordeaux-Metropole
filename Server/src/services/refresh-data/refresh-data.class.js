@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-const { NotFound, BadRequest } = require('@feathersjs/errors');
+const { NotFound, BadRequest, Forbidden } = require('@feathersjs/errors');
 
 exports.RefreshData = class RefreshData {
 
@@ -40,22 +40,26 @@ exports.RefreshData = class RefreshData {
 		
 		} else if (matchingEndpoint) {
 
-			if (matchingEndpoint.fetching) throw new Error({
+			if (matchingEndpoint.fetching) return new Forbidden(new Error({
 				"Actualized": false,
 				"Reason": "Actualization is ongoing.",
-			})
-			if ((params.query.force !== "true") && (Date.now() - ((await matchingEndpoint.model.findOne())?.createdAt || 0) < matchingEndpoint.rate * 1000)) throw new Error({
+			}))
+			if ((params.query?.force !== "true") && (Date.now() - ((await matchingEndpoint.model.findOne())?.createdAt || 0) < matchingEndpoint.rate * 1000)) return new Forbidden(new Error({
 				"Actualized": false,
 				"Reason": "Actualization is on cooldown.",
-			})
+			}))
 
 			/**
 			 * @type {Function}
 			 */
 			let r = false
+			matchingEndpoint.fetching = true
 			try {
-				r = waitForUpdate ? await matchingEndpoint.fetch() : matchingEndpoint.fetch()
+				r = waitForUpdate ? await matchingEndpoint.fetch() : matchingEndpoint.fetch().finally(() => {
+					matchingEndpoint.fetching = false
+				})
 			} catch(e) {console.error(e)}
+			if (waitForUpdate) matchingEndpoint.fetching = false
 
 			return {
 				"Actualized": waitForUpdate ? r : null
