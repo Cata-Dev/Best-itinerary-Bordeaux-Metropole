@@ -15,7 +15,7 @@ module.exports = async (app) => {
         }
     }
 
-    // await refresh()
+    await refresh()
     setInterval(refresh, Math.max(...Object.values(TBM.endpoints)) * 1000);
 
 }
