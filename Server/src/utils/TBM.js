@@ -1,4 +1,5 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const { bulkOps } = require('./utils')
 
 function degreesToRadians(degrees) {
 	return degrees * Math.PI / 180;
@@ -62,14 +63,14 @@ module.exports = (app) => {
 					console.info(`Refreshing Intersections...`)
 					let intersections = await getData('fv_carre_p')
 					intersections = intersections.map(intersection => {
-						return new Intersection({
+						return {
 							geo_point: intersection.geometry.coordinates,
 							_id: Number(intersection.properties.gid),
 							nature: intersection.properties.nature,
-						})
+						}
 					})
 					await Intersection.deleteMany({ _id: { "$nin": intersections.map(i => i._id) } })
-					await Intersection.bulkSave(intersections)
+					await Intersection.bulkWrite(bulkOps(intersections))
 					console.info(`Intersections refreshed.`)
 					return true
 				},
@@ -81,7 +82,7 @@ module.exports = (app) => {
 					console.info(`Refreshing Sections...`)
 					let sections = await getData('fv_tronc_l')
 					sections = sections.map(section => {
-						return new Section({
+						return {
 							distance: section.geometry.coordinates.reduce((acc, v, i, arr) => {
 								if (i < arr.length - 1) return acc+distance(...v, ...arr[i+1])
 								return acc
@@ -92,10 +93,10 @@ module.exports = (app) => {
 							nom_voie: section.properties.nom_voie,
 							rg_fv_graph_nd: section.properties.rg_fv_graph_nd,
 							rg_fv_graph_na: section.properties.rg_fv_graph_na,
-						})
+						}
 					})
 					await Section.deleteMany({ _id: { "$nin": sections.map(s => s._id) } })
-					await Section.bulkSave(sections)
+					await Section.bulkWrite(bulkOps(sections))
 					console.info(`Sections refreshed.`)
 					return true
 				},
@@ -107,17 +108,17 @@ module.exports = (app) => {
 					console.info(`Refreshing Stops...`)
 					let stops = await getData('sv_arret_p')
 					stops = stops.map(stop => {
-						return new Stop({
+						return {
 							geo_point: stop.geometry?.coordinates || [NaN, NaN], //out of BM
 							_id: Number(stop.properties.gid),
 							libelle: stop.properties.libelle,
 							vehicule: stop.properties.vehicule,
 							type: stop.properties.type,
 							actif: stop.properties.actif,
-						})
+						}
 					})
 					await Stop.deleteMany({ _id: { "$nin": stops.map(s => s._id) } })
-					await Stop.bulkSave(stops)
+					await Stop.bulkWrite(bulkOps(stops))
 					console.info(`Stops refreshed.`)
 					return true
 				},
@@ -129,15 +130,15 @@ module.exports = (app) => {
 					console.info(`Refreshing Lines...`)
 					let lines = await getData('sv_ligne_a')
 					lines = lines.map(line => {
-						return new Line({
+						return {
 							_id: Number(line.properties.gid),
 							libelle: line.properties.libelle,
 							vehicule: line.properties.vehicule,
 							active: line.properties.active,
-						})
+						}
 					})
 					await Line.deleteMany({ _id: { "$nin": lines.map(l => l._id) } })
-					await Line.bulkSave(lines)
+					await Line.bulkWrite(bulkOps(lines))
 					console.info(`Lines refreshed.`)
 					return true
 				},
@@ -166,7 +167,7 @@ module.exports = (app) => {
 						]
 					})])
 					schedules = schedules.map(schedule => {
-						return new Schedule({
+						return {
 							_id: Number(schedule.properties.gid),
 							hor_theo: new Date(schedule.properties.hor_theo),
 							hor_app: new Date(schedule.properties.hor_app),
@@ -175,10 +176,10 @@ module.exports = (app) => {
 							type: schedule.properties.type,
 							rs_sv_arret_p: Number(schedule.properties.rs_sv_arret_p),
 							rs_sv_cours_a: Number(schedule.properties.rs_sv_cours_a),
-						})
+						}
 					})
 					await Schedule.deleteMany({ _id: { "$nin": schedules.map(s => s._id) } })
-					await Schedule.bulkSave(schedules)
+					await Schedule.bulkWrite(bulkOps(schedules))
 					console.info(`Schedules refreshed.`)
 					return true
 				},
@@ -194,17 +195,17 @@ module.exports = (app) => {
 						}
 					})])
 					vehicles = vehicles.map(vehicle => {
-						return new Vehicle({
+						return {
 							_id: Number(vehicle.properties.gid),
 							etat: vehicle.properties.etat,
 							rg_sv_arret_p_nd: Number(vehicle.properties.rg_sv_arret_p_nd),
 							rg_sv_arret_p_na: Number(vehicle.properties.rg_sv_arret_p_na),
 							rs_sv_ligne_a: Number(vehicle.properties.rs_sv_ligne_a),
 							rs_sv_chem_l: Number(vehicle.properties.rs_sv_chem_l),
-						})
+						}
 					})
 					await Vehicle.deleteMany({ _id: { "$nin": vehicles.map(v => v._id) } })
-					await Vehicle.bulkSave(vehicles)
+					await Vehicle.bulkWrite(bulkOps(vehicles))
 					console.info(`Vehicles refreshed.`)
 					return true
 				},
@@ -218,7 +219,7 @@ module.exports = (app) => {
 						"gid", "libelle", "sens", "vehicule", "rs_sv_ligne_a", "rg_sv_arret_p_nd", "rg_sv_arret_p_na"
 					])])
 					lines_routes = lines_routes.map(lines_route => {
-						return new Lines_route({
+						return {
 							_id: Number(lines_route.properties.gid),
 							libelle: lines_route.properties.libelle,
 							sens: lines_route.properties.sens,
@@ -226,10 +227,10 @@ module.exports = (app) => {
 							rs_sv_ligne_a: Number(lines_route.properties.rs_sv_ligne_a),
 							rg_sv_arret_p_nd: Number(lines_route.properties.rg_sv_arret_p_nd),
 							rg_sv_arret_p_na: Number(lines_route.properties.rg_sv_arret_p_na),
-						})
+						}
 					})
 					await Lines_route.deleteMany({ _id: { "$nin": lines_routes.map(l_r => l_r._id) } })
-					await Lines_route.bulkSave(lines_routes)
+					await Lines_route.bulkWrite(bulkOps(lines_routes))
 					console.info(`Lines_routes refreshed.`)
 					return true
 				},

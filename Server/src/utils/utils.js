@@ -7,6 +7,24 @@ class Deferred {
     }
 }
 
+/**
+ * Format documents to be bulkUpdated via bulkWrite
+ * @param {Array} documents 
+ * @param {String} filterKey 
+ * @returns {Array}
+ */
+module.exports.bulkOps = (documents, filterKey = '_id') => {
+    return documents.map((doc) => {
+        return {
+            updateOne: {
+                filter: { [filterKey]: doc[filterKey] },
+                update: doc,
+                upsert: true
+            }
+        }
+    })
+}
+
 module.exports.sumObj = function (obj = {}, keys = []) { //Object.prototype.sum = // -> make errors when requiring on other files ?
 
     return Object.keys(obj).filter(k => keys.map(k => String(k)).includes(k) && typeof obj[k] == 'number').reduce((acc, v) => acc+obj[v], 0)
