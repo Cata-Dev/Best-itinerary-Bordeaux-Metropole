@@ -32,11 +32,11 @@ module.exports = (app) => {
 
 	const Intersection = require('../models/intersections.model')(app)
 	const Section = require('../models/sections.model')(app)
-	const Stop = require('../models/stops.model')(app)
-	const Line = require('../models/lines.model')(app)
-	const Schedule = require('../models/schedules.model')(app)
-	const Vehicle = require('../models/vehicles.model')(app)
-	const Lines_route = require('../models/lines_routes.model')(app)
+	const Stop = require('../models/TBM_stops.model')(app)
+	const Line = require('../models/TBM_lines.model')(app)
+	const Schedule = require('../models/TBM_schedules.model')(app)
+	const Vehicle = require('../models/TBM_vehicles.model')(app)
+	const Lines_route = require('../models/TBM_lines_routes.model')(app)
 
 	console.log(`Models initialized.`)
 
@@ -102,7 +102,7 @@ module.exports = (app) => {
 				model: Section,
 			},
 			{
-				name: "Stops", rate: 24*3600, fetching: false,
+				name: "TBM_Stops", rate: 24*3600, fetching: false,
 				fetch: async () => {
 					console.info(`Refreshing Stops...`)
 					let stops = await getData('sv_arret_p')
@@ -124,7 +124,7 @@ module.exports = (app) => {
 				model: Stop,
 			},
 			{
-				name: "Lines", rate: 24*3600, fetching: false,
+				name: "TBM_Lines", rate: 24*3600, fetching: false,
 				fetch: async () => {
 					console.info(`Refreshing Lines...`)
 					let lines = await getData('sv_ligne_a')
@@ -144,7 +144,7 @@ module.exports = (app) => {
 				mode: Line,
 			},
 			{
-				name: "Schedules", rate: 10, fetching: false,
+				name: "TBM_Schedules", rate: 10, fetching: false,
 				fetch: async () => {
 					console.info(`Refreshing Schedules...`)
 					const date = (new Date()).toJSON().substr(0, 19)
@@ -185,7 +185,7 @@ module.exports = (app) => {
 				model: Schedule,
 			},
 			{
-				name: "Vehicles", rate: 10*60, fetching: false,
+				name: "TBM_Vehicles", rate: 10*60, fetching: false,
 				fetch: async () => {
 					console.info(`Refreshing Vehicles...`)
 					let vehicles = await getData('sv_cours_a', ["filter="+JSON.stringify({
@@ -211,7 +211,7 @@ module.exports = (app) => {
 				model: Vehicle,
 			},
 			{
-				name: "Lines_routes", rate: 3600, fetching: false,
+				name: "TBM_Lines_routes", rate: 3600, fetching: false,
 				fetch: async () => {
 					console.info(`Refreshing Lines_routes...`)
 					let lines_routes = await getData('sv_chem_l', ["attributes="+JSON.stringify([

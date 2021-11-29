@@ -1,20 +1,20 @@
-// vehicles-model.js - A mongoose model
+// tbm_stops-model.js - A mongoose model
 // 
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function (app) {
-	const modelName = 'vehicles';
+	const modelName = 'tbm_stops';
 	const mongooseClient = app.get('mongooseClient');
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
+        geo_point: { type: Array, required: true },
 		_id: { type: Number },
-		etat: { type: String, required: true },
-		rs_sv_ligne_a: { type: Number, ref: 'lines' },
-		rg_sv_arret_p_nd: { type: Number, required: true, ref: 'stops' },
-		rg_sv_arret_p_na: { type: Number, required: true, ref: 'stops'  },
-		rs_sv_chem_l: { type: Number, ref: 'lines_routes' },
+		libelle: { type: String, required: true },
+		vehicule: { type: String, required: true },
+		type: { type: String, required: true },
+		actif: { type: Number, required: true },
 	}, {
-		timestamps: true,
+		timestamps: true
 	});
 
 	// This is necessary to avoid model compilation errors in watch mode

@@ -1,9 +1,9 @@
-// schedules-model.js - A mongoose model
+// tbm_schedules-model.js - A mongoose model
 // 
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function (app) {
-	const modelName = 'schedules';
+	const modelName = 'tbm_schedules';
 	const mongooseClient = app.get('mongooseClient');
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
