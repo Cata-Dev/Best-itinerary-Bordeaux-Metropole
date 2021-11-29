@@ -68,7 +68,7 @@ module.exports = (app) => {
 							nature: intersection.properties.nature,
 						})
 					})
-					await Intersection.deleteMany({ _id: { "$nin": intersections.map(l_r => l_r.gid) } })
+					await Intersection.deleteMany({ _id: { "$nin": intersections.map(i => i._id) } })
 					await Intersection.bulkSave(intersections)
 					console.info(`Intersections refreshed.`)
 					return true
@@ -94,7 +94,7 @@ module.exports = (app) => {
 							rg_fv_graph_na: section.properties.rg_fv_graph_na,
 						})
 					})
-					await Section.deleteMany({ _id: { "$nin": sections.map(l_r => l_r.gid) } })
+					await Section.deleteMany({ _id: { "$nin": sections.map(s => s._id) } })
 					await Section.bulkSave(sections)
 					console.info(`Sections refreshed.`)
 					return true
@@ -116,7 +116,7 @@ module.exports = (app) => {
 							actif: stop.properties.actif,
 						})
 					})
-					await Stop.deleteMany({ _id: { "$nin": stops.map(l_r => l_r.gid) } })
+					await Stop.deleteMany({ _id: { "$nin": stops.map(s => s._id) } })
 					await Stop.bulkSave(stops)
 					console.info(`Stops refreshed.`)
 					return true
@@ -136,7 +136,7 @@ module.exports = (app) => {
 							active: line.properties.active,
 						})
 					})
-					await Line.deleteMany({ _id: { "$nin": lines.map(l_r => l_r.gid) } })
+					await Line.deleteMany({ _id: { "$nin": lines.map(l => l._id) } })
 					await Line.bulkSave(lines)
 					console.info(`Lines refreshed.`)
 					return true
@@ -177,7 +177,7 @@ module.exports = (app) => {
 							rs_sv_cours_a: Number(schedule.properties.rs_sv_cours_a),
 						})
 					})
-					await Schedule.deleteMany({ _id: { "$nin": schedules.map(l_r => l_r.gid) } })
+					await Schedule.deleteMany({ _id: { "$nin": schedules.map(s => s._id) } })
 					await Schedule.bulkSave(schedules)
 					console.info(`Schedules refreshed.`)
 					return true
@@ -203,7 +203,7 @@ module.exports = (app) => {
 							rs_sv_chem_l: Number(vehicle.properties.rs_sv_chem_l),
 						})
 					})
-					await Vehicle.deleteMany({ _id: { "$nin": vehicles.map(l_r => l_r.gid) } })
+					await Vehicle.deleteMany({ _id: { "$nin": vehicles.map(v => v._id) } })
 					await Vehicle.bulkSave(vehicles)
 					console.info(`Vehicles refreshed.`)
 					return true
@@ -228,7 +228,7 @@ module.exports = (app) => {
 							rg_sv_arret_p_na: Number(lines_route.properties.rg_sv_arret_p_na),
 						})
 					})
-					await Lines_route.deleteMany({ _id: { "$nin": lines_routes.map(l_r => l_r.gid) } })
+					await Lines_route.deleteMany({ _id: { "$nin": lines_routes.map(l_r => l_r._id) } })
 					await Lines_route.bulkSave(lines_routes)
 					console.info(`Lines_routes refreshed.`)
 					return true
