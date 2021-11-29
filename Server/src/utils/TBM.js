@@ -141,7 +141,7 @@ module.exports = (app) => {
 					console.info(`Lines refreshed.`)
 					return true
 				},
-				mode: Line,
+				model: Line,
 			},
 			{
 				name: "TBM_Schedules", rate: 10, fetching: false,
