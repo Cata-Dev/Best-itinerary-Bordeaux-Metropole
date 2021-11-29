@@ -13,17 +13,16 @@ exports.Itinerary = class Itinerary {
 
             case 'paths':
 
-                if (!(params.query.from && params.query.to)) return new BadRequest(`Missing parameter(s).`)
+                if (!(params.query?.from && params.query?.to)) return new BadRequest(`Missing parameter(s).`)
 
-                const TBM = this.app.utils.get('TBM')
+                const endpoints = this.app.utils.get('endpoints')
                 //ask for possible non-daily data actualization
-                for (const endpoint of TBM.endpoints.filter((endpoint) => endpoint.rate < 24*3600)) {
+                for (const endpoint of endpoints.filter((endpoint) => endpoint.rate < 24*3600)) {
                     try {
-                        this.app.service('refresh-data').get(endpoint.name) //await for update ?
+                        params.query?.waitForUpdate === 'true' ? await this.app.service('refresh-data').get(endpoint.name, { query: params.query }) : this.app.service('refresh-data').get(endpoint.name, { query: params.query })
                     } catch(_) {}
                 }
-                //call rust path calc
-                return 'ok'
+                return 'Should calculate rust best itineraries, but OK.'
 
             default:
                 return new NotFound('Unknown command.')
