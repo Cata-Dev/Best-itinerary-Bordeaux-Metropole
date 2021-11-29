@@ -20,14 +20,14 @@ exports.RefreshData = class RefreshData {
 	 */
 	async get(id, params) {
 
-		const TBM = this.app.utils.get('TBM')
+		const endpoints = this.app.utils.get('endpoints')
 		const waitForUpdate = params.query?.waitForUpdate === 'true'
-		const matchingEndpoint = TBM.endpoints.find(endpoint => endpoint.name === id)
+		const matchingEndpoint = endpoints.find(endpoint => endpoint.name === id)
 		
 		if (id == 'all') {
 		
 			let c = 0
-			for (const endpoint of TBM.endpoints) {
+			for (const endpoint of endpoints) {
 				let r = false
 				try {
 					r = (await this.get(endpoint.name, params)).Actualized //update every endpoint

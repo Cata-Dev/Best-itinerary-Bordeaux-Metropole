@@ -4,12 +4,16 @@ module.exports = async (app) => {
 
     const TBM = require('./TBM')(app)
     app.utils.set('TBM', TBM)
+    const SNCF = require('./SNCF')(app)
+    app.utils.set('SNCF', SNCF)
+    const endpoints = TBM.endpoints.concat(SNCF.endpoints)
+    app.utils.set('endpoints', endpoints)
 
     async function refresh() {
-        for (const endpoint of TBM.endpoints.filter((endpoint) => endpoint.rate >= 24*3600)) {
+        for (const endpoint of endpoints.filter((endpoint) => endpoint.rate >= 24*3600)) {
             endpoint.fetching = true
             try {
-                await endpoint.fetch()
+                endpoint.fetch()
             } catch(e) {
                 console.error(e)
             }
@@ -18,6 +22,6 @@ module.exports = async (app) => {
     }
 
     await refresh()
-    setInterval(refresh, Math.max(...TBM.endpoints.map(endpoint => endpoint.rate)) * 1000);
+    setInterval(refresh, Math.max(...endpoints.map(endpoint => endpoint.rate)) * 1000);
 
 }
