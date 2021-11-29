@@ -43,7 +43,7 @@ module.exports = (app) => {
 	/**
 	 * Fetch data from TBM API
 	 * @param {String} id dataset identifier
-	 * @param {Array} queries array or queries to apply
+	 * @param {Array} queries array of queries to apply
 	 * @returns {Obejct}
 	 */
 	async function getData(id, queries = []) {
