@@ -17,7 +17,7 @@ module.exports = async (app) => {
         }
     }
 
-    // await refresh()
+    await refresh()
     setInterval(refresh, Math.max(...TBM.endpoints.map(endpoint => endpoint.rate)) * 1000);
 
 }
