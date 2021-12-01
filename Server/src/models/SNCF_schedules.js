@@ -8,8 +8,7 @@ module.exports = function (app) {
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
 		_id: { type: String },
-		base_time: { type: Date, required: true },
-		realtime: { type: Date },
+		realtime: { type: Date, required: true },
 		trip: { type: Number, required: true }, //implicitly includes direction
         stop_point: { type: String, required: true, ref: 'sncf_stops' },
         route: { type: String, required: true, ref: 'sncf_routes' },

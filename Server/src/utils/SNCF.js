@@ -93,7 +93,6 @@ module.exports = (app) => {
 								const trip = header['display_informations']['trip_short_name']
 								schedules.push({
 									_id: `${trip}:${stop_point}`, //equals to 'j:i', 'column:row'
-									base_time: parseSNCFdate(schedule['base_date_time']),
 									realtime: parseSNCFdate(schedule['date_time']),
 									trip,
 									stop_point,
