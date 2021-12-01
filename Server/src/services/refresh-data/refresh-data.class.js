@@ -25,18 +25,28 @@ exports.RefreshData = class RefreshData {
 		const matchingEndpoint = endpoints.find(endpoint => endpoint.name === id)
 		
 		if (id == 'all') {
+
+			return new Promise((res, _) => {
 		
-			let c = 0
-			for (const endpoint of endpoints) {
-				let r = false
-				try {
-					r = (await this.get(endpoint.name, params)).Actualized //update every endpoint
-				} catch(_) {}
-				if (r) c++
-			}
-			return {
-				"Actualized": waitForUpdate ? c : null,
-			};
+				let sucess = 0
+				let count = 0
+				for (const endpoint of endpoints) {
+					this.get(endpoint.name, params).then(r => {
+						if (r.Actualized) sucess++
+					}).finally(() => {
+						if (waitForUpdate) {
+							count++
+							if (count === endpoints.length) res({ //every update ended
+								"Actualized": sucess,
+							}); 
+						}
+					})
+				}
+				if (!waitForUpdate) res({
+					"Actualized": null, //we don't know anything
+				}); 
+
+			})
 		
 		} else if (matchingEndpoint) {
 
