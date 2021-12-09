@@ -1,0 +1,18 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/Client"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  assignees:
+  - Catatomik
+  versioning-strategy: increase
+- package-ecosystem: npm
+  directory: "/Server"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  assignees:
+  - Catatomik
+  versioning-strategy: increase
