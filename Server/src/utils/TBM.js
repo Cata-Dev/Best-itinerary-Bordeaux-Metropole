@@ -31,6 +31,7 @@ module.exports = (app) => {
 
 	console.info(`Initializing TBM models...`)
 
+	const Address = require('../models/addresses.model')(app)
 	const Intersection = require('../models/intersections.model')(app)
 	const Section = require('../models/sections.model')(app)
 	const Stop = require('../models/TBM_stops.model')(app)
@@ -58,13 +59,39 @@ module.exports = (app) => {
 
 		endpoints: [
 			{
+				name: "Addresses", rate: 24*3600, fetching: false,
+				fetch: async () => {
+					console.info(`Refreshing Addresses...`)
+					let addresses = await getData('fv_adresse_p')
+					addresses = addresses.map(address => {
+						const voie = address.properties.nom_voie.toLowerCase()
+						return {
+							_id: Number(address.properties.gid),
+							coords: address.geometry.coordinates,
+							numero: address.properties.numero,
+							rep: address.properties.rep,
+							type_voie: voie.match(/[a-zà-ÿ]+/g)[0],
+							nom_voie: voie,
+							code_postal: address.properties.cpostal,
+							fantoir: address.properties.fantoir,
+							commune: address.properties.commune,
+						}
+					})
+					await Address.deleteMany({ _id: { "$nin": addresses.map(i => i._id) } })
+					await Address.bulkWrite(bulkOps(addresses))
+					console.info(`Addresses refreshed.`)
+					return true
+				},
+				model: Address,
+			},
+			{
 				name: "Intersections", rate: 24*3600, fetching: false,
 				fetch: async () => {
 					console.info(`Refreshing Intersections...`)
 					let intersections = await getData('fv_carre_p')
 					intersections = intersections.map(intersection => {
 						return {
-							geo_point: intersection.geometry.coordinates,
+							coords: intersection.geometry.coordinates,
 							_id: Number(intersection.properties.gid),
 							nature: intersection.properties.nature,
 						}
@@ -105,13 +132,14 @@ module.exports = (app) => {
 			{
 				name: "TBM_Stops", rate: 24*3600, fetching: false,
 				fetch: async () => {
-					console.info(`Refreshing Stops...`)
+					console.info(`Refreshing TBM_Stops...`)
 					let stops = await getData('sv_arret_p')
 					stops = stops.map(stop => {
 						return {
-							geo_point: stop.geometry?.coordinates || [NaN, NaN], //out of BM
+							coords: stop.geometry?.coordinates || [NaN, NaN], //out of BM
 							_id: Number(stop.properties.gid),
 							libelle: stop.properties.libelle,
+							libelle_lowercase: stop.properties.libelle.toLowerCase(),
 							vehicule: stop.properties.vehicule,
 							type: stop.properties.type,
 							actif: stop.properties.actif,
@@ -119,7 +147,7 @@ module.exports = (app) => {
 					})
 					await Stop.deleteMany({ _id: { "$nin": stops.map(s => s._id) } })
 					await Stop.bulkWrite(bulkOps(stops))
-					console.info(`Stops refreshed.`)
+					console.info(`TBM_Stops refreshed.`)
 					return true
 				},
 				model: Stop,
@@ -127,7 +155,7 @@ module.exports = (app) => {
 			{
 				name: "TBM_Lines", rate: 24*3600, fetching: false,
 				fetch: async () => {
-					console.info(`Refreshing Lines...`)
+					console.info(`Refreshing TBM_Lines...`)
 					let lines = await getData('sv_ligne_a')
 					lines = lines.map(line => {
 						return {
@@ -139,7 +167,7 @@ module.exports = (app) => {
 					})
 					await Line.deleteMany({ _id: { "$nin": lines.map(l => l._id) } })
 					await Line.bulkWrite(bulkOps(lines))
-					console.info(`Lines refreshed.`)
+					console.info(`TBM_Lines refreshed.`)
 					return true
 				},
 				model: Line,
@@ -147,7 +175,7 @@ module.exports = (app) => {
 			{
 				name: "TBM_Schedules", rate: 10, fetching: false,
 				fetch: async () => {
-					console.info(`Refreshing Schedules...`)
+					console.info(`Refreshing TBM_Schedules...`)
 					const date = (new Date()).toJSON().substr(0, 19)
 					let schedules = await getData('sv_horai_a', ["filter="+JSON.stringify({
 						"$or": [
@@ -160,7 +188,7 @@ module.exports = (app) => {
 									"$gte": date
 								},
 							}, {
-							"hor_estime": {
+								"hor_estime": {
 									"$gte": date
 								},
 							}
@@ -180,7 +208,7 @@ module.exports = (app) => {
 					})
 					await Schedule.deleteMany({ _id: { "$nin": schedules.map(s => s._id) } })
 					await Schedule.bulkWrite(bulkOps(schedules))
-					console.info(`Schedules refreshed.`)
+					console.info(`TBM_Schedules refreshed.`)
 					return true
 				},
 				model: Schedule,
@@ -188,7 +216,7 @@ module.exports = (app) => {
 			{
 				name: "TBM_Vehicles", rate: 10*60, fetching: false,
 				fetch: async () => {
-					console.info(`Refreshing Vehicles...`)
+					console.info(`Refreshing TBM_Vehicles...`)
 					let vehicles = await getData('sv_cours_a', ["filter="+JSON.stringify({
 						"etat": {
 							"$in": [ "NON_COMMENCE", "EN_COURS" ]
@@ -206,7 +234,7 @@ module.exports = (app) => {
 					})
 					await Vehicle.deleteMany({ _id: { "$nin": vehicles.map(v => v._id) } })
 					await Vehicle.bulkWrite(bulkOps(vehicles))
-					console.info(`Vehicles refreshed.`)
+					console.info(`TBM_Vehicles refreshed.`)
 					return true
 				},
 				model: Vehicle,
@@ -214,7 +242,7 @@ module.exports = (app) => {
 			{
 				name: "TBM_Lines_routes", rate: 3600, fetching: false,
 				fetch: async () => {
-					console.info(`Refreshing Lines_routes...`)
+					console.info(`Refreshing TBM_Lines_routes...`)
 					let lines_routes = await getData('sv_chem_l', ["attributes="+JSON.stringify([
 						"gid", "libelle", "sens", "vehicule", "rs_sv_ligne_a", "rg_sv_arret_p_nd", "rg_sv_arret_p_na"
 					])])
@@ -231,7 +259,7 @@ module.exports = (app) => {
 					})
 					await Lines_route.deleteMany({ _id: { "$nin": lines_routes.map(l_r => l_r._id) } })
 					await Lines_route.bulkWrite(bulkOps(lines_routes))
-					console.info(`Lines_routes refreshed.`)
+					console.info(`TBM_Lines_routes refreshed.`)
 					return true
 				},
 				model: Lines_route,

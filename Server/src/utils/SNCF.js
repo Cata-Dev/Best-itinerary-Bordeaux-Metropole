@@ -63,7 +63,7 @@ module.exports = (app) => {
 				name: "SNCF_Schedules", rate: 20, fetching: false, //5000req/day
 				fetch: async () => {
 
-					console.info(`Refreshing Schedules...`)
+					console.info(`Refreshing SNCF_Schedules...`)
 
 					let date = formatSNCFdate(new Date())
 					/** @type {Array} */
@@ -105,7 +105,7 @@ module.exports = (app) => {
 					await Schedule.deleteMany({ _id: { "$nin": schedules.map(s => s._id) } })
 					await Schedule.bulkWrite(bulkOps(schedules))
 
-					console.info(`Schedules refreshed.`)
+					console.info(`SNCF_Schedules refreshed.`)
 
 					return true
 
@@ -116,7 +116,7 @@ module.exports = (app) => {
 				name: "SNCF_Stops", rate: 24*3600, fetching: false,
 				fetch: async () => {
 
-					console.info(`Refreshing Stops...`)
+					console.info(`Refreshing SNCF_Stops...`)
 
 					/** @type {Array} */
 					let stops = (await getData({
@@ -134,13 +134,15 @@ module.exports = (app) => {
 						return {
 							_id: Number(stop['id'].substr(16, 8)),
 							coords: [Number(stop['coord']['lon']), Number(stop['coord']['lat'])],
+							name: stop['name'],
+							name_lowercase: stop['name'].toLowerCase(),
 						}
 					}).filter(unique)
 
 					await Stop.deleteMany({ _id: { "$nin": stops.map(s => s._id) } })
 					await Stop.bulkWrite(bulkOps(stops))
 
-					console.info(`Stops refreshed.`)
+					console.info(`SNCF_Stops refreshed.`)
 					
 					return true
 
