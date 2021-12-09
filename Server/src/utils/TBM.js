@@ -31,6 +31,7 @@ module.exports = (app) => {
 
 	console.info(`Initializing TBM models...`)
 
+	const Address = require('../models/addresses.model')(app)
 	const Intersection = require('../models/intersections.model')(app)
 	const Section = require('../models/sections.model')(app)
 	const Stop = require('../models/TBM_stops.model')(app)
@@ -50,6 +51,7 @@ module.exports = (app) => {
 	async function getData(id, queries = []) {
 		const bURL = 'https://data.bordeaux-metropole.fr/'
 		const url = `geojson?key=${app.get('TBMkey')}&typename=${id}&${queries.join('&')}`
+		console.log(`${bURL}${url}`)
 		const res = await fetch(`${bURL}${url}`)
 		return (await res.json()).features
 	}
@@ -57,6 +59,32 @@ module.exports = (app) => {
 	return {
 
 		endpoints: [
+			{
+				name: "Addresses", rate: 24*3600, fetching: false,
+				fetch: async () => {
+					console.info(`Refreshing Addresses...`)
+					let addresses = await getData('fv_adresse_p')
+					addresses = addresses.map(address => {
+						const voie = address.properties.nom_voie.toLowerCase()
+						return {
+							_id: Number(address.properties.gid),
+							coordonnees: address.geometry.coordinates,
+							numero: address.properties.numero,
+							rep: address.properties.rep,
+							type_voie: voie.match(/[a-zà-ÿ]+/g)[0],
+							nom_voie: voie,
+							code_postal: address.properties.cpostal,
+							fantoir: address.properties.fantoir,
+							commune: address.properties.commune,
+						}
+					})
+					await Address.deleteMany({ _id: { "$nin": addresses.map(i => i._id) } })
+					await Address.bulkWrite(bulkOps(addresses))
+					console.info(`Addresses refreshed.`)
+					return true
+				},
+				model: Address,
+			},
 			{
 				name: "Intersections", rate: 24*3600, fetching: false,
 				fetch: async () => {
@@ -160,7 +188,7 @@ module.exports = (app) => {
 									"$gte": date
 								},
 							}, {
-							"hor_estime": {
+								"hor_estime": {
 									"$gte": date
 								},
 							}
