@@ -15,7 +15,7 @@ exports.Geocode = class Geocode extends Service {
         const addresses = this.app.utils.get('endpoints').find(e => e.name == 'Addresses')
         const communes = (await addresses.model.distinct('commune')).map(c => c.toLowerCase())
         const types_voies = await addresses.model.distinct('type_voie')
-        const regexpStr = `(?<numero>\\d+ )?(?<rep>[a-zà-ÿ]+ )?(?<type_voie>${types_voies.map(tv => tv+' ?').join('|')})(?<nom_voie>([a-zà-ÿ]+ ?(?<commune>${communes.map(c => c+' ?').join('|')})?)+)(?<code_postal>\\d{5})?`
+        const regexpStr = `(?<numero>\\d+ )?(?<rep>[a-zà-ÿ]+ )?(?<type_voie>${types_voies.map(tv => tv+' ?').join('|')})(?<nom_voie_lowercase>([a-zà-ÿ]+ ?(?<commune>${communes.map(c => c+' ?').join('|')})?)+)(?<code_postal>\\d{5})?`
         const parts = id.match(new RegExp(regexpStr))?.groups
 
         if (parts) {
@@ -24,10 +24,11 @@ exports.Geocode = class Geocode extends Service {
                 if (!parts[k]) delete parts[k]
                 else if (typeof parts[k] == 'string') parts[k] = parts[k].trim()
             }
-            parts.nom_voie = (parts.type_voie+' '+(parts.commune ? parts.nom_voie.replace(new RegExp(`${parts.commune}$`), '') : parts.nom_voie)).trim()
+            parts.nom_voie_lowercase = (parts.type_voie+' '+(parts.commune ? parts.nom_voie_lowercase.replace(new RegExp(`${parts.commune}$`), '') : parts.nom_voie_lowercase)).trim()
             parts.numero = Number(parts.numero)
             for (const k in parts) {
                 if (!parts[k]) delete parts[k]
+                else if (typeof parts[k] == 'string') parts[k] = { '$regex': parts[k] }
             }
     
             return {
@@ -83,6 +84,7 @@ exports.Geocode = class Geocode extends Service {
                 }
             } catch(_) {}
         }
+        if (results.length && params.query.max) results = results.slice(0, Number(params.query.max))
         
         return results.length ? results : new NotFound()
 

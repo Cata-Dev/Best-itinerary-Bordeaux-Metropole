@@ -13,6 +13,7 @@ module.exports = function (app) {
 		rep: { type: String, required: false },
         type_voie: { type: String, required: true },
         nom_voie: { type: String, required: true },
+        nom_voie_lowercase: { type: String, required: true },
         code_postal: { type: Number, required: true },
         fantoir: { type: String, required: true },
         commune: { type: String, required: true },

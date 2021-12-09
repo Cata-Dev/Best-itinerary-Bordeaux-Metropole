@@ -64,7 +64,7 @@ module.exports = (app) => {
 					console.info(`Refreshing Addresses...`)
 					let addresses = await getData('fv_adresse_p')
 					addresses = addresses.map(address => {
-						const voie = address.properties.nom_voie.toLowerCase()
+						const voie = address.properties.nom_voie
 						return {
 							_id: Number(address.properties.gid),
 							coords: address.geometry.coordinates,
@@ -72,6 +72,7 @@ module.exports = (app) => {
 							rep: address.properties.rep,
 							type_voie: voie.match(/[a-zà-ÿ]+/g)[0],
 							nom_voie: voie,
+							nom_voie_lowercase: voie.toLowerCase(),
 							code_postal: address.properties.cpostal,
 							fantoir: address.properties.fantoir,
 							commune: address.properties.commune,
