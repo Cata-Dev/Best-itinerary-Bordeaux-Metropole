@@ -9,6 +9,8 @@ module.exports = function (app) {
 	const schema = new Schema({
 		_id: { type: Number },
 		coords: { type: Array, required: true },
+		name: { type: String, required: true },
+		name_lowercase: { type: String, required: true },
 	}, {
 		timestamps: true,
 	});

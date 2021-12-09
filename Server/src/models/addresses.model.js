@@ -8,7 +8,7 @@ module.exports = function (app) {
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
 		_id: { type: Number },
-		coordonnees: { type: Array, required: true },
+		coords: { type: Array, required: true },
 		numero: { type: Number, required: true },
 		rep: { type: String, required: false },
         type_voie: { type: String, required: true },
