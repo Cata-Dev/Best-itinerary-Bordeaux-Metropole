@@ -70,7 +70,7 @@ module.exports = (app) => {
 							coords: address.geometry.coordinates,
 							numero: address.properties.numero,
 							rep: address.properties.rep,
-							type_voie: voie.match(/[a-zà-ÿ]+/g)[0],
+							type_voie: voie.match(/[A-zàÀ-ÿ]+/g)[0],
 							nom_voie: voie,
 							nom_voie_lowercase: voie.toLowerCase(),
 							code_postal: address.properties.cpostal,
