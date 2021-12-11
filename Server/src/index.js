@@ -22,17 +22,15 @@ if (ssl) {
 
   const server = https.createServer(opts, app).listen(port)
   app.setup(server)
-  listenCallback(server)
+  server.on('listening', () =>
+    logger.info('Feathers application started on http://%s:%d', app.get('host'), port)
+  );
   
 
 } else {
 
-  app.listen(port).then(listenCallback)
-
-}
-
-function listenCallback(server) {
-  server.on('listening', () =>
+  app.listen(port).then(() => {
     logger.info('Feathers application started on http://%s:%d', app.get('host'), port)
-  );
+  })
+
 }
