@@ -9,13 +9,25 @@ exports.Geocode = class Geocode extends Service {
         this.app = app;
     }
 
+    async refreshInternalData() {
+        this.addresses = this.app.utils.get('endpoints').find(e => e.name == 'Addresses')
+        this.communes = (await this.addresses.model.distinct('commune')).map(c => c.toLowerCase())
+        this.types_voies = await this.addresses.model.distinct('type_voie')
+        this.reps = (await this.addresses.model.distinct('rep')).filter(r => r)
+    }
+
+    /**
+     * @param {String} id 
+     * @param {Boolean} multi
+     */
     async parse(id) {
 
-        id = id.toLowerCase()
-        const addresses = this.app.utils.get('endpoints').find(e => e.name == 'Addresses')
-        const communes = (await addresses.model.distinct('commune')).map(c => c.toLowerCase())
-        const types_voies = await addresses.model.distinct('type_voie')
-        const regexpStr = `(?<numero>\\d+ )?(?<rep>[a-zà-ÿ]+ )?(?<type_voie>${types_voies.map(tv => tv+' ?').join('|')})(?<nom_voie_lowercase>([a-zà-ÿ]+ ?(?<commune>${communes.map(c => c+' ?').join('|')})?)+)(?<code_postal>\\d{5})?`
+        const TBM_Stops = this.app.utils.get('endpoints').find(e => e.name == 'TBM_Stops')
+        const SNCF_Stops = this.app.utils.get('endpoints').find(e => e.name == 'SNCF_Stops')
+
+        id = id.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "")
+        if (!this.communes) await this.refreshInternalData()
+        const regexpStr = `(?<numero>\\d+ )?(?<rep>${this.reps.map(r => r.toLowerCase()+' ').join('|')})?(?<type_voie>${this.types_voies.map(tv => tv.toLowerCase()+' ?').join('|')})?(?<nom_voie_lowercase>([a-zà-ÿ-']+ ?(?<commune>${this.communes.map(c => c+' ?').join('|')})?)+)(?<code_postal>\\d{5})?`
         const parts = id.match(new RegExp(regexpStr))?.groups
 
         if (parts) {
@@ -24,22 +36,20 @@ exports.Geocode = class Geocode extends Service {
                 if (!parts[k]) delete parts[k]
                 else if (typeof parts[k] == 'string') parts[k] = parts[k].trim()
             }
-            parts.nom_voie_lowercase = (parts.type_voie+' '+(parts.commune ? parts.nom_voie_lowercase.replace(new RegExp(`${parts.commune}$`), '') : parts.nom_voie_lowercase)).trim()
-            parts.numero = Number(parts.numero)
+            if (parts.numero) parts.numero = Number(parts.numero)
+            parts.nom_voie_lowercase = ((parts.type_voie || '')+' '+(parts.commune ? parts.nom_voie_lowercase.replace(new RegExp(`${parts.commune}$`), '') : parts.nom_voie_lowercase)).trim()
+            if (parts.type_voie) parts.type_voie = this.types_voies.find(v => v.toLowerCase() == parts.type_voie) //get back the uppercase type_voie
             for (const k in parts) {
                 if (!parts[k]) delete parts[k]
                 else if (typeof parts[k] == 'string') parts[k] = { '$regex': parts[k] }
             }
     
             return {
-                endpoints: [addresses],
-                queries: [parts],
+                endpoints: [this.addresses, TBM_Stops, SNCF_Stops],
+                queries: [parts, { libelle_lowercase: { '$regex': id } }, { name_lowercase: { '$regex': id } }],
             }
 
         } else {
-
-            const TBM_Stops = this.app.utils.get('endpoints').find(e => e.name == 'TBM_Stops')
-            const SNCF_Stops = this.app.utils.get('endpoints').find(e => e.name == 'SNCF_Stops')
 
             return {
                 endpoints: [TBM_Stops, SNCF_Stops],
@@ -56,10 +66,15 @@ exports.Geocode = class Geocode extends Service {
         console.log(parts)
 
         let result
-        try {
-            result = await endpoints[0].model.findOne(queries[0]).lean()
-            if (result) result.GEOCODE_type = endpoints[0].name
-        } catch(_) {}
+        for (let i in endpoints) {
+            try {
+                result = await endpoints[i].model.findOne(queries[i]).collation({ locale: 'fr', strength: 1 }).lean()
+                if (result) {
+                    result.GEOCODE_type = endpoints[0].name
+                    break
+                }
+            } catch(_) {}
+        }
         
         return result || new NotFound()
 
@@ -72,7 +87,7 @@ exports.Geocode = class Geocode extends Service {
         let results = []
         for (let i in endpoints) {
             try {
-                let r = await endpoints[i].model.find(queries[i]).lean()
+                let r = await endpoints[i].model.find(queries[i]).collation({ locale: 'fr', strength: 1 }).limit(params.query?.max || 1000).lean()
                 if (r) {
                     r = r.map(r => {
                         return {
