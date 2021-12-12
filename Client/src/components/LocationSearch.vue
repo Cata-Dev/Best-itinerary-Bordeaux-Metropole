@@ -5,9 +5,9 @@
         </button>
         <input type="text" :list="name" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" class="flex-grow border-none focus:ring-transparent bg-bg-light dark:bg-bg-dark text-t-light-primary dark:text-t-dark-primary placeholder-t-light-faded dark:placeholder-t-dark-faded" :placeholder="placeholder">
         <datalist :id="name">
-            <option v-for="data in datalist" :key="data.value" :value="data.value">{{ data.display }}</option>
+            <option v-for="data in datalist" :key="data.value" :value="data.display">{{ data.type }}</option>
         </datalist>
-        <span class="flex mr-1 items-center  ">
+        <span class="flex mr-1 items-center">
             <font-awesome-icon :icon="name == 'destination' ? 'flag' : 'map-pin'" class="text-t-light-primary dark:text-t-dark-primary ml-1" style="font-size: 22px;"/>
         </span>
     </div>
