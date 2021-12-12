@@ -1,6 +1,15 @@
 const { Service } = require('feathers-mongoose');
 const { NotFound, BadRequest } = require('@feathersjs/errors');
 
+function filterUniqueVoies(results) {
+    const voies = results.map(r => r.nom_voie_lowercase)
+    const uniquesVoies = voies.filter((v, i, arr) => arr.indexOf(v) === i)
+    return uniquesVoies.map(uv => {
+        const min = Math.min(...results.filter(r => r.nom_voie_lowercase === uv).map(r => r.numero))
+        return results.find(r => r.nom_voie_lowercase === uv && r.numero === min)
+    })
+}
+
 exports.Geocode = class Geocode extends Service {
   
     constructor(options, app) {
@@ -63,7 +72,6 @@ exports.Geocode = class Geocode extends Service {
     async get(id, params) {
 
         const { queries, endpoints } = await this.parse(id)
-        console.log(parts)
 
         let result
         for (let i in endpoints) {
@@ -87,14 +95,13 @@ exports.Geocode = class Geocode extends Service {
         let results = []
         for (let i in endpoints) {
             try {
-                let r = await endpoints[i].model.find(queries[i]).collation({ locale: 'fr', strength: 1 }).limit(params.query?.max || 1000).lean()
+                let r = await endpoints[i].model.find(queries[i]).collation({ locale: 'fr', strength: 1 }).limit(500).lean()
                 if (r) {
                     r = r.map(r => {
-                        return {
-                            ...r,
-                            GEOCODE_type: endpoints[i].name
-                        }
+                        r.GEOCODE_type = endpoints[i].name
+                        return r
                     })
+                    if (endpoints[i].name == "Addresses" && params.query.uniqueVoies) r = filterUniqueVoies(r)
                     results.push(...r)
                 }
             } catch(_) {}
