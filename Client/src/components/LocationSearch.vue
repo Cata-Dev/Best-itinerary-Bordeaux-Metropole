@@ -1,32 +1,50 @@
 <template>
-    <div class="flex w-full items-stretch relative px-3 bg-bg-light dark:bg-bg-dark rounded-full">
-        <button class="flex mr-1 items-center">
-            <font-awesome-icon icon="crosshairs" class="text-t-light-primary dark:text-t-dark-primary" style="font-size: 22px;"/>
-        </button>
-        <input type="text" :list="name" v-model="location.input" @keyup="refreshSuggestions()"
-            class="
+  <div class="flex w-full items-stretch relative px-3 py-2 bg-bg-light dark:bg-bg-dark rounded-full">
+    <button class="flex mr-1 items-center">
+      <font-awesome-icon
+        icon="crosshairs"
+        class="text-t-light-primary dark:text-t-dark-primary"
+        style="font-size: 22px;"
+      />
+    </button>
+    <input
+      v-model="location.input"
+      type="text"
+      :list="name"
+      class="
                 w-auto
+                px-1
 				flex-grow
 				border-none
-				focus:ring-transparent
+				focus:outline-none
 				bg-transparent
 				text-t-light-primary
 				dark:text-t-dark-primary
 				placeholder-t-light-faded
-				dark:placeholder-t-dark-faded"  
-            :placeholder="placeholder">
-        <datalist :id="name">
-            <option v-for="data in location.datalist" :key="data.value" :value="data.display">{{ data.type }}</option>
-        </datalist>
-        <span class="flex mr-1 items-center">
-            <font-awesome-icon :icon="name == 'destination' ? 'flag' : 'map-pin'"
-                class="
+				dark:placeholder-t-dark-faded"
+      :placeholder="placeholder"  
+      @keyup="refreshSuggestions()"
+    >
+    <datalist :id="name">
+      <option
+        v-for="data in location.datalist"
+        :key="data.value"
+        :value="data.display"
+      >
+        {{ data.type }}
+      </option>
+    </datalist>
+    <span class="flex mr-1 items-center">
+      <font-awesome-icon
+        :icon="name == 'destination' ? 'flag' : 'map-pin'"
+        class="
                     text-t-light-primary
                     dark:text-t-dark-primary
                     ml-1"
-                style="font-size: 22px;"/>
-        </span>
-    </div>
+        style="font-size: 22px;"
+      />
+    </span>
+  </div>
 </template>
 
 <script>
@@ -36,9 +54,21 @@ import { client } from '../store/'
 export default {
     name: 'LocationSearch',
     props: {
-        name: String,
-        placeholder: String,
-        modelValue: String,
+        name: {
+            type: String,
+            default: 'source',
+            requierd: true,
+        },
+        placeholder: {
+            type: String,
+            default: 'Départ',
+            requierd: true,
+        },
+        modelValue: {
+            type: String,
+            default: '',
+            requierd: true,
+        },
     },
     emits: [
         'update:modelValue',
