@@ -7,17 +7,17 @@ module.exports = {
     extend: {
       colors: {
         'bg': {
-          'light': colors.blueGray['50'],
-          'dark': colors.blueGray['800'],
+          'light': colors.slate['50'],
+          'dark': colors.slate['800'],
         },
         't': {
           'light': {
-            'primary': colors.trueGray['700'],
-            'faded': colors.trueGray['500'],
+            'primary': colors.neutral['700'],
+            'faded': colors.neutral['500'],
           },
           'dark': {
-            'primary': colors.trueGray['50'],
-            'faded': colors.trueGray['300'],
+            'primary': colors.neutral['50'],
+            'faded': colors.neutral['300'],
           },
         }
       }
@@ -27,6 +27,5 @@ module.exports = {
     extend: {},
   },
   plugins: [
-    require('@tailwindcss/forms')
   ],
 }
