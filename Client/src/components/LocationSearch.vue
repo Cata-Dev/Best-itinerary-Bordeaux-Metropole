@@ -1,19 +1,19 @@
 <template>
-    <div class="flex items-stretch w-1/3 relative px-3 bg-bg-light dark:bg-bg-dark rounded-full">
+    <div class="flex w-full items-stretch relative px-3 bg-bg-light dark:bg-bg-dark rounded-full">
         <button class="flex mr-1 items-center">
             <font-awesome-icon icon="crosshairs" class="text-t-light-primary dark:text-t-dark-primary" style="font-size: 22px;"/>
         </button>
         <input type="text" :list="name" v-model="location.input" @keyup="refreshSuggestions()"
             class="
+                w-auto
 				flex-grow
 				border-none
 				focus:ring-transparent
-				bg-bg-light
-				dark:bg-bg-dark
+				bg-transparent
 				text-t-light-primary
 				dark:text-t-dark-primary
 				placeholder-t-light-faded
-				dark:placeholder-t-dark-faded"
+				dark:placeholder-t-dark-faded"  
             :placeholder="placeholder">
         <datalist :id="name">
             <option v-for="data in location.datalist" :key="data.value" :value="data.display">{{ data.type }}</option>
