@@ -1,9 +1,28 @@
 <template>
-    <div class="flex flex-col flex-wrap max-h-full h-4/5 w-full justify-center content-center">
-        <LocationSearch name="source" ref="sourceElem" v-model="source" placeholder="Départ"/>
-        <LocationSearch name="destination" ref="destinationElem" v-model="destination" placeholder="Arrivée" class="mt-2" />
-        <ExtraSettings v-model="settings" class="mt-2"/>
+  <div class="h-full grid grid-rows-3 gap-3">
+    <div class="row-start-2 grid grid-cols-3 gap-2">
+      <div class="col-start-2 flex flex-row items-center justify-center">
+        <div class="flex-col grow">
+          <LocationSearch
+            ref="sourceElem"
+            v-model="source"
+            name="source"
+            placeholder="Départ"
+          />
+          <LocationSearch
+            ref="destinationElem"
+            v-model="destination"
+            name="destination"
+            placeholder="Arrivée"
+            class="mt-2"
+          />
+        </div>
+      </div>
+      <div class="flex items-center justify-items-start">
+        <ExtraSettings v-model="settings" />
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -13,7 +32,7 @@ import ExtraSettings from '../components/ExtraSettings.vue'
 // import { client } from '../store/'
 
 export default {
-    name: 'Home',
+    name: 'HomeView',
     components: {
         LocationSearch,
         ExtraSettings,
