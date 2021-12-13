@@ -12,7 +12,8 @@
       Trouver le meilleur itinéraire sur Bordeaux Métropole © 2021
     </p>
     <button
-      class="flex justify-self-end self-center my-1 mr-4"
+      class="flex duration-700 justify-self-end self-center my-1 mr-4"
+      :class="{ 'rotate-[360deg]': theme === 'light' }"
       @click="toggleDarkMode"
     >
       <font-awesome-icon
