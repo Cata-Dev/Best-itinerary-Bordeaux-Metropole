@@ -1,5 +1,16 @@
 <template>
-  <div class="flex w-full items-stretch relative px-3 py-2 bg-bg-light dark:bg-bg-dark rounded-full">
+  <div
+    class="
+      flex
+      w-full
+      items-stretch
+      relative
+      px-3
+      py-2
+      bg-bg-light
+      dark:bg-bg-dark
+      rounded-full"
+  >
     <button class="flex mr-1 items-center">
       <font-awesome-icon
         icon="crosshairs"
@@ -12,12 +23,9 @@
       type="text"
       :list="name"
       class="
-                w-auto
-                px-1
+        w-auto
+        px-1
 				flex-grow
-				border-none
-				focus:outline-none
-				bg-transparent
 				text-t-light-primary
 				dark:text-t-dark-primary
 				placeholder-t-light-faded
@@ -38,9 +46,9 @@
       <font-awesome-icon
         :icon="name == 'destination' ? 'flag' : 'map-pin'"
         class="
-                    text-t-light-primary
-                    dark:text-t-dark-primary
-                    ml-1"
+          text-t-light-primary
+          dark:text-t-dark-primary
+          ml-1"
         style="font-size: 22px;"
       />
     </span>
