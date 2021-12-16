@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full grid grid-rows-3 gap-3">
+  <div class="h-full grid auto-rows-auto gap-3">
     <div class="row-start-2 grid grid-cols-3 gap-2">
       <div class="col-start-2 flex flex-row items-center justify-center">
         <div class="flex-col grow">
@@ -22,6 +22,7 @@
         <ExtraSettings v-model="settings" />
       </div>
     </div>
+    <div class="row-start-3 grid grid-cols-3 gap-2" />
   </div>
 </template>
 
@@ -51,3 +52,12 @@ export default {
     },
 }
 </script>
+
+<style>
+input {
+  @apply bg-transparent
+}
+input:focus {
+  @apply outline-none
+}
+</style>
