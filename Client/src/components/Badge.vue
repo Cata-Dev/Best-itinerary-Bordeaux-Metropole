@@ -9,7 +9,7 @@
         rounded-full
         items-center
         border-2"
-    :class="badegStyle"
+    :class="color === 'success' ? [{'bg-success-bg': bg}, 'border-success-t'] : color === 'info' ? [{'bg-info-bg': bg}, 'border-info-t'] : [{'bg-alert-bg': bg}, 'border-alert-t']"
   >
     <span 
       class="mr-1 text-sm"
@@ -41,8 +41,6 @@
 </template>
 
 <script>
-import { ref, onBeforeUpdate } from 'vue'
-
 export default {
     name: 'DynamicBadge',
     props: {
@@ -67,23 +65,9 @@ export default {
             default: true
         },
     },
-    setup(props) {
-
-        let badegStyle = ref({
-            [`bg-${props.color}-bg`]: props.bg,
-            [`border-${props.color}-t`]: true,
-        })
-
-        onBeforeUpdate(() => {
-            for (const c in badegStyle.value) {
-                delete badegStyle.value[c]
-            }
-            badegStyle.value[`bg-${props.color}-bg`] = props.bg
-            badegStyle.value[`border-${props.color}-t`] = true
-        })
+    setup() {
 
       return {
-          badegStyle
       }
     },
 }
