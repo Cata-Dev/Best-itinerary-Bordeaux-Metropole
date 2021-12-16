@@ -14,8 +14,7 @@
     <button class="flex mr-1 items-center">
       <font-awesome-icon
         icon="crosshairs"
-        class="text-t-light-primary dark:text-t-dark-primary"
-        style="font-size: 22px;"
+        class="text-t-light-primary dark:text-t-dark-primary text-2xl"
       />
     </button>
     <input
@@ -48,8 +47,8 @@
         class="
           text-t-light-primary
           dark:text-t-dark-primary
+          text-2xl
           ml-1"
-        style="font-size: 22px;"
       />
     </span>
   </div>

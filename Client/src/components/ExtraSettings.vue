@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center h-full">
+  <div class="flex items-center">
     <button
       class="
         flex
@@ -16,8 +16,7 @@
     >
       <font-awesome-icon
         icon="sliders-h"
-        class="text-t-light-primary dark:text-t-dark-primary"
-        style="font-size: 22px;"
+        class="text-t-light-primary dark:text-t-dark-primary text-2xl"
       />
     </button>
     <div
