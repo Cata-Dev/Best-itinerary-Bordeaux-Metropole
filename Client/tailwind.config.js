@@ -19,7 +19,19 @@ module.exports = {
             'primary': colors.neutral['50'],
             'faded': colors.neutral['300'],
           },
-        }
+        },
+        'info': {
+          'bg': colors.amber['200'],
+          't': colors.amber['600'],
+        },
+        'alert': {
+          'bg': colors.red['400'],
+          't': colors.red['800'],
+        },
+        'success': {
+          'bg': colors.emerald['400'],
+          't': colors.emerald['700'],
+        },
       }
     },
   },
