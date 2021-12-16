@@ -21,7 +21,7 @@ exports.RefreshData = class RefreshData {
 	async get(id, params) {
 
 		const endpoints = this.app.utils.get('endpoints')
-		const waitForUpdate = params.query?.waitForUpdate === 'true'
+		const waitForUpdate = JSON.parse(params.query?.waitForUpdate) === true
 		const matchingEndpoint = endpoints.find(endpoint => endpoint.name === id)
 		
 		if (id == 'all') {

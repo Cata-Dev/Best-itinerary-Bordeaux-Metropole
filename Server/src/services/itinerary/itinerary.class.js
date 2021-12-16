@@ -25,11 +25,11 @@ exports.Itinerary = class Itinerary {
                         app.service('refresh-data').get(endpoint.name, { query: params.query }).finally(() => {
                             if (waitForUpdate) {
                                 count++
-                                if (count === endpoints.length) res('Should calculate rust best itineraries, but OK.')
+                                if (count === endpoints.length) res({ code: 200, message: 'Should calculate rust best itineraries, but OK.'})
                             }
                         })
                     }
-                    if (!waitForUpdate) res('Should calculate rust best itineraries, but OK.')
+                    if (!waitForUpdate) res({ code: 200, message: 'Should calculate rust best itineraries, but OK.'})
 
                 })
 
