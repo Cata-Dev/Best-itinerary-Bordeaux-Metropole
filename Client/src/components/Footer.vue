@@ -12,7 +12,7 @@
       class="
         my-auto
         text-center
-        text-sm
+        text-xs
         text-t-light-faded
         dark:text-t-dark-faded"
     >

@@ -12,7 +12,7 @@
     :class="badegStyle"
   >
     <span 
-      class="mr-1"
+      class="mr-1 text-sm"
       :class="color === 'success' ? ['text-success-t'] : color === 'info' ? ['text-info-t'] : ['text-alert-t']"
     >
       {{ text }}
@@ -23,8 +23,8 @@
         spinner-border
         animate-spin
         inline-block
-        w-5
-        h-5
+        w-4
+        h-4
         squared
         border-2
         rounded-full
