@@ -1,24 +1,5 @@
 <template>
   <div class="flex items-center">
-    <button
-      class="
-        flex
-        hover:scale-[120%]
-        duration-500
-        items-center
-        p-2
-        bg-bg-light
-        dark:bg-bg-dark
-        rounded-md
-        justify-self-end"
-      :class="{ 'rotate-180': shown }"
-      @click="shown = !shown"
-    >
-      <font-awesome-icon
-        icon="sliders-h"
-        class="text-t-light-primary dark:text-t-dark-primary text-2xl"
-      />
-    </button>
     <div
       ref="accordion"
       class="
@@ -85,26 +66,26 @@
 </template>
 
 <script>
-import { ref } from 'vue'
-
 export default {
-    name: 'ExtraSettings',
+    name: 'ExtraSettings', //Accordion
     props: {
-        modelValue: {
-            type: String,
-            default: '',
-        }
+      shown: {
+        type: Boolean,
+        requiered: true,
+        default: false
+      },
+      modelValue: {
+        type: String,
+        default: '',
+      }
     },
     emits: [
-        'update:modelValue',
+      'update:modelValue',
     ],
     setup() {
-
-        const shown = ref(false)
-        
-        return {
-            shown,
-        }
+      
+      return {
+      }
     },
 }
 </script>
