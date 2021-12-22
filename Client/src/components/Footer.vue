@@ -48,12 +48,9 @@ export default {
 
       const APIStatus = ref(null)
 
-      APIRefresh.value.then((r) => {
-        if (r.code && r.code == 200) {
-          APIStatus.value = 'ready'
-          text.value = `Realtime (${init.toLocaleTimeString()})`
-        }
-        else APIStatus.value = 'dead'
+      APIRefresh.result.then(() => {
+        APIStatus.value = 'ready'
+        text.value = `Realtime (${init.toLocaleTimeString()})`
       }).catch(() => {
         APIStatus.value = 'dead'
       })
