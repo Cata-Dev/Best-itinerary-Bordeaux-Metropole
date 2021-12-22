@@ -1,9 +1,10 @@
 import { theme, toggleDarkMode } from './theme/theme'
-import { client, APIRefresh } from './feathers/feathers'
+import { client, APIRefresh, socket } from './feathers/feathers'
 
 export {
     toggleDarkMode,
     theme,
     client,
     APIRefresh,
+    socket,
 }
