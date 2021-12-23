@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import feathers from '@feathersjs/client';
 
-const socket = io('localhost:3030', {
+const socket = io('https://bibm.catadev.ga:3031', {
   transports: ['websocket'],
   reconnectionAttempts: 2,
 });
