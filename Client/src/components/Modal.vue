@@ -1,32 +1,86 @@
+<script setup>
+import { onUpdated, ref } from 'vue'
+
+const props = defineProps({
+  title: {
+    type: String,
+    required: true,
+    default: '',
+  },
+  content: {
+    type: String,
+    required: true,
+    default: '',
+  },
+  icon: {
+    type: String,
+    required: true,
+    default: 'info',
+  },
+  color: {
+    type: String,
+    required: true,
+    default: '',
+  },
+  bg: {
+    type: Boolean,
+    required: false,
+    default: true,
+  },
+  shown: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+})
+
+const emit = defineEmits([
+  'update:shown'
+])
+
+const focusDiv = ref()
+
+function show() {
+  emit('update:shown', !props.shown)
+}
+
+onUpdated(async () => {
+  if (props.shown) setTimeout(() => {
+    focusDiv.value.focus()
+  }, 200); //wait for transition on focusDiv to proceed
+})
+
+</script>
+
 <template>
   <div
     ref="focusDiv"
     tabindex="10"
     class="
-      flex
+    flex
 			fixed
-      top-0
-      left-0
+    top-0
+    left-0
 			w-full
 			h-full
 			outline-none
-      bg-slate-600/75
-      z-50
-      transition-all
-      duration-150"
+    bg-slate-600/75
+    z-50
+    transition-all
+    duration-150"
     :class="{ 'invisible': !shown, 'opacity-0': !shown, 'visible': shown, 'opacity-100': shown }"
     @keyup.esc="show()"
   >
     <div 
       class="
-        m-auto
-        w-fit
-        pointer-events-none
-        duration-300"
+      m-auto
+      w-fit
+      pointer-events-none
+      duration-300"
     >
       <div
         class="
-          border-none
+        border-none
 					shadow-lg
 					flex
 					flex-col
@@ -85,64 +139,3 @@
     </div>
   </div>
 </template>
-
-<script>
-import { onUpdated, ref } from 'vue'
-export default {
-    name: 'DynamicModal',
-    props: {
-        title: {
-            type: String,
-            required: true,
-            default: '',
-        },
-        content: {
-            type: String,
-            required: true,
-            default: '',
-        },
-        icon: {
-            type: String,
-            required: true,
-            default: 'info',
-        },
-        color: {
-            type: String,
-            required: true,
-            default: '',
-        },
-        bg: {
-            type: Boolean,
-            required: false,
-            default: true,
-        },
-        shown: {
-            type: Boolean,
-            required: true,
-            default: false,
-        },
-    },
-    emits: [
-      'update:shown'
-    ],
-    setup(props, ctx) {
-
-      const focusDiv = ref(null)
-
-      function show() {
-        ctx.emit('update:shown', !props.shown)
-      }
-
-      onUpdated(async () => {
-        if (props.shown) setTimeout(() => {
-          focusDiv.value.focus()
-        }, 200); //wait for transition on focusDiv to proceed
-      })
-
-      return {
-        show,
-        focusDiv
-      }
-    },
-}
-</script>

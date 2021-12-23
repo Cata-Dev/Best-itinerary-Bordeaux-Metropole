@@ -1,3 +1,20 @@
+<script setup>
+import { ref } from 'vue'
+import { toggleDarkMode, theme, APIRefresh } from '../store'
+import DynamicBadge from './Badge.vue'
+
+const init = new Date()
+const text = ref('Realtime')
+const APIStatus = ref()
+
+APIRefresh.result.then(() => {
+  APIStatus.value = 'ready'
+  text.value = `Realtime (${init.toLocaleTimeString()})`
+}).catch(() => {
+  APIStatus.value = 'dead'
+})
+</script>
+
 <template>
   <div class="grid grid-cols-3 gap-3 content-center">
     <div class="flex justify-start self-center">
@@ -30,43 +47,3 @@
     </button>
   </div>
 </template>
-
-<script>
-import { ref } from 'vue'
-import { toggleDarkMode, theme, APIRefresh } from '../store'
-import DynamicBadge from './Badge.vue'
-
-export default {
-    name: 'FooterBar',
-    components: {
-      DynamicBadge,
-    },
-    setup() {
-
-      const init = new Date()
-      const text = ref('Realtime')
-
-      const APIStatus = ref(null)
-
-      APIRefresh.result.then(() => {
-        APIStatus.value = 'ready'
-        text.value = `Realtime (${init.toLocaleTimeString()})`
-      }).catch(() => {
-        APIStatus.value = 'dead'
-      })
-
-      return {
-        toggleDarkMode,
-        theme,
-        APIStatus,
-        text
-      }
-    },
-}
-</script>
-
-<style>
-.spinner-border {
-    border-right: .25em solid transparent;
-}
-</style>

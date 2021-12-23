@@ -1,3 +1,29 @@
+<script setup>
+defineProps({
+  text: {
+    type: String,
+    required: true,
+    default: '',
+  },
+  icon: {
+    type: String,
+    required: true,
+    default: 'info',
+  },
+  color: {
+    type: String,
+    required: true,
+    default: '',
+  },
+  bg: {
+    type: Boolean,
+    required: false,
+    default: true,
+  },
+})
+
+</script>
+
 <template>
   <div
     class="
@@ -40,40 +66,7 @@
   </div>
 </template>
 
-<script>
-export default {
-    name: 'DynamicBadge',
-    props: {
-        text: {
-            type: String,
-            required: true,
-            default: '',
-        },
-        icon: {
-            type: String,
-            required: true,
-            default: 'info',
-        },
-        color: {
-            type: String,
-            required: true,
-            default: '',
-        },
-        bg: {
-            type: Boolean,
-            required: false,
-            default: true
-        },
-    },
-    setup() {
-
-      return {
-      }
-    },
-}
-</script>
-
-<style>
+<style scoped>
 .spinner-border {
     border-right: .25em solid transparent;
 }

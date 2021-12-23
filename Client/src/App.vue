@@ -1,3 +1,7 @@
+<script setup>
+import Footer from './components/Footer.vue'
+</script>
+
 <template>
   <div class="flex flex-col h-screen w-screen justify-between">
     <main class="mb-auto bg-gradient-to-r h-full from-blue-800 to-indigo-400">
@@ -8,16 +12,3 @@
     </footer>
   </div>
 </template>
-
-<script>
-import Footer from './components/Footer.vue'
-
-export default {
-  components: {
-    Footer,
-  },
-  setup() {
-    
-  },
-}
-</script>

@@ -1,3 +1,90 @@
+<script setup>
+import { ref } from 'vue'
+import { client } from '../store/'
+
+defineProps({
+    name: {
+        type: String,
+        default: 'source',
+        requierd: true,
+    },
+    placeholder: {
+        type: String,
+        default: 'Départ',
+        requierd: true,
+    },
+    modelValue: {
+        type: String,
+        default: '',
+        requierd: true,
+    },
+})
+
+const emit = defineEmits([
+    'update:modelValue',
+])
+
+const location = ref({
+    datalist: [],
+    input: '',
+    previousInput: null,
+    updated: Date.now(),
+})
+
+function updateModelValue(v) {
+    emit('update:modelValue', JSON.stringify(v))
+}
+
+function parseGeocode(s) {
+
+    switch(s.GEOCODE_type) {
+        case 'Addresses':
+            return { display: `${s.numero} ${s.rep ? s.rep+' ' : ''}${s.nom_voie} ${s.commune}`, type: "Adresse" }
+
+        case 'TBM_Stops':
+            return { display: s.libelle, type: s.vehicule }
+
+        case 'SNCF_Stops':
+            return { display: s.name, type: "Train" }
+
+        default: return null
+
+    }
+}
+
+async function refreshSuggestions() {
+
+    if (location.value.previousInput === location.value.input) return
+    if (location.value.input.length < 5) return location.value.datalist = []
+    const validLocation = location.value.datalist.find(l => l.display == location.value.input)
+    if (validLocation) {
+        updateModelValue(validLocation)
+        return
+    }
+    const now = Date.now()
+    let suggestions
+    try {
+        suggestions = await client.service('geocode').find({ query: { id: location.value.input, max: 25, uniqueVoies: true } })
+    // eslint-disable-next-line no-empty
+    } catch(_) {}
+    if (now < location.value.updated) return
+    location.value.datalist = suggestions && suggestions.length ? suggestions.map(s => ({ value: s.coords, ...parseGeocode(s) })) : []
+    location.value.previousInput = location.value.input
+    location.value.updated = now
+
+}
+
+const input = ref()
+
+function focus() {
+  input.value.focus()
+}
+
+defineExpose({
+  focus,
+})
+</script>
+
 <template>
   <div
     class="
@@ -18,6 +105,7 @@
       />
     </button>
     <input
+      ref="input"
       v-model="location.input"
       type="text"
       :list="name"
@@ -53,90 +141,3 @@
     </span>
   </div>
 </template>
-
-<script>
-import { ref } from 'vue'
-import { client } from '../store/'
-
-export default {
-    name: 'LocationSearch',
-    props: {
-        name: {
-            type: String,
-            default: 'source',
-            requierd: true,
-        },
-        placeholder: {
-            type: String,
-            default: 'Départ',
-            requierd: true,
-        },
-        modelValue: {
-            type: String,
-            default: '',
-            requierd: true,
-        },
-    },
-    emits: [
-        'update:modelValue',
-    ],
-    setup(props, ctx) {
-
-        const location = ref({
-            datalist: [],
-            input: '',
-            previousInput: null,
-            updated: Date.now(),
-        })
-
-        function updateModelValue(v) {
-            ctx.emit('update:modelValue', JSON.stringify(v))
-        }
-
-        function parseGeocode(s) {
-
-            switch(s.GEOCODE_type) {
-                case 'Addresses':
-                    return { display: `${s.numero} ${s.rep ? s.rep+' ' : ''}${s.nom_voie} ${s.commune}`, type: "Adresse" }
-
-                case 'TBM_Stops':
-                    return { display: s.libelle, type: s.vehicule }
-
-                case 'SNCF_Stops':
-                    return { display: s.name, type: "Train" }
-
-                default: return null
-
-            }
-        }
-
-        async function refreshSuggestions() {
-
-            if (location.value.previousInput === location.value.input) return
-            if (location.value.input.length < 5) return location.value.datalist = []
-            const validLocation = location.value.datalist.find(l => l.display == location.value.input)
-            if (validLocation) {
-                updateModelValue(validLocation)
-                return
-            }
-            const now = Date.now()
-            let suggestions
-            try {
-                suggestions = await client.service('geocode').find({ query: { id: location.value.input, max: 25, uniqueVoies: true } })
-            // eslint-disable-next-line no-empty
-            } catch(_) {}
-            if (now < location.value.updated) return
-            location.value.datalist = suggestions && suggestions.length ? suggestions.map(s => ({ value: s.coords, ...parseGeocode(s) })) : []
-            location.value.previousInput = location.value.input
-            location.value.updated = now
-
-        }
-        
-        return {
-            location,
-            updateModelValue,
-            refreshSuggestions,
-        }
-    },
-}
-</script>

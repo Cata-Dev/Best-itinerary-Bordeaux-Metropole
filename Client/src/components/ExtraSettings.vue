@@ -1,3 +1,22 @@
+<script setup>
+defineProps({
+  shown: {
+    type: Boolean,
+    requiered: true,
+    default: false
+  },
+  modelValue: {
+    type: String,
+    default: '',
+  }
+})
+
+defineEmits([
+  'update:modelValue',
+])
+
+</script>
+
 <template>
   <div class="flex items-center">
     <div
@@ -65,33 +84,8 @@
   </div>
 </template>
 
-<script>
-export default {
-    name: 'ExtraSettings', //Accordion
-    props: {
-      shown: {
-        type: Boolean,
-        requiered: true,
-        default: false
-      },
-      modelValue: {
-        type: String,
-        default: '',
-      }
-    },
-    emits: [
-      'update:modelValue',
-    ],
-    setup() {
-      
-      return {
-      }
-    },
-}
-</script>
-
-<style>
-input[type="time"]::-webkit-calendar-picker-indicator{
+<style scoped>
+input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(100%)
 }
 </style>
