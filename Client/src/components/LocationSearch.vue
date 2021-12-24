@@ -14,8 +14,10 @@ defineProps({
         requierd: true,
     },
     modelValue: {
-        type: String,
-        default: '',
+        type: Object,
+        default() {
+          return {}
+        },
         requierd: true,
     },
 })
@@ -32,7 +34,7 @@ const location = ref({
 })
 
 function updateModelValue(v) {
-    emit('update:modelValue', JSON.stringify(v))
+    emit('update:modelValue', v)
 }
 
 function parseGeocode(s) {

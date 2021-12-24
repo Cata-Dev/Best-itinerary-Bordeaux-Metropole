@@ -6,8 +6,10 @@ defineProps({
     default: false
   },
   modelValue: {
-    type: String,
-    default: '',
+    type: Object,
+    default() {
+      return {}
+    },
   }
 })
 
