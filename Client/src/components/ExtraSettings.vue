@@ -2,14 +2,11 @@
 defineProps({
   shown: {
     type: Boolean,
-    requiered: true,
-    default: false
+    required: true,
   },
   modelValue: {
     type: Object,
-    default() {
-      return {}
-    },
+    required: true
   }
 })
 

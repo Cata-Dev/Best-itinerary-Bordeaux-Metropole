@@ -2,77 +2,71 @@
 import { ref } from 'vue'
 import { client } from '../store/'
 
-defineProps({
-    name: {
-        type: String,
-        default: 'source',
-        requierd: true,
-    },
-    placeholder: {
-        type: String,
-        default: 'Départ',
-        requierd: true,
-    },
-    modelValue: {
-        type: Object,
-        default() {
-          return {}
-        },
-        requierd: true,
-    },
+const props = defineProps({
+  name: {
+    type: String,
+    required: true,
+  },
+  placeholder: {
+    type: String,
+    required: true,
+  },
+  modelValue: {
+    type: Object,
+    required: true,
+  },
 })
 
 const emit = defineEmits([
-    'update:modelValue',
+  'update:modelValue',
 ])
 
 const location = ref({
-    datalist: [],
-    input: '',
-    previousInput: null,
-    updated: Date.now(),
+  datalist: [],
+  input: props.modelValue.display,
+  previousInput: null,
+  updated: Date.now(),
 })
 
 function updateModelValue(v) {
-    emit('update:modelValue', v)
+  emit('update:modelValue', v)
 }
 
 function parseGeocode(s) {
 
-    switch(s.GEOCODE_type) {
-        case 'Addresses':
-            return { display: `${s.numero} ${s.rep ? s.rep+' ' : ''}${s.nom_voie} ${s.commune}`, type: "Adresse" }
+  switch(s.GEOCODE_type) {
+    case 'Addresses':
+      return { display: `${s.numero} ${s.rep ? s.rep+' ' : ''}${s.nom_voie} ${s.commune}`, type: "Adresse" }
 
-        case 'TBM_Stops':
-            return { display: s.libelle, type: s.vehicule }
+    case 'TBM_Stops':
+      return { display: s.libelle, type: s.vehicule }
 
-        case 'SNCF_Stops':
-            return { display: s.name, type: "Train" }
+    case 'SNCF_Stops':
+      return { display: s.name, type: "Train" }
 
-        default: return null
+    default: return null
 
-    }
+  }
 }
 
 async function refreshSuggestions() {
 
-    if (location.value.previousInput === location.value.input) return
-    if (location.value.input.length < 5) return location.value.datalist = []
-    const validLocation = location.value.datalist.find(l => l.display == location.value.input)
-    if (validLocation) {
-        updateModelValue(validLocation)
-        return
-    }
-    const now = Date.now()
-    let suggestions
-    try {
-        suggestions = await client.service('geocode').find({ query: { id: location.value.input, max: 25, uniqueVoies: true } })
-    // eslint-disable-next-line no-empty
-    } catch(_) {}
-    if (now < location.value.updated) return
-    location.value.datalist = suggestions && suggestions.length ? suggestions.map(s => ({ value: s.coords, ...parseGeocode(s) })) : []
-    location.value.previousInput = location.value.input
-    location.value.updated = now
+  if (location.value.previousInput === location.value.input) return
+  if (location.value.input.length < 5) return location.value.datalist = []
+  const validLocation = location.value.datalist.find(l => l.display == location.value.input)
+  if (validLocation) {
+    updateModelValue(validLocation)
+    return
+  }
+  const now = Date.now()
+  let suggestions
+  try {
+    suggestions = await client.service('geocode').find({ query: { id: location.value.input, max: 25, uniqueVoies: true } })
+  } catch(_) {}
+  if (now < location.value.updated) return
+  location.value.datalist = suggestions && suggestions.length ? suggestions.map(s => ({ value: s.coords, ...parseGeocode(s) })) : []
+  location.value.previousInput = location.value.input
+  location.value.updated = now
 
 }
 
@@ -90,15 +84,15 @@ defineExpose({
 <template>
   <div
     class="
-      flex
-      w-full
-      items-stretch
-      relative
-      px-3
-      py-2
-      bg-bg-light
-      dark:bg-bg-dark
-      rounded-full"
+    flex
+    w-full
+    items-stretch
+    relative
+    px-3
+    py-2
+    bg-bg-light
+    dark:bg-bg-dark
+    rounded-full"
   >
     <button class="flex mr-1 items-center">
       <font-awesome-icon
@@ -112,15 +106,15 @@ defineExpose({
       type="text"
       :list="name"
       class="
-        w-auto
-        px-1
+    w-auto
+    px-1
 				flex-grow
 				text-t-light-primary
 				dark:text-t-dark-primary
 				placeholder-t-light-faded
 				dark:placeholder-t-dark-faded"
       :placeholder="placeholder"  
-      @keyup="refreshSuggestions()"
+      @input="refreshSuggestions()"
     >
     <datalist :id="name">
       <option
@@ -135,10 +129,10 @@ defineExpose({
       <font-awesome-icon
         :icon="name == 'destination' ? 'flag' : 'map-pin'"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
-          text-2xl
-          ml-1"
+      text-t-light-primary
+      dark:text-t-dark-primary
+      text-2xl
+      ml-1"
       />
     </span>
   </div>

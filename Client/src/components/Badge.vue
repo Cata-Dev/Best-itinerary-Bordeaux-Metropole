@@ -3,17 +3,14 @@ defineProps({
   text: {
     type: String,
     required: true,
-    default: '',
   },
   icon: {
     type: String,
     required: true,
-    default: 'info',
   },
   color: {
     type: String,
     required: true,
-    default: '',
   },
   bg: {
     type: Boolean,
