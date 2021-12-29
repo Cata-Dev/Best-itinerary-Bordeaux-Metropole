@@ -16,7 +16,7 @@ module.exports = {
             'faded': colors.neutral['500'],
           },
           'dark': {
-            'primary': colors.neutral['50'],
+            'primary': colors.neutral['200'],
             'faded': colors.neutral['300'],
           },
         },
@@ -32,7 +32,19 @@ module.exports = {
           'bg': colors.emerald['400'],
           't': colors.emerald['700'],
         },
-      }
+        'walking': {
+          'bg': colors.orange['500'],
+          't': colors.neutral['700'],
+        },
+        'tbm': {
+          'bg': colors.sky['400'],
+          't': colors.neutral['700'],
+        },
+        'sncf': {
+          'bg': colors.rose['600'],
+          't': colors.neutral['700'],
+        },
+      },
     },
   },
   variants: {
