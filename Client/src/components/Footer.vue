@@ -30,8 +30,8 @@ APIRefresh.result.then(() => {
         my-auto
         text-center
         text-xs
-        text-t-light-faded
-        dark:text-t-dark-faded"
+        text-text-light-faded
+        dark:text-text-dark-faded"
     >
       Trouver le meilleur itinéraire sur Bordeaux Métropole © 2021
     </p>

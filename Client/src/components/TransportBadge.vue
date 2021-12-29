@@ -33,15 +33,15 @@ import { transportToIcon } from '../store';
       v-if="transport"
       :icon="transportToIcon(transport)"
       class="
-        text-t-light-primary
-        dark:text-t-dark-primary
+        text-text-light-primary
+        dark:text-text-dark-primary
         text-size-inherit
         mr-2"
     />
     <span
       class="
-        text-t-light-primary
-        dark:text-t-dark-primary
+        text-text-light-primary
+        dark:text-text-dark-primary
         text-size-inherit
         align-top"
     >

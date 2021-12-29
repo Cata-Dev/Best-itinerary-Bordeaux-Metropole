@@ -71,8 +71,8 @@ import { transportToIcon } from '../store';
     class="
       bg-bg-light
       dark:bg-bg-dark
-      text-t-light-primary
-      dark:text-t-dark-primary
+      text-text-light-primary
+      dark:text-text-dark-primary
       p-4
       rounded-lg
       shadow-xl
@@ -86,7 +86,7 @@ import { transportToIcon } from '../store';
     >
       {{ title }}
     </h3>
-    <div class="h-[2px] w-full my-3 bg-t-light-primary dark:bg-t-dark-primary" />
+    <div class="h-[2px] w-full my-3 bg-text-light-primary dark:bg-text-dark-primary" />
     <div
       class="
         flex
@@ -96,8 +96,8 @@ import { transportToIcon } from '../store';
       <font-awesome-icon
         icon="clock"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
+          text-text-light-primary
+          dark:text-text-dark-primary
           text-2xl
           mr-2"
       />
@@ -117,8 +117,8 @@ import { transportToIcon } from '../store';
       <font-awesome-icon
         icon="road"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
+          text-text-light-primary
+          dark:text-text-dark-primary
           text-2xl
           ml-2"
       />
@@ -142,8 +142,8 @@ import { transportToIcon } from '../store';
       <font-awesome-icon
         icon="map-pin"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
+          text-text-light-primary
+          dark:text-text-dark-primary
           text-2xl"
       />
       <div
@@ -164,16 +164,16 @@ import { transportToIcon } from '../store';
         <font-awesome-icon
           :icon="transportToIcon(p?.details?.type || p.type)"
           class="
-            text-t-light-primary
-            dark:text-t-dark-primary
+            text-text-light-primary
+            dark:text-text-dark-primary
             text-2xl"
         />
         <!-- Second col : linkin el (vertical bar) -->
         <div
           class="
             vertical-link
-            border-t-light-primary
-            dark:border-t-dark-primary"
+            border-text-light-primary
+            dark:border-text-dark-primary"
         />
         <!-- Third col : details -->
         <div
@@ -181,8 +181,8 @@ import { transportToIcon } from '../store';
             w-full
             pb-3
             border-b
-            border-t-light-faded
-            dark:border-t-dark-faded"
+            border-b-text-light-faded
+            dark:border-b-text-dark-faded"
         >
           <div
             v-if="p.type === 'SNCF' || p.type === 'TBM'"
@@ -218,16 +218,16 @@ import { transportToIcon } from '../store';
           v-if="i === path.length-1"
           icon="flag"
           class="
-            text-t-light-primary
-            dark:text-t-dark-primary
+            text-text-light-primary
+            dark:text-text-dark-primary
             text-2xl"
         />
         <div
           v-else
           class="
             bullet
-            bg-t-light-primary
-            dark:bg-t-dark-primary"
+            bg-text-light-primary
+            dark:bg-text-dark-primary"
         />
         <!-- Third col : position -->
         <div
@@ -247,8 +247,8 @@ import { transportToIcon } from '../store';
     class="
       bg-bg-light
       dark:bg-bg-dark
-      text-t-light-primary
-      dark:text-t-dark-primary
+      text-text-light-primary
+      dark:text-text-dark-primary
       p-3
       rounded-lg
       shadow-xl"
@@ -261,7 +261,7 @@ import { transportToIcon } from '../store';
     >
       {{ title }}
     </h3>
-    <div class="h-[2px] w-full my-3 bg-t-light-primary dark:bg-t-dark-primary" />
+    <div class="h-[2px] w-full my-3 bg-text-light-primary dark:bg-text-dark-primary" />
     <div
       class="
         flex
@@ -270,8 +270,8 @@ import { transportToIcon } from '../store';
       <font-awesome-icon
         icon="clock"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
+          text-text-light-primary
+          dark:text-text-dark-primary
           text-2xl
           mr-2"
       />
@@ -291,8 +291,8 @@ import { transportToIcon } from '../store';
       <font-awesome-icon
         icon="road"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
+          text-text-light-primary
+          dark:text-text-dark-primary
           text-2xl
           ml-2"
       />
@@ -306,8 +306,8 @@ import { transportToIcon } from '../store';
       <font-awesome-icon
         icon="map-pin"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
+          text-text-light-primary
+          dark:text-text-dark-primary
           text-2xl
           mr-2"
       />
@@ -327,8 +327,8 @@ import { transportToIcon } from '../store';
       <font-awesome-icon
         icon="flag"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
+          text-text-light-primary
+          dark:text-text-dark-primary
           text-2xl
           ml-2"
       />

@@ -32,8 +32,8 @@ defineEmits([
         whitespace-nowrap
         bg-bg-light
         dark:bg-bg-dark
-        text-t-light-primary
-        dark:text-t-dark-primary
+        text-text-light-primary
+        dark:text-text-dark-primary
         rounded-lg"
       :class="{ 'max-w-full': shown }"
     >

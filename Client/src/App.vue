@@ -26,8 +26,8 @@ import Footer from './components/Footer.vue'
       class="
         bg-bg-light
         dark:bg-bg-dark
-        text-t-light-primary
-        dark:text-t-dark-primary"
+        text-text-light-primary
+        dark:text-text-dark-primary"
     >
       <Footer />
     </footer>

@@ -10,7 +10,7 @@ module.exports = {
           'light': colors.slate['50'],
           'dark': colors.slate['800'],
         },
-        't': {
+        'text': {
           'light': {
             'primary': colors.neutral['700'],
             'faded': colors.neutral['500'],

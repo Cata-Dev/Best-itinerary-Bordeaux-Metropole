@@ -98,7 +98,7 @@ defineExpose({
     <button class="flex mr-1 items-center">
       <font-awesome-icon
         icon="crosshairs"
-        class="text-t-light-primary dark:text-t-dark-primary text-2xl"
+        class="text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
     </button>
     <input
@@ -110,10 +110,10 @@ defineExpose({
         w-auto
         px-1
         flex-grow
-        text-t-light-primary
-        dark:text-t-dark-primary
-        placeholder-t-light-faded
-        dark:placeholder-t-dark-faded"
+        text-text-light-primary
+        dark:text-text-dark-primary
+        placeholder-text-light-faded
+        dark:placeholder-text-dark-faded"
       :placeholder="placeholder"  
       @input="refreshSuggestions()"
     >
@@ -130,8 +130,8 @@ defineExpose({
       <font-awesome-icon
         :icon="name == 'destination' ? 'flag' : 'map-pin'"
         class="
-          text-t-light-primary
-          dark:text-t-dark-primary
+          text-text-light-primary
+          dark:text-text-dark-primary
           text-2xl
           ml-1"
       />

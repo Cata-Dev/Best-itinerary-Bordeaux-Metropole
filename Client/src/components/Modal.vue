@@ -121,7 +121,7 @@ onUpdated(async () => {
           >
             <font-awesome-icon
               icon="times"
-              class="text-t-light-primary dark:text-t-dark-primary text-2xl"
+              class="text-text-light-primary dark:text-text-dark-primary text-2xl"
             />
           </button>
         </div>
