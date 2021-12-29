@@ -1,5 +1,6 @@
 import { theme, toggleDarkMode } from './theme/theme'
 import { client, APIRefresh, socket } from './feathers/feathers'
+import { duration, formatDate, transportToIcon } from './utils'
 
 export {
     toggleDarkMode,
@@ -7,4 +8,7 @@ export {
     client,
     APIRefresh,
     socket,
+    duration,
+    formatDate,
+    transportToIcon,
 }
