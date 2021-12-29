@@ -14,6 +14,14 @@ import {
     faExclamationTriangle,
     faTimes,
     faSpinner,
+    faClock,
+    faWalking,
+    faBus,
+    faTrain,
+    faSubway,
+    faShip,
+    faQuestionCircle,
+    faRoad,
 } from '@fortawesome/free-solid-svg-icons'
 import {  } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -30,6 +38,14 @@ library.add(
     faExclamationTriangle,
     faTimes,
     faSpinner,
+    faClock,
+    faWalking,
+    faBus,
+    faTrain,
+    faSubway,
+    faShip,
+    faQuestionCircle,
+    faRoad,
 )
 import App from './App.vue'
 
