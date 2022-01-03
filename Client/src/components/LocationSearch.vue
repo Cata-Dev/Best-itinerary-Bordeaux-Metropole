@@ -107,7 +107,7 @@ defineExpose({
       type="text"
       :list="name"
       class="
-        w-auto
+        w-[inherit]
         px-1
         flex-grow
         text-text-light-primary
