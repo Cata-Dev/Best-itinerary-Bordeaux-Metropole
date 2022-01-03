@@ -264,12 +264,10 @@ div[disabled="true"], span[disabled="true"] {
 }
 
 .transition-scale {
-  transition-property: transform;
-  transition-duration: 300ms;
+  transition: transform 300ms;
 }
 
 .transition-top {
-  transition-property: top;
-  transition-duration: 750ms;
+  transition: top 750ms;
 }
 </style>
