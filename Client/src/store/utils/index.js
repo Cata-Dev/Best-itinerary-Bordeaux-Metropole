@@ -79,7 +79,7 @@ function equalObjects(o1, o2) {
     if (typeof o1 != 'object' || typeof o2 != 'object') return o1 === o2
 
     for (const k in o1) {
-        if ( !(o2[k]) ) return false
+        if ( !(o2.hasOwnProperty(k)) ) return false
         if (!equalObjects(o1[k], o2[k])) return false
     }
 
