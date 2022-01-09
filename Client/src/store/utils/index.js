@@ -68,8 +68,27 @@ function transportToIcon(transport) {
     return icons[transport] || icons['unknow']
 }
 
+/**
+ * Properly compare 2 objects.
+ * @param {Object} o1 
+ * @param {Object} o2 
+ * @returns {Boolean | null}
+ */
+function equalObjects(o1, o2) {
+
+    if (typeof o1 != 'object' || typeof o2 != 'object') return o1 === o2
+
+    for (const k in o1) {
+        if ( !(o2[k]) ) return false
+        if (!equalObjects(o1[k], o2[k])) return false
+    }
+
+    return true
+}
+
 export {
     duration,
     formatDate,
     transportToIcon,
+    equalObjects,
 }
