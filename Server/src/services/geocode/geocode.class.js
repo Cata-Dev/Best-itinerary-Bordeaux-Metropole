@@ -20,7 +20,8 @@ exports.Geocode = class Geocode extends Service {
 
     async refreshInternalData() {
         this.addresses = this.app.utils.get('endpoints').find(e => e.name == 'Addresses')
-        this.communes = (await this.addresses.model.distinct('commune')).map(c => c.toLowerCase())
+        this.communes = (await this.addresses.model.distinct('commune'))
+        this.communesNormalized = this.communes.map(c => c.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, ""))
         this.types_voies = await this.addresses.model.distinct('type_voie')
         this.reps = (await this.addresses.model.distinct('rep')).filter(r => r)
     }
@@ -36,7 +37,7 @@ exports.Geocode = class Geocode extends Service {
 
         id = id.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "")
         if (!this.communes) await this.refreshInternalData()
-        const regexpStr = `(?<numero>\\d+ )?(?<rep>${this.reps.map(r => r.toLowerCase()+' ').join('|')})?(?<type_voie>${this.types_voies.map(tv => tv.toLowerCase()+' ?').join('|')})?(?<nom_voie_lowercase>([a-zà-ÿ-']+ ?(?<commune>${this.communes.map(c => c+' ?').join('|')})?)+)(?<code_postal>\\d{5})?`
+        const regexpStr = `(?<numero>\\d+ )?(?<rep>${this.reps.map(r => r.toLowerCase()+' ').join('|')})?(?<type_voie>${this.types_voies.map(tv => tv.toLowerCase()+' ?').join('|')})?(?<nom_voie_lowercase>([a-zà-ÿ-']+ ?(?<commune>${this.communesNormalized.map(c => c+' ?').join('|')})?)+)(?<code_postal>\\d{5})?`
         const parts = id.match(new RegExp(regexpStr))?.groups
 
         if (parts) {
@@ -47,6 +48,7 @@ exports.Geocode = class Geocode extends Service {
             }
             if (parts.numero) parts.numero = Number(parts.numero)
             parts.nom_voie_lowercase = ((parts.type_voie || '')+' '+(parts.commune ? parts.nom_voie_lowercase.replace(new RegExp(`${parts.commune}$`), '') : parts.nom_voie_lowercase)).trim()
+            if (parts.commune) parts.commune = this.communes[this.communesNormalized.indexOf(parts.commune)] //get back the uppercase commune
             if (parts.type_voie) parts.type_voie = this.types_voies.find(v => v.toLowerCase() == parts.type_voie) //get back the uppercase type_voie
             for (const k in parts) {
                 if (!parts[k]) delete parts[k]
