@@ -36,13 +36,13 @@ function parseGeocode(s) {
 
   switch(s.GEOCODE_type) {
     case 'Addresses':
-      return { display: `${s.numero} ${s.rep ? s.rep+' ' : ''}${s.nom_voie} ${s.commune}`, type: "Adresse" }
+      return { display: `${s.numero} ${s.rep ? s.rep+' ' : ''}${s.nom_voie} ${s.commune}`, type: "ADRESSE" }
 
     case 'TBM_Stops':
       return { display: s.libelle, type: s.vehicule }
 
     case 'SNCF_Stops':
-      return { display: s.name, type: "Train" }
+      return { display: s.name, type: "TRAIN" }
 
     default: return null
 
@@ -53,21 +53,30 @@ async function refreshSuggestions() {
 
   if (location.value.previousInput === location.value.input) return
   if (location.value.input.length < 5) return location.value.datalist = []
-  const validLocation = location.value.datalist.find(l => l.display == location.value.input)
-  if (validLocation) {
-    updateModelValue(validLocation)
-    return
-  }
+
+  let validLocation = location.value.datalist.find(l => l.display == location.value.input)
+  if (validLocation) return updateModelValue(validLocation)
+
   const now = Date.now()
-  let suggestions
-  try {
-    suggestions = await client.service('geocode').find({ query: { id: location.value.input, max: 25, uniqueVoies: true } })
-  } catch(_) {}
+
+  const suggestions = await fetchSuggestions(location.value.input)
+
+  validLocation = suggestions.find(l => l.display == location.value.input)
+  if (validLocation) return updateModelValue(validLocation)
+
   if (now < location.value.updated) return
-  location.value.datalist = suggestions && suggestions.length ? suggestions.map(s => ({ value: s.coords, ...parseGeocode(s) })) : []
+  location.value.datalist = suggestions
   location.value.previousInput = location.value.input
   location.value.updated = now
 
+}
+
+async function fetchSuggestions(value) {
+  let suggestions
+  try {
+    suggestions = await client.service('geocode').find({ query: { id: value, max: 25, uniqueVoies: true } })
+  } catch(_) {}
+  return suggestions && suggestions.length ? suggestions.map(s => ({ value: s.coords, ...parseGeocode(s) })) : []
 }
 
 const input = ref()
@@ -76,8 +85,15 @@ function focus() {
   input.value.focus()
 }
 
+async function forceInput(input) {
+  location.value.previousInput = location.value.input,
+  location.value.input = input
+  await refreshSuggestions()
+}
+
 defineExpose({
   focus,
+  forceInput,
 })
 </script>
 
