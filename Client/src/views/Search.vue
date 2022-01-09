@@ -1,16 +1,21 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 import LocationSearch from '../components/LocationSearch.vue'
 import ExtraSettings from '../components/ExtraSettings.vue'
 import DynamicModal from '../components/Modal.vue'
 import ResultItem from '../components/ResultItem.vue'
-import { client, socket, APIRefresh } from '../store/'
+import { client, socket, APIRefresh, defaultQuerySettings, equalObjects } from '../store'
 
 const source = ref({ display: "" })
+let oldSource
 const destination = ref({ display: "" })
+let oldDestination
+const sourceCompo = ref()
 const destinationCompo = ref()
 const searchElem = ref()
-const settings = ref({})
+const settings = ref({ ...defaultQuerySettings, transports: { ...defaultQuerySettings.transports } })
+let oldSettings
 const modal = ref({
   title: '',
   content: '',
@@ -38,21 +43,99 @@ const status = ref({
 })
 const results = ref()
 const result = ref()
+const router = useRouter()
+let route = useRoute()
 
-async function fetchResults() {
+onMounted(updateQuery)
+onBeforeRouteUpdate((to) => updateQuery(to))
+
+/**
+ * @description fetch new results for current query
+ */
+async function fetchResults(updateQuery = true) {
+  if (equalObjects(oldSource, source.value) || equalObjects(oldDestination, destination.value) || equalObjects(oldSettings, settings.value)) return status.value.search = false
   if (!source.value.value || !destination.value.value) return status.value.search = false
   status.value.search = null
+  if (updateQuery) queryUpdated()
   try {
     const r = await client.service('itinerary').get('paths', { query: { from: source.value.value, to: destination.value.value, settings: settings.value } })
     if (!r || r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`)
     results.value = r.paths
-    result.value = null
+    if (result.value) result.value = null
     status.value.search = true
   } catch(_) {
     status.value.search = false
   } finally {
+    oldSource = source.value
+    oldDestination = destination.value
+    oldSettings = settings.value
     document.activeElement.blur()
   }
+}
+
+let internallyUpdated = false
+
+/**
+ * @description Refresh the route according to new query parameters / locations
+ */
+function queryUpdated() {
+  const query = {}
+  if (source.value || route.query.from) query.from = source.value.display || route.query.from
+  if (destination.value || route.query.to) query.to = destination.value.display || route.query.to
+  for (const setting in settings.value) {
+    const v = settings.value[setting]
+    if (typeof v === 'object') {
+      for (const k in v) {
+        if (v[k] != defaultQuerySettings[setting][k]) query[`${setting}.${k}`] = v[k]
+      }
+    } else if (v != defaultQuerySettings[setting]) query[setting] = v
+  }
+  internallyUpdated = true
+  router.push({ query })
+}
+
+/**
+ * @description Refresh the query parameters / locations according to the current route
+ */
+async function updateQuery(to = route) {
+  if (internallyUpdated) {
+    internallyUpdated = false
+    return true
+  }
+
+  if (to.query.from) await sourceCompo.value.forceInput(to.query.from)
+  if (to.query.to) await destinationCompo.value.forceInput(to.query.to)
+  if (to.query.from && to.query.to && !results.value) await fetchResults(false)
+
+  for (const setting in defaultQuerySettings) {
+    if (typeof defaultQuerySettings[setting] === 'object') {
+      for (const k in defaultQuerySettings[setting]) {
+        settings.value[setting][k] = defaultQuerySettings[setting][k]
+      }
+    } else settings.value[setting] = defaultQuerySettings[setting]
+  }
+
+  for (const setting in to.query) {
+    const v = to.query[setting]
+    if (setting.includes('.')) {
+        const keys = setting.split('.')
+        if (settings.value[keys[0]][keys[1]]) settings.value[keys[0]][keys[1]] = v
+    } else if (settings.value[setting]) settings.value[setting] = v
+  }
+
+  if (to.hash) {
+    const r = results.value.find(r => r.id === to.hash.replace('#', ''))
+    if (r) result.value = r
+    // else -> can't find this result in current computed results. Gonna retrieve it from database, if existing.
+  }
+
+  return true
+}
+
+async function selectResult(id) {
+  const r = results.value.find(r => r.id === id)
+  result.value = r
+  router.push({ query: route.query, hash: `#${id}` })
 }
 </script>
 
@@ -66,7 +149,8 @@ async function fetchResults() {
           relative
           h-fit
           transition-top
-          p-2"
+          p-2
+          pb-1"
         :class="{
           'top-[calc(50%-101px)]': !results,
           'top-0': results ,
@@ -90,6 +174,7 @@ async function fetchResults() {
           >
             <span :disabled="status.search === null">
               <LocationSearch
+                ref="sourceCompo"
                 v-model="source"
                 name="source"
                 placeholder="Départ"
@@ -168,16 +253,16 @@ async function fetchResults() {
         </div>
       </div>
       <div
-        v-if="result"
+        v-if="route.hash && result"
         class="
           fade-in
           flex
           px-4
-          pt-2
+          pt-1
           pb-4"
       >
         <ResultItem
-          :title="`Alternative #${result.id}`"
+          :title="`Alternative #${results.indexOf(result)+1}`"
           :total-duration="result.totalDuration"
           :total-distance="result.totalDistance"
           :departure="result.departure"
@@ -190,7 +275,6 @@ async function fetchResults() {
       <div
         v-else-if="results"
         class="
-          wait-fade-in
           grid
           gap-3
           px-4
@@ -200,20 +284,22 @@ async function fetchResults() {
           sm:grid-cols-2
           lg:grid-cols-3
           xl:grid-cols-4"
+        :class="{ 'wait-fade-in': result === undefined, 'fade-in': !route.hash || result === null }"
       >
         <template 
-          v-for="r of results"
+          v-for="(r, i) of results"
           :key="r.id"
         >
           <ResultItem
-            :title="`Alternative #${r.id}`"
+            :result-id="r.id"
+            :title="`Alternative #${i+1}`"
             :total-duration="r.totalDuration"
             :total-distance="r.totalDistance"
             :departure="r.departure"
             :from="r.from"
             :path="r.path"
             class="cursor-pointer"
-            @click="result = r"
+            @click="selectResult(r.id)"
           />
         </template>
       </div>
@@ -251,7 +337,7 @@ div[disabled="true"], span[disabled="true"] {
 }
 
 .fade-in {
-  animation: fadein 300ms;
+  animation: 300ms fadein;
 }
 
 @keyframes wait {
