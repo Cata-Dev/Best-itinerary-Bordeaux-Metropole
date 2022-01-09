@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { ref } from 'vue'
+
+const props = defineProps({
   shown: {
     type: Boolean,
     required: true,
@@ -10,10 +12,11 @@ defineProps({
   }
 })
 
+const settings = ref(props.modelValue)
+
 defineEmits([
   'update:modelValue',
 ])
-
 </script>
 
 <template>
@@ -28,7 +31,7 @@ defineEmits([
         max-w-0
         max-h-fit
         mx-2
-        my-3
+        my-2
         whitespace-nowrap
         bg-bg-light
         dark:bg-bg-dark
@@ -41,41 +44,49 @@ defineEmits([
         <div class="inline-block">
           <span>Heure de départ :</span>
           <input
+            v-model="settings.departureTime"
             type="time"
             class="bg-transparent text-inherit time mx-1"
+            @input="$emit('update:modelValue', settings)"
           >
         </div>
         <div class="inline-block">
           <span class="mr-1">Distance max à pied :</span>
           <input
+            v-model="settings.maxWalkDistance"
             class="w-24"
             step="10"
-            value="1000"
             type="number"
+            @change="$emit('update:modelValue', settings)"
           >
           <span>m</span>
         </div>
         <div class="inline-block">
           <span class="mr-1">Vitesse de marche :</span>
           <input
+            v-model="settings.walkSpeed"
             class="w-12"
             step="0.1"
-            value="6.0"
             type="number"
+            @input="$emit('update:modelValue', settings)"
           >
           <span>km/h</span>
         </div>
         <div class="inline-block">
           <span class="">Modes de transport :</span>
           <br><input
+            v-model="settings.transports.TBM"
             class="ml-2"
             checked="true"
             type="checkbox"
+            @change="$emit('update:modelValue', settings)"
           ><span class="ml-1">TBM</span>
           <br><input
+            v-model="settings.transports.SNCF"
             class="ml-2"
             checked="true"
             type="checkbox"
+            @change="$emit('update:modelValue', settings)"
           ><span class="ml-1">SNCF</span>
         </div>
       </div>
