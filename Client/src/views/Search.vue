@@ -8,14 +8,14 @@ import ResultItem from '../components/ResultItem.vue'
 import { client, socket, APIRefresh, defaultQuerySettings, equalObjects } from '../store'
 
 const source = ref({ display: "" })
-let oldSource
+let prevSource
 const destination = ref({ display: "" })
-let oldDestination
+let prevDestination
 const sourceCompo = ref()
 const destinationCompo = ref()
 const searchElem = ref()
 const settings = ref({ ...defaultQuerySettings, transports: { ...defaultQuerySettings.transports } })
-let oldSettings
+let prevSettings
 const modal = ref({
   title: '',
   content: '',
@@ -53,7 +53,7 @@ onBeforeRouteUpdate((to) => updateQuery(to))
  * @description fetch new results for current query
  */
 async function fetchResults(updateQuery = true) {
-  if (equalObjects(oldSource, source.value) && equalObjects(oldDestination, destination.value) && equalObjects(oldSettings, settings.value)) return status.value.search = false
+  if (equalObjects(prevSource, source.value) && equalObjects(prevDestination, destination.value) && equalObjects(prevSettings, settings.value)) return status.value.search = false
   if (!source.value.value || !destination.value.value) return status.value.search = false
   status.value.search = null
   if (updateQuery) queryUpdated()
@@ -66,9 +66,10 @@ async function fetchResults(updateQuery = true) {
   } catch(_) {
     status.value.search = false
   } finally {
-    oldSource = source.value
-    oldDestination = destination.value
-    oldSettings = settings.value
+    prevSource = JSON.parse(JSON.stringify(source.value))
+    prevDestination = JSON.parse(JSON.stringify(destination.value))
+    console.log(settings.value)
+    prevSettings = JSON.parse(JSON.stringify(settings.value))
     document.activeElement.blur()
   }
 }
@@ -105,7 +106,6 @@ async function updateQuery(to = route) {
 
   if (to.query.from) await sourceCompo.value.forceInput(to.query.from)
   if (to.query.to) await destinationCompo.value.forceInput(to.query.to)
-  if (to.query.from && to.query.to && !results.value) await fetchResults(false)
 
   for (const setting in defaultQuerySettings) {
     if (typeof defaultQuerySettings[setting] === 'object') {
@@ -122,6 +122,8 @@ async function updateQuery(to = route) {
         if (settings.value[keys[0]][keys[1]]) settings.value[keys[0]][keys[1]] = v
     } else if (settings.value[setting]) settings.value[setting] = v
   }
+
+  if (to.query.from && to.query.to && !results.value) await fetchResults(false)
 
   if (to.hash) {
     const r = results.value.find(r => r.id === to.hash.replace('#', ''))
