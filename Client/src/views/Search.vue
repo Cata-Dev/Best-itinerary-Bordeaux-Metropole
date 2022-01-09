@@ -53,7 +53,7 @@ onBeforeRouteUpdate((to) => updateQuery(to))
  * @description fetch new results for current query
  */
 async function fetchResults(updateQuery = true) {
-  if (equalObjects(oldSource, source.value) || equalObjects(oldDestination, destination.value) || equalObjects(oldSettings, settings.value)) return status.value.search = false
+  if (equalObjects(oldSource, source.value) && equalObjects(oldDestination, destination.value) && equalObjects(oldSettings, settings.value)) return status.value.search = false
   if (!source.value.value || !destination.value.value) return status.value.search = false
   status.value.search = null
   if (updateQuery) queryUpdated()
