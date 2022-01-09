@@ -148,12 +148,35 @@ import { transportToIcon } from '../store';
       />
       <div
         class="
-          w-full
-          text-center
-          text-lg
-          text-semibold"
+          flex
+          items-center
+          w-full"
       >
-        {{ from }}
+        <span
+          class="
+            h-[1px]
+            grow
+            min-w-[1rem]
+            bg-text-light-primary
+            dark:bg-text-dark-primary"
+        />
+        <span
+          class="
+            mx-2
+            text-center
+            text-lg
+            text-semibold"
+        >
+          {{ from }}
+        </span>
+        <span
+          class="
+            h-[1px]
+            grow
+            min-w-[1rem]
+            bg-text-light-primary
+            dark:bg-text-dark-primary"
+        />
       </div>
       <template
         v-for="(p, i) in path"
@@ -179,10 +202,7 @@ import { transportToIcon } from '../store';
         <div
           class="
             w-full
-            pb-3
-            border-b
-            border-b-text-light-faded
-            dark:border-b-text-dark-faded"
+            pb-2"
         >
           <div
             v-if="p.type === 'SNCF' || p.type === 'TBM'"
@@ -232,12 +252,35 @@ import { transportToIcon } from '../store';
         <!-- Third col : position -->
         <div
           class="
-            w-full
-            text-center
-            text-lg
-            text-semibold"
+            flex
+            items-center
+            w-full"
         >
-          {{ p.to }}
+          <span
+            class="
+              h-[1px]
+              grow
+              min-w-[1rem]
+              bg-text-light-primary
+              dark:bg-text-dark-primary"
+          />
+          <span
+            class="
+              mx-2
+              text-center
+              text-lg
+              text-semibold"
+          >
+            {{ p.to }}
+          </span>
+          <span
+            class="
+              h-[1px]
+              grow
+              min-w-[1rem]
+              bg-text-light-primary
+              dark:bg-text-dark-primary"
+          />
         </div>
       </template>
     </div>
