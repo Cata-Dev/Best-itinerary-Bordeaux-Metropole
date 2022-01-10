@@ -20,21 +20,37 @@ exports.Itinerary = class Itinerary {
 
                     const endpoints = app.utils.get('endpoints').filter((endpoint) => endpoint.rate < 24*3600)
                     let count = 0
+                    let lastActualization = 0
                     //ask for possible non-daily data actualization
                     for (const endpoint of endpoints) {
-                        app.service('refresh-data').get(endpoint.name, { query: params.query }).finally(() => {
+                        app.service('refresh-data').get(endpoint.name, { query: params.query }).then(() => {
+                            if (waitForUpdate) lastActualization = Date.now()
+                        }).catch((r) => {
+                            if (waitForUpdate && r.data.lastActualization > lastActualization) lastActualization = r.data.lastActualization
+                        }).finally(() => {
                             if (waitForUpdate) {
                                 count++
-                                if (count === endpoints.length) res({ code: 200, message: 'Should calculate rust best itineraries, but OK.'})
+                                if (count === endpoints.length) compute()
                             }
                         })
                     }
-                    if (!waitForUpdate) res({ code: 200, message: 'Should calculate rust best itineraries, but OK.'})
+                    
+                    if (!waitForUpdate) compute()
+
+                    //temporary
+                    function compute() {
+                        res({
+                            code: 200,
+                            message: 'Should calculate rust best itineraries, but OK.',
+                            lastActualization,
+                            paths: []
+                        })
+                    }
 
                 })
 
             default:
-                return new NotFound('Unknown command.')
+                throw new NotFound('Unknown command.')
 
         }
 

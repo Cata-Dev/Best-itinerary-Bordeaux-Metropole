@@ -1,17 +1,27 @@
-const { createLogger, format, transports } = require('winston');
+const util = require('util')
+const { bright, bR, fW, bY, fG } = require('./utils/utils')
+const origLog = console.log
 
-// Configure the Winston logger. For the complete documentation see https://github.com/winstonjs/winston
-const logger = createLogger({
-	// To see more detailed errors, change this to 'debug'
-	level: 'info',
-	format: format.combine(
-		format.colorize(),
-		format.splat(),
-		format.simple()
-	),
-	transports: [
-		new transports.Console()
-	],
-});
+console.log = function l() {
+    const args = util.format.apply(util.format, Array.prototype.slice.call(arguments))
+    const str = `[${new Date().toLocaleString('fr-FR')}] `+args
+    origLog(str);
+};
 
-module.exports = logger;
+console.error = function e() {
+    const args = util.format.apply(util.format, Array.prototype.slice.call(arguments))
+    const str = `[${new Date().toLocaleString('fr-FR')}] `+args
+    origLog(bR(bright(fW(str))));
+};
+
+console.warn = function w() {
+    const args = util.format.apply(util.format, Array.prototype.slice.call(arguments))
+    const str = `[${new Date().toLocaleString('fr-FR')}] `+args
+    origLog(bY(bright(fW(str))));
+};
+
+console.info = function i() {
+    const args = util.format.apply(util.format, Array.prototype.slice.call(arguments))
+    const str = `[${new Date().toLocaleString('fr-FR')}] `+args
+    origLog(bright(fG(str)));
+};

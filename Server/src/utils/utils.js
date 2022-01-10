@@ -141,6 +141,28 @@ module.exports.time = {
     },
 
     /**
+     * @param {Date} date
+     * @param {Boolean} includeSec Un booléen indiquant s'il faut inclure les millisecondes
+     * @returns {string} Une date au format "HH:MiMi:SS"
+     */
+     datetocompact3: (date, includeMs) => {
+        if (!(date instanceof Date)) date = new Date(date)
+        try {
+            var h = date.getHours()
+            var mi = date.getMinutes()
+            var s = date.getSeconds()
+            var ms = date.getMilliseconds()
+        } catch(e) {return '?'}
+    
+        if (h < 10) h = "0"+h
+        if (mi < 10) mi = "0"+mi
+        if (s < 10) s = "0"+s
+        if (ms < 100) ms = "0"+ms
+        else if (ms < 10) ms = "00"+ms
+        return `${h}:${mi}:${s}${includeMs ? `.${ms}` : ''}`;
+    },
+
+    /**
      * @param {Number} ms Une durée en secondes
      * @param {Boolean} includeSec Un booléen indiquant s'il faut inclure les secondes
      * @returns {String} La durée formatée (YY?, MoMo?, DD?, HH?, MiMi?, SS? )
@@ -207,29 +229,31 @@ module.exports.round = (number) => {
     return integers + decs
 }
 
-Array.from([["fBlack", "\x1b[30m"], //Coloration methods
-["fR", "\x1b[31m"],
-["fG", "\x1b[32m"],
-["fY", "\x1b[33m"],
-["fB", "\x1b[34m"],
-["fM", "\x1b[35m"],
-["fC", "\x1b[36m"],
-["fW", "\x1b[37m"],
-["bBlack", "\x1b[40m"],
-["bR", "\x1b[41m"],
-["bG", "\x1b[42m"],
-["bY", "\x1b[43m"],
-["bB", "\x1b[44m"],
-["bM", "\x1b[45m"],
-["bC", "\x1b[46m"],
-["bW", "\x1b[47m"],
-["reset", "\x1b[0m"],
-["bright", "\x1b[1m"],
-["dim", "\x1b[2m"],
-["underscore", "\x1b[4m"],
-["blink", "\x1b[5m"],
-["reverse", "\x1b[7m"],
-["hidden", "\x1b[8m"]]).forEach(color => {
+Array.from([
+    ["fBlack", "\x1b[30m"],
+    ["fR", "\x1b[31m"],
+    ["fG", "\x1b[32m"],
+    ["fY", "\x1b[33m"],
+    ["fB", "\x1b[34m"],
+    ["fM", "\x1b[35m"],
+    ["fC", "\x1b[36m"],
+    ["fW", "\x1b[37m"],
+    ["bBlack", "\x1b[40m"],
+    ["bR", "\x1b[41m"],
+    ["bG", "\x1b[42m"],
+    ["bY", "\x1b[43m"],
+    ["bB", "\x1b[44m"],
+    ["bM", "\x1b[45m"],
+    ["bC", "\x1b[46m"],
+    ["bW", "\x1b[47m"],
+    ["reset", "\x1b[0m"],
+    ["bright", "\x1b[1m"],
+    ["dim", "\x1b[2m"],
+    ["underscore", "\x1b[4m"],
+    ["blink", "\x1b[5m"],
+    ["reverse", "\x1b[7m"],
+    ["hidden", "\x1b[8m"]
+]).forEach(color => {
     module.exports[color[0]] = (s) => {
         return `${color[1]}${s.replace(/(\\x1b|)\[0m/g, "")}\x1b[0m`
     }
