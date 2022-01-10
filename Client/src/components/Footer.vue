@@ -3,13 +3,12 @@ import { ref } from 'vue'
 import { toggleDarkMode, theme, APIRefresh } from '../store'
 import DynamicBadge from './Badge.vue'
 
-const init = new Date()
 const text = ref('Realtime')
 const APIStatus = ref()
 
-APIRefresh.result.then(() => {
+APIRefresh.result.then((r) => {
   APIStatus.value = 'ready'
-  text.value = `Realtime (${init.toLocaleTimeString()})`
+  text.value = `Realtime (${(new Date(r.lastActualization)).toLocaleTimeString()})`
 }).catch(() => {
   APIStatus.value = 'dead'
 })
