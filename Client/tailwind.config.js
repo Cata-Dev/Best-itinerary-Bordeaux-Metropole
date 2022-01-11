@@ -9,7 +9,9 @@ module.exports = {
       colors: {
         'bg': {
           'light': colors.slate['50'],
+          'light-contrasted': colors.slate['200'],
           'dark': colors.slate['800'],
+          'dark-contrasted': colors.slate['600'],
         },
         'text': {
           'light': {
@@ -17,8 +19,8 @@ module.exports = {
             'faded': colors.neutral['500'],
           },
           'dark': {
-            'primary': colors.neutral['200'],
-            'faded': colors.neutral['300'],
+            'primary': colors.neutral['300'],
+            'faded': colors.neutral['400'],
           },
         },
         'info': {
@@ -56,5 +58,6 @@ module.exports = {
     extend: {},
   },
   plugins: [
+    require('autoprefixer')
   ],
 }
