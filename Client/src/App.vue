@@ -1,14 +1,19 @@
 <script setup>
 import Footer from './components/Footer.vue'
+
+//Sets the real window's height (for mobile browsers like chrome or safari)
+const vh = window.innerHeight * 0.01;
+document.documentElement.style.setProperty('--vh', `${vh}px`);
 </script>
 
 <template>
   <div
+    id="mainWrapper"
     class="
       flex
       flex-col
-      h-screen
       w-screen
+      h-real-screen
       justify-between"
   >
     <main
@@ -33,3 +38,10 @@ import Footer from './components/Footer.vue'
     </footer>
   </div>
 </template>
+
+<style scoped>
+.h-real-screen {
+  height: 100vh; /* Fallback for browsers that do not support Custom Properties */
+  height: calc(var(--vh, 1vh) * 100);
+}
+</style>
