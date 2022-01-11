@@ -15,8 +15,8 @@ APIRefresh.result.then((r) => {
 </script>
 
 <template>
-  <div class="grid grid-cols-3 gap-3 content-center">
-    <div class="flex justify-start self-center">
+  <div class="flex gap-2 sm:gap-3 items-center">
+    <div class="flex w-fit my-[0.33rem] ml-2 sm:ml-4 justify-start">
       <DynamicBadge
         :text="text"
         :color="APIStatus === 'ready' ? 'success' : APIStatus === 'dead' ? 'alert' : 'info'"
@@ -26,7 +26,7 @@ APIRefresh.result.then((r) => {
     </div>
     <p
       class="
-        my-auto
+        w-full
         text-center
         text-xs
         text-text-light-faded
@@ -35,7 +35,7 @@ APIRefresh.result.then((r) => {
       Trouver le meilleur itinéraire sur Bordeaux Métropole © 2021
     </p>
     <button
-      class="flex duration-700 justify-self-end self-center my-1 mr-4"
+      class="flex duration-700 justify-self-end my-1 mr-2 sm:mr-4"
       :class="{ 'rotate-[360deg]': theme === 'light' }"
       @click="toggleDarkMode"
     >
