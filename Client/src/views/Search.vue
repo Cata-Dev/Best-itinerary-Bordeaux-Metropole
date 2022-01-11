@@ -68,7 +68,6 @@ async function fetchResults(updateQuery = true) {
   } finally {
     prevSource = JSON.parse(JSON.stringify(source.value))
     prevDestination = JSON.parse(JSON.stringify(destination.value))
-    console.log(settings.value)
     prevSettings = JSON.parse(JSON.stringify(settings.value))
     document.activeElement.blur()
   }
@@ -119,8 +118,8 @@ async function updateQuery(to = route) {
     const v = to.query[setting]
     if (setting.includes('.')) {
         const keys = setting.split('.')
-        if (settings.value[keys[0]][keys[1]]) settings.value[keys[0]][keys[1]] = v
-    } else if (settings.value[setting]) settings.value[setting] = v
+        if (settings.value.hasOwnProperty(keys[0]) && settings.value[keys[0]].hasOwnProperty(keys[1])) settings.value[keys[0]][keys[1]] = v
+    } else if (settings.value.hasOwnProperty(setting)) settings.value[setting] = v
   }
 
   if (to.query.from && to.query.to && !results.value) await fetchResults(false)
@@ -147,7 +146,7 @@ async function selectResult(id) {
       <div
         class="
           w-full
-          flex
+          lg:flex
           relative
           h-fit
           transition-top
@@ -160,18 +159,22 @@ async function selectResult(id) {
       >
         <div
           class="
-            w-2/3
+            lg:w-2/3
             h-fit
             flex
-            justify-end
+            justify-center
+            lg:justify-end
             my-auto
-            mr-1"
+            lg:mr-1"
         >
           <div
             class="
               flex
               flex-col
-              w-1/2"
+              w-[95%]
+              xs:w-[80%]
+              sm:w-[70%]
+              lg:w-1/2"
             :class="status.search === null ? 'cursor-not-allowed opacity-70' : ''"
           >
             <span :disabled="status.search === null">
@@ -195,9 +198,29 @@ async function selectResult(id) {
             </span>
           </div>
         </div>
-        <div class="w-1/3 my-auto inline ml-1">
-          <div class="flex h-full">
-            <div class="self-center">
+        <div
+          class="
+            lg:w-1/3
+            my-auto
+            flex
+            justify-center
+            lg:inline
+            lg:ml-1"
+        >
+          <div
+            class="
+              flex
+              h-full
+              w-[95%]
+              xs:w-[80%]
+              sm:w-[70%]
+              lg:w-1/2"
+          >
+            <div
+              class="
+                py-2
+                lg:self-center"
+            >
               <button
                 class="
                   flex
