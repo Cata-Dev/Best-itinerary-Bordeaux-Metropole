@@ -68,6 +68,19 @@ function transportToIcon(transport) {
     return icons[transport] || icons['unknow']
 }
 
+const transports = {
+    'foot': 'FOOT',
+    'bus': 'TBM',
+    'tram': 'TBM',
+    'boat': 'TBM',
+    'train': 'SNCF',
+}
+
+function transportToType(transport) {
+    transport = transport.toLowerCase()
+    return transports[transport]
+}
+
 /**
  * Properly compare 2 objects.
  * @param {Object} o1 
@@ -86,9 +99,17 @@ function equalObjects(o1, o2) {
     return true
 }
 
+Object.defineProperty(String.prototype, 'capitalize', {
+    value: function() {
+      return this.charAt(0).toUpperCase() + this.slice(1);
+    },
+    enumerable: false
+});
+
 export {
     duration,
     formatDate,
     transportToIcon,
+    transportToType,
     equalObjects,
 }

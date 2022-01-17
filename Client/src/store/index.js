@@ -1,6 +1,6 @@
 import { theme, toggleDarkMode } from './theme/theme'
 import { client, APIRefresh, socket } from './feathers/feathers'
-import { duration, formatDate, transportToIcon, equalObjects } from './utils'
+import { duration, formatDate, transportToIcon, transportToType, equalObjects } from './utils'
 
 const defaultQuerySettings = {
     departureTime: '',
@@ -21,6 +21,7 @@ export {
     duration,
     formatDate,
     transportToIcon,
+    transportToType,
     equalObjects,
     defaultQuerySettings,
 }
