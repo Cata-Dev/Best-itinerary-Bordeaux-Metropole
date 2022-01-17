@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import DatalistInput from './DatalistInput.vue'
 import { client } from '../store/'
 
 const props = defineProps({
@@ -23,8 +24,9 @@ const emit = defineEmits([
 
 const location = ref({
   datalist: [],
-  input: props.modelValue.display,
+  input: props.modelValue,
   previousInput: null,
+  value: props.modelValue,
   updated: Date.now(),
 })
 
@@ -52,22 +54,21 @@ function parseGeocode(s) {
 async function refreshSuggestions() {
 
   if (location.value.previousInput === location.value.input) return
-  if (location.value.input.length < 5) return location.value.datalist = []
+  if (!location.value.input || location.value.input.length < 5) return location.value.datalist = []
 
-  let validLocation = location.value.datalist.find(l => l.display == location.value.input)
-  if (validLocation) return updateModelValue(validLocation)
+  if (location.value.value.display) return updateModelValue(location.value.value)
 
   const now = Date.now()
 
   const suggestions = await fetchSuggestions(location.value.input)
 
-  validLocation = suggestions.find(l => l.display == location.value.input)
-  if (validLocation) return updateModelValue(validLocation)
-
   if (now < location.value.updated) return
   location.value.datalist = suggestions
   location.value.previousInput = location.value.input
   location.value.updated = now
+
+  const validLocation = suggestions.find(l => l.display === location.value.input)
+  if (validLocation) updateModelValue(validLocation)
 
 }
 
@@ -85,9 +86,9 @@ function focus() {
   input.value.focus()
 }
 
-async function forceInput(input) {
+async function forceInput(v) {
   location.value.previousInput = location.value.input,
-  location.value.input = input
+  input.value.forceInput(v)
   await refreshSuggestions()
 }
 
@@ -117,11 +118,11 @@ defineExpose({
         class="text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
     </button>
-    <input
+    <DatalistInput
       ref="input"
-      v-model="location.input"
-      type="text"
-      :list="name"
+      v-model="location.value"
+      :placeholder="placeholder"
+      :datalist="location.datalist"
       class="
         w-[inherit]
         px-1
@@ -130,18 +131,8 @@ defineExpose({
         dark:text-text-dark-primary
         placeholder-text-light-faded
         dark:placeholder-text-dark-faded"
-      :placeholder="placeholder"  
-      @input="refreshSuggestions()"
-    >
-    <datalist :id="name">
-      <option
-        v-for="data in location.datalist"
-        :key="data.value"
-        :value="data.display"
-      >
-        {{ data.type }}
-      </option>
-    </datalist>
+      @input="location.input = $event, refreshSuggestions()"
+    />
     <span class="flex mr-1 items-center">
       <font-awesome-icon
         :icon="name == 'destination' ? 'flag' : 'map-pin'"
