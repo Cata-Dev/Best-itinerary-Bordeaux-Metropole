@@ -81,6 +81,7 @@ defineExpose({
       :placeholder="placeholder"
       @input="refreshInput()"
       @focus="showDatalist = true"
+      @focusout="showDatalist = false"
     >
     <div
       v-if="showDatalist && datalist.length"
