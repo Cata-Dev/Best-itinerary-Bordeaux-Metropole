@@ -225,7 +225,7 @@ async function selectResult(id) {
                 class="
                   flex
                   hover:scale-[120%]
-                  focus-visible:scale-[120%]
+                  pulse-scale-focus
                   transition-scale
                   items-center
                   p-2
@@ -246,7 +246,7 @@ async function selectResult(id) {
                 class="
                   flex
                   hover:scale-[120%]
-                  focus-visible:scale-[120%]
+                  pulse-scale-focus
                   transition-scale
                   items-center
                   p-2
@@ -380,5 +380,15 @@ div[disabled="true"], span[disabled="true"] {
 
 .transition-top {
   transition: top 750ms;
+}
+
+@keyframes pulseScale {
+  0%   { transform: scale(1);   }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1);   }
+}
+
+.pulse-scale-focus:focus {
+  animation: pulseScale 1s;
 }
 </style>
