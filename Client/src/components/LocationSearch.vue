@@ -124,8 +124,7 @@ defineExpose({
       :placeholder="placeholder"
       :datalist="location.datalist"
       class="
-        w-[inherit]
-        px-1
+        px-2
         flex-grow
         text-text-light-primary
         dark:text-text-dark-primary

@@ -63,6 +63,7 @@ defineExpose({
   <div
     class="
       w-full
+      relative
       bg-bg-light
       dark:bg-bg-dark"
   >
@@ -71,8 +72,7 @@ defineExpose({
       v-model="input"
       type="text"
       class="
-        w-[inherit]
-        px-1
+        w-full
         flex-grow
         text-text-light-primary
         dark:text-text-dark-primary
@@ -81,7 +81,6 @@ defineExpose({
       :placeholder="placeholder"
       @input="refreshInput()"
       @focus="showDatalist = true"
-      @focusout="showDatalist = false"
     >
     <div
       v-if="showDatalist && datalist.length"
