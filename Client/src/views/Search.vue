@@ -14,6 +14,7 @@ let prevDestination
 const sourceCompo = ref()
 const destinationCompo = ref()
 const searchElem = ref()
+const showExtraSettingsElem = ref()
 const settings = ref({ ...defaultQuerySettings, transports: { ...defaultQuerySettings.transports } })
 let prevSettings
 const modal = ref({
@@ -53,8 +54,8 @@ onBeforeRouteUpdate((to) => updateQuery(to))
  * @description fetch new results for current query
  */
 async function fetchResults(updateQuery = true) {
-  if (equalObjects(prevSource, source.value) && equalObjects(prevDestination, destination.value) && equalObjects(prevSettings, settings.value)) return status.value.search = false
   if (!source.value.value || !destination.value.value) return status.value.search = false
+  if (equalObjects(prevSource, source.value) && equalObjects(prevDestination, destination.value) && equalObjects(prevSettings, settings.value)) return status.value.search = false
   status.value.search = null
   if (updateQuery) queryUpdated()
   try {
@@ -222,6 +223,7 @@ async function selectResult(id) {
                 lg:self-center"
             >
               <button
+                ref="showExtraSettingsElem"
                 class="
                   flex
                   hover:scale-[120%]
@@ -234,7 +236,7 @@ async function selectResult(id) {
                   rounded-md
                   justify-self-end"
                 :class="{ 'rotate-180': showExtraSettings }"
-                @click="showExtraSettings = !showExtraSettings"
+                @click="showExtraSettings = !showExtraSettings, showExtraSettingsElem.blur()"
               >
                 <font-awesome-icon
                   icon="sliders-h"
@@ -255,7 +257,7 @@ async function selectResult(id) {
                   bg-bg-light
                   dark:bg-bg-dark
                   rounded-md"
-                @click="fetchResults()"
+                @click="fetchResults(), searchElem.blur()"
               >
                 <font-awesome-icon
                   icon="search-location"

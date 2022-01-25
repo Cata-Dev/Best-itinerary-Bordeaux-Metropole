@@ -35,13 +35,16 @@ function updateModelValue(v) {
 }
 
 const inputElem = ref()
-const input = ref()
+const input = ref(props.modelValue.display || '')
+const oldInput = ref()
 
 function refreshInput(emitInput = true) {
+  if (input.value === oldInput.value) return
   const found = props.datalist.find(e => e.display === input.value)
   if (found) updateModelValue(found)
   else updateModelValue({ display: '' })
   if (emitInput) emit('input', input.value)
+  oldInput.value = input.value
 }
 
 function focus() {
@@ -49,6 +52,7 @@ function focus() {
 }
 
 function forceInput(v, emitInput = true) {
+  if (input.value === v) return
   input.value = v
   refreshInput(emitInput)
 }
@@ -69,7 +73,7 @@ defineExpose({
   >
     <input
       ref="inputElem"
-      v-model="input"
+      :value="input"
       type="text"
       class="
         w-full
@@ -79,7 +83,7 @@ defineExpose({
         placeholder-text-light-faded
         dark:placeholder-text-dark-faded"
       :placeholder="placeholder"
-      @input="refreshInput()"
+      @input="input = $event.target.value, refreshInput()"
       @focus="showDatalist = true"
       @focusout="showDatalist = false"
     >

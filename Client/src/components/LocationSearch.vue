@@ -56,7 +56,7 @@ async function refreshSuggestions() {
   if (location.value.previousInput === location.value.input) return
   if (!location.value.input || location.value.input.length < 5) return location.value.datalist = []
 
-  if (location.value.value.display) return updateModelValue(location.value.value)
+  if (location.value.value.display) updateModelValue(location.value.value)
 
   const now = Date.now()
 
