@@ -2,8 +2,19 @@
 import Footer from './components/Footer.vue'
 
 //Sets the real window's height (for mobile browsers like chrome or safari)
-const vh = window.innerHeight * 0.01;
-document.documentElement.style.setProperty('--vh', `${vh}px`);
+let wh = window.innerHeight
+
+function setVh(height) {
+  const vh = height * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+setVh(wh)
+
+window.onresize = () => {
+  let nWh = window.innerHeight
+  if (wh != nWh) wh = nWh, setVh(nWh)
+}
 </script>
 
 <template>
