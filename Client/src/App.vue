@@ -20,8 +20,14 @@ document.documentElement.style.setProperty('--vh', `${vh}px`);
       class="
         mb-auto
         bg-gradient-to-r
-        from-blue-800
-        to-indigo-400
+        bg-size-200
+        bg-pos-0
+        dark:bg-pos-100
+        transition-all
+        duration-200
+        from-blue-400
+        via-indigo-500
+        to-blue-800
         h-full
         overflow-x-auto"
     >
