@@ -60,7 +60,7 @@ module.exports = (app, Endpoint) => {
 		endpoints: [
 			new Endpoint("Addresses", 24*3600, async () => {
 
-				let addresses = await getData('fv_adresse_p')
+				let addresses = await getData('fv_adresse_p', ["crs=epsg:2154"])
 
 				addresses = addresses.map(address => {
 					const voie = address.properties.nom_voie
@@ -87,7 +87,7 @@ module.exports = (app, Endpoint) => {
 
 			new Endpoint("Intersections", 24*3600, async () => {
 
-				let intersections = await getData('fv_carre_p')
+				let intersections = await getData('fv_carre_p', ["crs=epsg:2154"])
 
 				intersections = intersections.map(intersection => {
 					return {
@@ -132,7 +132,7 @@ module.exports = (app, Endpoint) => {
 
 			new Endpoint("TBM_Stops", 24*3600, async () => {
 
-				let stops = await getData('sv_arret_p')
+				let stops = await getData('sv_arret_p', ["crs=epsg:2154"])
 
 				stops = stops.map(stop => {
 					return {

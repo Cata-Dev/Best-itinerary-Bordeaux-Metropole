@@ -1,5 +1,5 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-const { bulkOps } = require('./utils')
+const { bulkOps, WGSToLambert93 } = require('./utils')
 
 /**
  * Parse SNCF API date
@@ -122,7 +122,7 @@ module.exports = (app, Endpoint) => {
 				stops = stops.map(stop => {
 					return {
 						_id: Number(stop['id'].substr(16, 8)),
-						coords: [Number(stop['coord']['lon']), Number(stop['coord']['lat'])],
+						coords: WGSToLambert93(Number(stop['coord']['lat']), Number(stop['coord']['lon'])),
 						name: stop['name'],
 						name_lowercase: stop['name'].toLowerCase(),
 					}
@@ -130,8 +130,6 @@ module.exports = (app, Endpoint) => {
 
 				await Stop.deleteMany({ _id: { "$nin": stops.map(s => s._id) } })
 				await Stop.bulkWrite(bulkOps(stops))
-
-				console.info(`SNCF_Stops refreshed.`)
 				
 				return true
 
