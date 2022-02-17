@@ -1,0 +1,6 @@
+{
+	"appId": "com.catadev.bibm",
+	"appName": "Best Itinerary Bordeaux Metropole",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}
