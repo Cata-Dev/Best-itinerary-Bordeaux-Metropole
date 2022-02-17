@@ -126,7 +126,7 @@ onUpdated(async () => {
           </button>
         </div>
         <div
-          class="relative p-4"
+          class="relative p-4 whitespace-pre-line"
           :class="color === 'success' ? ['text-success-t'] : color === 'info' ? ['text-info-t'] : ['text-alert-t']"
         >
           {{ content }}
