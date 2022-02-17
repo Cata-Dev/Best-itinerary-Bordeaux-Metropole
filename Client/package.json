@@ -4,10 +4,16 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
+    "cap-serve": "npx cap run android --target Pixel_API_30",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@capacitor/android": "^3.4.0",
+    "@capacitor/app": "^1.1.0",
+    "@capacitor/cli": "^3.4.0",
+    "@capacitor/core": "^3.4.0",
+    "@capacitor/geolocation": "^1.3.1",
     "@feathersjs/client": "^5.0.0-pre.15",
     "@feathersjs/socketio-client": "^5.0.0-pre.15",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
