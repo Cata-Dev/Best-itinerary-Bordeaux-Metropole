@@ -25,6 +25,48 @@ module.exports.bulkOps = (documents, filterKey = '_id') => {
     })
 }
 
+const X0 = 700000
+const Y0 = 6600000
+const a = 6378137;
+const e = 0.08181919106;
+const l0 = (Math.PI / 180) * 3;
+const lc = l0;
+const phi0 = (Math.PI / 180) * 46.5;
+const phi1 = (Math.PI / 180) * 44;
+const phi2 = (Math.PI / 180) * 49;
+
+const gN1 = a / Math.sqrt(1 - e * e * Math.sin(phi1) * Math.sin(phi1));
+const gN2 = a / Math.sqrt(1 - e * e * Math.sin(phi2) * Math.sin(phi2));
+
+const gl0 = Math.log(Math.tan(Math.PI / 4 + phi0 / 2) * Math.pow((1 - e * Math.sin(phi0)) / (1 + e * Math.sin(phi0)), e / 2));
+const gl1 = Math.log(Math.tan(Math.PI / 4 + phi1 / 2) * Math.pow((1 - e * Math.sin(phi1)) / (1 + e * Math.sin(phi1)), e / 2));
+const gl2 = Math.log(Math.tan(Math.PI / 4 + phi2 / 2) * Math.pow((1 - e * Math.sin(phi2)) / (1 + e * Math.sin(phi2)), e / 2));
+
+const n = (Math.log((gN2 * Math.cos(phi2)) / (gN1 * Math.cos(phi1)))) / (gl1 - gl2);
+const c = ((gN1 * Math.cos(phi1)) / n) * Math.exp(n * gl1);
+
+/**
+ * @description Converts WGS coordinates into Lambert 93 coordinates
+ * @param {Number} lat 
+ * @param {Number} long 
+ * @returns {Array<Number, Number>}
+ */
+module.exports.WGSToLambert93 = (lat, long) => {
+
+	const phi = (Math.PI / 180) * lat;
+	const l = (Math.PI / 180) * long;
+
+	const gl = Math.log(Math.tan(Math.PI / 4 + phi / 2) * Math.pow((1 - e * Math.sin(phi)) / (1 + e * Math.sin(phi)), e / 2));
+    
+	const ys = Y0 + c * Math.exp(-1 * n * gl0);
+
+	return [
+        X0 + c * Math.exp(-1 * n * gl) * Math.sin(n * (l - lc)),
+        ys - c * Math.exp(-1 * n * gl) * Math.cos(n * (l - lc))
+    ];
+
+}
+
 module.exports.sumObj = function (obj = {}, keys = []) { //Object.prototype.sum = // -> make errors when requiring on other files ?
 
     return Object.keys(obj).filter(k => keys.map(k => String(k)).includes(k) && typeof obj[k] == 'number').reduce((acc, v) => acc+obj[v], 0)
