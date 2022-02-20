@@ -67,6 +67,46 @@ module.exports.WGSToLambert93 = (lat, long) => {
 
 }
 
+module.exports.degToRad = (deg) => {
+	return deg * Math.PI / 180;
+}
+
+/**
+ * @description Get the distance between two geographic coordinates.
+ * @param {Number} lon1 
+ * @param {Number} lat1 
+ * @param {Number} lon2 
+ * @param {Number} lat2 
+ * @returns {Number} The distance in meters.
+ */
+module.exports.geographicDistance = (lon1, lat1, lon2, lat2) => {
+	var earthRadiusKm = 6371;
+
+	var dLat = module.exports.degToRad(lat2-lat1);
+	var dLon = module.exports.degToRad(lon2-lon1);
+
+	lat1 = module.exports.degToRad(lat1);
+	lat2 = module.exports.degToRad(lat2);
+
+	var a = Math.sin(dLat/2) ** 2 + Math.sin(dLon/2) ** 2 * Math.cos(lat1) * Math.cos(lat2); 
+	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+	return earthRadiusKm * c * 1000;
+}
+
+/**
+ * @description Get the distance between two cartographic coordinates.
+ * @param {*} x1 
+ * @param {*} y1 
+ * @param {*} x2 
+ * @param {*} y2 
+ * @returns {Number} The distance in meters.
+ */
+module.exports.cartographicDistance = (x1, y1, x2, y2) => {
+
+    return Math.sqrt((x2-x1)**2+(y2-y1)**2)
+
+}
+
 module.exports.sumObj = function (obj = {}, keys = []) { //Object.prototype.sum = // -> make errors when requiring on other files ?
 
     return Object.keys(obj).filter(k => keys.map(k => String(k)).includes(k) && typeof obj[k] == 'number').reduce((acc, v) => acc+obj[v], 0)

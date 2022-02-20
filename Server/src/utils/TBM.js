@@ -1,31 +1,5 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-const { bulkOps } = require('./utils')
-
-function degreesToRadians(degrees) {
-	return degrees * Math.PI / 180;
-}
-
-/**
- * Get the distance between two coordinates.
- * @param {Number} lon1 
- * @param {Number} lat1 
- * @param {Number} lon2 
- * @param {Number} lat2 
- * @returns {Number} The distance between (lon1, lat1) and (lon2, lat2) in meters.
- */
-function distance(lon1, lat1, lon2, lat2) {
-	var earthRadiusKm = 6371;
-
-	var dLat = degreesToRadians(lat2-lat1);
-	var dLon = degreesToRadians(lon2-lon1);
-
-	lat1 = degreesToRadians(lat1);
-	lat2 = degreesToRadians(lat2);
-
-	var a = Math.sin(dLat/2) ** 2 + Math.sin(dLon/2) ** 2 * Math.cos(lat1) * Math.cos(lat2); 
-	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-	return earthRadiusKm * c * 1000;
-}
+const { bulkOps, cartographicDistance } = require('./utils')
 
 module.exports = (app, Endpoint) => {
 
@@ -106,12 +80,13 @@ module.exports = (app, Endpoint) => {
 
 			new Endpoint("Sections", 24*3600, async () => {
 
-				let sections = await getData('fv_tronc_l')
+				let sections = await getData('fv_tronc_l', ["crs=epsg:2154"])
 
 				sections = sections.map(section => {
 					return {
+						coords: section.geometry.coordinates,
 						distance: section.geometry.coordinates.reduce((acc, v, i, arr) => {
-							if (i < arr.length - 1) return acc+distance(...v, ...arr[i+1])
+							if (i < arr.length - 1) return acc+cartographicDistance(...v, ...arr[i+1])
 							return acc
 						}, 0),
 						_id: Number(section.properties.gid),
@@ -175,7 +150,7 @@ module.exports = (app, Endpoint) => {
 
 			new Endpoint("TBM_Schedules", 10, async () => {
 				
-				const date = (new Date()).toJSON().substr(0, 19)
+				const date = (new Date()).toJSON().substring(0, 20)
 				let schedules = await getData('sv_horai_a', ["filter="+JSON.stringify({
 					"$or": [
 						{
