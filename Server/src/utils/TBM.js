@@ -93,6 +93,7 @@ module.exports = (app, Endpoint) => {
 						domanial: Number(section.properties.domanial),
 						groupe: section.properties.groupe || 0,
 						nom_voie: section.properties.nom_voie,
+						rg_fv_graph_dbl: !!section.properties.rg_fv_graph_dbl,
 						rg_fv_graph_nd: section.properties.rg_fv_graph_nd,
 						rg_fv_graph_na: section.properties.rg_fv_graph_na,
 					}
