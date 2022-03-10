@@ -1,14 +1,11 @@
 #![allow(non_snake_case)]
-
+use super::RouteScanner::CriteriaComparator;
+use super::RouteScanner::RaptorScanner;
+use super::RouteStructs::*;
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
-use std::iter::Scan;
 use std::time::Duration;
-use std::vec::Vec;
 
-use super::RouteStructs::*;
-use super::RouteScanner::Scanner;
-//TODO: Implements RaptorError
 pub enum RaptorError {
     StopNotFound(&'static str),
 }
@@ -45,65 +42,41 @@ impl std::error::Error for RaptorError {
         }
     }
 }
-pub struct RaptorDatas<'r> {
-    scheduledRoutes: HashMap<usize, ScheduledRoute<'r>>,
-    nonScheduledRoutes: HashMap<usize, NonScheduledRoute<'r>>,
-    stops: HashMap<usize, Stop<'r>>,
-}
 
-
-//TODO: Bench vec<MarkedRoute> vs hashmap<MakredRoute>
-// Return the fastest itinerary
 pub fn singleThreadRaptor<'r>(
-    raptorDatas: &RaptorDatas<'r>,
+    stops: &'r HashMap<usize, Stop<'r>>,
     departureTime: Duration,
     departureStop: &'r Stop<'r>,
     targetStop: &'r Stop<'r>,
     numberOfItenaries: usize,
     maxTransfer: usize,
+    criteriaComparator: &'r CriteriaComparator,
 ) -> Result<(), RaptorError> {
-    let markedStops: Vec<&Stop> = vec![departureStop];
-    let mut markedRoutes: Vec<MarkedScheduledRoute> = vec![];
-    let initArrivalTime = Duration::from_secs(u64::MAX);
-    let mut scanner: Scanner = Scanner::new(raptorDatas.stops.len(), numberOfItenaries, &initArrivalTime);
-
-    for k in 1..maxTransfer {
+    let scanner: RaptorScanner = RaptorScanner::new(
+        &stops,
+        stops.len(),
+        numberOfItenaries,
+        departureStop,
+        criteriaComparator,
+    );
+    for _ in 1..maxTransfer {
         // Accumulate routes serving marked stops from previous round
-        markedRoutes.clear();
-        for markedStop in markedStops.iter() {
-            for scheduledRoute in markedStop.scheduledRoutes   {
-                // If there is already this route in the marked route
-                if let Some(markedRoute) = markedRoutes
-                    .iter_mut()
-                    .find(|x| -> bool { x.route.id == scheduledRoute.id })
-                {
-                    if scanner.getBestEarliestArrivalTime(&markedRoute.earliestStop.id)
-                        > scanner.getBestEarliestArrivalTime(&markedStop.id)
-                    {
-                        markedRoute.earliestStop = markedStop;
-                    }
-                } else {
-                    markedRoutes.push(MarkedScheduledRoute {
-                        route: scheduledRoute,
-                        earliestStop: markedStop,
-                    });
-                }
-            }
-        }
-        let mut currentTrip: Option<&[Duration]>;
-        // Traverse each Scheduled Route
-        for markedRoute in markedRoutes.iter() {
-
-        }
-
+        scanner.markRoutes();
+        // Traverse each Marked Scheduled Route
+        scanner.processScheduledRoutes(targetStop.id);
         // Look at non-scheduled routes
-        for markedStop in markedStops.iter() {
-           
-        }
-        // Exit condition
-        if markedStops.is_empty() {
+        scanner.processNonScheduledRoutes();
+        //    Exit condition
+        if scanner.isScanCompleted() {
             break;
         }
     }
     Ok(())
-}
+} //TODO: when doing multi-criteria, will post processing needed in order to sort the best route?
+  //Return the fastest itinerary
+  // the problem is there with there with single itenary but with multiple ?
+  // and how do I implement it ? Do I stores as much itenaries, and then sort them (post process ) or
+  // do I add something inside of the scan (stop domination)
+
+fn multiThreadRaptor<'r>() {}
+async fn asyncRaptor() {}
