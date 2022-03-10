@@ -1,3 +1,4 @@
+use super::RouteScanner::UserInfos;
 use std::time::Duration;
 
 pub struct Coords {
@@ -18,10 +19,10 @@ pub enum RouteType {
     V3,
 }
 pub struct NonScheduledRoute<'r> {
-    //TODO: user route information ? => series of road on wich u will go through
-    //TODO: determin if we add the var name to this struct ...
     pub id: usize,
     pub name: String,
+    pub staticScore: u32,
+    pub userInfos: UserInfos<'r>,
     pub routeType: RouteType,
     pub targetStop: &'r Stop<'r>,
     pub distance: u32,
@@ -30,6 +31,8 @@ pub struct NonScheduledRoute<'r> {
 pub struct ScheduledRoute<'r> {
     pub id: usize,
     pub name: String,
+    pub staticScore: u32,
+    pub userInfos: UserInfos<'r>,
     pub routeType: RouteType,
     pub direction: String,
     pub distanceBetweenStops: Vec<u32>,
@@ -43,21 +46,23 @@ impl<'r> ScheduledRoute<'r> {
     pub fn findEarliestTripAt(
         &self,
         stopId: usize,
-        stopEarliestArrivalTime: Duration,
+        stopEarliestArrivalTime: &'r Duration,
     ) -> Option<&'r [Duration]> {
         for tripId in 0..self.tripsCount {
             let tripTimetable = self.getTripAt(tripId);
-            if stopEarliestArrivalTime < tripTimetable[self.stopsId[stopId] as usize] {
+            if stopEarliestArrivalTime < &tripTimetable[self.stopsId[stopId]] {
                 return Some(&tripTimetable[stopId + 1..]);
             }
         }
         return None;
     }
-    //TODO: Bench to know if using hashmap to store (stopId: equivalentStopId) woubd not be better
     pub fn getUncheckedEquivalentIndexFor(&self, stopId: usize) -> usize {
-        unsafe {            // due to the structure, we are 100% sure th
-
-            self.stopsId.iter().position(|&id| id == stopId).unwrap_unchecked()
+        unsafe {
+            // durae to the structure, we are 100% sure th
+            self.stopsId
+                .iter()
+                .position(|&id| id == stopId)
+                .unwrap_unchecked()
         }
     }
 
