@@ -1,5 +1,5 @@
 [package]
-name = "itenary"
+name = "itinerary"
 version = "0.1.0"
 edition = "2021"
 authors = ["{{GhostOcter}}"]
@@ -8,6 +8,13 @@ authors = ["{{GhostOcter}}"]
 [lib]
 crate-type = ["rlib", "cdylib"]
 
+[dependencies.mongodb]
+version = "2.1.0"
+default-features = false
+features = ["tokio-runtime"]
+
 [dependencies]
 wasm-bindgen = "0.2.78"
 wasm-bindgen-futures = "0.4.29"
+serde = "1.0"
+futures = "0.3.21"
