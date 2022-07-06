@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-const logger = require('./logger');
 const app = require('./app');
 const port = app.get('port');
 const fs = require('fs');
@@ -11,13 +10,26 @@ const opts = ssl ? {
   key: fs.readFileSync(app.get('ssl').key),
   cert: fs.readFileSync(app.get('ssl').cert)
 } : {};
-const server = ssl ? https.createServer(opts, app).listen(port) : app.listen(port);;
-if (ssl) app.setup(server);
+
+
 
 process.on('unhandledRejection', (reason, p) =>
-	logger.error('Unhandled Rejection at: Promise ', p, reason)
+	console.error('Unhandled Rejection at: Promise ', p, reason)
 );
 
-server.on('listening', () =>
-	logger.info('Feathers application started on http://%s:%d', app.get('host'), port)
-);
+if (ssl) {
+
+  const server = https.createServer(opts, app).listen(port)
+  app.setup(server)
+  server.on('listening', () =>
+    console.info('Feathers application started on http://%s:%d', app.get('host'), port)
+  );
+  
+
+} else {
+
+  app.listen(port).then(() => {
+    console.info('Feathers application started on http://%s:%d', app.get('host'), port)
+  })
+
+}

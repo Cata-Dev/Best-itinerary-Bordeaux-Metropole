@@ -12,21 +12,45 @@ exports.Itinerary = class Itinerary {
         switch(id) {
 
             case 'paths':
+                const app  = this.app
+                const waitForUpdate = params.query?.waitForUpdate
+                return new Promise(async (res, _) => {
 
-                if (!(params.query.from && params.query.to)) return new BadRequest(`Missing parameter(s).`)
+                    if (!(params.query?.from && params.query?.to)) return new BadRequest(`Missing parameter(s).`)
 
-                const TBM = this.app.utils.get('TBM')
-                //ask for possible non-daily data actualization
-                for (const endpoint of TBM.endpoints.filter((endpoint) => endpoint.rate < 24*3600)) {
-                    try {
-                        this.app.service('refresh-data').get(endpoint.name) //await for update ?
-                    } catch(_) {}
-                }
-                //call rust path calc
-                return 'ok'
+                    const endpoints = app.utils.get('endpoints').filter((endpoint) => endpoint.rate < 24*3600)
+                    let count = 0
+                    let lastActualization = 0
+                    //ask for possible non-daily data actualization
+                    for (const endpoint of endpoints) {
+                        app.service('refresh-data').get(endpoint.name, { query: params.query }).then(() => {
+                            if (waitForUpdate) lastActualization = Date.now()
+                        }).catch((r) => {
+                            if (waitForUpdate && r.data.lastActualization > lastActualization) lastActualization = r.data.lastActualization
+                        }).finally(() => {
+                            if (waitForUpdate) {
+                                count++
+                                if (count === endpoints.length) compute()
+                            }
+                        })
+                    }
+                    
+                    if (!waitForUpdate) compute()
+
+                    //temporary
+                    function compute() {
+                        res({
+                            code: 200,
+                            message: 'Should calculate rust best itineraries, but OK.',
+                            lastActualization,
+                            paths: []
+                        })
+                    }
+
+                })
 
             default:
-                return new NotFound('Unknown command.')
+                throw new NotFound('Unknown command.')
 
         }
 

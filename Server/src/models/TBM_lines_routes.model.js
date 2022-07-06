@@ -1,9 +1,9 @@
-// lines_routes-model.js - A mongoose model
+// tbm_lines_routes-model.js - A mongoose model
 // 
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function (app) {
-	const modelName = 'lines_routes';
+	const modelName = 'tbm_lines_routes';
 	const mongooseClient = app.get('mongooseClient');
 	const { Schema } = mongooseClient;
 	const schema = new Schema({

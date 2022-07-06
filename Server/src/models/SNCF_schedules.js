@@ -1,18 +1,17 @@
-// vehicles-model.js - A mongoose model
+// sncf_schedules-model.js - A mongoose model
 // 
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function (app) {
-	const modelName = 'vehicles';
+	const modelName = 'sncf_route_schedules';
 	const mongooseClient = app.get('mongooseClient');
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
-		_id: { type: Number },
-		etat: { type: String, required: true },
-		rs_sv_ligne_a: { type: Number, ref: 'lines' },
-		rg_sv_arret_p_nd: { type: Number, required: true, ref: 'stops' },
-		rg_sv_arret_p_na: { type: Number, required: true, ref: 'stops'  },
-		rs_sv_chem_l: { type: Number, ref: 'lines_routes' },
+		_id: { type: String },
+		realtime: { type: Date, required: true },
+		trip: { type: Number, required: true }, //implicitly includes direction
+        stop_point: { type: String, required: true, ref: 'sncf_stops' },
+        route: { type: String, required: true, ref: 'sncf_routes' },
 	}, {
 		timestamps: true,
 	});

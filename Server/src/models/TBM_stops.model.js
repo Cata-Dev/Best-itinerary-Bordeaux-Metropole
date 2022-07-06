@@ -1,16 +1,19 @@
-// lines-model.js - A mongoose model
+// tbm_stops-model.js - A mongoose model
 // 
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function (app) {
-	const modelName = 'lines';
+	const modelName = 'tbm_stops';
 	const mongooseClient = app.get('mongooseClient');
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
+        coords: { type: Array, required: true },
 		_id: { type: Number },
 		libelle: { type: String, required: true },
+		libelle_lowercase: { type: String, required: true },
 		vehicule: { type: String, required: true },
-		active: { type: Number, required: true },
+		type: { type: String, required: true },
+		actif: { type: Number, required: true },
 	}, {
 		timestamps: true
 	});

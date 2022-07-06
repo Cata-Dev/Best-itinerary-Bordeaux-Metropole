@@ -1,20 +1,24 @@
-// stops-model.js - A mongoose model
+// addresses-model.js - A mongoose model
 // 
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function (app) {
-	const modelName = 'stops';
+	const modelName = 'addresses';
 	const mongooseClient = app.get('mongooseClient');
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
-        geo_point: { type: Array, required: true },
 		_id: { type: Number },
-		libelle: { type: String, required: true },
-		vehicule: { type: String, required: true },
-		type: { type: String, required: true },
-		actif: { type: Number, required: true },
+		coords: { type: Array, required: true },
+		numero: { type: Number, required: true },
+		rep: { type: String, required: false },
+        type_voie: { type: String, required: true },
+        nom_voie: { type: String, required: true },
+        nom_voie_lowercase: { type: String, required: true },
+        code_postal: { type: Number, required: true },
+        fantoir: { type: String, required: true },
+        commune: { type: String, required: true },
 	}, {
-		timestamps: true
+		timestamps: true,
 	});
 
 	// This is necessary to avoid model compilation errors in watch mode

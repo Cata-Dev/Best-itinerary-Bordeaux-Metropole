@@ -1,22 +1,18 @@
-// schedules-model.js - A mongoose model
+// tbm_lines-model.js - A mongoose model
 // 
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function (app) {
-	const modelName = 'schedules';
+	const modelName = 'tbm_lines';
 	const mongooseClient = app.get('mongooseClient');
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
 		_id: { type: Number },
-		hor_theo: { type: Date, required: true },
-		hor_app: { type: Date, required: true },
-		hor_estime: { type: Date, required: true },
-		etat: { type: String, required: true },
-		type: { type: String, required: true }, //donnée incertaine
-		rs_sv_arret_p: { type: Number, required: true, ref: 'stops' },
-		rs_sv_cours_a: { type: Number, required: true, ref: 'vehicles' },
+		libelle: { type: String, required: true },
+		vehicule: { type: String, required: true },
+		active: { type: Number, required: true },
 	}, {
-		timestamps: true,
+		timestamps: true
 	});
 
 	// This is necessary to avoid model compilation errors in watch mode

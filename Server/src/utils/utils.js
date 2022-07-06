@@ -7,6 +7,106 @@ class Deferred {
     }
 }
 
+/**
+ * Format documents to be bulkUpdated via bulkWrite
+ * @param {Array} documents 
+ * @param {String} filterKey 
+ * @returns {Array}
+ */
+module.exports.bulkOps = (documents, filterKey = '_id') => {
+    return documents.map((doc) => {
+        return {
+            updateOne: {
+                filter: { [filterKey]: doc[filterKey] },
+                update: doc,
+                upsert: true
+            }
+        }
+    })
+}
+
+const X0 = 700000
+const Y0 = 6600000
+const a = 6378137;
+const e = 0.08181919106;
+const l0 = (Math.PI / 180) * 3;
+const lc = l0;
+const phi0 = (Math.PI / 180) * 46.5;
+const phi1 = (Math.PI / 180) * 44;
+const phi2 = (Math.PI / 180) * 49;
+
+const gN1 = a / Math.sqrt(1 - e * e * Math.sin(phi1) * Math.sin(phi1));
+const gN2 = a / Math.sqrt(1 - e * e * Math.sin(phi2) * Math.sin(phi2));
+
+const gl0 = Math.log(Math.tan(Math.PI / 4 + phi0 / 2) * Math.pow((1 - e * Math.sin(phi0)) / (1 + e * Math.sin(phi0)), e / 2));
+const gl1 = Math.log(Math.tan(Math.PI / 4 + phi1 / 2) * Math.pow((1 - e * Math.sin(phi1)) / (1 + e * Math.sin(phi1)), e / 2));
+const gl2 = Math.log(Math.tan(Math.PI / 4 + phi2 / 2) * Math.pow((1 - e * Math.sin(phi2)) / (1 + e * Math.sin(phi2)), e / 2));
+
+const n = (Math.log((gN2 * Math.cos(phi2)) / (gN1 * Math.cos(phi1)))) / (gl1 - gl2);
+const c = ((gN1 * Math.cos(phi1)) / n) * Math.exp(n * gl1);
+
+/**
+ * @description Converts WGS coordinates into Lambert 93 coordinates
+ * @param {Number} lat 
+ * @param {Number} long 
+ * @returns {Array<Number, Number>}
+ */
+module.exports.WGSToLambert93 = (lat, long) => {
+
+	const phi = (Math.PI / 180) * lat;
+	const l = (Math.PI / 180) * long;
+
+	const gl = Math.log(Math.tan(Math.PI / 4 + phi / 2) * Math.pow((1 - e * Math.sin(phi)) / (1 + e * Math.sin(phi)), e / 2));
+    
+	const ys = Y0 + c * Math.exp(-1 * n * gl0);
+
+	return [
+        X0 + c * Math.exp(-1 * n * gl) * Math.sin(n * (l - lc)),
+        ys - c * Math.exp(-1 * n * gl) * Math.cos(n * (l - lc))
+    ];
+
+}
+
+module.exports.degToRad = (deg) => {
+	return deg * Math.PI / 180;
+}
+
+/**
+ * @description Get the distance between two geographic coordinates.
+ * @param {Number} lon1 
+ * @param {Number} lat1 
+ * @param {Number} lon2 
+ * @param {Number} lat2 
+ * @returns {Number} The distance in meters.
+ */
+module.exports.geographicDistance = (lon1, lat1, lon2, lat2) => {
+	var earthRadiusKm = 6371;
+
+	var dLat = module.exports.degToRad(lat2-lat1);
+	var dLon = module.exports.degToRad(lon2-lon1);
+
+	lat1 = module.exports.degToRad(lat1);
+	lat2 = module.exports.degToRad(lat2);
+
+	var a = Math.sin(dLat/2) ** 2 + Math.sin(dLon/2) ** 2 * Math.cos(lat1) * Math.cos(lat2); 
+	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+	return earthRadiusKm * c * 1000;
+}
+
+/**
+ * @description Get the distance between two cartographic coordinates.
+ * @param {*} x1 
+ * @param {*} y1 
+ * @param {*} x2 
+ * @param {*} y2 
+ * @returns {Number} The distance in meters.
+ */
+module.exports.cartographicDistance = (x1, y1, x2, y2) => {
+
+    return Math.sqrt((x2-x1)**2+(y2-y1)**2)
+
+}
+
 module.exports.sumObj = function (obj = {}, keys = []) { //Object.prototype.sum = // -> make errors when requiring on other files ?
 
     return Object.keys(obj).filter(k => keys.map(k => String(k)).includes(k) && typeof obj[k] == 'number').reduce((acc, v) => acc+obj[v], 0)
@@ -123,6 +223,28 @@ module.exports.time = {
     },
 
     /**
+     * @param {Date} date
+     * @param {Boolean} includeSec Un booléen indiquant s'il faut inclure les millisecondes
+     * @returns {string} Une date au format "HH:MiMi:SS"
+     */
+     datetocompact3: (date, includeMs) => {
+        if (!(date instanceof Date)) date = new Date(date)
+        try {
+            var h = date.getHours()
+            var mi = date.getMinutes()
+            var s = date.getSeconds()
+            var ms = date.getMilliseconds()
+        } catch(e) {return '?'}
+    
+        if (h < 10) h = "0"+h
+        if (mi < 10) mi = "0"+mi
+        if (s < 10) s = "0"+s
+        if (ms < 100) ms = "0"+ms
+        else if (ms < 10) ms = "00"+ms
+        return `${h}:${mi}:${s}${includeMs ? `.${ms}` : ''}`;
+    },
+
+    /**
      * @param {Number} ms Une durée en secondes
      * @param {Boolean} includeSec Un booléen indiquant s'il faut inclure les secondes
      * @returns {String} La durée formatée (YY?, MoMo?, DD?, HH?, MiMi?, SS? )
@@ -189,29 +311,31 @@ module.exports.round = (number) => {
     return integers + decs
 }
 
-Array.from([["fBlack", "\x1b[30m"], //Coloration methods
-["fR", "\x1b[31m"],
-["fG", "\x1b[32m"],
-["fY", "\x1b[33m"],
-["fB", "\x1b[34m"],
-["fM", "\x1b[35m"],
-["fC", "\x1b[36m"],
-["fW", "\x1b[37m"],
-["bBlack", "\x1b[40m"],
-["bR", "\x1b[41m"],
-["bG", "\x1b[42m"],
-["bY", "\x1b[43m"],
-["bB", "\x1b[44m"],
-["bM", "\x1b[45m"],
-["bC", "\x1b[46m"],
-["bW", "\x1b[47m"],
-["reset", "\x1b[0m"],
-["bright", "\x1b[1m"],
-["dim", "\x1b[2m"],
-["underscore", "\x1b[4m"],
-["blink", "\x1b[5m"],
-["reverse", "\x1b[7m"],
-["hidden", "\x1b[8m"]]).forEach(color => {
+Array.from([
+    ["fBlack", "\x1b[30m"],
+    ["fR", "\x1b[31m"],
+    ["fG", "\x1b[32m"],
+    ["fY", "\x1b[33m"],
+    ["fB", "\x1b[34m"],
+    ["fM", "\x1b[35m"],
+    ["fC", "\x1b[36m"],
+    ["fW", "\x1b[37m"],
+    ["bBlack", "\x1b[40m"],
+    ["bR", "\x1b[41m"],
+    ["bG", "\x1b[42m"],
+    ["bY", "\x1b[43m"],
+    ["bB", "\x1b[44m"],
+    ["bM", "\x1b[45m"],
+    ["bC", "\x1b[46m"],
+    ["bW", "\x1b[47m"],
+    ["reset", "\x1b[0m"],
+    ["bright", "\x1b[1m"],
+    ["dim", "\x1b[2m"],
+    ["underscore", "\x1b[4m"],
+    ["blink", "\x1b[5m"],
+    ["reverse", "\x1b[7m"],
+    ["hidden", "\x1b[8m"]
+]).forEach(color => {
     module.exports[color[0]] = (s) => {
         return `${color[1]}${s.replace(/(\\x1b|)\[0m/g, "")}\x1b[0m`
     }

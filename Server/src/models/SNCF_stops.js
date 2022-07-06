@@ -1,17 +1,18 @@
-// intersections-model.js - A mongoose model
+// sncf_stops-model.js - A mongoose model
 // 
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function (app) {
-	const modelName = 'intersections';
+	const modelName = 'sncf_stops';
 	const mongooseClient = app.get('mongooseClient');
 	const { Schema } = mongooseClient;
 	const schema = new Schema({
-        coords: { type: Array, required: true },
 		_id: { type: Number },
-		nature: { type: String, required: true },
+		coords: { type: Array, required: true },
+		name: { type: String, required: true },
+		name_lowercase: { type: String, required: true },
 	}, {
-		timestamps: true
+		timestamps: true,
 	});
 
 	// This is necessary to avoid model compilation errors in watch mode

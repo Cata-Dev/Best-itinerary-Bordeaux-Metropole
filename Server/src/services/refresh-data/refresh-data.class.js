@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-const { NotFound, BadRequest, Forbidden } = require('@feathersjs/errors');
+const { NotFound, BadRequest, Forbidden, GeneralError } = require('@feathersjs/errors');
 
 exports.RefreshData = class RefreshData {
 
@@ -9,7 +9,7 @@ exports.RefreshData = class RefreshData {
     }
 
 	async find() {
-		return new BadRequest(`This path is disabled.`);
+		throw new BadRequest(`This path is disabled.`);
 	}
 
 	/**
@@ -20,68 +20,99 @@ exports.RefreshData = class RefreshData {
 	 */
 	async get(id, params) {
 
-		const TBM = this.app.utils.get('TBM')
-		const waitForUpdate = params.query?.waitForUpdate === 'true'
-		const matchingEndpoint = TBM.endpoints.find(endpoint => endpoint.name === id)
+		const endpoints = this.app.utils.get('endpoints')
+		const waitForUpdate = JSON.parse(params.query?.waitForUpdate || 'false') === true
+		const force = JSON.parse(params.query?.force || 'false') === true
+		const matchingEndpoint = endpoints.find(endpoint => endpoint.name === id)
 		
 		if (id == 'all') {
+
+			return new Promise((res, _) => {
 		
-			let c = 0
-			for (const endpoint of TBM.endpoints) {
-				let r = false
-				try {
-					r = (await this.get(endpoint.name, params)).Actualized //update every endpoint
-				} catch(_) {}
-				if (r) c++
-			}
-			return {
-				"Actualized": waitForUpdate ? c : null,
-			};
+				let sucess = 0
+				let count = 0
+				let lastActualization = 0
+				for (const endpoint of endpoints) {
+					this.get(endpoint.name, params).then((r) => {
+						if (r.Actualized) sucess++, lastActualization = Date.now()
+						lastActualization = Date.now()
+					}).catch((r) => {
+						if (r.lastActualization > lastActualization) lastActualization = r.lastActualization
+					}).finally(() => {
+						if (waitForUpdate) {
+							count++
+							if (count === endpoints.length) res({ //every update ended
+								"Actualized": sucess,
+								"lastActualization": lastActualization,
+							}); 
+						}
+					})
+				}
+				if (!waitForUpdate) res({
+					"Actualized": null, //we don't know anything
+					"lastActualization": 0,
+				}); 
+
+			})
 		
 		} else if (matchingEndpoint) {
-
-			if (matchingEndpoint.fetching) return new Forbidden(new Error({
-				"Actualized": false,
-				"Reason": "Actualization is ongoing.",
-			}))
-			if ((params.query?.force !== "true") && (Date.now() - ((await matchingEndpoint.model.findOne())?.createdAt || 0) < matchingEndpoint.rate * 1000)) return new Forbidden(new Error({
-				"Actualized": false,
-				"Reason": "Actualization is on cooldown.",
-			}))
-
-			/**
-			 * @type {Function}
-			 */
-			let r = false
-			matchingEndpoint.fetching = true
-			try {
-				r = waitForUpdate ? await matchingEndpoint.fetch() : matchingEndpoint.fetch().finally(() => {
-					matchingEndpoint.fetching = false
+			if (matchingEndpoint.fetching) {
+				if (waitForUpdate) await matchingEndpoint.fetchPromise
+				throw new Forbidden({
+					"Actualized": false,
+					"lastActualization": matchingEndpoint.lastFetch,
+					"Reason": "Actualization is ongoing.",
 				})
-			} catch(e) {console.error(e)}
-			if (waitForUpdate) matchingEndpoint.fetching = false
+			}
+			if ((params.query?.force !== "true") && matchingEndpoint.onCooldown) throw new Forbidden({
+				"Actualized": false,
+				"lastActualization": matchingEndpoint.lastFetch,
+				"Reason": "Actualization is on cooldown.",
+			})
 
-			return {
-				"Actualized": waitForUpdate ? r : null
+			if (waitForUpdate) {
+
+				let r = false
+				try {
+					r = await matchingEndpoint.fetch(force)
+					return {
+						"Actualized": r,
+						"lastActualization": matchingEndpoint.lastFetch,
+					}
+				} catch(e) {
+					throw new GeneralError(e, {
+						"Actualized": false,
+						"lastActualization": matchingEndpoint.lastFetch,
+					})
+				}
+				
+			} else {
+
+				matchingEndpoint.fetch(force)
+				return {
+					"Actualized": null, //we don't know anything
+					"lastActualization": matchingEndpoint.lastFetch,
+				}
+
 			}
 
-		} else return new NotFound(`Unknown path.`)
+		} else throw new NotFound(`Unknown path.`)
 
 	}
 
 	async create() {
-		return new BadRequest(`This path is disabled.`);
+		throw new BadRequest(`This path is disabled.`);
 	}
 
 	async update() {
-		return new BadRequest(`This path is disabled.`);
+		throw new BadRequest(`This path is disabled.`);
 	}
 
 	async patch() {
-		return new BadRequest(`This path is disabled.`);
+		throw new BadRequest(`This path is disabled.`);
 	}
 
 	async remove() {
-		return new BadRequest(`This path is disabled.`);
+		throw new BadRequest(`This path is disabled.`);
 	}
 };
