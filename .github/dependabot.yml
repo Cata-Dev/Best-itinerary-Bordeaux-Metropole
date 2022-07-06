@@ -5,14 +5,14 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 99
-  target-branch: "dev"
   assignees:
   - Catatomik
+  versioning-strategy: increase
 - package-ecosystem: npm
   directory: "/Server"
   schedule:
     interval: daily
   open-pull-requests-limit: 99
-  target-branch: "dev"
   assignees:
   - Catatomik
+  versioning-strategy: increase
