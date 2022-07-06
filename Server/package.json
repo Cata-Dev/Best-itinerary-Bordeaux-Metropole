@@ -47,7 +47,7 @@
     "cors": "^2.8.5",
     "feathers-hooks-common": "^5.0.6",
     "feathers-mongoose": "^8.5.1",
-    "helmet": "^4.6.0",
+    "helmet": "^5.1.0",
     "mongodb-core": "^3.2.7",
     "mongoose": "^6.1.1",
     "node-fetch": "^3.1.0",
