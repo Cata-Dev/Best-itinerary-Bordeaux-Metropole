@@ -1,11 +1,17 @@
 import { feathers } from "@feathersjs/feathers";
 import type { ItineraryData, ItineraryResult, ItineraryQuery } from "./services/itinerary/itinerary.schema";
 import type { GeocodeData, GeocodeResult, GeocodeQuery } from "./services/geocode/geocode.schema";
+import type {
+  RefreshDataData,
+  RefreshDataResult,
+  RefreshDataQuery,
+} from "./services/refresh-data/refresh-data.schema";
 import type { Service, TransportConnection, Params } from "@feathersjs/feathers";
 
 export interface ServiceTypes {
   itinerary: Service<ItineraryData, ItineraryResult, Params<ItineraryQuery>>;
   geocode: Service<GeocodeData, GeocodeResult, Params<GeocodeQuery>>;
+  "refresh-data": Service<RefreshDataData, RefreshDataResult, Params<RefreshDataQuery>>;
   // A mapping of client side services
 }
 
