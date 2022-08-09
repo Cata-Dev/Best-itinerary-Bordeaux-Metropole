@@ -30,8 +30,7 @@
       "websockets"
     ]
   },
-  "main": "src/",
-  "browser": "dist/client",
+  "main": "lib/client",
   "scripts": {
     "dev": "nodemon -x ts-node src/index.ts",
     "compile": "shx rm -rf lib/ && tsc",
