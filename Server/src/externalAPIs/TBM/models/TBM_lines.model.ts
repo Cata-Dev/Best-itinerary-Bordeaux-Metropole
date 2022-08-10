@@ -17,7 +17,9 @@ const dbTBM_Lines = new Schema(
   },
 );
 
-export type dbTBM_Lines = InferSchemaType<typeof dbTBM_Lines>;
+export type dbTBM_Lines = Omit<InferSchemaType<typeof dbTBM_Lines>, "active"> & {
+  active: 0 | 1;
+};
 
 // for more of what you can do here.
 export default function (app: Application) {

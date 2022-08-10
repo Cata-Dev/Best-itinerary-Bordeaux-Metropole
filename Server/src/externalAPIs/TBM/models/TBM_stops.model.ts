@@ -24,7 +24,8 @@ const dbTBM_Stops = new Schema(
   },
 );
 
-export type dbTBM_Stops = InferSchemaType<typeof dbTBM_Stops> & {
+export type dbTBM_Stops = Omit<InferSchemaType<typeof dbTBM_Stops>, "coords" | "actif"> & {
+  coords: [number, number];
   actif: 0 | 1;
 };
 

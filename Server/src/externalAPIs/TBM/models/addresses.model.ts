@@ -23,7 +23,9 @@ const dbAddresses = new Schema(
   },
 );
 
-export type dbAddresses = InferSchemaType<typeof dbAddresses>;
+export type dbAddresses = Omit<InferSchemaType<typeof dbAddresses>, "coords"> & {
+  coords: [number, number];
+};
 
 // for more of what you can do here.
 export default function (app: Application) {

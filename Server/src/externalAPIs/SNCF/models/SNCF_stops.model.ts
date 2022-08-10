@@ -17,7 +17,9 @@ const dbSNCF_Stops = new Schema(
   },
 );
 
-export type dbSNCF_Stops = InferSchemaType<typeof dbSNCF_Stops>;
+export type dbSNCF_Stops = Omit<InferSchemaType<typeof dbSNCF_Stops>, "coords"> & {
+  coords: [number, number];
+};
 
 // for more of what you can do here.
 export default function (app: Application) {
