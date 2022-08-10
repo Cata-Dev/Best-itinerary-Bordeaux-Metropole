@@ -1,5 +1,4 @@
 import compress from "compression";
-import helmet from "helmet";
 import cors from "cors";
 
 import { feathers, NextFunction } from "@feathersjs/feathers";
@@ -10,22 +9,17 @@ import socketio from "@feathersjs/socketio";
 import type { Application, HookContext } from "./declarations";
 import { configurationSchema } from "./configuration";
 import { logErrorHook, logger } from "./logger";
-import { log, errorHandler as errorHandlerHook } from "./hooks";
+import { log, errorHandler as errorHandlerHook } from "./hooks/index";
 import { setupMongoose, teardownMongoose } from "./mongoose";
 import { services } from "./services/index";
 import { channels } from "./channels";
-import { setupExternalAPIs } from "./externalAPIs";
+import { setupExternalAPIs } from "./externalAPIs/index";
 
 const app: Application = express(feathers()) as Application;
 
 // Load app configuration
 app.configure(configuration(configurationSchema));
 // Enable security, CORS, compression, favicon and body parsing
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-  }),
-);
 app.use(cors());
 app.use(compress());
 app.use(json());

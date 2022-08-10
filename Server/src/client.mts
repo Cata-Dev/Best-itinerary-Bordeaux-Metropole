@@ -1,8 +1,8 @@
 import { feathers } from "@feathersjs/feathers";
 import type { TransportConnection } from "@feathersjs/feathers";
-import { ItineraryService } from "./services/itinerary/itinerary.class";
-import { GeocodeService } from "./services/geocode/geocode.class";
-import { RefreshDataService } from "./services/refresh-data/refresh-data.class";
+import { ItineraryService } from "./services/itinerary/itinerary.class.js";
+import { GeocodeService } from "./services/geocode/geocode.class.js";
+import { RefreshDataService } from "./services/refresh-data/refresh-data.class.js";
 
 export interface ServiceTypes {
   itinerary: ItineraryService;
@@ -11,7 +11,7 @@ export interface ServiceTypes {
   // A mapping of client side services
 }
 
-export const createClient = <Configuration = unknown>(connection: TransportConnection<ServiceTypes>) => {
+export const createClient = <Configuration = unknown,>(connection: TransportConnection<ServiceTypes>) => {
   const client = feathers<ServiceTypes, Configuration>();
 
   client.configure(connection);
