@@ -42,7 +42,7 @@ export const itineraryResultSchema = schema({
     TBMStageDetails: {
       type: "object",
       additionalProperties: false,
-      required: ["type", "line", "direction"],
+      required: ["type", "line", "direction", "departure"],
       properties: {
         type: {
           type: "string",
@@ -54,12 +54,15 @@ export const itineraryResultSchema = schema({
         direction: {
           type: "string",
         },
+        departure: {
+          type: "integer"
+        },
       },
     },
     SNCFStageDetails: {
       type: "object",
       additionalProperties: false,
-      required: ["type", "line", "direction"],
+      required: ["type", "line", "direction", "departure"],
       properties: {
         type: {
           type: "string",
@@ -70,6 +73,9 @@ export const itineraryResultSchema = schema({
         },
         direction: {
           type: "string",
+        },
+        departure: {
+          type: "integer"
         },
       },
     },
