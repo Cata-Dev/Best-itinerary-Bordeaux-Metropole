@@ -1,5 +1,8 @@
 import { schema } from "@feathersjs/schema";
 import type { Infer } from "@feathersjs/schema";
+import { FromSchema } from "json-schema-to-ts";
+import { TBMEndpoints } from "../../externalAPIs/TBM/index";
+import { SNCFEndpoints } from "../../externalAPIs/SNCF/index";
 
 // Schema for the basic data model (e.g. creating new entries)
 export const geocodeDataSchema = schema({
@@ -26,7 +29,7 @@ export const geocodePatchSchema = schema({
 export type GeocodePatch = Infer<typeof geocodePatchSchema>;
 
 // Schema for the data that is being returned
-export const geocodeResultSchema = schema({
+const geocodeResultRawSchema = {
   definitions: {
     Addresses: {
       type: "object",
@@ -105,6 +108,12 @@ export const geocodeResultSchema = schema({
         },
       },
     },
+    coords: {
+      type: "array",
+      items: [{ type: "number" }, { type: "number" }],
+      minItems: 2,
+      maxItems: 2,
+    },
   },
   $id: "GeocodeResult",
   type: "object",
@@ -124,19 +133,14 @@ export const geocodeResultSchema = schema({
       type: "integer",
     },
     coords: {
-      type: "array",
-      minItems: 2,
-      maxItems: 2,
-      items: {
-        type: "number",
-      },
+      $ref: "#/definitions/coords",
     },
     GEOCODE_type: {
       type: "string",
       enum: ["Addresses", "TBM_Stops", "SNCF_Stops"],
     },
     dedicated: {
-      anyOf: [
+      oneOf: [
         { $ref: "#/definitions/Addresses" },
         { $ref: "#/definitions/TBM_Stops" },
         { $ref: "#/definitions/SNCF_Stops" },
@@ -149,9 +153,89 @@ export const geocodeResultSchema = schema({
       type: "number",
     },
   },
-} as const);
+  allOf: [
+    {
+      if: {
+        properties: {
+          GEOCODE_type: { const: "Addresses" },
+        },
+      },
+      then: {
+        properties: {
+          dedicated: { $ref: "#/definitions/Addresses" },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          GEOCODE_type: { const: "TBM_Stops" },
+        },
+      },
+      then: {
+        properties: {
+          dedicated: { $ref: "#/definitions/TBM_Stops" },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          GEOCODE_type: { const: "SNCF_Stops" },
+        },
+      },
+      then: {
+        properties: {
+          dedicated: { $ref: "#/definitions/SNCF_Stops" },
+        },
+      },
+    },
+  ],
+} as const;
 
-export type GeocodeResult = Infer<typeof geocodeResultSchema>;
+export const geocodeResultSchema = schema(geocodeResultRawSchema);
+
+export type GEOCODE_type = TBMEndpoints.Addresses | TBMEndpoints.Stops | SNCFEndpoints.Stops;
+type GeocodeSpecificResult<G extends GEOCODE_type> = G extends TBMEndpoints.Addresses
+  ? {
+      GEOCODE_type: G;
+      dedicated: {
+        rep?: string | undefined;
+        code_postal: number;
+        commune: string;
+        fantoir: string;
+        nom_voie: string;
+        nom_voie_lowercase: string;
+        numero: number;
+        type_voie: string;
+      };
+    }
+  : G extends TBMEndpoints.Stops
+  ? {
+      GEOCODE_type: G;
+      dedicated: {
+        type: "CLASSIQUE" | "DELESTAGE" | "AUTRE" | "FICTIF";
+        vehicule: "BUS" | "TRAM" | "BATEAU";
+        libelle: string;
+        libelle_lowercase: string;
+        actif: 0 | 1;
+      };
+    }
+  : G extends SNCFEndpoints.Stops
+  ? {
+      GEOCODE_type: G;
+      dedicated: {
+        name: string;
+        name_lowercase: string;
+      };
+    }
+  : never;
+export type GeocodeResult = GeocodeSpecificResult<GEOCODE_type> & {
+  _id: number;
+  coords: [number, number];
+  createdAt: number;
+  updatedAt: number;
+};
 
 // Schema for allowed query properties
 export const geocodeQuerySchema = schema({

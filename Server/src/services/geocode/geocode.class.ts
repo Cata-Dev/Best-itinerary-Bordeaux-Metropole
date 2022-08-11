@@ -2,7 +2,7 @@
 import type { Params } from "@feathersjs/feathers";
 import { resolveAll } from "@feathersjs/schema";
 
-import type { GeocodeResult, GeocodeQuery } from "./geocode.schema";
+import type { GeocodeResult, GeocodeQuery, GEOCODE_type } from "./geocode.schema";
 import { geocodeResolvers } from "./geocode.resolver";
 
 export const geocodeHooks = {
@@ -30,8 +30,6 @@ import { dbTBM_Stops } from "../../externalAPIs/TBM/models/TBM_stops.model";
 import { dbSNCF_Stops } from "../../externalAPIs/SNCF/models/SNCF_stops.model";
 import { TBMEndpoints } from "../../externalAPIs/TBM";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF";
-
-type GEOCODE_Source = TBMEndpoints.Addresses | TBMEndpoints.Stops | SNCFEndpoints.Stops;
 
 // By default calls the standard MongoDB adapter service methods but can be customized with your own functionality.
 export class GeocodeService {
@@ -61,7 +59,7 @@ export class GeocodeService {
   }
 
   async parseId(id: string): Promise<{
-    endpoints: Endpoint<GEOCODE_Source>[];
+    endpoints: Endpoint<GEOCODE_type>[];
     queries: FilterQuery<ProviderSchema>[];
   }> {
     const TBM_Stops = this.app.externalAPIs.endpoints.find(
@@ -157,7 +155,7 @@ export class GeocodeService {
           updatedAt: Date;
         })
       | null = null;
-    let GEOCODE_type: GEOCODE_Source = "" as never;
+    let GEOCODE_type: GEOCODE_type = "" as never;
     for (const i in endpoints) {
       try {
         doc = await endpoints[i].model.findOne(queries[i]).collation({ locale: "fr", strength: 1 }).lean();
@@ -182,10 +180,13 @@ export class GeocodeService {
               ? { ...acc, [v]: doc![v] }
               : acc,
           {},
-        ) as
-          | Omit<dbAddresses, "_id" | "coords" | "GEOCODE_type">
-          | Omit<dbTBM_Stops, "_id" | "coords" | "GEOCODE_type">
-          | Omit<dbSNCF_Stops, "_id" | "coords" | "GEOCODE_type">),
+        ) as typeof GEOCODE_type extends TBMEndpoints.Addresses
+          ? Omit<dbAddresses, "_id" | "coords" | "GEOCODE_type">
+          : typeof GEOCODE_type extends TBMEndpoints.Stops
+          ? Omit<dbTBM_Stops, "_id" | "coords" | "GEOCODE_type">
+          : typeof GEOCODE_type extends SNCFEndpoints.Stops
+          ? Omit<dbSNCF_Stops, "_id" | "coords" | "GEOCODE_type">
+          : any),
       },
     };
 
@@ -201,7 +202,7 @@ export class GeocodeService {
     type doc = (dbAddresses | dbTBM_Stops | dbSNCF_Stops) & {
       createdAt: Date;
       updatedAt: Date;
-    } & { GEOCODE_type: GEOCODE_Source };
+    } & { GEOCODE_type: GEOCODE_type };
 
     let docs: doc[] = [];
     for (const i in endpoints) {
@@ -221,7 +222,7 @@ export class GeocodeService {
               r as (dbAddresses & {
                 createdAt: Date;
                 updatedAt: Date;
-              } & { GEOCODE_type: GEOCODE_Source })[],
+              } & { GEOCODE_type: GEOCODE_type })[],
             );
           docs.push(...r);
         }
@@ -246,10 +247,13 @@ export class GeocodeService {
                 ? { ...acc, [v]: doc![v] }
                 : acc,
             {},
-          ) as
-            | Omit<dbAddresses, "_id" | "coords" | "GEOCODE_type">
-            | Omit<dbTBM_Stops, "_id" | "coords" | "GEOCODE_type">
-            | Omit<dbSNCF_Stops, "_id" | "coords" | "GEOCODE_type">),
+          ) as typeof doc.GEOCODE_type extends TBMEndpoints.Addresses
+            ? Omit<dbAddresses, "_id" | "coords" | "GEOCODE_type">
+            : typeof doc.GEOCODE_type extends TBMEndpoints.Stops
+            ? Omit<dbTBM_Stops, "_id" | "coords" | "GEOCODE_type">
+            : typeof doc.GEOCODE_type extends SNCFEndpoints.Stops
+            ? Omit<dbSNCF_Stops, "_id" | "coords" | "GEOCODE_type">
+            : any),
         },
       });
     }

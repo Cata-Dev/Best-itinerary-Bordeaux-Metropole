@@ -1,6 +1,7 @@
 import { schema } from "@feathersjs/schema";
 import type { Infer } from "@feathersjs/schema";
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
+import { FromSchema } from "json-schema-to-ts";
 
 // Schema for the basic data model (e.g. creating new entries)
 export const itineraryDataSchema = schema({
@@ -27,7 +28,7 @@ export const itineraryPatchSchema = schema({
 export type ItineraryPatch = Infer<typeof itineraryPatchSchema>;
 
 // Schema for the data that is being returned
-export const itineraryResultSchema = schema({
+const itineraryResultRawSchema = {
   definitions: {
     FOOTStageDetails: {
       type: "object",
@@ -55,7 +56,7 @@ export const itineraryResultSchema = schema({
           type: "string",
         },
         departure: {
-          type: "integer"
+          type: "integer",
         },
       },
     },
@@ -75,7 +76,7 @@ export const itineraryResultSchema = schema({
           type: "string",
         },
         departure: {
-          type: "integer"
+          type: "integer",
         },
       },
     },
@@ -153,9 +154,196 @@ export const itineraryResultSchema = schema({
       },
     },
   },
-} as const);
+  allOf: [
+    /* {
+      if: {
+        properties: {
+          paths: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                stages: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      type: { const: "FOOT" },
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      then: {
+        properties: {
+          paths: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                stages: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      details: {
+                        $ref: "#/definitions/FOOTStageDetails",
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+    }, */
+    {
+      if: {
+        properties: {
+          paths: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                stages: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      type: { const: "TBM" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      then: {
+        properties: {
+          paths: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                stages: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      details: {
+                        $ref: "#/definitions/TBMStageDetails",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          paths: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                stages: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      type: { const: "SNCF" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      then: {
+        properties: {
+          paths: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                stages: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      details: {
+                        $ref: "#/definitions/SNCFStageDetails",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  ],
+} as const;
 
-export type ItineraryResult = Infer<typeof itineraryResultSchema>;
+export const itineraryResultSchema = schema(itineraryResultRawSchema);
+
+export type Stage_type = "FOOT" | "TBM" | "SNCF";
+type ItineraryStageResult<S extends Stage_type> = S extends "FOOT"
+  ? {
+      type: S;
+      details: {
+        distance: number;
+      };
+    }
+  : S extends "TBM"
+  ? {
+      type: S;
+      details: {
+        type: "BUS" | "TRAM" | "BATEAU";
+        line: string;
+        direction: string;
+        departure: number;
+      };
+    }
+  : S extends "SNCF"
+  ? {
+      type: S;
+      details: {
+        type: "TRAIN";
+        line: string;
+        direction: string;
+        departure: number;
+      };
+    }
+  : never;
+
+export type ItineraryResult = {
+  code: number;
+  message: string;
+  lastActualization: number;
+  paths: {
+    departure: number;
+    id: string;
+    totalDuration: number;
+    totalDistance: number;
+    from: string;
+    stages: (ItineraryStageResult<Stage_type> & {
+      to: string;
+      duration: number;
+    })[];
+  }[];
+};
 
 // Schema for allowed query properties
 export const itineraryQuerySchema = schema({
