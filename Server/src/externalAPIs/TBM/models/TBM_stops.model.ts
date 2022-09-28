@@ -17,16 +17,15 @@ const dbTBM_Stops = new Schema(
       enum: ["CLASSIQUE", "DELESTAGE", "AUTRE", "FICTIF"],
       required: true,
     },
-    actif: { type: Number, enum: [0, 1], required: true },
+    actif: { type: Number, enum: [0, 1] as const, required: true },
   },
   {
     timestamps: true,
   },
 );
 
-export type dbTBM_Stops = Omit<InferSchemaType<typeof dbTBM_Stops>, "coords" | "actif"> & {
+export type dbTBM_Stops = Omit<InferSchemaType<typeof dbTBM_Stops>, "coords"> & {
   coords: [number, number];
-  actif: 0 | 1;
 };
 
 // for more of what you can do here.

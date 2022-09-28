@@ -10,16 +10,14 @@ const dbTBM_Lines = new Schema(
     _id: { type: Number, required: true },
     libelle: { type: String, required: true },
     vehicule: { type: String, enum: ["BUS", "TRAM", "BATEAU"], required: true },
-    active: { type: Number, enum: [0, 1], required: true },
+    active: { type: Number, enum: [0, 1] as const, required: true },
   },
   {
     timestamps: true,
   },
 );
 
-export type dbTBM_Lines = Omit<InferSchemaType<typeof dbTBM_Lines>, "active"> & {
-  active: 0 | 1;
-};
+export type dbTBM_Lines = InferSchemaType<typeof dbTBM_Lines>;
 
 // for more of what you can do here.
 export default function (app: Application) {
