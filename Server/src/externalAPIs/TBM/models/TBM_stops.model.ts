@@ -38,5 +38,5 @@ export default function (app: Application) {
   if (mongooseClient.modelNames().includes(modelName)) {
     mongooseClient.deleteModel(modelName);
   }
-  return mongooseClient.model(modelName, dbTBM_Stops);
+  return mongooseClient.model<dbTBM_Stops>(modelName, dbTBM_Stops);
 }
