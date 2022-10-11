@@ -229,7 +229,7 @@ export class GeocodeService {
       } catch (_) {}
     }
 
-    if (!docs.length) throw new NotFound(`no result found for id ${_params.query.id}`);
+    if (!docs.length) return [];
 
     if (_params.query.max) docs = docs.slice(0, Number(_params.query.max));
 
