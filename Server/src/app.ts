@@ -54,7 +54,7 @@ app.hooks({
   setup: [
     setupMongoose,
     async (context: HookContext, next: NextFunction) => {
-      await setupExternalAPIs(context.self);
+      await setupExternalAPIs(context.app);
       await next();
     },
   ],
