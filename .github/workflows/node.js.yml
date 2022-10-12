@@ -36,8 +36,7 @@ jobs:
           Client/package-lock.json
     # Build Server to build Client
     - run: cd Server/ && npm ci
-    - run: cd Server/ && npm run build --if-present
-    - run: cd Client && ls ../Server/
+    - run: cd Server/ && npm run compile --if-present
     - run: cd Client/ && npm ci
     - run: cd Client/ && npm run build --if-present
     
