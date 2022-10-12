@@ -12,10 +12,6 @@
     "prettier": "npx prettier \"**/*.{js,ts,vue}\" --write"
   },
   "dependencies": {
-    "@capacitor/android": "^4.0.1",
-    "@capacitor/app": "^4.0.1",
-    "@capacitor/core": "^4.0.1",
-    "@capacitor/geolocation": "^4.0.1",
     "@feathersjs/socketio-client": "^5.0.0-pre.30",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-regular-svg-icons": "^5.15.4",
@@ -31,7 +27,6 @@
     "vue-router": "^4.1.5"
   },
   "devDependencies": {
-    "@capacitor/cli": "^4.0.1",
     "@rushstack/eslint-patch": "^1.1.4",
     "@types/node": "^17",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
