@@ -8,10 +8,12 @@ on:
     branches: [ main, dev ]
     paths:
       - 'Client/*'
+      - 'Server/*'
   pull_request:
     branches: [ main, dev ]
     paths:
       - 'Client/*'
+      - 'Server/*'
 
 jobs:
   build:
@@ -20,16 +22,21 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.13.0]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        fail-fast: [false]
+        node-version: [ 17.x, 18.x ]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - run: cd Client/ && npm i
+        cache: 'npm'
+        cache-dependency-path: |
+          Server/package-lock.json
+          Client/package-lock.json
+    # Build Server to build Client
+    - run: cd Server/ && npm ci
+    - run: cd Server/ && npm run compile --if-present
+    - run: cd Client/ && npm ci
     - run: cd Client/ && npm run build --if-present
     

@@ -1,116 +1,123 @@
-<script setup>
-import { ref } from 'vue'
-import DatalistInput from './DatalistInput.vue'
-import { client } from '../store/'
+<script setup lang="ts">
+import { ref } from "vue";
+import DatalistInput from "./DatalistInput.vue";
+import { client, type TransportMode } from "../store/";
+import type { GeocodeResult } from "server/lib/services/geocode/geocode.schema";
 
-const props = defineProps({
-  name: {
-    type: String,
-    required: true,
-  },
-  placeholder: {
-    type: String,
-    required: true,
-  },
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-})
+export type DefaultLocation = { display: ""; type: "ADRESSE"; value: [0, 0] };
 
-const emit = defineEmits([
-  'update:modelValue',
-])
-
-const location = ref({
-  datalist: [],
-  input: props.modelValue,
-  previousInput: null,
-  value: props.modelValue,
-  updated: Date.now(),
-})
-
-function updateModelValue(v) {
-  emit('update:modelValue', v)
+export interface ParsedGeocodeLocation {
+  display: string;
+  type: Exclude<TransportMode, "FOOT"> | "ADRESSE";
+  value: [number, number];
 }
 
-function parseGeocode(s) {
+type ModelValue = ParsedGeocodeLocation | DefaultLocation;
 
-  switch(s.GEOCODE_type) {
-    case 'Addresses':
-      return { display: `${s.numero} ${s.rep ? s.rep+' ' : ''}${s.nom_voie} ${s.commune}`, type: "ADRESSE" }
+interface Props {
+  name: string;
+  placeholder: string;
+  modelValue: ModelValue;
+}
 
-    case 'TBM_Stops':
-      return { display: s.libelle, type: s.vehicule }
+const props = defineProps<Props>();
 
-    case 'SNCF_Stops':
-      return { display: s.name, type: "TRAIN" }
+const emit = defineEmits<{
+  (e: "update:modelValue", modelValue: ModelValue): void;
+}>();
 
-    default: return null
+const datalist = ref<ParsedGeocodeLocation[]>();
+/**
+ * The user input, which can be forced
+ */
+const input = ref<string>(props.modelValue?.display || "");
+const previousInput = ref<string>();
+/**
+ * The validated location (emitted modelValue)
+ */
+const modelValue = ref<ModelValue>(props.modelValue);
+const updated = ref<number>(0);
 
+function updateModelValue(value: ParsedGeocodeLocation) {
+  emit("update:modelValue", value);
+}
+
+function parseGeocode(s: GeocodeResult): Omit<ParsedGeocodeLocation, "value"> {
+  switch (s.GEOCODE_type) {
+    case "Addresses":
+      return {
+        display: `${s.dedicated.numero} ${"rep" in s.dedicated ? s.dedicated.rep + " " : ""}${
+          s.dedicated.nom_voie
+        } ${s.dedicated.commune}`,
+        type: "ADRESSE",
+      };
+
+    case "TBM_Stops":
+      return { display: s.dedicated.libelle, type: s.dedicated.vehicule };
+
+    case "SNCF_Stops":
+      return { display: s.dedicated.name, type: "TRAIN" };
+
+    default:
+      return { display: "Unsupported location", type: "ADRESSE" };
   }
 }
 
-async function refreshSuggestions() {
-
-  if (location.value.previousInput === location.value.input) return
-  if (!location.value.input || location.value.input.length < 5) return location.value.datalist = []
-
-  if (location.value.value.display) updateModelValue(location.value.value)
-
-  const now = Date.now()
-
-  const suggestions = await fetchSuggestions(location.value.input)
-
-  if (now < location.value.updated) return
-  location.value.datalist = suggestions
-  location.value.previousInput = location.value.input
-  location.value.updated = now
-
-  const validLocation = suggestions.find(l => l.display === location.value.input)
-  if (validLocation) updateModelValue(validLocation)
-
-}
-
-async function fetchSuggestions(value) {
-  let suggestions
+/**
+ * @returns Can be empty
+ */
+async function fetchSuggestions(value: string): Promise<ParsedGeocodeLocation[]> {
+  let suggestions: GeocodeResult[] = [];
   try {
-    suggestions = await client.service('geocode').find({ query: { id: value, max: 25, uniqueVoies: true } })
-  } catch(_) {}
-  return suggestions && suggestions.length ? suggestions.map(s => ({ value: s.coords, ...parseGeocode(s) })) : []
+    suggestions = await client.service("geocode").find({ query: { id: value, max: 25, uniqueVoies: true } });
+  } catch (_) {}
+
+  return suggestions.map((s) => ({ value: s.coords, ...parseGeocode(s) }));
 }
 
-const input = ref()
+async function refreshSuggestions() {
+  if (previousInput.value === input.value) return;
+  if (!input.value || input.value.length < 5) return (datalist.value = []);
+
+  // if (modelValue.value?.display?.length) updateModelValue(modelValue.value as ParsedGeocodeLocation);
+
+  const now = Date.now();
+
+  const suggestions = await fetchSuggestions(input.value);
+
+  if (now < updated.value) return;
+  datalist.value = suggestions;
+  previousInput.value = input.value;
+  updated.value = now;
+
+  const validLocation = suggestions.find((l) => l.display === input.value);
+  if (validLocation) updateModelValue(validLocation);
+}
+
+const inputCompo = ref<InstanceType<typeof DatalistInput> | null>(null);
 
 function focus() {
-  input.value.focus()
+  inputCompo.value?.focus();
 }
 
-async function forceInput(v) {
-  location.value.previousInput = location.value.input,
-  input.value.forceInput(v)
-  await refreshSuggestions()
+/**
+ * Will call forceIpunt on datalistInput
+ * If different input, will emit input
+ */
+async function forceInput(v: string) {
+  inputCompo.value?.forceInput(v);
+  await refreshSuggestions();
 }
 
 defineExpose({
   focus,
   forceInput,
-})
+});
 </script>
 
 <template>
   <div
-    class="
-      flex
-      w-full
-      items-stretch
-      relative
-      px-3
-      py-2
-      bg-bg-light
-      dark:bg-bg-dark
-      rounded-full
-      shadow-xl"
+    class="flex w-full items-stretch relative px-3 py-2 bg-bg-light dark:bg-bg-dark rounded-full shadow-xl"
   >
     <button class="flex mr-1 items-center">
       <font-awesome-icon
@@ -119,27 +126,20 @@ defineExpose({
       />
     </button>
     <DatalistInput
-      ref="input"
-      v-model="location.value"
+      ref="inputCompo"
+      v-model="modelValue"
       :placeholder="placeholder"
-      :datalist="location.datalist"
-      class="
-        px-2
-        flex-grow
-        text-text-light-primary
-        dark:text-text-dark-primary
-        placeholder-text-light-faded
-        dark:placeholder-text-dark-faded"
-      @input="location.input = $event, refreshSuggestions()"
+      :datalist="datalist"
+      class="px-2 flex-grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
+      @input="
+        if (input != $event) (previousInput = input), (input = $event);
+        refreshSuggestions();
+      "
     />
     <span class="flex mr-1 items-center">
       <font-awesome-icon
         :icon="name == 'destination' ? 'flag' : 'map-pin'"
-        class="
-          text-text-light-primary
-          dark:text-text-dark-primary
-          text-2xl
-          ml-1"
+        class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-1"
       />
     </span>
   </div>
