@@ -4,7 +4,7 @@ import { createClient } from "server";
 import type { ItineraryResult } from "server/lib/services/itinerary/itinerary.schema";
 
 const connection = socketio(
-  io("http://localhost:3030", {
+  io("https://bibm.catadev.org:3031", {
     //https://bibm.catadev.org:3031
     transports: ["websocket"],
     reconnectionAttempts: 2,
