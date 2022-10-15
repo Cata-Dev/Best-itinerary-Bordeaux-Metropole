@@ -1,44 +1,24 @@
-<script setup>
-import { ref } from 'vue'
-import { theme } from '../store'
+<script setup lang="ts">
+import { ref } from "vue";
+import { theme, type QuerySettings } from "@/store";
 
-const props = defineProps({
-  shown: {
-    type: Boolean,
-    required: true,
-  },
-  modelValue: {
-    type: Object,
-    required: true
-  }
-})
+interface Props {
+  shown: boolean;
+  modelValue: QuerySettings;
+}
 
-const settings = ref(props.modelValue)
+const props = defineProps<Props>();
 
-defineEmits([
-  'update:modelValue',
-])
+const settings = ref<QuerySettings>(props.modelValue);
+
+defineEmits(["update:modelValue"]);
 </script>
 
 <template>
   <div>
     <div
       ref="accordion"
-      class="
-        flex
-        overflow-hidden
-        transition-all
-        duration-500
-        max-w-0
-        max-h-fit
-        mx-2
-        my-2
-        whitespace-nowrap
-        bg-bg-light
-        dark:bg-bg-dark
-        text-text-light-primary
-        dark:text-text-dark-primary
-        rounded-lg"
+      class="flex overflow-hidden transition-all duration-500 max-w-0 max-h-fit mx-2 my-2 whitespace-nowrap bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary rounded-lg"
       :class="{ 'max-w-full': shown }"
     >
       <div class="flex flex-col m-2">
@@ -49,9 +29,9 @@ defineEmits([
               v-model="settings.departureTime"
               type="time"
               class="bg-transparent text-inherit time"
-              :class="{ 'dark': theme === 'dark' }"
+              :class="{ dark: theme === 'dark' }"
               @input="$emit('update:modelValue', settings)"
-            >
+            />
           </div>
         </div>
         <div class="inline-block mb-1">
@@ -63,7 +43,7 @@ defineEmits([
               step="10"
               type="number"
               @change="$emit('update:modelValue', settings)"
-            >
+            />
             <span>m</span>
           </div>
         </div>
@@ -76,7 +56,7 @@ defineEmits([
               step="0.1"
               type="number"
               @input="$emit('update:modelValue', settings)"
-            >
+            />
             <span>km/h</span>
           </div>
         </div>
@@ -86,17 +66,14 @@ defineEmits([
             <input
               v-model="settings.transports.TBM"
               class="ml-2"
-              checked="true"
               type="checkbox"
               @change="$emit('update:modelValue', settings)"
-            ><span class="ml-1">TBM</span>
-            <br><input
+            /><span class="ml-1">TBM</span> <br /><input
               v-model="settings.transports.SNCF"
               class="ml-2"
-              checked="true"
               type="checkbox"
               @change="$emit('update:modelValue', settings)"
-            ><span class="ml-1">SNCF</span>
+            /><span class="ml-1">SNCF</span>
           </div>
         </div>
       </div>
@@ -106,7 +83,7 @@ defineEmits([
 
 <style scoped>
 .time.dark::-webkit-calendar-picker-indicator {
-  filter: invert(90%)
+  filter: invert(90%);
 }
 .time::-webkit-datetime-edit {
   max-width: 5ch;
