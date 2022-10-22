@@ -300,31 +300,31 @@ export const itineraryResultSchema = schema(itineraryResultRawSchema);
 export type Stage_type = "FOOT" | "TBM" | "SNCF";
 type ItineraryStageResult<S extends Stage_type> = S extends "FOOT"
   ? {
-    type: S;
-    details: {
-      distance: number;
-    };
-  }
+      type: S;
+      details: {
+        distance: number;
+      };
+    }
   : S extends "TBM"
   ? {
-    type: S;
-    details: {
-      type: "BUS" | "TRAM" | "BATEAU";
-      line: string;
-      direction: string;
-      departure: number;
-    };
-  }
+      type: S;
+      details: {
+        type: "BUS" | "TRAM" | "BATEAU";
+        line: string;
+        direction: string;
+        departure: number;
+      };
+    }
   : S extends "SNCF"
   ? {
-    type: S;
-    details: {
-      type: "TRAIN";
-      line: string;
-      direction: string;
-      departure: number;
-    };
-  }
+      type: S;
+      details: {
+        type: "TRAIN";
+        line: string;
+        direction: string;
+        departure: number;
+      };
+    }
   : never;
 
 export type ItineraryResult = {
