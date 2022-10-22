@@ -12,7 +12,7 @@
     "prettier": "npx prettier \"**/*.{js,ts,vue}\" --write"
   },
   "dependencies": {
-    "@feathersjs/socketio-client": "^5.0.0-pre.30",
+    "@feathersjs/socketio-client": "^5.0.0-pre.31",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-regular-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
