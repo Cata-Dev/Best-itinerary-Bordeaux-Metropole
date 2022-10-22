@@ -1,6 +1,5 @@
 import { schema } from "@feathersjs/schema";
 import type { Infer } from "@feathersjs/schema";
-import { FromSchema } from "json-schema-to-ts";
 import { TBMEndpoints } from "../../externalAPIs/TBM/index";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF/index";
 
@@ -198,37 +197,37 @@ export const geocodeResultSchema = schema(geocodeResultRawSchema);
 export type GEOCODE_type = TBMEndpoints.Addresses | TBMEndpoints.Stops | SNCFEndpoints.Stops;
 type GeocodeSpecificResult<G extends GEOCODE_type> = G extends TBMEndpoints.Addresses
   ? {
-      GEOCODE_type: G;
-      dedicated: {
-        rep?: string | undefined;
-        code_postal: number;
-        commune: string;
-        fantoir: string;
-        nom_voie: string;
-        nom_voie_lowercase: string;
-        numero: number;
-        type_voie: string;
-      };
-    }
+    GEOCODE_type: G;
+    dedicated: {
+      rep?: string | undefined;
+      code_postal: number;
+      commune: string;
+      fantoir: string;
+      nom_voie: string;
+      nom_voie_lowercase: string;
+      numero: number;
+      type_voie: string;
+    };
+  }
   : G extends TBMEndpoints.Stops
   ? {
-      GEOCODE_type: G;
-      dedicated: {
-        type: "CLASSIQUE" | "DELESTAGE" | "AUTRE" | "FICTIF";
-        vehicule: "BUS" | "TRAM" | "BATEAU";
-        libelle: string;
-        libelle_lowercase: string;
-        actif: 0 | 1;
-      };
-    }
+    GEOCODE_type: G;
+    dedicated: {
+      type: "CLASSIQUE" | "DELESTAGE" | "AUTRE" | "FICTIF";
+      vehicule: "BUS" | "TRAM" | "BATEAU";
+      libelle: string;
+      libelle_lowercase: string;
+      actif: 0 | 1;
+    };
+  }
   : G extends SNCFEndpoints.Stops
   ? {
-      GEOCODE_type: G;
-      dedicated: {
-        name: string;
-        name_lowercase: string;
-      };
-    }
+    GEOCODE_type: G;
+    dedicated: {
+      name: string;
+      name_lowercase: string;
+    };
+  }
   : never;
 export type GeocodeResult = GeocodeSpecificResult<GEOCODE_type> & {
   _id: number;
