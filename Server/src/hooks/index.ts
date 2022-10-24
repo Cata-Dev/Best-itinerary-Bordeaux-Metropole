@@ -15,7 +15,7 @@ const log = async (context: HookContext, next: NextFunction) => {
         Date.now(),
         true,
       )} (${(performance.now() - initialTs).toFixed(2)}ms) | ${colorFunctions.fB(
-        context.method.toUpperCase(),
+        `${context.http?.status || "200"} ${context.method.toUpperCase()}`,
       )} ${context.path}${context.id ? "/" + colorFunctions.fY(context.id) : ""} (provider: ${
         context.params?.provider || "internal"
       })`,
@@ -26,7 +26,7 @@ const log = async (context: HookContext, next: NextFunction) => {
         Date.now(),
         true,
       )} (${(performance.now() - initialTs).toFixed(2)}ms) | ${colorFunctions.fR(
-        context.method.toUpperCase(),
+        `${context.http?.status || "500"} ${context.method.toUpperCase()}`,
       )} ${context.path}${context.id ? "/" + colorFunctions.fY(context.id) : ""} (provider: ${
         context.params?.provider || "internal"
       })`,

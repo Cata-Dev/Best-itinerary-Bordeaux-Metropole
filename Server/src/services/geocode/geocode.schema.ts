@@ -1,6 +1,5 @@
 import { schema } from "@feathersjs/schema";
 import type { Infer } from "@feathersjs/schema";
-import { FromSchema } from "json-schema-to-ts";
 import { TBMEndpoints } from "../../externalAPIs/TBM/index";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF/index";
 

@@ -1,7 +1,6 @@
 import { schema } from "@feathersjs/schema";
 import type { Infer } from "@feathersjs/schema";
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
-import { FromSchema } from "json-schema-to-ts";
 
 // Schema for the basic data model (e.g. creating new entries)
 export const itineraryDataSchema = schema({
