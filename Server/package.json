@@ -51,7 +51,7 @@
     "@feathersjs/errors": "^5.0.0-pre.31",
     "@feathersjs/express": "^5.0.0-pre.31",
     "@feathersjs/feathers": "^5.0.0-pre.31",
-    "@feathersjs/schema": "^5.0.0-pre.31",
+    "@feathersjs/schema": "^5.0.0-pre.32",
     "@feathersjs/socketio": "^5.0.0-pre.31",
     "@feathersjs/transport-commons": "^5.0.0-pre.31",
     "axios": "^0.27.2",
