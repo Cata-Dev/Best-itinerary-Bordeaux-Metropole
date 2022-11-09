@@ -15,7 +15,7 @@
     "@feathersjs/socketio-client": "^5.0.0-pre.32",
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
     "@fortawesome/free-solid-svg-icons": "^6.2.0",
-    "@fortawesome/vue-fontawesome": "^3.0.1",
+    "@fortawesome/vue-fontawesome": "^3.0.2",
     "autoprefixer": "^10.4.13",
     "core-js": "^3.26.0",
     "postcss": "^8.4.18",
