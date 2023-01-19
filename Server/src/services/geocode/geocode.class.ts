@@ -1,24 +1,14 @@
-/* eslint-disable no-empty */
-import type { Params } from "@feathersjs/feathers";
-import { resolveAll } from "@feathersjs/schema";
+// For more information about this file see https://dove.feathersjs.com/guides/cli/service.class.html#custom-services
+import type { Params, ServiceInterface } from "@feathersjs/feathers";
 
-import type { GeocodeResult, GeocodeQuery, GEOCODE_type } from "./geocode.schema";
-import { geocodeResolvers } from "./geocode.resolver";
-
-export const geocodeHooks = {
-  around: {
-    all: [resolveAll(geocodeResolvers)],
-  },
-  before: {},
-  after: {},
-  error: {},
-};
-
-import { Application } from "../../declarations";
+import type { Application } from "../../declarations";
+import type { Geocode, GeocodeData, GeocodePatch, GeocodeQuery, GEOCODE_type } from "./geocode.schema";
 
 export interface GeocodeServiceOptions {
   app: Application;
 }
+
+export interface GeocodeParams extends Params<GeocodeQuery> {}
 
 import { NotFound, BadRequest } from "@feathersjs/errors";
 import { FilterQuery } from "mongoose";
@@ -31,8 +21,7 @@ import { dbSNCF_Stops } from "../../externalAPIs/SNCF/models/SNCF_stops.model";
 import { TBMEndpoints } from "../../externalAPIs/TBM";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF";
 
-// By default calls the standard MongoDB adapter service methods but can be customized with your own functionality.
-export class GeocodeService {
+export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, GeocodeParams, GeocodePatch> {
   private readonly app: Application;
   private communes: string[] = [];
   private communesNormalized: string[] = [];
@@ -146,7 +135,7 @@ export class GeocodeService {
     }
   }
 
-  async get(id: string /* _params?: Params<GeocodeQuery> */): Promise<GeocodeResult> {
+  async get(id: string, _params: GeocodeParams): Promise<Geocode> {
     const { queries, endpoints } = await this.parseId(id);
 
     let doc:
@@ -193,11 +182,11 @@ export class GeocodeService {
     return result;
   }
 
-  async find(_params: Params<GeocodeQuery>): Promise<GeocodeResult[]> {
+  async find(_params: Params<GeocodeQuery>): Promise<Geocode[]> {
     if (_params.query?.id === undefined) throw new BadRequest("missing id parameter in query");
     const { queries, endpoints } = await this.parseId(_params.query.id);
 
-    const results: GeocodeResult[] = [];
+    const results: Geocode[] = [];
 
     type doc = (dbAddresses | dbTBM_Stops | dbSNCF_Stops) & {
       createdAt: Date;
@@ -270,3 +259,7 @@ function filterUniqueVoies<T extends dbAddresses>(results: T[]) {
     return results.find((r) => r.nom_voie_lowercase === uv && r.numero === min) as T;
   });
 }
+
+export const getOptions = (app: Application) => {
+  return { app };
+};

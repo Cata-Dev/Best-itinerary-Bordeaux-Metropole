@@ -166,7 +166,7 @@ export default (app: Application) => {
           )
         ).route_schedules;
 
-        const schedules: dbSNCF_Schedules[] = [];
+        const schedules: Omit<dbSNCF_Schedules, "updatedAt" | "createdAt">[] = [];
         for (const route_schedule of route_schedules) {
           for (const i in route_schedule.table.rows) {
             //iterate through rows of schedules table
@@ -219,7 +219,7 @@ export default (app: Application) => {
           )
         ).stop_points;
 
-        const Stops: dbSNCF_Stops[] = rawStops
+        const Stops: Omit<dbSNCF_Stops, "updatedAt" | "createdAt">[] = rawStops
           .map((stop) => {
             return {
               _id: parseInt(stop["id"].substring(16, 24)),
