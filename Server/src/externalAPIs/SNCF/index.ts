@@ -23,15 +23,23 @@ function parseSNCFdate(string: string): Date {
   return date;
 }
 
+function pad(number: number) {
+  var s = String(number);
+  if (s.length === 1) {
+    s = "0" + s;
+  }
+  return s;
+}
+
 /**
  * Format SNCF API date
  * @param {Date} date
  * @returns {String}
  */
 function formatSNCFdate(date: Date): string {
-  return `${date.getFullYear()}${
-    date.getMonth() + 1
-  }${date.getDate()}T${date.getHours()}${date.getMinutes()}00`;
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(
+    date.getDate(),
+  )}T${date.getHours()}${date.getMinutes()}00`;
 }
 
 export enum SNCFEndpoints {
