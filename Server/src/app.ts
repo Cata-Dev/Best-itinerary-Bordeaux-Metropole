@@ -1,42 +1,39 @@
-import compress from "compression";
-import cors from "cors";
-
-import { feathers, NextFunction } from "@feathersjs/feathers";
-import express, { rest, json, urlencoded, notFound, errorHandler } from "@feathersjs/express";
+import { feathers } from "@feathersjs/feathers";
 import configuration from "@feathersjs/configuration";
+import { koa, rest, bodyParser, errorHandler, parseAuthentication, cors } from "@feathersjs/koa";
 import socketio from "@feathersjs/socketio";
 
-import type { Application, HookContext } from "./declarations";
-import { configurationSchema } from "./configuration";
-import { logErrorHook, logger } from "./logger";
-import { log, errorHandler as errorHandlerHook } from "./hooks/index";
-import { setupMongoose, teardownMongoose } from "./mongoose";
-import { services } from "./services/index";
+import type { Application, HookContext, NextFunction } from "./declarations";
+import { configurationValidator } from "./configuration";
+import { errorHandler as errorHandlerHook, log } from "./hooks";
+import { services } from "./services";
 import { channels } from "./channels";
 import { setupExternalAPIs } from "./externalAPIs/index";
+import { logErrorHook } from "./logger";
+import { setupMongoose, teardownMongoose } from "./mongoose";
 
-const app: Application = express(feathers()) as Application;
+const app: Application = koa(feathers()) as Application;
 
-// Load app configuration
-app.configure(configuration(configurationSchema));
-// Enable security, CORS, compression, favicon and body parsing
+// Load our app configuration (see config/ folder)
+app.configure(configuration(configurationValidator));
+
+// Set up Koa middleware
 app.use(cors());
-app.use(compress());
-app.use(json());
-app.use(urlencoded({ extended: true }));
-// Set up Plugins and providers
+app.use(errorHandler());
+app.use(parseAuthentication());
+app.use(bodyParser());
+
+// Configure services and transports
 app.configure(rest());
-app.configure(socketio());
+app.configure(
+  socketio({
+    cors: {
+      origin: app.get("origins"),
+    },
+  }),
+);
 app.configure(services);
 app.configure(channels);
-
-app.use(notFound());
-app.use(errorHandler({ logger }));
-
-// app.configure(setupMongoose);
-
-//Set up custom utils
-// app.configure(setupExternalAPIs);
 
 // Register hooks that run on all service methods
 app.hooks({

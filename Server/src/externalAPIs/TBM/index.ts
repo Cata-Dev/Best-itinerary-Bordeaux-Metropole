@@ -184,7 +184,7 @@ export default (app: Application) => {
       async () => {
         const rawAddresses: Addresse[] = await getData("fv_adresse_p", ["crs=epsg:2154"]);
 
-        const Addresses: dbAddresses[] = rawAddresses.map((address) => {
+        const Addresses: Omit<dbAddresses, "updatedAt" | "createdAt">[] = rawAddresses.map((address) => {
           const voie = address.properties.nom_voie;
           return {
             _id: parseInt(address.properties.gid),
@@ -216,13 +216,15 @@ export default (app: Application) => {
       async () => {
         const rawIntersections: Intersection[] = await getData("fv_carre_p", ["crs=epsg:2154"]);
 
-        const Intersections: dbIntersections[] = rawIntersections.map((intersection) => {
-          return {
-            coords: intersection.geometry.coordinates,
-            _id: parseInt(intersection.properties.gid),
-            nature: intersection.properties.nature,
-          };
-        });
+        const Intersections: Omit<dbIntersections, "updatedAt" | "createdAt">[] = rawIntersections.map(
+          (intersection) => {
+            return {
+              coords: intersection.geometry.coordinates,
+              _id: parseInt(intersection.properties.gid),
+              nature: intersection.properties.nature,
+            };
+          },
+        );
 
         await Intersection.deleteMany({
           _id: { $nin: Intersections.map((i) => i._id) },
@@ -240,7 +242,7 @@ export default (app: Application) => {
       async () => {
         const rawSections: Section[] = await getData("fv_tronc_l", ["crs=epsg:2154"]);
 
-        const Sections: dbSections[] = rawSections.map((section) => {
+        const Sections: Omit<dbSections, "updatedAt" | "createdAt">[] = rawSections.map((section) => {
           return {
             coords: section.geometry.coordinates,
             distance: section.geometry.coordinates.reduce((acc: number, v, i, arr) => {
@@ -273,7 +275,7 @@ export default (app: Application) => {
       async () => {
         const rawStops: TBM_Stop[] = await getData("sv_arret_p", ["crs=epsg:2154"]);
 
-        const Stops: dbTBM_Stops[] = rawStops.map((stop) => {
+        const Stops: Omit<dbTBM_Stops, "updatedAt" | "createdAt">[] = rawStops.map((stop) => {
           return {
             coords: stop.geometry?.coordinates ?? [Infinity, Infinity], //out of BM
             _id: parseInt(stop.properties.gid),
@@ -299,7 +301,7 @@ export default (app: Application) => {
       async () => {
         const rawLines: TBM_Line[] = await getData("sv_ligne_a");
 
-        const Lines: dbTBM_Lines[] = rawLines.map((line) => {
+        const Lines: Omit<dbTBM_Lines, "updatedAt" | "createdAt">[] = rawLines.map((line) => {
           return {
             _id: parseInt(line.properties.gid),
             libelle: line.properties.libelle,
@@ -344,7 +346,7 @@ export default (app: Application) => {
             }),
         ]);
 
-        const Schedules: dbTBM_Schedules[] = rawSchedules.map((schedule) => {
+        const Schedules: Omit<dbTBM_Schedules, "updatedAt" | "createdAt">[] = rawSchedules.map((schedule) => {
           return {
             _id: parseInt(schedule.properties.gid),
             hor_theo: new Date(schedule.properties.hor_theo),
@@ -380,7 +382,7 @@ export default (app: Application) => {
             }),
         ]);
 
-        const Vehicles: dbTBM_Vehicles[] = rawVehicles.map((vehicle) => {
+        const Vehicles: Omit<dbTBM_Vehicles, "updatedAt" | "createdAt">[] = rawVehicles.map((vehicle) => {
           return {
             _id: parseInt(vehicle.properties.gid),
             etat: vehicle.properties.etat,
@@ -418,17 +420,19 @@ export default (app: Application) => {
             ]),
         ]);
 
-        const Lines_routes: dbTBM_Lines_routes[] = rawLines_routes.map((lines_route) => {
-          return {
-            _id: parseInt(lines_route.properties.gid),
-            libelle: lines_route.properties.libelle,
-            sens: lines_route.properties.sens,
-            vehicule: lines_route.properties.vehicule,
-            rs_sv_ligne_a: lines_route.properties.rs_sv_ligne_a,
-            rg_sv_arret_p_nd: lines_route.properties.rg_sv_arret_p_nd,
-            rg_sv_arret_p_na: lines_route.properties.rg_sv_arret_p_na,
-          };
-        });
+        const Lines_routes: Omit<dbTBM_Lines_routes, "updatedAt" | "createdAt">[] = rawLines_routes.map(
+          (lines_route) => {
+            return {
+              _id: parseInt(lines_route.properties.gid),
+              libelle: lines_route.properties.libelle,
+              sens: lines_route.properties.sens,
+              vehicule: lines_route.properties.vehicule,
+              rs_sv_ligne_a: lines_route.properties.rs_sv_ligne_a,
+              rg_sv_arret_p_nd: lines_route.properties.rg_sv_arret_p_nd,
+              rg_sv_arret_p_na: lines_route.properties.rg_sv_arret_p_na,
+            };
+          },
+        );
         await Lines_route.deleteMany({
           _id: { $nin: Lines_routes.map((l_r) => l_r._id) },
         });

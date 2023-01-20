@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import DatalistInput from "./DatalistInput.vue";
 import { client, type TransportMode } from "../store/";
-import type { GeocodeResult } from "server/lib/services/geocode/geocode.schema";
+import type { Geocode } from "server/lib/services/geocode/geocode.schema";
 
 export type DefaultLocation = { display: ""; type: "ADRESSE"; value: [0, 0] };
 
@@ -42,7 +42,7 @@ function updateModelValue(value: ParsedGeocodeLocation) {
   emit("update:modelValue", value);
 }
 
-function parseGeocode(s: GeocodeResult): Omit<ParsedGeocodeLocation, "value"> {
+function parseGeocode(s: Geocode): Omit<ParsedGeocodeLocation, "value"> {
   switch (s.GEOCODE_type) {
     case "Addresses":
       return {
@@ -67,7 +67,7 @@ function parseGeocode(s: GeocodeResult): Omit<ParsedGeocodeLocation, "value"> {
  * @returns Can be empty
  */
 async function fetchSuggestions(value: string): Promise<ParsedGeocodeLocation[]> {
-  let suggestions: GeocodeResult[] = [];
+  let suggestions: Geocode[] = [];
   try {
     suggestions = await client.service("geocode").find({ query: { id: value, max: 25, uniqueVoies: true } });
   } catch (_) {}

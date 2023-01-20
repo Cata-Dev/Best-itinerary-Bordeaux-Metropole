@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TransportBadge from "@/components/TransportBadge.vue";
 import { duration, formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
-import type { ItineraryResult } from "server/lib/services/itinerary/itinerary.schema";
+import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
 
 interface Props {
   title: string;
@@ -9,7 +9,7 @@ interface Props {
   totalDistance: number;
   departure: number;
   from: string;
-  path: ItineraryResult["paths"][number]["stages"];
+  path: Itinerary["paths"][number]["stages"];
   expanded?: boolean;
 }
 
@@ -206,6 +206,7 @@ function computeDuration(index: number): number {
   height: 8px;
   @apply rounded-lg;
 }
+
 .vertical-link {
   margin-right: 1px;
   height: 125%;
@@ -213,6 +214,7 @@ function computeDuration(index: number): number {
   @apply border-r-2;
   @apply border-dashed;
 }
+
 .grid-cols-3-auto {
   grid-template-columns: repeat(3, auto);
 }

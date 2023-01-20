@@ -1,7 +1,7 @@
 import io from "socket.io-client";
 import socketio from "@feathersjs/socketio-client";
 import { createClient } from "server";
-import type { ItineraryResult } from "server/lib/services/itinerary/itinerary.schema";
+import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
 
 const connection = socketio(
   io("http://localhost:3030", {
@@ -13,8 +13,8 @@ const connection = socketio(
 const client = createClient(connection);
 
 interface PromisedAPI {
-  result: Promise<ItineraryResult>;
-  resolve: (value: ItineraryResult) => void;
+  result: Promise<Itinerary>;
+  resolve: (value: Itinerary) => void;
   reject: (reason?: { code?: number }) => void;
 }
 
