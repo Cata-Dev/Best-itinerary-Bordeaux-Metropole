@@ -24,7 +24,7 @@ function parseSNCFdate(string: string): Date {
 }
 
 function pad(number: number) {
-  var s = String(number);
+  let s = String(number);
   if (s.length === 1) {
     s = "0" + s;
   }
