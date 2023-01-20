@@ -137,7 +137,11 @@ export const itineraryQuerySchema = Type.Object(
   {
     from: Type.String(),
     to: Type.String(),
-    transports: Type.Optional(Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false })),
+    transports: Type.Optional(
+      Type.Partial(
+        Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+      ),
+    ),
     departureTime: Type.Optional(Type.String()),
     maxWalkDistance: Type.Optional(Type.Integer()),
     walkSpeed: Type.Optional(Type.Number()),
