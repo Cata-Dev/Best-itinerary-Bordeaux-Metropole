@@ -16,7 +16,7 @@ import type {
   TransportProvider,
   UnknowIcon,
   UnknowLitteral,
-  Object,
+  Obj,
 } from "./utils";
 
 interface QuerySettings {
@@ -58,6 +58,6 @@ export type {
   TransportProvider,
   UnknowIcon,
   UnknowLitteral,
-  Object,
+  Obj,
   QuerySettings,
 };

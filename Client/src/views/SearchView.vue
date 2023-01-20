@@ -18,8 +18,8 @@ import {
   type TransportProvider,
   parseJSON,
 } from "@/store";
-import type { QuerySettings, Object } from "@/store";
-import type { ItineraryResult } from "server/lib/services/itinerary/itinerary.schema";
+import type { QuerySettings, Obj } from "@/store";
+import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
 
 type Location = ParsedGeocodeLocation | DefaultLocation;
 
@@ -83,8 +83,8 @@ const status = ref<Status>({
   ExtraSettings: undefined,
   search: StatusSearchResult.INITIALIZING,
 });
-const results = ref<ItineraryResult["paths"] | StatusSearchResult>(StatusSearchResult.INITIALIZING);
-const result = ref<ItineraryResult["paths"][number] | null>();
+const results = ref<Itinerary["paths"] | StatusSearchResult>(StatusSearchResult.INITIALIZING);
+const result = ref<Itinerary["paths"][number] | null>();
 const router = useRouter();
 const route = useRoute();
 
@@ -149,7 +149,7 @@ function queryUpdated() {
 
   compareObjectForEach(
     settings.value,
-    defaultQuerySettings as unknown as Object<string | number | boolean>,
+    defaultQuerySettings as unknown as Obj<string | number | boolean>,
     (v1, v2, keys) => {
       if (v1 != v2) query[keys.join(".")] = JSON.stringify(v1);
     },
@@ -170,7 +170,7 @@ async function updateQuery(to = route) {
   if (to.query.from) await sourceCompo.value?.forceInput(to.query.from as string);
   if (to.query.to) await destinationCompo.value?.forceInput(to.query.to as string);
 
-  rebaseObject(settings.value, defaultQuerySettings as unknown as Object<string | number | boolean>);
+  rebaseObject(settings.value, defaultQuerySettings as unknown as Obj<string | number | boolean>);
 
   for (const setting in to.query) {
     if (setting.includes(".")) {
@@ -287,7 +287,7 @@ async function selectResult(id: string) {
       </div>
       <div v-if="result && route.hash" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
-          :title="`Alternative #${(results as any[]).indexOf(result)+1}`"
+          :title="`Alternative #${(results as any[]).indexOf(result) + 1}`"
           :total-duration="result.totalDuration"
           :total-distance="result.totalDistance"
           :departure="result.departure"
@@ -350,6 +350,7 @@ span[disabled="true"] {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -363,6 +364,7 @@ span[disabled="true"] {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 0;
   }
@@ -384,9 +386,11 @@ span[disabled="true"] {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
   }
