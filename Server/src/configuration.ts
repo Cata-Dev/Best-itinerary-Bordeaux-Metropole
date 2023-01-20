@@ -12,7 +12,7 @@ export const configurationSchema = Type.Intersect([
     SNCFkey: Type.String(),
     origins: Type.Array(Type.String()),
     mongodb: Type.String(),
-    debug: Type.Boolean(),
+    debug: Type.Optional(Type.Boolean()),
   }),
 ]);
 
