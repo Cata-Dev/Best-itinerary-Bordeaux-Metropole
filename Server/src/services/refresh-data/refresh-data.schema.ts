@@ -37,8 +37,8 @@ export const refreshDataPatchResolver = resolve<RefreshData, HookContext>({});
 export const refreshDataQueryProperties = Type.Object({}, { additionalProperties: false });
 export const refreshDataQuerySchema = Type.Object(
   {
-    waitForUpdate: Type.Boolean(),
-    force: Type.Boolean(),
+    waitForUpdate: Type.Optional(Type.Boolean()),
+    force: Type.Optional(Type.Boolean()),
   },
   { additionalProperties: false },
 );

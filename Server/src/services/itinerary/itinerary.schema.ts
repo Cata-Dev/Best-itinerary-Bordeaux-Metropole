@@ -1,394 +1,150 @@
-import { schema } from "@feathersjs/schema";
-import type { Infer } from "@feathersjs/schema";
+// // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
+import { resolve } from "@feathersjs/schema";
+import { Type, getDataValidator, getValidator } from "@feathersjs/typebox";
+import type { Static } from "@feathersjs/typebox";
+
+import type { HookContext } from "../../declarations";
+import { dataValidator, queryValidator } from "../../validators";
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
 
-// Schema for the basic data model (e.g. creating new entries)
-export const itineraryDataSchema = schema({
-  $id: "ItineraryData",
-  type: "object",
-  additionalProperties: false,
-  required: [],
-  properties: {},
-} as const);
+const FOOTStageDetails = Type.Object(
+  {
+    distance: Type.Integer(),
+  },
+  { $id: "FOOTStageDetails", additionalProperties: false },
+);
 
-export type ItineraryData = Infer<typeof itineraryDataSchema>;
+export const TBMVehicles = Type.Union([Type.Literal("BUS"), Type.Literal("TRAM"), Type.Literal("BATEAU")]);
 
-// Schema for making partial updates
-export const itineraryPatchSchema = schema({
+const TBMStageDetails = Type.Object(
+  {
+    type: TBMVehicles,
+    line: Type.String(),
+    direction: Type.String(),
+    departure: Type.Integer(),
+  },
+  { $id: "TBMStageDetails", additionalProperties: false },
+);
+
+const SNCFStageDetailsType = Type.Union([Type.Literal("TRAIN")]);
+
+const SNCFStageDetails = Type.Object(
+  {
+    type: SNCFStageDetailsType,
+    line: Type.String(),
+    direction: Type.String(),
+    departure: Type.Integer(),
+  },
+  { $id: "SNCFStageDetails", additionalProperties: false },
+);
+
+const FOOT = Type.Literal("FOOT");
+const TBM = Type.Literal("TBM");
+const SNCF = Type.Literal("SNCF");
+
+const StageBase = Type.Object(
+  {
+    to: Type.String(),
+    duration: Type.Integer(),
+  },
+  { additionalProperties: false },
+);
+
+const Stage = Type.Union([
+  Type.Intersect([
+    StageBase,
+    Type.Object(
+      {
+        type: FOOT,
+        details: FOOTStageDetails,
+      },
+      { additionalProperties: false },
+    ),
+  ]),
+  Type.Intersect([
+    StageBase,
+    Type.Object(
+      {
+        type: TBM,
+        details: TBMStageDetails,
+      },
+      { additionalProperties: false },
+    ),
+  ]),
+  Type.Intersect([
+    StageBase,
+    Type.Object(
+      {
+        type: SNCF,
+        details: SNCFStageDetails,
+      },
+      { additionalProperties: false },
+    ),
+  ]),
+]);
+
+// Main data model schema
+export const itinerarySchema = Type.Object(
+  {
+    code: Type.Integer({ minimum: 200, maximum: 599 }),
+    message: Type.String(),
+    lastActualization: Type.Integer(),
+    paths: Type.Array(
+      Type.Object(
+        {
+          id: Type.String(),
+          totalDuration: Type.Integer(),
+          totalDistance: Type.Integer(),
+          departure: Type.Integer(),
+          from: Type.String(),
+          stages: Type.Array(Stage, { uniqueItems: true }),
+        },
+        { additionalProperties: false },
+      ),
+      { uniqueItems: true },
+    ),
+  },
+  { $id: "Itinerary", additionalProperties: false },
+);
+
+export type Itinerary = Static<typeof itinerarySchema>;
+export const itineraryResolver = resolve<Itinerary, HookContext>({});
+
+export const itineraryExternalResolver = resolve<Itinerary, HookContext>({});
+
+// Schema for creating new entries
+export const itineraryDataSchema = Type.Object(
+  {},
+  {
+    $id: "ItineraryData",
+  },
+);
+export type ItineraryData = Static<typeof itineraryDataSchema>;
+export const itineraryDataValidator = getDataValidator(itineraryDataSchema, dataValidator);
+export const itineraryDataResolver = resolve<Itinerary, HookContext>({});
+
+// Schema for updating existing entries
+export const itineraryPatchSchema = Type.Partial(itineraryDataSchema, {
   $id: "ItineraryPatch",
-  type: "object",
-  additionalProperties: false,
-  required: [],
-  properties: {
-    ...itineraryDataSchema.properties,
-  },
-} as const);
-
-export type ItineraryPatch = Infer<typeof itineraryPatchSchema>;
-
-// Schema for the data that is being returned
-const itineraryResultRawSchema = {
-  definitions: {
-    FOOTStageDetails: {
-      type: "object",
-      additionalProperties: false,
-      required: ["distance"],
-      properties: {
-        distance: {
-          type: "integer",
-        },
-      },
-    },
-    TBMStageDetails: {
-      type: "object",
-      additionalProperties: false,
-      required: ["type", "line", "direction", "departure"],
-      properties: {
-        type: {
-          type: "string",
-          enum: ["BUS", "TRAM", "BATEAU"],
-        },
-        line: {
-          type: "string",
-        },
-        direction: {
-          type: "string",
-        },
-        departure: {
-          type: "integer",
-        },
-      },
-    },
-    SNCFStageDetails: {
-      type: "object",
-      additionalProperties: false,
-      required: ["type", "line", "direction", "departure"],
-      properties: {
-        type: {
-          type: "string",
-          enum: ["TRAIN"],
-        },
-        line: {
-          type: "string",
-        },
-        direction: {
-          type: "string",
-        },
-        departure: {
-          type: "integer",
-        },
-      },
-    },
-  },
-  $id: "ItineraryResult",
-  type: "object",
-  additionalProperties: false,
-  required: [...itineraryDataSchema.required, "code", "message", "lastActualization", "paths"],
-  properties: {
-    ...itineraryDataSchema.properties,
-    code: {
-      type: "integer",
-      minimum: 200,
-      maximum: 599,
-    },
-    message: {
-      type: "string",
-    },
-    lastActualization: {
-      type: "integer",
-    },
-    paths: {
-      type: "array",
-      uniqueItems: true,
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["id", "totalDuration", "totalDistance", "departure", "from", "stages"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          totalDuration: {
-            type: "integer",
-          },
-          totalDistance: {
-            type: "integer",
-          },
-          departure: {
-            type: "integer",
-          },
-          from: {
-            type: "string",
-          },
-          stages: {
-            type: "array",
-            uniqueItems: true,
-            items: {
-              type: "object",
-              additionalProperties: false,
-              required: ["type", "to", "duration", "details"],
-              properties: {
-                type: {
-                  type: "string",
-                  enum: ["FOOT", "TBM", "SNCF"],
-                },
-                to: {
-                  type: "string",
-                },
-                duration: {
-                  type: "integer",
-                },
-                details: {
-                  type: "object",
-                  oneOf: [
-                    { $ref: "#/definitions/FOOTStageDetails" },
-                    { $ref: "#/definitions/TBMStageDetails" },
-                    { $ref: "#/definitions/SNCFStageDetails" },
-                  ],
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  allOf: [
-    /* {
-      if: {
-        properties: {
-          paths: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                stages: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      type: { const: "FOOT" },
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      then: {
-        properties: {
-          paths: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                stages: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      details: {
-                        $ref: "#/definitions/FOOTStageDetails",
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-    }, */
-    {
-      if: {
-        properties: {
-          paths: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                stages: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      type: { const: "TBM" },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      then: {
-        properties: {
-          paths: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                stages: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      details: {
-                        $ref: "#/definitions/TBMStageDetails",
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    {
-      if: {
-        properties: {
-          paths: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                stages: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      type: { const: "SNCF" },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      then: {
-        properties: {
-          paths: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                stages: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      details: {
-                        $ref: "#/definitions/SNCFStageDetails",
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  ],
-} as const;
-
-export const itineraryResultSchema = schema(itineraryResultRawSchema);
-
-export type Stage_type = "FOOT" | "TBM" | "SNCF";
-type ItineraryStageResult<S extends Stage_type> = S extends "FOOT"
-  ? {
-      type: S;
-      details: {
-        distance: number;
-      };
-    }
-  : S extends "TBM"
-  ? {
-      type: S;
-      details: {
-        type: "BUS" | "TRAM" | "BATEAU";
-        line: string;
-        direction: string;
-        departure: number;
-      };
-    }
-  : S extends "SNCF"
-  ? {
-      type: S;
-      details: {
-        type: "TRAIN";
-        line: string;
-        direction: string;
-        departure: number;
-      };
-    }
-  : never;
-
-export type ItineraryResult = {
-  code: number;
-  message: string;
-  lastActualization: number;
-  paths: {
-    departure: number;
-    id: string;
-    totalDuration: number;
-    totalDistance: number;
-    from: string;
-    stages: (ItineraryStageResult<Stage_type> & {
-      to: string;
-      duration: number;
-    })[];
-  }[];
-};
+});
+export type ItineraryPatch = Static<typeof itineraryPatchSchema>;
+export const itineraryPatchValidator = getDataValidator(itineraryPatchSchema, dataValidator);
+export const itineraryPatchResolver = resolve<Itinerary, HookContext>({});
 
 // Schema for allowed query properties
-export const itineraryQuerySchema = schema({
-  $id: "ItineraryQuery",
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    from: {
-      type: "string",
-    },
-    to: {
-      type: "string",
-    },
-    transports: {
-      type: "object",
-      additionalProperties: false,
-      required: [],
-      properties: {
-        FOOT: {
-          type: "boolean",
-        },
-        TBM: {
-          type: "boolean",
-        },
-        SNCF: {
-          type: "boolean",
-        },
-      },
-    },
-    departureTime: {
-      type: "string",
-    },
-    /**
-     * @description The maximum allowed distance to walk, in meters.
-     */
-    maxWalkDistance: {
-      type: "integer",
-    },
-    /**
-     * @description The average walk speed to take in account, in km/h.
-     */
-    walkSpeed: {
-      type: "number",
-    },
+export const itineraryQueryProperties = Type.Object({}, { additionalProperties: false });
+export const itineraryQuerySchema = Type.Object(
+  {
+    from: Type.String(),
+    to: Type.String(),
+    transports: Type.Optional(Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false })),
+    departureTime: Type.Optional(Type.String()),
+    maxWalkDistance: Type.Optional(Type.Integer()),
+    walkSpeed: Type.Optional(Type.Number()),
     ...refreshDataQuerySchema.properties,
   },
-});
-
-export type ItineraryQuery = Infer<typeof itineraryQuerySchema>;
+  { additionalProperties: false },
+);
+export type ItineraryQuery = Static<typeof itineraryQuerySchema>;
+export const itineraryQueryValidator = getValidator(itineraryQuerySchema, queryValidator);
+export const itineraryQueryResolver = resolve<ItineraryQuery, HookContext>({});

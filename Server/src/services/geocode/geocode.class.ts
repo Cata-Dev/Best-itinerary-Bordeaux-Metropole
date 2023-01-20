@@ -135,7 +135,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
     }
   }
 
-  async get(id: string, _params: GeocodeParams): Promise<Geocode> {
+  async get(id: string /* _params: GeocodeParams */): Promise<Geocode> {
     const { queries, endpoints } = await this.parseId(id);
 
     let doc:
