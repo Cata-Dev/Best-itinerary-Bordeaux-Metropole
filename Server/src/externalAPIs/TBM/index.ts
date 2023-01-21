@@ -118,6 +118,7 @@ export interface TBM_Schedule {
     hor_estime: string;
     etat: "NON_REALISE" | "REALISE" | "DEVIE";
     type: "REGULIER";
+    tempsarret: number;
     rs_sv_arret_p: number;
     rs_sv_cours_a: number;
   };
