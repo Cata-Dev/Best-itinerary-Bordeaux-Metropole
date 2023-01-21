@@ -344,6 +344,9 @@ export default (app: Application) => {
                   },
                 },
               ],
+              etat: {
+                $neq: "REALISE",
+              },
             }),
         ]);
 
