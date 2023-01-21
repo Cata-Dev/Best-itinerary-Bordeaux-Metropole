@@ -8,7 +8,7 @@ const formatArgs = (args: IArguments) => format.apply(format, Array.prototype.sl
 
 export const logger: Record<
   "log" | "info" | "warn" | "error" | "debug",
-  (message?: unknown, optionalParams?: unknown[]) => void
+  (message?: unknown, ...optionalParams: unknown[]) => void
 > = {
   log: function () {
     const args = formatArgs(arguments);

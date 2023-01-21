@@ -101,13 +101,13 @@ function equalObjects(
   return true;
 }
 
-type Object<T> = { [k: string]: T | Object<T> } | T;
+type Obj<T> = { [k: string]: T | Obj<T> } | T;
 
 /**
  * @description In-place object rebasing - recursively
  * @returns A reference to the rebased object
  */
-function rebaseObject<V extends string | number | boolean>(target: Object<V>, base: Object<V>): Object<V> {
+function rebaseObject<V extends string | number | boolean>(target: Obj<V>, base: Obj<V>): Obj<V> {
   if (!(target instanceof Object && base instanceof Object)) return target; // edge condition
 
   for (const k in base) {
@@ -132,11 +132,11 @@ function rebaseObject<V extends string | number | boolean>(target: Object<V>, ba
  * @returns A reference to the target object
  */
 function compareObjectForEach<V extends string | number | boolean>(
-  o1: Object<V>,
-  o2: Object<V>,
+  o1: Obj<V>,
+  o2: Obj<V>,
   callback: (v1: V, v2: V, keys: string[]) => void,
   keys: string[] = [],
-): Object<V> {
+): Obj<V> {
   if (!(o1 instanceof Object && o2 instanceof Object)) return o1; // edge condition
 
   for (const k in o2) {
@@ -185,4 +185,4 @@ export {
   compareObjectForEach,
   parseJSON,
 };
-export type { Object };
+export type { Obj };

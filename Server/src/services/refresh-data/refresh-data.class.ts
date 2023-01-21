@@ -1,23 +1,15 @@
-import type { Hook, Id, Params } from "@feathersjs/feathers";
-import { resolveAll } from "@feathersjs/schema";
-
-import type { RefreshDataResult, RefreshDataQuery } from "./refresh-data.schema";
-import { refreshDataResolvers } from "./refresh-data.resolver";
-
-import { disallow } from "feathers-hooks-common";
-
-export const refreshDataHooks = {
-  around: {
-    all: [resolveAll(refreshDataResolvers)],
-  },
-  before: {
-    all: [disallow("external") as unknown as Hook<Application, RefreshDataService>],
-  },
-  after: {},
-  error: {},
-};
+// For more information about this file see https://dove.feathersjs.com/guides/cli/service.class.html#custom-services
+import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import type { Application } from "../../declarations";
+import type { RefreshData, RefreshDataData, RefreshDataPatch, RefreshDataQuery } from "./refresh-data.schema";
+
+export interface RefreshDataServiceOptions {
+  app: Application;
+}
+
+export interface RefreshDataParams extends Params<RefreshDataQuery> {}
+
 import { Forbidden, GeneralError, NotFound } from "@feathersjs/errors";
 
 export interface RefreshDataServiceOptions {
@@ -25,20 +17,22 @@ export interface RefreshDataServiceOptions {
 }
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class RefreshDataService {
+export class RefreshDataService
+  implements ServiceInterface<RefreshData, RefreshDataData, RefreshDataParams, RefreshDataPatch>
+{
   private readonly app: Application;
 
   constructor(public options: RefreshDataServiceOptions) {
     this.app = options.app;
   }
 
-  async get(id: Id, _params?: Params<RefreshDataQuery>): Promise<RefreshDataResult> {
+  async get(id: Id, _params?: RefreshDataParams): Promise<RefreshData> {
     const endpoints = this.app.externalAPIs.endpoints;
     const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
     const force = (_params && _params.query?.force) ?? false;
     const matchingEndpoint = endpoints.find((endpoint) => endpoint.name === id);
 
-    if (id == "all") {
+    if (id === "all") {
       return new Promise((res) => {
         let sucess = 0;
         let count = 0;
@@ -111,3 +105,7 @@ export class RefreshDataService {
     } else throw new NotFound(`Unknown path.`);
   }
 }
+
+export const getOptions = (app: Application) => {
+  return { app };
+};

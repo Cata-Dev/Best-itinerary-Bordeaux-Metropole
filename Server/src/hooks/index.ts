@@ -20,13 +20,13 @@ const log = async (context: HookContext, next: NextFunction) => {
         context.params?.provider || "internal"
       })`,
     );
-  } catch (_) {
+  } catch (error: any) {
     logger.log(
       `${time.datetocompact3(performance.timeOrigin + initialTs, true)} ⟾ ${time.datetocompact3(
         Date.now(),
         true,
       )} (${(performance.now() - initialTs).toFixed(2)}ms) | ${colorFunctions.fR(
-        `${context.http?.status || "500"} ${context.method.toUpperCase()}`,
+        `${context.http?.status || error?.code || "500"} ${context.method.toUpperCase()}`,
       )} ${context.path}${context.id ? "/" + colorFunctions.fY(context.id) : ""} (provider: ${
         context.params?.provider || "internal"
       })`,

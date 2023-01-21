@@ -18,8 +18,8 @@ import {
   type TransportProvider,
   parseJSON,
 } from "@/store";
-import type { QuerySettings, Object } from "@/store";
-import type { ItineraryResult } from "server/lib/services/itinerary/itinerary.schema";
+import type { QuerySettings, Obj } from "@/store";
+import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
 
 type Location = ParsedGeocodeLocation | DefaultLocation;
 
@@ -50,8 +50,8 @@ const modal = ref<Modal>({
   shown: false,
 });
 
-if (client.io)
-  client.io.on("error", () => {
+if (client.io?.io)
+  client.io.io?.on("error", () => {
     modal.value.title = "Erreur";
     modal.value.content = "Impossible de se connecter à l'API.";
     modal.value.icon = "exclamation-triangle";
@@ -83,8 +83,8 @@ const status = ref<Status>({
   ExtraSettings: undefined,
   search: StatusSearchResult.INITIALIZING,
 });
-const results = ref<ItineraryResult["paths"] | StatusSearchResult>(StatusSearchResult.INITIALIZING);
-const result = ref<ItineraryResult["paths"][number] | null>();
+const results = ref<Itinerary["paths"] | StatusSearchResult>(StatusSearchResult.INITIALIZING);
+const result = ref<Itinerary["paths"][number] | null>();
 const router = useRouter();
 const route = useRoute();
 
@@ -149,7 +149,7 @@ function queryUpdated() {
 
   compareObjectForEach(
     settings.value,
-    defaultQuerySettings as unknown as Object<string | number | boolean>,
+    defaultQuerySettings as unknown as Obj<string | number | boolean>,
     (v1, v2, keys) => {
       if (v1 != v2) query[keys.join(".")] = JSON.stringify(v1);
     },
@@ -170,7 +170,7 @@ async function updateQuery(to = route) {
   if (to.query.from) await sourceCompo.value?.forceInput(to.query.from as string);
   if (to.query.to) await destinationCompo.value?.forceInput(to.query.to as string);
 
-  rebaseObject(settings.value, defaultQuerySettings as unknown as Object<string | number | boolean>);
+  rebaseObject(settings.value, defaultQuerySettings as unknown as Obj<string | number | boolean>);
 
   for (const setting in to.query) {
     if (setting.includes(".")) {
@@ -216,69 +216,43 @@ async function selectResult(id: string) {
 <template>
   <div class="h-full">
     <div class="h-full flex flex-col">
-      <div
-        class="w-full lg:flex relative h-fit transition-top p-2 pb-1"
-        :class="{
-          'top-[calc(50%-101px)]': results === StatusSearchResult.INITIALIZING,
-          'top-0': results != StatusSearchResult.INITIALIZING,
-        }"
-      >
+      <div class="w-full lg:flex relative h-fit transition-top p-2 pb-1" :class="{
+        'top-[calc(50%-101px)]': results === StatusSearchResult.INITIALIZING,
+        'top-0': results != StatusSearchResult.INITIALIZING,
+      }">
         <div class="lg:w-2/3 h-fit flex justify-center lg:justify-end my-auto lg:mr-1">
-          <div
-            class="flex flex-col w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2"
-            :class="status.search === StatusSearchResult.NONE ? 'cursor-not-allowed opacity-70' : ''"
-          >
+          <div class="flex flex-col w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2"
+            :class="status.search === StatusSearchResult.NONE ? 'cursor-not-allowed opacity-70' : ''">
             <span :disabled="status.search === StatusSearchResult.NONE">
-              <LocationSearch
-                ref="sourceCompo"
-                v-model="source"
-                name="source"
-                placeholder="Départ"
-                @update:model-value="destinationCompo?.focus()"
-              />
+              <LocationSearch ref="sourceCompo" v-model="source" name="source" placeholder="Départ"
+                @update:model-value="destinationCompo?.focus()" />
             </span>
             <span :disabled="status.search === StatusSearchResult.NONE">
-              <LocationSearch
-                ref="destinationCompo"
-                v-model="destination"
-                name="destination"
-                placeholder="Arrivée"
-                class="mt-2"
-                @update:model-value="searchElem?.focus()"
-              />
+              <LocationSearch ref="destinationCompo" v-model="destination" name="destination" placeholder="Arrivée"
+                class="mt-2" @update:model-value="searchElem?.focus()" />
             </span>
           </div>
         </div>
         <div class="lg:w-1/3 my-auto flex justify-center lg:inline lg:ml-1">
           <div class="flex h-full w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2">
             <div class="py-2 lg:self-center">
-              <button
-                ref="showExtraSettingsElem"
+              <button ref="showExtraSettingsElem"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
                 :class="{ 'rotate-180': showExtraSettings }"
-                @click="(showExtraSettings = !showExtraSettings), showExtraSettingsElem?.blur()"
-              >
-                <font-awesome-icon
-                  icon="sliders-h"
-                  class="text-text-light-primary dark:text-text-dark-primary text-2xl"
-                />
+                @click="(showExtraSettings = !showExtraSettings), showExtraSettingsElem?.blur()">
+                <font-awesome-icon icon="sliders-h"
+                  class="text-text-light-primary dark:text-text-dark-primary text-2xl" />
               </button>
-              <button
-                ref="searchElem"
+              <button ref="searchElem"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
-                @click="fetchResults(), searchElem?.blur()"
-              >
-                <font-awesome-icon
-                  icon="search-location"
-                  class="text-2xl transition-colors duration-200"
-                  :class="{
-                    'text-success-t': status.search === StatusSearchResult.SUCCESS,
-                    'text-info-t': status.search === StatusSearchResult.LOADING,
-                    'text-alert-t': status.search === StatusSearchResult.ERROR,
-                    'text-text-light-primary': status.search === StatusSearchResult.INITIALIZING,
-                    'dark:text-text-dark-primary text-2xl': status.search === StatusSearchResult.INITIALIZING,
-                  }"
-                />
+                @click="fetchResults(), searchElem?.blur()">
+                <font-awesome-icon icon="search-location" class="text-2xl transition-colors duration-200" :class="{
+                  'text-success-t': status.search === StatusSearchResult.SUCCESS,
+                  'text-info-t': status.search === StatusSearchResult.LOADING,
+                  'text-alert-t': status.search === StatusSearchResult.ERROR,
+                  'text-text-light-primary': status.search === StatusSearchResult.INITIALIZING,
+                  'dark:text-text-dark-primary text-2xl': status.search === StatusSearchResult.INITIALIZING,
+                }" />
               </button>
             </div>
             <ExtraSettings v-model="settings" :shown="showExtraSettings" class="" />
@@ -286,48 +260,25 @@ async function selectResult(id: string) {
         </div>
       </div>
       <div v-if="result && route.hash" class="fade-in flex px-4 pt-1 pb-4">
-        <ResultItem
-          :title="`Alternative #${(results as any[]).indexOf(result)+1}`"
-          :total-duration="result.totalDuration"
-          :total-distance="result.totalDistance"
-          :departure="result.departure"
-          :from="result.from"
-          :path="result.stages"
-          :expanded="true"
-          class="mx-auto"
-        />
+        <ResultItem :title="`Alternative #${(results as any[]).indexOf(result) + 1}`"
+          :total-duration="result.totalDuration" :total-distance="result.totalDistance" :departure="result.departure"
+          :from="result.from" :path="result.stages" :expanded="true" class="mx-auto" />
       </div>
-      <div
-        v-else-if="results && typeof results === 'object'"
-        class="grid gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        :class="{
+      <div v-else-if="results && typeof results === 'object'"
+        class="grid gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" :class="{
           'wait-fade-in': result === undefined,
           'fade-in': !route.hash || result === null,
-        }"
-      >
+        }">
         <template v-for="(r, i) of results" :key="r.id">
-          <ResultItem
-            :result-id="r.id"
-            :title="`Alternative #${i + 1}`"
-            :total-duration="r.totalDuration"
-            :total-distance="r.totalDistance"
-            :departure="r.departure"
-            :from="r.from"
-            :path="r.stages"
-            class="cursor-pointer"
-            @click="selectResult(r.id)"
-          />
+          <ResultItem :result-id="r.id" :title="`Alternative #${i + 1}`" :total-duration="r.totalDuration"
+            :total-distance="r.totalDistance" :departure="r.departure" :from="r.from" :path="r.stages"
+            class="cursor-pointer" @click="selectResult(r.id)" />
         </template>
       </div>
       <div v-else class="grid gap-2 row-start-3" />
     </div>
-    <DynamicModal
-      v-model:shown="modal.shown"
-      :title="modal.title"
-      :content="modal.content"
-      :icon="modal.icon"
-      :color="modal.color"
-    />
+    <DynamicModal v-model:shown="modal.shown" :title="modal.title" :content="modal.content" :icon="modal.icon"
+      :color="modal.color" />
   </div>
 </template>
 
@@ -350,6 +301,7 @@ span[disabled="true"] {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -363,6 +315,7 @@ span[disabled="true"] {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 0;
   }
@@ -384,9 +337,11 @@ span[disabled="true"] {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
   }

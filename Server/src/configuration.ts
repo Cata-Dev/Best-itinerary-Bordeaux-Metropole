@@ -1,31 +1,21 @@
-import { schema, Ajv } from "@feathersjs/schema";
-import type { Infer } from "@feathersjs/schema";
+import { Type, getValidator, defaultAppConfiguration } from "@feathersjs/typebox";
+import type { Static } from "@feathersjs/typebox";
 
-export const configurationSchema = schema(
-  {
-    $id: "ApplicationConfiguration",
-    type: "object",
-    additionalProperties: false,
-    required: ["host", "port", "TBMkey", "SNCFkey", "mongodb", "ssl"],
-    properties: {
-      host: { type: "string" },
-      port: { type: "number" },
-      TBMkey: { type: "string" },
-      SNCFkey: { type: "string" },
-      mongodb: { type: "string" },
-      ssl: {
-        type: "object",
-        additionalProperties: false,
-        required: ["key", "cert"],
-        properties: {
-          key: { type: "string" },
-          cert: { type: "string" },
-        },
-      },
-      debug: { type: "boolean", default: false },
-    },
-  } as const,
-  new Ajv(),
-);
+import { dataValidator } from "./validators";
 
-export type ConfigurationSchema = Infer<typeof configurationSchema>;
+export const configurationSchema = Type.Intersect([
+  defaultAppConfiguration,
+  Type.Object({
+    host: Type.String(),
+    port: Type.Number(),
+    TBMkey: Type.String(),
+    SNCFkey: Type.String(),
+    origins: Type.Array(Type.String()),
+    mongodb: Type.String(),
+    debug: Type.Optional(Type.Boolean()),
+  }),
+]);
+
+export type ApplicationConfiguration = Static<typeof configurationSchema>;
+
+export const configurationValidator = getValidator(configurationSchema, dataValidator);

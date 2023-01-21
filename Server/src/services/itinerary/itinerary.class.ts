@@ -1,34 +1,28 @@
-import type { Id, Params } from "@feathersjs/feathers";
-import { resolveAll } from "@feathersjs/schema";
-
-import type { ItineraryResult, ItineraryQuery } from "./itinerary.schema";
-import { itineraryResolvers } from "./itinerary.resolver";
-
-export const itineraryHooks = {
-  around: {
-    all: [resolveAll(itineraryResolvers)],
-  },
-  before: {},
-  after: {},
-  error: {},
-};
+// For more information about this file see https://dove.feathersjs.com/guides/cli/service.class.html#custom-services
+import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import type { Application } from "../../declarations";
-import { BadRequest, NotFound } from "@feathersjs/errors";
+import type { Itinerary, ItineraryData, ItineraryPatch, ItineraryQuery } from "./itinerary.schema";
 
 export interface ItineraryServiceOptions {
   app: Application;
 }
 
+export interface ItineraryParams extends Params<ItineraryQuery> {}
+
+import { BadRequest, NotFound } from "@feathersjs/errors";
+
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class ItineraryService {
+export class ItineraryService
+  implements ServiceInterface<Itinerary, ItineraryData, ItineraryParams, ItineraryPatch>
+{
   private readonly app: Application;
 
   constructor(public options: ItineraryServiceOptions) {
     this.app = options.app;
   }
 
-  async get(id: Id, _params?: Params<ItineraryQuery>): Promise<ItineraryResult> {
+  async get(id: Id, _params?: ItineraryParams): Promise<Itinerary> {
     switch (id) {
       case "paths": {
         const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
@@ -72,7 +66,46 @@ export class ItineraryService {
               code: 200,
               message: "Should calculate rust best itineraries, but OK.",
               lastActualization,
-              paths: [],
+              paths: [
+                {
+                  id: "6541ed4dze", //unique ID referencing result in Database. Allows result to be saved.
+                  totalDuration: 1563, //seconds
+                  totalDistance: 34230, //meters
+                  departure: Date.now(),
+                  from: "4 Rue du Pont de la Grave Bègles",
+                  stages: [
+                    { type: "FOOT", to: "Mériadeck", duration: 163, details: { distance: 150 } },
+                    {
+                      type: "TBM",
+                      to: "Village Cap de Bos",
+                      duration: 365,
+                      details: {
+                        type: "BUS",
+                        line: "44",
+                        direction: "Pessac Candau",
+                        departure: Date.now() + 163 * 1000,
+                      },
+                    },
+                    {
+                      type: "SNCF",
+                      to: "France Alouette",
+                      duration: 850,
+                      details: {
+                        type: "TRAIN",
+                        line: "TER-NA",
+                        direction: "Bordeaux Saint-Jean",
+                        departure: Date.now() + 528 * 1000,
+                      },
+                    },
+                    {
+                      type: "FOOT",
+                      to: "Lycée Général et Technologique Pape Clément",
+                      duration: 185,
+                      details: { distance: 168 },
+                    },
+                  ],
+                },
+              ],
             });
           }
         });
@@ -82,3 +115,7 @@ export class ItineraryService {
     }
   }
 }
+
+export const getOptions = (app: Application) => {
+  return { app };
+};

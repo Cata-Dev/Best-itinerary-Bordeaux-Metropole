@@ -1,6 +1,6 @@
-import { itinerary } from "./itinerary/itinerary.service";
-import { refreshData } from "./refresh-data/refresh-data.service";
-import { geocode } from "./geocode/geocode.service";
+import { itinerary } from "./itinerary/itinerary";
+import { refreshData } from "./refresh-data/refresh-data";
+import { geocode } from "./geocode/geocode";
 import type { Application } from "../declarations";
 
 export const services = (app: Application) => {
