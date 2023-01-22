@@ -1,62 +1,56 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { transportToType } from "@/store/";
+import { defaultLocation, transportToType, type DefaultLocation } from "@/store/";
 import TransportBadge from "@/components/TransportBadge.vue";
-import type { DefaultLocation, ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
+import type { ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
 
 type modelValue = ParsedGeocodeLocation | DefaultLocation;
 
-interface Props {
+interface Props<T> {
   placeholder: string;
-  datalist?: ParsedGeocodeLocation[];
-  modelValue: modelValue;
+  datalist?: T[];
+  modelValue: T;
 }
 
-const props = withDefaults(defineProps<Props>(), { datalist: () => [] });
-
-watch(
-  () => props.datalist,
-  (curr, old) => {
-    if (JSON.stringify(curr) != JSON.stringify(old)) refreshInput();
-  },
-);
-
-const showDatalist = ref<boolean>();
+const props = withDefaults(defineProps<Props<modelValue>>(), { datalist: () => [] });
 
 /**
- * Its `modelValue` is a validated `ParsedGeocodeLocation`
- * However, `input` is the input string, emitted if **validated or not** (override if **forced**).
+ * Its `modelValue` is a value from props.datalist if input is in, defaultLocation otherwise
+ * However, `input` is the raw input string, emitted at anytime
  */
 const emit = defineEmits<{
   (e: "update:modelValue", value: modelValue): void;
   (e: "input", input: string): void;
 }>();
 
-function updateModelValue(value: modelValue) {
-  emit("update:modelValue", value);
-}
+watch(
+  () => props.datalist,
+  (curr, old) => {
+    if (JSON.stringify(curr) != JSON.stringify(old)) refreshModelValue();
+  },
+);
+
+const showDatalist = ref<boolean>(false);
 
 const inputElem = ref<HTMLInputElement>();
-const input = ref("");
-const oldInput = ref<string>();
+const input = ref(props.modelValue.display);
 
-function refreshInput(emitInput = true) {
-  if (input.value === oldInput.value) return;
-
-  const value = props.datalist.find((v) => v.display === input.value);
-  if (value) updateModelValue(value);
-  // else updateModelValue({ display: '' });
-
-  if (emitInput) emit("input", input.value);
-
-  oldInput.value = input.value;
+function refreshModelValue() {
+  const value = props.datalist.find((el) => el.display === input.value);
+  emit("update:modelValue", value ?? defaultLocation);
 }
 
-function forceInput(v: string, emitInput = true) {
+function newInput() {
+  emit("input", input.value);
+
+  refreshModelValue();
+}
+
+function forceInput(v: string) {
   if (input.value === v) return;
 
   input.value = v;
-  refreshInput(emitInput);
+  newInput();
 }
 
 function focus() {
@@ -77,7 +71,7 @@ defineExpose({
       type="text"
       class="w-full flex-grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
       :placeholder="placeholder"
-      @input="(input = ($event.target as HTMLInputElement).value), refreshInput()"
+      @input="(input = ($event.target as HTMLInputElement).value), newInput()"
       @focus="showDatalist = true"
       @focusout="showDatalist = false"
     />

@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute, onBeforeRouteUpdate } from "vue-router";
-import LocationSearch, {
-  type DefaultLocation,
-  type ParsedGeocodeLocation,
-} from "@/components/LocationSearch.vue";
+import LocationSearch, { type ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
 import DynamicModal, { type Modal } from "@/components/DynamicModal.vue";
 import ResultItem from "@/components/ResultItem.vue";
@@ -17,19 +14,17 @@ import {
   compareObjectForEach,
   type TransportProvider,
   parseJSON,
+  type DefaultLocation,
+  defaultLocation,
 } from "@/store";
 import type { QuerySettings, Obj } from "@/store";
 import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
 
 type Location = ParsedGeocodeLocation | DefaultLocation;
 
-const source = ref<Location>({ display: "", type: "ADRESSE", value: [0, 0] });
+const source = ref<Location>(defaultLocation);
 let prevSource: Location;
-const destination = ref<Location>({
-  display: "",
-  type: "ADRESSE",
-  value: [0, 0],
-});
+const destination = ref<Location>(defaultLocation);
 let prevDestination: Location;
 
 const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
@@ -63,7 +58,6 @@ if (client.io?.io)
 const showExtraSettings = ref(false);
 
 enum StatusSearchResult {
-  INITIALIZING,
   NONE,
   LOADING,
   SUCCESS,
@@ -71,19 +65,13 @@ enum StatusSearchResult {
 }
 
 interface Status {
-  source: undefined;
-  destination: undefined;
-  ExtraSettings: undefined;
   search: StatusSearchResult;
 }
 
 const status = ref<Status>({
-  source: undefined,
-  destination: undefined,
-  ExtraSettings: undefined,
-  search: StatusSearchResult.INITIALIZING,
+  search: StatusSearchResult.NONE,
 });
-const results = ref<Itinerary["paths"] | StatusSearchResult>(StatusSearchResult.INITIALIZING);
+const results = ref<Itinerary["paths"] | StatusSearchResult>(StatusSearchResult.NONE);
 const result = ref<Itinerary["paths"][number] | null>();
 const router = useRouter();
 const route = useRoute();
@@ -104,7 +92,7 @@ async function fetchResults(updateQuery = true) {
   )
     return (status.value.search = StatusSearchResult.ERROR);
 
-  status.value.search = StatusSearchResult.NONE;
+  status.value.search = StatusSearchResult.LOADING;
 
   if (updateQuery) queryUpdated();
 
@@ -116,7 +104,7 @@ async function fetchResults(updateQuery = true) {
         ...settings.value,
       },
     });
-    if (!r || r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
+    if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
 
     results.value = r.paths;
     if (result.value) result.value = null;
@@ -142,10 +130,8 @@ let internallyUpdated = false;
 function queryUpdated() {
   const query: Record<string, string> = {};
 
-  if (source.value.display.length || route.query.from)
-    query.from = source.value.display || (route.query.from as string);
-  if (destination.value.display.length || route.query.to)
-    query.to = destination.value.display || (route.query.to as string);
+  if (source.value.display.length) query.from = source.value.display;
+  if (destination.value.display.length) query.to = destination.value.display;
 
   compareObjectForEach(
     settings.value,
@@ -167,9 +153,6 @@ async function updateQuery(to = route) {
     return true;
   }
 
-  if (to.query.from) await sourceCompo.value?.forceInput(to.query.from as string);
-  if (to.query.to) await destinationCompo.value?.forceInput(to.query.to as string);
-
   rebaseObject(settings.value, defaultQuerySettings as unknown as Obj<string | number | boolean>);
 
   for (const setting in to.query) {
@@ -190,7 +173,22 @@ async function updateQuery(to = route) {
       );
   }
 
+  const updates: Promise<unknown>[] = [];
+  // Force even if empty to clear input
+  if (source.value.display !== to.query.from && sourceCompo.value)
+    updates.push(sourceCompo.value?.forceInput((to.query.from as string | undefined) ?? ""));
+  if (destination.value.display !== to.query.to && destinationCompo.value)
+    updates.push(destinationCompo.value?.forceInput((to.query.to as string | undefined) ?? ""));
+  await Promise.all(updates);
+
   if (to.query.from && to.query.to && !(results.value instanceof Array)) await fetchResults(false); //Update results if detecting a new query, but don't override existing results ?
+  if ((!to.query.from || !to.query.to) && results.value instanceof Array) {
+    // Reset search
+    results.value = StatusSearchResult.NONE;
+    status.value.search = StatusSearchResult.NONE;
+    prevDestination = JSON.parse(JSON.stringify(destination.value));
+    prevSource = JSON.parse(JSON.stringify(source.value));
+  }
 
   if (to.hash) {
     if (results.value instanceof Array) {
@@ -216,69 +214,132 @@ async function selectResult(id: string) {
 <template>
   <div class="h-full">
     <div class="h-full flex flex-col">
-      <div class="w-full lg:flex relative h-fit transition-top p-2 pb-1" :class="{
-        'top-[calc(50%-101px)]': results === StatusSearchResult.INITIALIZING,
-        'top-0': results != StatusSearchResult.INITIALIZING,
-      }">
+      <div
+        class="w-full lg:flex relative h-fit transition-top p-2 pb-1"
+        :class="{
+          'top-[calc(50%-101px)]': results === StatusSearchResult.NONE,
+          'top-0': results != StatusSearchResult.NONE,
+        }"
+      >
         <div class="lg:w-2/3 h-fit flex justify-center lg:justify-end my-auto lg:mr-1">
-          <div class="flex flex-col w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2"
-            :class="status.search === StatusSearchResult.NONE ? 'cursor-not-allowed opacity-70' : ''">
-            <span :disabled="status.search === StatusSearchResult.NONE">
-              <LocationSearch ref="sourceCompo" v-model="source" name="source" placeholder="Départ"
-                @update:model-value="destinationCompo?.focus()" />
+          <div
+            class="flex flex-col w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2"
+            :loading="status.search === StatusSearchResult.LOADING"
+          >
+            <span>
+              <LocationSearch
+                ref="sourceCompo"
+                v-model="source"
+                name="source"
+                placeholder="Départ"
+                @update:model-value="
+                  queryUpdated();
+                  if (source.display.length) {
+                    if (!destination.display.length) destinationCompo?.focus();
+                    else searchElem?.focus();
+                  }
+                "
+              />
             </span>
-            <span :disabled="status.search === StatusSearchResult.NONE">
-              <LocationSearch ref="destinationCompo" v-model="destination" name="destination" placeholder="Arrivée"
-                class="mt-2" @update:model-value="searchElem?.focus()" />
+            <span>
+              <LocationSearch
+                ref="destinationCompo"
+                v-model="destination"
+                name="destination"
+                placeholder="Arrivée"
+                class="mt-2"
+                @update:model-value="
+                  queryUpdated();
+                  if (destination.display.length) searchElem?.focus();
+                "
+              />
             </span>
           </div>
         </div>
         <div class="lg:w-1/3 my-auto flex justify-center lg:inline lg:ml-1">
           <div class="flex h-full w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2">
             <div class="py-2 lg:self-center">
-              <button ref="showExtraSettingsElem"
+              <button
+                ref="showExtraSettingsElem"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
                 :class="{ 'rotate-180': showExtraSettings }"
-                @click="(showExtraSettings = !showExtraSettings), showExtraSettingsElem?.blur()">
-                <font-awesome-icon icon="sliders-h"
-                  class="text-text-light-primary dark:text-text-dark-primary text-2xl" />
+                @click="(showExtraSettings = !showExtraSettings), showExtraSettingsElem?.blur()"
+              >
+                <font-awesome-icon
+                  icon="sliders-h"
+                  class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+                />
               </button>
-              <button ref="searchElem"
+              <button
+                ref="searchElem"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
-                @click="fetchResults(), searchElem?.blur()">
-                <font-awesome-icon icon="search-location" class="text-2xl transition-colors duration-200" :class="{
-                  'text-success-t': status.search === StatusSearchResult.SUCCESS,
-                  'text-info-t': status.search === StatusSearchResult.LOADING,
-                  'text-alert-t': status.search === StatusSearchResult.ERROR,
-                  'text-text-light-primary': status.search === StatusSearchResult.INITIALIZING,
-                  'dark:text-text-dark-primary text-2xl': status.search === StatusSearchResult.INITIALIZING,
-                }" />
+                @click="fetchResults(), searchElem?.blur()"
+              >
+                <font-awesome-icon
+                  icon="search-location"
+                  class="text-2xl transition-colors duration-200"
+                  :class="{
+                    'text-success-t': status.search === StatusSearchResult.SUCCESS,
+                    'text-info-t': status.search === StatusSearchResult.LOADING,
+                    'text-alert-t': status.search === StatusSearchResult.ERROR,
+                    'text-text-light-primary dark:text-text-dark-primary':
+                      status.search === StatusSearchResult.NONE,
+                  }"
+                />
               </button>
             </div>
-            <ExtraSettings v-model="settings" :shown="showExtraSettings" class="" />
+            <ExtraSettings
+              v-model="settings"
+              :shown="showExtraSettings"
+              class=""
+              @update:model-value="queryUpdated()"
+            />
           </div>
         </div>
       </div>
       <div v-if="result && route.hash" class="fade-in flex px-4 pt-1 pb-4">
-        <ResultItem :title="`Alternative #${(results as any[]).indexOf(result) + 1}`"
-          :total-duration="result.totalDuration" :total-distance="result.totalDistance" :departure="result.departure"
-          :from="result.from" :path="result.stages" :expanded="true" class="mx-auto" />
+        <ResultItem
+          :title="`Alternative #${(results as any[]).indexOf(result) + 1}`"
+          :total-duration="result.totalDuration"
+          :total-distance="result.totalDistance"
+          :departure="result.departure"
+          :from="result.from"
+          :path="result.stages"
+          :expanded="true"
+          class="mx-auto"
+        />
       </div>
-      <div v-else-if="results && typeof results === 'object'"
-        class="grid gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" :class="{
+      <div
+        v-else-if="results && typeof results === 'object'"
+        class="grid gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        :class="{
           'wait-fade-in': result === undefined,
           'fade-in': !route.hash || result === null,
-        }">
+        }"
+      >
         <template v-for="(r, i) of results" :key="r.id">
-          <ResultItem :result-id="r.id" :title="`Alternative #${i + 1}`" :total-duration="r.totalDuration"
-            :total-distance="r.totalDistance" :departure="r.departure" :from="r.from" :path="r.stages"
-            class="cursor-pointer" @click="selectResult(r.id)" />
+          <ResultItem
+            :result-id="r.id"
+            :title="`Alternative #${i + 1}`"
+            :total-duration="r.totalDuration"
+            :total-distance="r.totalDistance"
+            :departure="r.departure"
+            :from="r.from"
+            :path="r.stages"
+            class="cursor-pointer"
+            @click="selectResult(r.id)"
+          />
         </template>
       </div>
       <div v-else class="grid gap-2 row-start-3" />
     </div>
-    <DynamicModal v-model:shown="modal.shown" :title="modal.title" :content="modal.content" :icon="modal.icon"
-      :color="modal.color" />
+    <DynamicModal
+      v-model:shown="modal.shown"
+      :title="modal.title"
+      :content="modal.content"
+      :icon="modal.icon"
+      :color="modal.color"
+    />
   </div>
 </template>
 
@@ -292,9 +353,21 @@ button:focus {
   @apply outline-0;
 }
 
-div[disabled="true"],
-span[disabled="true"] {
-  pointer-events: none;
+.loading-wrapper {
+  @apply opacity-70 !important;
+  @apply cursor-wait !important;
+}
+
+.loading {
+  pointer-events: none !important;
+}
+
+[loading="true"] {
+  @apply loading-wrapper;
+}
+
+[loading="true"] * {
+  @apply loading;
 }
 
 @keyframes fadein {
