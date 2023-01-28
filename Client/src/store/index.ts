@@ -36,6 +36,14 @@ const defaultQuerySettings: QuerySettings = {
   },
 };
 
+const defaultLocation = {
+  display: "" as const,
+  type: "ADRESSE" as const,
+  value: [0, 0] as const,
+};
+
+type DefaultLocation = typeof defaultLocation;
+
 export {
   toggleDarkMode,
   theme,
@@ -50,6 +58,7 @@ export {
   compareObjectForEach,
   parseJSON,
   defaultQuerySettings,
+  defaultLocation,
 };
 
 export type {
@@ -60,4 +69,5 @@ export type {
   UnknowLitteral,
   Obj,
   QuerySettings,
+  DefaultLocation,
 };

@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useRouter, useRoute, onBeforeRouteUpdate } from "vue-router";
-import LocationSearch, {
-  type DefaultLocation,
-  type ParsedGeocodeLocation,
-} from "@/components/LocationSearch.vue";
+import { useRouter, useRoute, onBeforeRouteUpdate, type RouteLocationNormalized } from "vue-router";
+import LocationSearch, { type ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
 import DynamicModal, { type Modal } from "@/components/DynamicModal.vue";
 import ResultItem from "@/components/ResultItem.vue";
@@ -17,20 +14,16 @@ import {
   compareObjectForEach,
   type TransportProvider,
   parseJSON,
+  type DefaultLocation,
+  defaultLocation,
 } from "@/store";
 import type { QuerySettings, Obj } from "@/store";
-import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
+import type { Itinerary } from "server";
 
 type Location = ParsedGeocodeLocation | DefaultLocation;
 
-const source = ref<Location>({ display: "", type: "ADRESSE", value: [0, 0] });
-let prevSource: Location;
-const destination = ref<Location>({
-  display: "",
-  type: "ADRESSE",
-  value: [0, 0],
-});
-let prevDestination: Location;
+const source = ref<Location>(defaultLocation);
+const destination = ref<Location>(defaultLocation);
 
 const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
@@ -41,7 +34,6 @@ const settings = ref<QuerySettings>({
   ...defaultQuerySettings,
   transports: { ...defaultQuerySettings.transports },
 });
-let prevSettings: QuerySettings;
 const modal = ref<Modal>({
   title: "",
   content: "",
@@ -63,7 +55,6 @@ if (client.io?.io)
 const showExtraSettings = ref(false);
 
 enum StatusSearchResult {
-  INITIALIZING,
   NONE,
   LOADING,
   SUCCESS,
@@ -71,22 +62,18 @@ enum StatusSearchResult {
 }
 
 interface Status {
-  source: undefined;
-  destination: undefined;
-  ExtraSettings: undefined;
   search: StatusSearchResult;
 }
 
 const status = ref<Status>({
-  source: undefined,
-  destination: undefined,
-  ExtraSettings: undefined,
-  search: StatusSearchResult.INITIALIZING,
+  search: StatusSearchResult.NONE,
 });
-const results = ref<Itinerary["paths"] | StatusSearchResult>(StatusSearchResult.INITIALIZING);
+const results = ref<Itinerary["paths"] | StatusSearchResult>(StatusSearchResult.NONE);
 const result = ref<Itinerary["paths"][number] | null>();
 const router = useRouter();
 const route = useRoute();
+// Because `route` from `useroute()` isn't updated before validating navigation, e.g. before validating all navigation guards, we need to store the upcoming route
+const actualRoute = ref<RouteLocationNormalized | null>(null);
 
 onMounted(updateQuery);
 onBeforeRouteUpdate((to) => updateQuery(to));
@@ -94,19 +81,11 @@ onBeforeRouteUpdate((to) => updateQuery(to));
 /**
  * @description fetch new results for current query
  */
-async function fetchResults(updateQuery = true) {
+async function fetchResults() {
   if (!source.value.display.length || !destination.value.display.length)
     return (status.value.search = StatusSearchResult.ERROR);
-  if (
-    equalObjects(prevSource, source.value) &&
-    equalObjects(prevDestination, destination.value) &&
-    equalObjects(prevSettings, settings.value)
-  )
-    return (status.value.search = StatusSearchResult.ERROR);
 
-  status.value.search = StatusSearchResult.NONE;
-
-  if (updateQuery) queryUpdated();
+  status.value.search = StatusSearchResult.LOADING;
 
   try {
     const r = await client.service("itinerary").get("paths", {
@@ -116,7 +95,7 @@ async function fetchResults(updateQuery = true) {
         ...settings.value,
       },
     });
-    if (!r || r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
+    if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
 
     results.value = r.paths;
     if (result.value) result.value = null;
@@ -125,27 +104,20 @@ async function fetchResults(updateQuery = true) {
   } catch (_) {
     status.value.search = StatusSearchResult.ERROR;
   } finally {
-    prevSource = JSON.parse(JSON.stringify(source.value));
-    prevDestination = JSON.parse(JSON.stringify(destination.value));
-    prevSettings = JSON.parse(JSON.stringify(settings.value));
-
     //Prevent weird mobile behavior
     if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
   }
 }
 
-let internallyUpdated = false;
-
 /**
- * @description Refresh the route according to new settings / locations
+ * @description Refresh the route according to new settings & locations
+ * @returns A promise that resolves when route as been updated
  */
-function queryUpdated() {
+async function updateRoute() {
   const query: Record<string, string> = {};
 
-  if (source.value.display.length || route.query.from)
-    query.from = source.value.display || (route.query.from as string);
-  if (destination.value.display.length || route.query.to)
-    query.to = destination.value.display || (route.query.to as string);
+  if (source.value.display.length) query.from = source.value.display;
+  if (destination.value.display.length) query.to = destination.value.display;
 
   compareObjectForEach(
     settings.value,
@@ -154,21 +126,22 @@ function queryUpdated() {
       if (v1 != v2) query[keys.join(".")] = JSON.stringify(v1);
     },
   );
-  internallyUpdated = true;
-  router.push({ query });
+
+  return await router.push({ query });
 }
 
 /**
  * @description Refresh settings / locations according to the current route
  */
 async function updateQuery(to = route) {
-  if (internallyUpdated) {
-    internallyUpdated = false;
-    return true;
-  }
+  if (equalObjects(actualRoute.value, to)) return (actualRoute.value = to);
+  actualRoute.value = to;
 
-  if (to.query.from) await sourceCompo.value?.forceInput(to.query.from as string);
-  if (to.query.to) await destinationCompo.value?.forceInput(to.query.to as string);
+  if ((!to.query.from || !to.query.to) && results.value instanceof Array) {
+    // Reset search
+    results.value = StatusSearchResult.NONE;
+    status.value.search = StatusSearchResult.NONE;
+  }
 
   rebaseObject(settings.value, defaultQuerySettings as unknown as Obj<string | number | boolean>);
 
@@ -190,7 +163,15 @@ async function updateQuery(to = route) {
       );
   }
 
-  if (to.query.from && to.query.to && !(results.value instanceof Array)) await fetchResults(false); //Update results if detecting a new query, but don't override existing results ?
+  const updates: Promise<unknown>[] = [];
+  // Force even if empty to clear input
+  if (source.value.display !== to.query.from && sourceCompo.value)
+    updates.push(sourceCompo.value?.forceInput((to.query.from as string | undefined) ?? ""));
+  if (destination.value.display !== to.query.to && destinationCompo.value)
+    updates.push(destinationCompo.value?.forceInput((to.query.to as string | undefined) ?? ""));
+  await Promise.all(updates);
+
+  if (to.query.from && to.query.to && !(results.value instanceof Array)) await fetchResults(); //Update results if detecting a new query, but don't override existing results ?
 
   if (to.hash) {
     if (results.value instanceof Array) {
@@ -216,69 +197,135 @@ async function selectResult(id: string) {
 <template>
   <div class="h-full">
     <div class="h-full flex flex-col">
-      <div class="w-full lg:flex relative h-fit transition-top p-2 pb-1" :class="{
-        'top-[calc(50%-101px)]': results === StatusSearchResult.INITIALIZING,
-        'top-0': results != StatusSearchResult.INITIALIZING,
-      }">
+      <div
+        class="w-full lg:flex relative h-fit transition-top p-2 pb-1"
+        :class="{
+          'top-[calc(50%-101px)]': results === StatusSearchResult.NONE,
+          'top-0': results != StatusSearchResult.NONE,
+        }"
+      >
         <div class="lg:w-2/3 h-fit flex justify-center lg:justify-end my-auto lg:mr-1">
-          <div class="flex flex-col w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2"
-            :class="status.search === StatusSearchResult.NONE ? 'cursor-not-allowed opacity-70' : ''">
-            <span :disabled="status.search === StatusSearchResult.NONE">
-              <LocationSearch ref="sourceCompo" v-model="source" name="source" placeholder="Départ"
-                @update:model-value="destinationCompo?.focus()" />
+          <div
+            class="flex flex-col w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2"
+            :loading="status.search === StatusSearchResult.LOADING"
+          >
+            <span>
+              <LocationSearch
+                ref="sourceCompo"
+                v-model="source"
+                name="source"
+                placeholder="Départ"
+                @update:model-value="
+                  if ((actualRoute?.query.from || '') !== source.display) updateRoute();
+                  if (source.display.length) {
+                    if (!destination.display.length) destinationCompo?.focus();
+                    else searchElem?.focus();
+                  }
+                "
+              />
             </span>
-            <span :disabled="status.search === StatusSearchResult.NONE">
-              <LocationSearch ref="destinationCompo" v-model="destination" name="destination" placeholder="Arrivée"
-                class="mt-2" @update:model-value="searchElem?.focus()" />
+            <span>
+              <LocationSearch
+                ref="destinationCompo"
+                v-model="destination"
+                name="destination"
+                placeholder="Arrivée"
+                class="mt-2"
+                @update:model-value="
+                  if ((actualRoute?.query.to || '') !== destination.display) updateRoute();
+                  if (destination.display.length) {
+                    if (!source.display.length) sourceCompo?.focus();
+                    else searchElem?.focus();
+                  }
+                "
+              />
             </span>
           </div>
         </div>
         <div class="lg:w-1/3 my-auto flex justify-center lg:inline lg:ml-1">
           <div class="flex h-full w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2">
             <div class="py-2 lg:self-center">
-              <button ref="showExtraSettingsElem"
+              <button
+                ref="showExtraSettingsElem"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
                 :class="{ 'rotate-180': showExtraSettings }"
-                @click="(showExtraSettings = !showExtraSettings), showExtraSettingsElem?.blur()">
-                <font-awesome-icon icon="sliders-h"
-                  class="text-text-light-primary dark:text-text-dark-primary text-2xl" />
+                @click="(showExtraSettings = !showExtraSettings), showExtraSettingsElem?.blur()"
+              >
+                <font-awesome-icon
+                  icon="sliders-h"
+                  class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+                />
               </button>
-              <button ref="searchElem"
+              <button
+                ref="searchElem"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
-                @click="fetchResults(), searchElem?.blur()">
-                <font-awesome-icon icon="search-location" class="text-2xl transition-colors duration-200" :class="{
-                  'text-success-t': status.search === StatusSearchResult.SUCCESS,
-                  'text-info-t': status.search === StatusSearchResult.LOADING,
-                  'text-alert-t': status.search === StatusSearchResult.ERROR,
-                  'text-text-light-primary': status.search === StatusSearchResult.INITIALIZING,
-                  'dark:text-text-dark-primary text-2xl': status.search === StatusSearchResult.INITIALIZING,
-                }" />
+                @click="fetchResults(), searchElem?.blur()"
+              >
+                <font-awesome-icon
+                  icon="search-location"
+                  class="text-2xl transition-colors duration-200"
+                  :class="{
+                    'text-success-t': status.search === StatusSearchResult.SUCCESS,
+                    'text-info-t': status.search === StatusSearchResult.LOADING,
+                    'text-alert-t': status.search === StatusSearchResult.ERROR,
+                    'text-text-light-primary dark:text-text-dark-primary':
+                      status.search === StatusSearchResult.NONE,
+                  }"
+                />
               </button>
             </div>
-            <ExtraSettings v-model="settings" :shown="showExtraSettings" class="" />
+            <ExtraSettings
+              v-model="settings"
+              :shown="showExtraSettings"
+              class=""
+              @update:model-value="updateRoute()"
+            />
           </div>
         </div>
       </div>
       <div v-if="result && route.hash" class="fade-in flex px-4 pt-1 pb-4">
-        <ResultItem :title="`Alternative #${(results as any[]).indexOf(result) + 1}`"
-          :total-duration="result.totalDuration" :total-distance="result.totalDistance" :departure="result.departure"
-          :from="result.from" :path="result.stages" :expanded="true" class="mx-auto" />
+        <ResultItem
+          :title="`Alternative #${(results as any[]).indexOf(result) + 1}`"
+          :total-duration="result.totalDuration"
+          :total-distance="result.totalDistance"
+          :departure="result.departure"
+          :from="result.from"
+          :path="result.stages"
+          :expanded="true"
+          class="mx-auto"
+        />
       </div>
-      <div v-else-if="results && typeof results === 'object'"
-        class="grid gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" :class="{
+      <div
+        v-else-if="results && typeof results === 'object'"
+        class="grid gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        :class="{
           'wait-fade-in': result === undefined,
           'fade-in': !route.hash || result === null,
-        }">
+        }"
+      >
         <template v-for="(r, i) of results" :key="r.id">
-          <ResultItem :result-id="r.id" :title="`Alternative #${i + 1}`" :total-duration="r.totalDuration"
-            :total-distance="r.totalDistance" :departure="r.departure" :from="r.from" :path="r.stages"
-            class="cursor-pointer" @click="selectResult(r.id)" />
+          <ResultItem
+            :result-id="r.id"
+            :title="`Alternative #${i + 1}`"
+            :total-duration="r.totalDuration"
+            :total-distance="r.totalDistance"
+            :departure="r.departure"
+            :from="r.from"
+            :path="r.stages"
+            class="cursor-pointer"
+            @click="selectResult(r.id)"
+          />
         </template>
       </div>
       <div v-else class="grid gap-2 row-start-3" />
     </div>
-    <DynamicModal v-model:shown="modal.shown" :title="modal.title" :content="modal.content" :icon="modal.icon"
-      :color="modal.color" />
+    <DynamicModal
+      v-model:shown="modal.shown"
+      :title="modal.title"
+      :content="modal.content"
+      :icon="modal.icon"
+      :color="modal.color"
+    />
   </div>
 </template>
 
@@ -292,9 +339,21 @@ button:focus {
   @apply outline-0;
 }
 
-div[disabled="true"],
-span[disabled="true"] {
-  pointer-events: none;
+.loading-wrapper {
+  @apply opacity-70 !important;
+  @apply cursor-wait !important;
+}
+
+.loading {
+  pointer-events: none !important;
+}
+
+[loading="true"] {
+  @apply loading-wrapper;
+}
+
+[loading="true"] * {
+  @apply loading;
 }
 
 @keyframes fadein {

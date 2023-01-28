@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import DatalistInput from "./DatalistInput.vue";
-import { client, type TransportMode } from "../store/";
-import type { Geocode } from "server/lib/services/geocode/geocode.schema";
-
-export type DefaultLocation = { display: ""; type: "ADRESSE"; value: [0, 0] };
+import { client, defaultLocation, type DefaultLocation, type TransportMode } from "../store/";
+import type { Geocode } from "server";
 
 export interface ParsedGeocodeLocation {
   display: string;
@@ -28,19 +26,11 @@ const emit = defineEmits<{
 
 const datalist = ref<ParsedGeocodeLocation[]>();
 /**
- * The user input, which can be forced
- */
-const input = ref<string>(props.modelValue?.display || "");
-const previousInput = ref<string>();
-/**
- * The validated location (emitted modelValue)
+ * The valid location (emitted modelValue)
  */
 const modelValue = ref<ModelValue>(props.modelValue);
-const updated = ref<number>(0);
-
-function updateModelValue(value: ParsedGeocodeLocation) {
-  emit("update:modelValue", value);
-}
+const updated = ref(0);
+const updating = ref(false);
 
 function parseGeocode(s: Geocode): Omit<ParsedGeocodeLocation, "value"> {
   switch (s.GEOCODE_type) {
@@ -75,38 +65,60 @@ async function fetchSuggestions(value: string): Promise<ParsedGeocodeLocation[]>
   return suggestions.map((s) => ({ value: s.coords, ...parseGeocode(s) }));
 }
 
-async function refreshSuggestions() {
-  if (previousInput.value === input.value) return;
-  if (!input.value || input.value.length < 5) return (datalist.value = []);
+let lastInput = "";
 
-  // if (modelValue.value?.display?.length) updateModelValue(modelValue.value as ParsedGeocodeLocation);
+async function refreshSuggestions(value: string) {
+  if (value === lastInput) return;
+  lastInput = value;
+
+  if (!value || value.length < 5) {
+    datalist.value = [];
+    if (modelValue.value.display.length) {
+      modelValue.value = defaultLocation;
+      emit("update:modelValue", defaultLocation);
+    }
+    return;
+  }
 
   const now = Date.now();
 
-  const suggestions = await fetchSuggestions(input.value);
+  const suggestions = await fetchSuggestions(value);
 
+  // If another call was fastest, skip this one
   if (now < updated.value) return;
+
   datalist.value = suggestions;
-  previousInput.value = input.value;
   updated.value = now;
 
-  const validLocation = suggestions.find((l) => l.display === input.value);
-  if (validLocation) updateModelValue(validLocation);
+  const validLocation = suggestions.find((l) => l.display === value);
+  if (validLocation) {
+    modelValue.value = validLocation;
+    emit("update:modelValue", validLocation);
+  } else {
+    // If modelValue needs reset
+    if (modelValue.value.display.length) {
+      modelValue.value = defaultLocation;
+      emit("update:modelValue", defaultLocation);
+    }
+  }
 }
 
 const inputCompo = ref<InstanceType<typeof DatalistInput> | null>(null);
 
-function focus() {
-  inputCompo.value?.focus();
-}
-
 /**
  * Will call forceIpunt on datalistInput
- * If different input, will emit input
  */
 async function forceInput(v: string) {
+  // force refreshing before the datalist does
+  updating.value = true;
+  await refreshSuggestions(v);
+  updating.value = false;
+
   inputCompo.value?.forceInput(v);
-  await refreshSuggestions();
+}
+
+function focus() {
+  inputCompo.value?.focus();
 }
 
 defineExpose({
@@ -117,6 +129,7 @@ defineExpose({
 
 <template>
   <div
+    :loading="updating"
     class="flex w-full items-stretch relative px-3 py-2 bg-bg-light dark:bg-bg-dark rounded-full shadow-xl"
   >
     <button class="flex mr-1 items-center">
@@ -131,10 +144,7 @@ defineExpose({
       :placeholder="placeholder"
       :datalist="datalist"
       class="px-2 flex-grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
-      @input="
-        if (input != $event) (previousInput = input), (input = $event);
-        refreshSuggestions();
-      "
+      @input="refreshSuggestions($event)"
     />
     <span class="flex mr-1 items-center">
       <font-awesome-icon

@@ -138,12 +138,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
   async get(id: string /* _params: GeocodeParams */): Promise<Geocode> {
     const { queries, endpoints } = await this.parseId(id);
 
-    let doc:
-      | ((dbAddresses | dbTBM_Stops | dbSNCF_Stops) & {
-          createdAt: Date;
-          updatedAt: Date;
-        })
-      | null = null;
+    let doc: (dbAddresses | dbTBM_Stops | dbSNCF_Stops) | null = null;
     let GEOCODE_type: GEOCODE_type = "" as never;
     for (const i in endpoints) {
       try {
@@ -188,10 +183,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
 
     const results: Geocode[] = [];
 
-    type doc = (dbAddresses | dbTBM_Stops | dbSNCF_Stops) & {
-      createdAt: Date;
-      updatedAt: Date;
-    } & { GEOCODE_type: GEOCODE_type };
+    type doc = (dbAddresses | dbTBM_Stops | dbSNCF_Stops) & { GEOCODE_type: GEOCODE_type };
 
     let docs: doc[] = [];
     for (const i in endpoints) {
@@ -207,12 +199,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
             return r;
           });
           if (endpoints[i].name == TBMEndpoints.Addresses && _params.query?.uniqueVoies)
-            r = filterUniqueVoies(
-              r as (dbAddresses & {
-                createdAt: Date;
-                updatedAt: Date;
-              } & { GEOCODE_type: GEOCODE_type })[],
-            );
+            r = filterUniqueVoies(r as (dbAddresses & { GEOCODE_type: GEOCODE_type })[]);
           docs.push(...r);
         }
       } catch (_) {}
