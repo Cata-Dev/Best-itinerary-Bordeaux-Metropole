@@ -91,9 +91,13 @@ function equalObjects(
   o1: Record<string, unknown> | unknown,
   o2: Record<string, unknown> | unknown,
 ): boolean | null {
-  if (typeof o1 != "object" || typeof o2 != "object") return o1 === o2;
+  if (o1 == undefined || typeof o1 !== "object" || o2 == undefined || typeof o2 !== "object")
+    return o1 === o2;
 
-  for (const k in o1) {
+  const keys = Object.keys(o1 as object);
+  keys.push(...Object.keys(o2 as object).filter((k) => !keys.find((kk) => kk === k)));
+  for (const k of keys) {
+    if (!Object.prototype.hasOwnProperty.call(o1, k)) return false;
     if (!Object.prototype.hasOwnProperty.call(o2, k)) return false;
     if (!equalObjects((o1 as Record<string, unknown>)[k], (o2 as Record<string, unknown>)[k])) return false;
   }
