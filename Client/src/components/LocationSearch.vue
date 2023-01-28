@@ -73,8 +73,10 @@ async function refreshSuggestions(value: string) {
 
   if (!value || value.length < 5) {
     datalist.value = [];
-    modelValue.value = defaultLocation;
-    emit("update:modelValue", defaultLocation);
+    if (modelValue.value.display.length) {
+      modelValue.value = defaultLocation;
+      emit("update:modelValue", defaultLocation);
+    }
     return;
   }
 
@@ -93,8 +95,11 @@ async function refreshSuggestions(value: string) {
     modelValue.value = validLocation;
     emit("update:modelValue", validLocation);
   } else {
-    modelValue.value = defaultLocation;
-    emit("update:modelValue", modelValue.value);
+    // If modelValue needs reset
+    if (modelValue.value.display.length) {
+      modelValue.value = defaultLocation;
+      emit("update:modelValue", defaultLocation);
+    }
   }
 }
 
