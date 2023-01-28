@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useRouter, useRoute, onBeforeRouteUpdate } from "vue-router";
+import { useRouter, useRoute, onBeforeRouteUpdate, type RouteLocationNormalized } from "vue-router";
 import LocationSearch, { type ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
 import DynamicModal, { type Modal } from "@/components/DynamicModal.vue";
@@ -23,9 +23,7 @@ import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
 type Location = ParsedGeocodeLocation | DefaultLocation;
 
 const source = ref<Location>(defaultLocation);
-let prevSource: Location;
 const destination = ref<Location>(defaultLocation);
-let prevDestination: Location;
 
 const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
@@ -36,7 +34,6 @@ const settings = ref<QuerySettings>({
   ...defaultQuerySettings,
   transports: { ...defaultQuerySettings.transports },
 });
-let prevSettings: QuerySettings;
 const modal = ref<Modal>({
   title: "",
   content: "",
@@ -75,6 +72,8 @@ const results = ref<Itinerary["paths"] | StatusSearchResult>(StatusSearchResult.
 const result = ref<Itinerary["paths"][number] | null>();
 const router = useRouter();
 const route = useRoute();
+// Because `route` from `useroute()` isn't updated before validating navigation, e.g. before validating all navigation guards, we need to store the upcoming route
+const actualRoute = ref<RouteLocationNormalized | null>(null);
 
 onMounted(updateQuery);
 onBeforeRouteUpdate((to) => updateQuery(to));
@@ -82,19 +81,11 @@ onBeforeRouteUpdate((to) => updateQuery(to));
 /**
  * @description fetch new results for current query
  */
-async function fetchResults(updateQuery = true) {
+async function fetchResults() {
   if (!source.value.display.length || !destination.value.display.length)
-    return (status.value.search = StatusSearchResult.ERROR);
-  if (
-    equalObjects(prevSource, source.value) &&
-    equalObjects(prevDestination, destination.value) &&
-    equalObjects(prevSettings, settings.value)
-  )
     return (status.value.search = StatusSearchResult.ERROR);
 
   status.value.search = StatusSearchResult.LOADING;
-
-  if (updateQuery) queryUpdated();
 
   try {
     const r = await client.service("itinerary").get("paths", {
@@ -113,21 +104,16 @@ async function fetchResults(updateQuery = true) {
   } catch (_) {
     status.value.search = StatusSearchResult.ERROR;
   } finally {
-    prevSource = JSON.parse(JSON.stringify(source.value));
-    prevDestination = JSON.parse(JSON.stringify(destination.value));
-    prevSettings = JSON.parse(JSON.stringify(settings.value));
-
     //Prevent weird mobile behavior
     if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur();
   }
 }
 
-let internallyUpdated = false;
-
 /**
- * @description Refresh the route according to new settings / locations
+ * @description Refresh the route according to new settings & locations
+ * @returns A promise that resolves when route as been updated
  */
-function queryUpdated() {
+async function updateRoute() {
   const query: Record<string, string> = {};
 
   if (source.value.display.length) query.from = source.value.display;
@@ -140,17 +126,21 @@ function queryUpdated() {
       if (v1 != v2) query[keys.join(".")] = JSON.stringify(v1);
     },
   );
-  internallyUpdated = true;
-  router.push({ query });
+
+  return await router.push({ query });
 }
 
 /**
  * @description Refresh settings / locations according to the current route
  */
 async function updateQuery(to = route) {
-  if (internallyUpdated) {
-    internallyUpdated = false;
-    return true;
+  if (equalObjects(actualRoute.value, to)) return (actualRoute.value = to);
+  actualRoute.value = to;
+
+  if ((!to.query.from || !to.query.to) && results.value instanceof Array) {
+    // Reset search
+    results.value = StatusSearchResult.NONE;
+    status.value.search = StatusSearchResult.NONE;
   }
 
   rebaseObject(settings.value, defaultQuerySettings as unknown as Obj<string | number | boolean>);
@@ -181,14 +171,7 @@ async function updateQuery(to = route) {
     updates.push(destinationCompo.value?.forceInput((to.query.to as string | undefined) ?? ""));
   await Promise.all(updates);
 
-  if (to.query.from && to.query.to && !(results.value instanceof Array)) await fetchResults(false); //Update results if detecting a new query, but don't override existing results ?
-  if ((!to.query.from || !to.query.to) && results.value instanceof Array) {
-    // Reset search
-    results.value = StatusSearchResult.NONE;
-    status.value.search = StatusSearchResult.NONE;
-    prevDestination = JSON.parse(JSON.stringify(destination.value));
-    prevSource = JSON.parse(JSON.stringify(source.value));
-  }
+  if (to.query.from && to.query.to && !(results.value instanceof Array)) await fetchResults(); //Update results if detecting a new query, but don't override existing results ?
 
   if (to.hash) {
     if (results.value instanceof Array) {
@@ -233,7 +216,7 @@ async function selectResult(id: string) {
                 name="source"
                 placeholder="Départ"
                 @update:model-value="
-                  queryUpdated();
+                  if ((actualRoute?.query.from || '') !== source.display) updateRoute();
                   if (source.display.length) {
                     if (!destination.display.length) destinationCompo?.focus();
                     else searchElem?.focus();
@@ -249,8 +232,11 @@ async function selectResult(id: string) {
                 placeholder="Arrivée"
                 class="mt-2"
                 @update:model-value="
-                  queryUpdated();
-                  if (destination.display.length) searchElem?.focus();
+                  if ((actualRoute?.query.to || '') !== destination.display) updateRoute();
+                  if (destination.display.length) {
+                    if (!source.display.length) sourceCompo?.focus();
+                    else searchElem?.focus();
+                  }
                 "
               />
             </span>
@@ -292,7 +278,7 @@ async function selectResult(id: string) {
               v-model="settings"
               :shown="showExtraSettings"
               class=""
-              @update:model-value="queryUpdated()"
+              @update:model-value="updateRoute()"
             />
           </div>
         </div>
