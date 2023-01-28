@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import DatalistInput from "./DatalistInput.vue";
 import { client, defaultLocation, type DefaultLocation, type TransportMode } from "../store/";
-import type { Geocode } from "server/lib/services/geocode/geocode.schema";
+import type { Geocode } from "server";
 
 export interface ParsedGeocodeLocation {
   display: string;

@@ -1,7 +1,7 @@
 import io from "socket.io-client";
 import socketio from "@feathersjs/socketio-client";
 import { createClient } from "server";
-import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
+import type { Itinerary } from "server";
 
 const connection = socketio(
   io("https://bibm.catadev.org", {

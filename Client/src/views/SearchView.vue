@@ -18,7 +18,7 @@ import {
   defaultLocation,
 } from "@/store";
 import type { QuerySettings, Obj } from "@/store";
-import type { Itinerary } from "server/lib/services/itinerary/itinerary.schema";
+import type { Itinerary } from "server";
 
 type Location = ParsedGeocodeLocation | DefaultLocation;
 
