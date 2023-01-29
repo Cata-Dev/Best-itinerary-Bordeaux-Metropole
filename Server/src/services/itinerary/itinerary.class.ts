@@ -74,7 +74,7 @@ export class ItineraryService
                   departure: Date.now(),
                   from: "4 Rue du Pont de la Grave Bègles",
                   stages: [
-                    { type: "FOOT", to: "Mériadeck", duration: 163, details: { distance: 150 } },
+                    { type: "FOOT", to: "France Alouette", duration: 163, details: { distance: 150 } },
                     {
                       type: "TBM",
                       to: "Village Cap de Bos",
@@ -86,6 +86,7 @@ export class ItineraryService
                         departure: Date.now() + 163 * 1000,
                       },
                     },
+                    { type: "FOOT", to: "France Alouette", duration: 324, details: { distance: 221 } },
                     {
                       type: "SNCF",
                       to: "France Alouette",
