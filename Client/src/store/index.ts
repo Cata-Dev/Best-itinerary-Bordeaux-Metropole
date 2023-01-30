@@ -1,23 +1,6 @@
 import { theme, toggleDarkMode } from "./theme/theme";
 import { client, APIRefresh } from "./feathers/feathers";
-import {
-  duration,
-  formatDate,
-  transportToIcon,
-  transportToType,
-  equalObjects,
-  rebaseObject,
-  compareObjectForEach,
-  parseJSON,
-} from "./utils";
-import type {
-  TransportIcon,
-  TransportMode,
-  TransportProvider,
-  UnknowIcon,
-  UnknowLitteral,
-  Obj,
-} from "./utils";
+import type { TransportProvider } from "./utils";
 
 interface QuerySettings {
   departureTime: string;
@@ -44,11 +27,15 @@ const defaultLocation = {
 
 type DefaultLocation = typeof defaultLocation;
 
+type colorTransports = "walking" | "tbm" | "sncf";
+type colorComm = "info" | "alert" | "success";
+type colorType = "bg" | "t";
+type colorPalette<Base extends string> = `${Base}-${colorType}`;
+
+export { toggleDarkMode, theme, client, APIRefresh, defaultQuerySettings, defaultLocation };
+export type { QuerySettings, DefaultLocation, colorTransports, colorComm, colorPalette };
+
 export {
-  toggleDarkMode,
-  theme,
-  client,
-  APIRefresh,
   duration,
   formatDate,
   transportToIcon,
@@ -57,10 +44,8 @@ export {
   rebaseObject,
   compareObjectForEach,
   parseJSON,
-  defaultQuerySettings,
-  defaultLocation,
-};
-
+  getNewTopZIndex,
+} from "./utils";
 export type {
   TransportIcon,
   TransportMode,
@@ -68,6 +53,4 @@ export type {
   UnknowIcon,
   UnknowLitteral,
   Obj,
-  QuerySettings,
-  DefaultLocation,
-};
+} from "./utils";
