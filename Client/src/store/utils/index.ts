@@ -163,6 +163,15 @@ function parseJSON(json: string) {
   }
 }
 
+function getNewTopZIndex() {
+  let max = 0;
+  for (const el of document.querySelectorAll("body *")) {
+    const zindex = parseInt(window.getComputedStyle(el).zIndex);
+    if (zindex > max) max = zindex;
+  }
+  return max + 1;
+}
+
 Object.defineProperty(String.prototype, "capitalize", {
   value: function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -188,5 +197,6 @@ export {
   rebaseObject,
   compareObjectForEach,
   parseJSON,
+  getNewTopZIndex,
 };
 export type { Obj };
