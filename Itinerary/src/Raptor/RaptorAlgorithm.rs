@@ -1,10 +1,10 @@
 #![allow(non_snake_case)]
-use super::RouteScanner::CriteriaComparator;
-use super::RouteScanner::RaptorScanner;
+use chrono::{Utc, DateTime};
+
+use super::RouteScanner::RaptorScannerSC;
 use super::RouteStructs::*;
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
-use std::time::Duration;
 
 pub enum RaptorError {
     StopNotFound(&'static str),
@@ -45,38 +45,33 @@ impl std::error::Error for RaptorError {
 
 pub fn singleThreadRaptor<'r>(
     stops: &'r HashMap<usize, Stop<'r>>,
-    departureTime: Duration,
+    departureTime: DateTime<Utc>,
     departureStop: &'r Stop<'r>,
     targetStop: &'r Stop<'r>,
-    numberOfItenaries: usize,
     maxTransfer: usize,
-    criteriaComparator: &'r CriteriaComparator,
 ) -> Result<(), RaptorError> {
-    let scanner: RaptorScanner = RaptorScanner::new(
+    let mut scanner: RaptorScannerSC = RaptorScannerSC::new(
+        maxTransfer,
+        &departureTime,
         &stops,
-        stops.len(),
-        numberOfItenaries,
-        departureStop,
-        criteriaComparator,
+        targetStop
     );
-    for _ in 1..maxTransfer {
+    let mut markedStops = vec![departureStop];
+    let mut markedRoutes = HashMap::new();
+    for k in 1..maxTransfer {
         // Accumulate routes serving marked stops from previous round
-        scanner.markRoutes();
+        scanner.markRoutes(k, &mut markedRoutes, &mut markedStops);
         // Traverse each Marked Scheduled Route
-        scanner.processScheduledRoutes(targetStop.id);
-        // Look at non-scheduled routes
-        scanner.processNonScheduledRoutes();
-        //    Exit condition
-        if scanner.isScanCompleted() {
+        scanner.processScheduledRoutes(k, &markedRoutes, &mut markedStops);
+        // // Look at non-scheduled routes
+        scanner.processNonScheduledRoutes(k, &markedStops);
+        // //    Exit condition
+        if scanner.isScanCompleted(&markedStops) {
             break;
         }
     }
     Ok(())
-} //TODO: when doing multi-criteria, will post processing needed in order to sort the best route?
-  //Return the fastest itinerary
-  // the problem is there with there with single itenary but with multiple ?
-  // and how do I implement it ? Do I stores as much itenaries, and then sort them (post process ) or
-  // do I add something inside of the scan (stop domination)
+} 
 
 fn multiThreadRaptor<'r>() {}
 async fn asyncRaptor() {}

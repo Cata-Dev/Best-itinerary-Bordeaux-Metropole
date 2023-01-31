@@ -14,7 +14,7 @@ default-features = false
 features = ["tokio-runtime"]
 
 [dependencies]
-wasm-bindgen = "0.2.78"
-wasm-bindgen-futures = "0.4.29"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
 serde = "1.0"
-futures = "0.3.21"
+chrono = "0.4"

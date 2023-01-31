@@ -1,344 +1,211 @@
+#![allow(non_snake_case)]
 use super::RouteStructs::*;
-use std::cell::RefCell;
+use chrono::{DateTime, Utc, MAX_DATETIME};
 use std::collections::HashMap;
-use std::time::Duration;
-//
 
-#[derive(Clone)]
-pub struct CriteriasHolder<'r> {
-    //TODO: add diversity
-    arrivalTime: &'r Duration, // Less is better
-    staticScore: f32, // Greater is better // penibility, landscape beauty, people's kindness on the road :)
-}
-pub struct CriteriaComparator
-// the sum of the factors is equal to 1
-{
-    deltaArrivalTimeStep: u64, // in seconds
-    arrivalTimeFactor: f32,
-    staticScoreFactor: f32,
-}
-
-impl CriteriaComparator {
-    fn determinStaticScore() {
-        todo!()
-    }
-    fn returnBestRefMut<'r>(
-        &self,
-        left: &'r mut Memorizer<'r>,
-        right: &'r mut Memorizer<'r>,
-    ) -> &'r mut Memorizer<'r> {
-        //TODO: compare function with self factors
-        let mut leftScore = 10f32 * self.arrivalTimeFactor;
-        let mut rightScore = 10f32 * self.arrivalTimeFactor;
-        if left.criteriasHolder.arrivalTime > right.criteriasHolder.arrivalTime {
-            leftScore -= (left.criteriasHolder.arrivalTime.as_secs()
-                - right.criteriasHolder.arrivalTime.as_secs()) as f32
-                / self.deltaArrivalTimeStep as f32;
-        } else {
-            rightScore -= (left.criteriasHolder.arrivalTime.as_secs()
-                - right.criteriasHolder.arrivalTime.as_secs()) as f32
-                / self.deltaArrivalTimeStep as f32;
-        }
-        leftScore += left.criteriasHolder.staticScore * self.staticScoreFactor;
-        rightScore += right.criteriasHolder.staticScore * self.staticScoreFactor;
-        if leftScore > rightScore {
-            left
-        } else {
-            right
-        }
-    }
-}
-#[derive(Clone)]
-pub enum UserInfos<'r> {
+#[derive(Clone, PartialEq)]
+pub enum Label<'rd> {
     ScheduledRoute {
-        boardingStop: &'r MemorizerManagerForOneStop<'r>,
-        route: &'r ScheduledRoute<'r>,
-        stop: &'r Stop<'r>,
+        arrivalTime: &'rd DateTime<Utc>,
+        route: &'rd ScheduledRoute,
+        boardingStop: &'rd Stop<'rd>,
     },
     NonScheduledRoute {
-        boardingStop: &'r MemorizerManagerForOneStop<'r>,
-        route: &'r NonScheduledRoute<'r>,
-        stop: &'r Stop<'r>,
+        arrivalTime: DateTime<Utc>,
+        route: &'rd NonScheduledRoute<'rd>,
+        boardingStop: &'rd Stop<'rd>,
     },
-    Null,
+    Infinite,
 }
-#[derive(Clone)]
-pub struct Memorizer<'r> {
-    userInfos: &'r UserInfos<'r>,
-    criteriasHolder: CriteriasHolder<'r>,
-}
-impl<'r> Memorizer<'r> {
-    pub fn memorize(
-        &mut self,
-        arrivalTime: &'r Duration,
-        staticScore: f32,
-        userInfos: &'r UserInfos<'r>,
-    ) {
-        self.userInfos = userInfos;
-        self.criteriasHolder.arrivalTime = arrivalTime;
-        self.criteriasHolder.staticScore = staticScore;
-    }
-}
-#[derive(Clone)]
-pub enum MemorizerManagerForOneStop<'r> {
-    Single {
-        memorizer: Memorizer<'r>,
-    },
-    Multiple {
-        memorizers: Vec<Memorizer<'r>>, // Should be small since we want at best a dozen of possibles itenaries (no need for a HashMap)
-        bestIndex: usize,
-        worstIndex: usize,
-    },
-}
-impl<'r> MemorizerManagerForOneStop<'r> {}
-static INIT_ARRIVAL_TIME: Duration = Duration::from_secs(u64::MAX);
-static NONE_DURATION: Duration = Duration::from_secs(0);
-
-pub struct MemorizerManager<'r> {
-    // 'rs: raptor scanner | 'rd: raptor datas
-    memorizersPerStop: HashMap<usize, MemorizerManagerForOneStop<'r>>,
-    maxMemorizersPerStop: usize,
-    noneMemorizer: Memorizer<'r>,
-    criteriaComparator: &'r CriteriaComparator,
-}
-
-impl<'r> MemorizerManager<'r> {
-    fn memorizeFor(
-        &'r mut self,
-        stopId: &'r usize,
-        arrivalTime: &'r Duration,
-        routeScore: f32,
-        userInfos: &'r UserInfos,
-    ) {
-        match self.memorizersPerStop.get_mut(stopId).unwrap() {
-            MemorizerManagerForOneStop::Single { memorizer } => {
-                if memorizer.criteriasHolder.staticScore < routeScore {
-                    memorizer.memorize(arrivalTime, routeScore, userInfos);
-                }
-            }
-            MemorizerManagerForOneStop::Multiple {
-                memorizers,
-                bestIndex,
-                worstIndex,
-            } => {
-                memorizers[*worstIndex].memorize(arrivalTime, routeScore, userInfos);
-                //TODO: UPDATE WORST INDEX
-                let mut chosenMemorizer: &mut Memorizer = &mut self.noneMemorizer;
-                for memorizer in memorizers.iter_mut() {
-                    chosenMemorizer = self
-                        .criteriaComparator
-                        .returnBestRefMut(memorizer, chosenMemorizer);
-                }
-            }
-        }
-    }
-    pub fn getBestEarliestArrivalTime(&self, stopId: &usize) -> &Duration {
-        unsafe {
-            //100% sure to find the stop, due to structure of the algo
-            let stopManager = self.memorizersPerStop.get(stopId).unwrap_unchecked();
-            match stopManager {
-                MemorizerManagerForOneStop::Single { memorizer } => {
-                    memorizer.criteriasHolder.arrivalTime
-                }
-                MemorizerManagerForOneStop::Multiple {
-                    memorizers,
-                    bestIndex,
-                    worstIndex,
-                } => memorizers[*bestIndex].criteriasHolder.arrivalTime,
-            }
-        }
-    }
-    pub fn getWorstEarliestArrivalTime(&self, stopId: &usize) -> &Duration {
-        unsafe {
-            //100% sure to find the stop, due to structure of the algo
-            let stopManager = self.memorizersPerStop.get(stopId).unwrap_unchecked();
-            match stopManager {
-                MemorizerManagerForOneStop::Single { memorizer } => {
-                    memorizer.criteriasHolder.arrivalTime
-                }
-                MemorizerManagerForOneStop::Multiple {
-                    memorizers,
-                    bestIndex,
-                    worstIndex,
-                } => memorizers[*worstIndex].criteriasHolder.arrivalTime,
-            }
+impl<'rd> Label<'rd> {
+    fn getArrivalTime(&self) -> &DateTime<Utc> {
+        match self {
+            Label::ScheduledRoute { arrivalTime, .. } => arrivalTime,
+            Label::NonScheduledRoute { arrivalTime, .. } => arrivalTime,
+            Label::Infinite => &MAX_DATETIME,
         }
     }
 }
+pub struct MultiLabel<'rd> {
+    pub labels: Vec<Label<'rd>>,
+    pub earliestLabel: Label<'rd>, //local pruning
+}
 
-pub struct RaptorScanner<'rs, 'rd: 'rs> {
-    // 'rs: raptor scanner | 'rd: raptor datas
-    memorizerManager: RefCell<MemorizerManager<'rs>>,
-    markedStops: RefCell<Vec<&'rd Stop<'rd>>>,
-    markedRoutes: RefCell<Vec<MarkedScheduledRoute<'rd>>>,
+pub struct MultiLabels<'rd> {
+    pub inner: HashMap<usize, MultiLabel<'rd>>,
+}
+impl<'rd> MultiLabels<'rd> {
+    pub fn new(roundsCount: usize, stopsCount: usize) -> Self {
+        Self {
+            inner: (0..stopsCount)
+                .map(|id| {
+                    (id, {
+                        let mut labels = vec![Label::Infinite];
+                        labels.reserve(roundsCount - 1);
+                        MultiLabel {
+                            labels,
+                            earliestLabel: Label::Infinite,
+                        }
+                    })
+                })
+                .collect(),
+        }
+    }
+    pub fn get(&self, stopId: &usize) -> &MultiLabel<'rd> {
+        // safe since each multilabel per stop is initialized with the MultiLabel::Infinite
+        unsafe { self.inner.get(stopId).unwrap_unchecked() }
+    }
+
+    pub fn get_mut(&mut self, stopId: &usize) -> &mut MultiLabel<'rd> {
+        // safe since each multilabel per stop is initialized with the MultiLabel::Infinite
+        unsafe { self.inner.get_mut(stopId).unwrap_unchecked() }
+    }
+}
+
+pub struct RaptorScannerSC<'rd> {
+    // 'rd: raptor datas
+    multiLabels: MultiLabels<'rd>,
     stops: &'rd HashMap<usize, Stop<'rd>>,
+    targetStop: &'rd Stop<'rd>,
 }
-impl<'rs, 'rd: 'rs> RaptorScanner<'rs, 'rd> {
+
+impl<'rd> RaptorScannerSC<'rd> {
     pub fn new(
+        roundsCount: usize,
+        departureTime: &DateTime<Utc>,
         stops: &'rd HashMap<usize, Stop<'rd>>,
-        stopsCount: usize,
-        maxMemorizersPerStop: usize,
-        departureStop: &'rd Stop<'rd>,
-        criteriaComparator: &'rd CriteriaComparator,
+        targetStop: &'rd Stop<'rd>,
     ) -> Self {
-        if maxMemorizersPerStop == 1 {
-            Self {
-                memorizerManager: RefCell::new(MemorizerManager {
-                    memorizersPerStop: (0..stopsCount)
-                        .map(|stopId| {
-                            (
-                                stopId,
-                                MemorizerManagerForOneStop::Single {
-                                    memorizer: Memorizer {
-                                        userInfos: &UserInfos::Null,
-                                        criteriasHolder: CriteriasHolder {
-                                            staticScore: 0f32,
-                                            arrivalTime: &INIT_ARRIVAL_TIME,
-                                        },
-                                    },
-                                },
-                            )
-                        })
-                        .collect(),
-                    maxMemorizersPerStop,
-                    noneMemorizer: Memorizer {
-                        criteriasHolder: CriteriasHolder {
-                            arrivalTime: &NONE_DURATION,
-                            staticScore: 0f32,
-                        },
-                        userInfos: &UserInfos::Null,
-                    },
-                    criteriaComparator,
-                }),
-                markedStops: RefCell::new(vec![departureStop]),
-                markedRoutes: RefCell::new(vec![]),
-                stops,
-            }
-        } else {
-            Self {
-                memorizerManager: RefCell::new(MemorizerManager {
-                    memorizersPerStop: (0..stopsCount)
-                        .map(|stopId| {
-                            (
-                                stopId,
-                                MemorizerManagerForOneStop::Multiple {
-                                    memorizers: vec![
-                                        Memorizer {
-                                            userInfos: &UserInfos::Null,
-                                            criteriasHolder: CriteriasHolder {
-                                                staticScore: 0f32,
-                                                arrivalTime: &INIT_ARRIVAL_TIME,
-                                            }
-                                        };
-                                        maxMemorizersPerStop
-                                    ],
-                                    bestIndex: 0,
-                                    worstIndex: 0,
-                                },
-                            )
-                        })
-                        .collect(),
-                    maxMemorizersPerStop,
-                    noneMemorizer: Memorizer {
-                        criteriasHolder: CriteriasHolder {
-                            arrivalTime: &NONE_DURATION,
-                            staticScore: 0f32,
-                        },
-                        userInfos: &UserInfos::Null,
-                    },
-                    criteriaComparator,
-                }),
-                markedStops: RefCell::new(vec![departureStop]),
-                markedRoutes: RefCell::new(vec![]),
-                stops,
-            }
+        let mut multiLabels = MultiLabels::new(roundsCount, stops.len());
+        Self {
+            stops,
+            multiLabels,
+            targetStop,
         }
     }
-    pub fn markRoutes(&'rs self) {
-        let markedRoutes: &mut Vec<MarkedScheduledRoute<'rd>> = &mut self.markedRoutes.borrow_mut();
-        let markedStops = self.markedStops.borrow();
-        let memorizerManager = self.memorizerManager.borrow();
+
+    pub fn markRoutes(
+        &mut self,
+        currentRound: usize,
+        markedRoutes: &mut HashMap<usize, MarkedScheduledRoute<'rd>>,
+        markedStops: &mut Vec<&'rd Stop<'rd>>,
+    ) {
         markedRoutes.clear();
         for markedStop in markedStops.iter() {
-            for scheduledRoute in markedStop.scheduledRoutes {
+            for scheduledRoute in markedStop.scheduledRoutes.iter() {
                 // If there is already this route in the marked route
-                if let Some(markedRoute) = markedRoutes
-                    .iter_mut()
-                    .find(|x| -> bool { x.route.id == scheduledRoute.id })
-                {
-                    if memorizerManager.getBestEarliestArrivalTime(&markedRoute.earliestStop.id)
-                        > memorizerManager.getBestEarliestArrivalTime(&markedStop.id)
+                if let Some(markedRoute) = markedRoutes.get_mut(&scheduledRoute.id) {
+                    if self.multiLabels.get(&markedStop.id).labels[currentRound - 1]
+                        .getArrivalTime()
+                        < self.multiLabels.get(&markedRoute.earliestStop.id).labels
+                            [currentRound - 1]
+                            .getArrivalTime()
                     {
                         markedRoute.earliestStop = markedStop;
                     }
                 } else {
-                    markedRoutes.push(MarkedScheduledRoute {
-                        route: scheduledRoute,
-                        earliestStop: markedStop,
-                    });
+                    markedRoutes.insert(
+                        scheduledRoute.id,
+                        MarkedScheduledRoute {
+                            route: scheduledRoute,
+                            earliestStop: markedStop,
+                            earliestStopEquivalentIndex: scheduledRoute
+                                .getEquivalentStopId(&markedStop.id),
+                        },
+                    );
                 }
             }
         }
+        markedStops.clear();
     }
-    fn scanMarkedScheduledRoute(
-        &'rs self,
-        targetStopId: usize, // target pruning
-        markedRoute: &MarkedScheduledRoute<'rs>,
-    ) {
-        let memorizerManager: &mut MemorizerManager<'rs> = &mut self.memorizerManager.borrow_mut();
-        let markedStops: &mut Vec<&'rd Stop<'rd>> = &mut self.markedStops.borrow_mut();
 
+    fn scanMarkedScheduledRoute(
+        &mut self,
+        currentRound: usize,
+        markedStops: &mut Vec<&'rd Stop<'rd>>,
+        markedRoute: &MarkedScheduledRoute<'rd>,
+    ) {
         //TODO: self.markedStops ? one allocation, at the same heap spot
-        let mut currentTrip: &[Duration] = &[];
-        for &stopId in markedRoute.route.stopsId[markedRoute
-            .route
-            .getUncheckedEquivalentIndexFor(markedRoute.earliestStop.id)..]
+        let route = markedRoute.route;
+        let mut possibleTrip = route.getEarliestTripFor(
+            markedRoute.earliestStopEquivalentIndex,
+            self.multiLabels
+                .get(&markedRoute.earliestStop.id)
+                .earliestLabel.getArrivalTime(),
+        );
+        for (stopIndex, &stopId) in route.stopsId[markedRoute.earliestStopEquivalentIndex..]
             .iter()
+            .enumerate()
         {
-            // TODO: ADD CRITERIA CHECK HERE
-            if currentTrip != &[]
-                && &currentTrip[stopId]
-                    < std::cmp::min(
-                        memorizerManager.getWorstEarliestArrivalTime(&stopId),
-                        memorizerManager.getWorstEarliestArrivalTime(&targetStopId),
-                    )
+            let Some(currentTrip) = possibleTrip else { continue; };
+            if &currentTrip[stopIndex]
+                < std::cmp::min(
+                    self.multiLabels //Target pruning
+                        .get(&self.targetStop.id)
+                        .earliestLabel.getArrivalTime(),
+                    self.multiLabels.get(&stopId).earliestLabel.getArrivalTime(),
+                )
             {
+                let multiLabel = self.multiLabels.get_mut(&stopId);
+                multiLabel.earliestLabel = Label::ScheduledRoute {
+                    arrivalTime: &currentTrip[stopIndex],
+                    route,
+                    boardingStop: markedRoute.earliestStop,
+                };
                 markedStops.push(&self.stops[&stopId]);
             }
-            //TODO: HANDLE THE CATCHING OF AN EARLIER TRIP
-            if memorizerManager.getBestEarliestArrivalTime(&stopId) < &currentTrip[stopId] {
-                markedRoute.route.findEarliestTripAt(
-                    stopId,
-                    memorizerManager.getBestEarliestArrivalTime(&stopId),
-                );
+            //HANDLE THE CATCHING OF AN EARLIER TRIP:
+            if let Some(trip) = route.getEarliestTripFor(
+                stopIndex,
+                self.multiLabels.get(&stopIndex).labels[currentRound - 1].getArrivalTime(),
+            ) {
+                possibleTrip = Some(trip);
             }
         }
     }
-    fn scanNonScheduleRoute(&'rs self, markedStop: &'rs Stop<'rd>) {
-        let memorizerManager = self.memorizerManager.borrow_mut();
-        let markedStops = &mut self.markedStops.borrow_mut();
+
+    fn scanNonScheduleRoute(&mut self, currentRound: usize, markedStop: &'rd Stop<'rd>) {
         for nonScheduledRoute in markedStop.nonScheduledRoutes.iter() {
-            let nonScheduledRouteDuration = *(memorizerManager
-                .getWorstEarliestArrivalTime(&markedStop.id))
+            let pathArrivalTime = *self.multiLabels.get(&markedStop.id).labels[currentRound]
+                .getArrivalTime()
                 + nonScheduledRoute.transferTime;
-            let targetStopWorstEarliestArrivalTime =
-                memorizerManager.getWorstEarliestArrivalTime(&nonScheduledRoute.targetStop.id);
-            if targetStopWorstEarliestArrivalTime > &nonScheduledRouteDuration {
-                //TODO: Add memorizing + compare worst earliest arrival time ?
+            let targetStopLabels = &mut self
+                .multiLabels
+                .get_mut(&nonScheduledRoute.targetStop.id)
+                .labels;
+            if targetStopLabels[currentRound].getArrivalTime() > &pathArrivalTime {
+                targetStopLabels[currentRound] = Label::NonScheduledRoute {
+                    arrivalTime: pathArrivalTime,
+                    route: nonScheduledRoute,
+                    boardingStop: markedStop,
+                };
             }
         }
     }
-    pub fn processScheduledRoutes(&'rs self, targetStopId: usize) {
-        for markedRoute in self.markedRoutes.borrow().iter() {
-            self.scanMarkedScheduledRoute(targetStopId, markedRoute)
+
+    pub fn processScheduledRoutes(
+        &mut self,
+        currentRound: usize,
+        markedRoutes: &HashMap<usize, MarkedScheduledRoute<'rd>>,
+        markedStops: &mut Vec<&'rd Stop<'rd>>,
+    ) {
+        for markedRoute in markedRoutes.clone().values() {
+            self.scanMarkedScheduledRoute(currentRound, markedStops, &markedRoute)
         }
     }
-    pub fn processNonScheduledRoutes(&'rs self) {
-        for markedStop in self.markedStops.borrow().iter() {
-            self.scanNonScheduleRoute(&markedStop);
+    pub fn processNonScheduledRoutes(
+        &mut self,
+        currentRound: usize,
+        markedStops: &Vec<&'rd Stop<'rd>>,
+    ) {
+        for markedStop in markedStops.iter() {
+            self.scanNonScheduleRoute(currentRound, &markedStop);
         }
     }
-    pub fn isScanCompleted(&self) -> bool {
-        self.markedStops.borrow().len() == 0
+    pub fn isScanCompleted(&self, markedStops: &Vec<&'rd Stop<'rd>>) -> bool {
+        markedStops.len() == 0
     }
+    // pub fn constructBestJourney(&self) {
+    //
+    // }
 }

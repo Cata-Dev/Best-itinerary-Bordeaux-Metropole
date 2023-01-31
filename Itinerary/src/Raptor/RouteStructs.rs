@@ -1,76 +1,90 @@
-use super::RouteScanner::UserInfos;
-use std::time::Duration;
+#![allow(non_snake_case)]
+use chrono::{DateTime, Duration, Utc};
 
+#[derive(PartialEq)]
 pub struct Coords {
     x: u32,
     y: u32,
 }
+
+#[derive(PartialEq)]
 pub struct Stop<'r> {
     pub id: usize,
     pub name: String,
     pub coords: Coords,
-    pub nonScheduledRoutes: &'r Vec<NonScheduledRoute<'r>>,
-    pub scheduledRoutes: &'r Vec<ScheduledRoute<'r>>,
+    pub nonScheduledRoutes: Vec<&'r NonScheduledRoute<'r>>,
+    pub scheduledRoutes: Vec<&'r ScheduledRoute>,
 }
+
+#[derive(PartialEq)]
 pub enum RouteType {
     SNCF,
     BUS,
     FOOT,
     V3,
 }
+
+#[derive(PartialEq)]
 pub struct NonScheduledRoute<'r> {
     pub id: usize,
     pub name: String,
-    pub staticScore: u32,
-    pub userInfos: UserInfos<'r>,
     pub routeType: RouteType,
     pub targetStop: &'r Stop<'r>,
-    pub distance: u32,
     pub transferTime: Duration,
 }
-pub struct ScheduledRoute<'r> {
+
+#[derive(PartialEq)]
+pub struct ScheduledRoute {
     pub id: usize,
     pub name: String,
-    pub staticScore: u32,
-    pub userInfos: UserInfos<'r>,
     pub routeType: RouteType,
     pub direction: String,
-    pub distanceBetweenStops: Vec<u32>,
     pub tripsCount: usize,
     pub stopsCount: usize, //Number of Stops on the ScheduledRoute
-    pub stopsTimes: &'r Vec<Duration>,
-    pub stopsId: Vec<usize>, //Contains the equivalent stops Ids for stopTimes
+    pub stopsTimes: Vec<DateTime<Utc>>,
+    pub stopsId: Vec<usize>, // Vec structured as [stopId1, stopdId2, ...] with stopd
+                             // ids being in the same order as stopTimes
 }
 
-impl<'r> ScheduledRoute<'r> {
-    pub fn findEarliestTripAt(
-        &self,
-        stopId: usize,
-        stopEarliestArrivalTime: &'r Duration,
-    ) -> Option<&'r [Duration]> {
+impl<'rd> ScheduledRoute {
+    pub fn getEquivalentStopId(&self, stopId: &usize) -> usize {
+        unsafe {
+            self.stopsId
+                .iter()
+                .position(|id| id == stopId)
+                .unwrap_unchecked()
+        }
+    }
+    pub fn getTripAt(&'rd self, tripId: usize) -> &'rd [DateTime<Utc>] {
+        &self.stopsTimes[tripId * self.stopsCount..tripId * self.stopsCount + self.stopsCount]
+    }
+
+    pub fn getStopTimeOn(
+        &'rd self,
+        tripId: usize,
+        stopEquivalentIndex: usize,
+    ) -> &'rd DateTime<Utc> {
+        &self.stopsTimes[tripId * self.stopsCount + stopEquivalentIndex]
+    }
+
+    pub fn getEarliestTripFor(
+        &'rd self,
+        stopEquivalentIndex: usize,
+        stopArrivalTime: &DateTime<Utc>,
+    ) -> Option<&'rd [DateTime<Utc>]> {
         for tripId in 0..self.tripsCount {
-            let tripTimetable = self.getTripAt(tripId);
-            if stopEarliestArrivalTime < &tripTimetable[self.stopsId[stopId]] {
-                return Some(&tripTimetable[stopId + 1..]);
+            if stopArrivalTime < self.getStopTimeOn(tripId, stopEquivalentIndex) {
+                let tripTimetable = self.getTripAt(tripId);
+                return Some(&tripTimetable[stopEquivalentIndex + 1..]);
             }
         }
         return None;
     }
-    pub fn getUncheckedEquivalentIndexFor(&self, stopId: usize) -> usize {
-        unsafe {
-            // durae to the structure, we are 100% sure th
-            self.stopsId
-                .iter()
-                .position(|&id| id == stopId)
-                .unwrap_unchecked()
-        }
-    }
-
-    pub fn getTripAt(self: &Self, tripId: usize) -> &'r [Duration] {
-        &self.stopsTimes[tripId * self.stopsCount..tripId * self.stopsCount + self.stopsCount]
-    }
 }
+
+#[derive(Clone)]
 pub struct MarkedScheduledRoute<'r> {
-    pub route: &'r ScheduledRoute<'r>,
     pub earliestStop: &'r Stop<'r>,
+    pub earliestStopEquivalentIndex: usize,
+    pub route: &'r ScheduledRoute,
 }
