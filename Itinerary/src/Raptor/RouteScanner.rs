@@ -15,6 +15,7 @@ pub enum Label<'rd> {
         route: &'rd NonScheduledRoute<'rd>,
         boardingStop: &'rd Stop<'rd>,
     },
+    DepartureLabel(&'rd DateTime<Utc>),
     Infinite,
 }
 impl<'rd> Label<'rd> {
@@ -22,6 +23,7 @@ impl<'rd> Label<'rd> {
         match self {
             Label::ScheduledRoute { arrivalTime, .. } => arrivalTime,
             Label::NonScheduledRoute { arrivalTime, .. } => arrivalTime,
+            Label::DepartureLabel(departureTime) => departureTime,
             Label::Infinite => &MAX_DATETIME,
         }
     }
@@ -72,11 +74,13 @@ pub struct RaptorScannerSC<'rd> {
 impl<'rd> RaptorScannerSC<'rd> {
     pub fn new(
         roundsCount: usize,
-        departureTime: &DateTime<Utc>,
+        departureTime: &'rd DateTime<Utc>,
+        departureStopId: &usize, 
         stops: &'rd HashMap<usize, Stop<'rd>>,
         targetStop: &'rd Stop<'rd>,
     ) -> Self {
         let mut multiLabels = MultiLabels::new(roundsCount, stops.len());
+        multiLabels.get_mut(departureStopId).labels[0] = Label::DepartureLabel(departureTime);
         Self {
             stops,
             multiLabels,

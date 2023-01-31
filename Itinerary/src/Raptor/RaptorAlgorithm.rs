@@ -53,6 +53,7 @@ pub fn singleThreadRaptor<'r>(
     let mut scanner: RaptorScannerSC = RaptorScannerSC::new(
         maxTransfer,
         &departureTime,
+        &departureStop.id,
         &stops,
         targetStop
     );
