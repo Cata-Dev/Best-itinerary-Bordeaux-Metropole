@@ -230,7 +230,7 @@ impl<'rd> RaptorScannerSC<'rd> {
                 } => {
                     currentId = boardingStop.id;
                     Journey::ScheduledRoute {
-                        stop: currentId,
+                        stopId: currentId,
                         arrivalTime: *arrivalTime.clone(),
                         departureTime: *departureTime.clone(),
                         route: route.id,
@@ -243,7 +243,7 @@ impl<'rd> RaptorScannerSC<'rd> {
                 } => {
                     currentId = boardingStop.id;
                     Journey::NonScheduledRoute {
-                        stop: currentId,
+                        stopId: currentId,
                         arrivalTime: arrivalTime.clone(),
                         route: route.id,
                     }
@@ -251,7 +251,7 @@ impl<'rd> RaptorScannerSC<'rd> {
                 Label::DepartureLabel(departureTime) => {
                     finished = true;
                     Journey::Departure {
-                        stop: currentId,
+                        stopId: currentId,
                         departureTime: *departureTime.clone(),
                     }
                 }

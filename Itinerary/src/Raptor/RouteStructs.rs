@@ -93,18 +93,18 @@ pub struct MarkedScheduledRoute<'r> {
 
 pub enum Journey {
     ScheduledRoute {
-        stop: usize,
+        stopId: usize,
         arrivalTime: DateTime<Utc>,
         departureTime: DateTime<Utc>,
         route: usize,
     },
     NonScheduledRoute {
-        stop: usize,
+        stopId: usize,
         arrivalTime: DateTime<Utc>,
         route: usize,
     },
     Departure {
-        stop: usize,
+        stopId: usize,
         departureTime: DateTime<Utc>
     }
 }
