@@ -1,13 +1,15 @@
 #![allow(non_snake_case)]
-use chrono::{Utc, DateTime};
-
 use super::RouteScanner::RaptorScannerSC;
 use super::RouteStructs::*;
+
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
 
+use chrono::{DateTime, Utc};
+
 pub enum RaptorError {
     StopNotFound(&'static str),
+    InfiniteLabel
 }
 
 impl Debug for RaptorError {
@@ -15,6 +17,9 @@ impl Debug for RaptorError {
         match *self {
             Self::StopNotFound(text) => {
                 write!(f, "NotFoundError: \"{}\"", text)
+            },
+            Self::InfiniteLabel => {
+                write!(f, "Infinite label encountered when determining the best journey from multilabels")
             }
         }
     }
@@ -29,6 +34,9 @@ impl Display for RaptorError {
                     "Raptor Algorithm encountered a Not Found Error:\"{}\"",
                     text
                 )
+            },
+            Self::InfiniteLabel => {
+                write!(f, "Raptor Algorithm encountered an infinite label")
             }
         }
     }
@@ -38,7 +46,7 @@ impl std::error::Error for RaptorError {
     fn description(&self) -> &str {
         match *self {
             Self::StopNotFound(_) => "The algorithm wasn't able to found a stop or a route in a Vec (ex: find an equvialent stop index in a route)",
-
+            Self::InfiniteLabel => "Infinite label encountered when determining the best journey from multilabels"
         }
     }
 }
@@ -49,13 +57,13 @@ pub fn singleThreadRaptor<'r>(
     departureStop: &'r Stop<'r>,
     targetStop: &'r Stop<'r>,
     maxTransfer: usize,
-) -> Result<(), RaptorError> {
+) -> Result<Journeys, RaptorError> {
     let mut scanner: RaptorScannerSC = RaptorScannerSC::new(
         maxTransfer,
         &departureTime,
         &departureStop.id,
         &stops,
-        targetStop
+        targetStop,
     );
     let mut markedStops = vec![departureStop];
     let mut markedRoutes = HashMap::new();
@@ -71,8 +79,7 @@ pub fn singleThreadRaptor<'r>(
             break;
         }
     }
-    Ok(())
-} 
+    scanner.constructBestJourney()
+}
 
 fn multiThreadRaptor<'r>() {}
-async fn asyncRaptor() {}

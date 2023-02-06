@@ -1,12 +1,15 @@
 #![allow(non_snake_case)]
+use crate::RaptorAlgorithm::RaptorError;
+
 use super::RouteStructs::*;
 use chrono::{DateTime, Utc, MAX_DATETIME};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 #[derive(Clone, PartialEq)]
 pub enum Label<'rd> {
     ScheduledRoute {
         arrivalTime: &'rd DateTime<Utc>,
+        departureTime: &'rd DateTime<Utc>, // from the boarding stop
         route: &'rd ScheduledRoute,
         boardingStop: &'rd Stop<'rd>,
     },
@@ -75,7 +78,7 @@ impl<'rd> RaptorScannerSC<'rd> {
     pub fn new(
         roundsCount: usize,
         departureTime: &'rd DateTime<Utc>,
-        departureStopId: &usize, 
+        departureStopId: &usize,
         stops: &'rd HashMap<usize, Stop<'rd>>,
         targetStop: &'rd Stop<'rd>,
     ) -> Self {
@@ -135,7 +138,8 @@ impl<'rd> RaptorScannerSC<'rd> {
             markedRoute.earliestStopEquivalentIndex,
             self.multiLabels
                 .get(&markedRoute.earliestStop.id)
-                .earliestLabel.getArrivalTime(),
+                .earliestLabel
+                .getArrivalTime(),
         );
         for (stopIndex, &stopId) in route.stopsId[markedRoute.earliestStopEquivalentIndex..]
             .iter()
@@ -146,13 +150,15 @@ impl<'rd> RaptorScannerSC<'rd> {
                 < std::cmp::min(
                     self.multiLabels //Target pruning
                         .get(&self.targetStop.id)
-                        .earliestLabel.getArrivalTime(),
+                        .earliestLabel
+                        .getArrivalTime(),
                     self.multiLabels.get(&stopId).earliestLabel.getArrivalTime(),
                 )
             {
                 let multiLabel = self.multiLabels.get_mut(&stopId);
                 multiLabel.earliestLabel = Label::ScheduledRoute {
                     arrivalTime: &currentTrip[stopIndex],
+                    departureTime: &currentTrip[stopIndex],
                     route,
                     boardingStop: markedRoute.earliestStop,
                 };
@@ -209,7 +215,49 @@ impl<'rd> RaptorScannerSC<'rd> {
     pub fn isScanCompleted(&self, markedStops: &Vec<&'rd Stop<'rd>>) -> bool {
         markedStops.len() == 0
     }
-    // pub fn constructBestJourney(&self) {
-    //
-    // }
+    pub fn computeBestJourney(&self) -> Result<Journeys, RaptorError> {
+        let mut journeys: Journeys = VecDeque::new();
+        let mut currentId = self.targetStop.id;
+        let mut finished = false;
+        let earliestLabel = &self.multiLabels.get(&currentId).earliestLabel;
+        while !finished {
+            journeys.push_front(match earliestLabel {
+                Label::ScheduledRoute {
+                    arrivalTime,
+                    departureTime,
+                    route,
+                    boardingStop,
+                } => {
+                    currentId = boardingStop.id;
+                    Journey::ScheduledRoute {
+                        stop: currentId,
+                        arrivalTime: *arrivalTime.clone(),
+                        departureTime: *departureTime.clone(),
+                        route: route.id,
+                    }
+                }
+                Label::NonScheduledRoute {
+                    arrivalTime,
+                    route,
+                    boardingStop,
+                } => {
+                    currentId = boardingStop.id;
+                    Journey::NonScheduledRoute {
+                        stop: currentId,
+                        arrivalTime: arrivalTime.clone(),
+                        route: route.id,
+                    }
+                }
+                Label::DepartureLabel(departureTime) => {
+                    finished = true;
+                    Journey::Departure {
+                        stop: currentId,
+                        departureTime: *departureTime.clone(),
+                    }
+                }
+                Label::Infinite => return Err(RaptorError::InfiniteLabel),
+            });
+        }
+        Ok(journeys)
+    }
 }

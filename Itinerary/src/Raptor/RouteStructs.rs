@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+use std::collections::VecDeque;
+
 use chrono::{DateTime, Duration, Utc};
 
 #[derive(PartialEq)]
@@ -16,12 +18,12 @@ pub struct Stop<'r> {
     pub scheduledRoutes: Vec<&'r ScheduledRoute>,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum RouteType {
     SNCF,
     BUS,
     FOOT,
-    V3,
+    // V3,
 }
 
 #[derive(PartialEq)]
@@ -88,3 +90,22 @@ pub struct MarkedScheduledRoute<'r> {
     pub earliestStopEquivalentIndex: usize,
     pub route: &'r ScheduledRoute,
 }
+
+pub enum Journey {
+    ScheduledRoute {
+        stop: usize,
+        arrivalTime: DateTime<Utc>,
+        departureTime: DateTime<Utc>,
+        route: usize,
+    },
+    NonScheduledRoute {
+        stop: usize,
+        arrivalTime: DateTime<Utc>,
+        route: usize,
+    },
+    Departure {
+        stop: usize,
+        departureTime: DateTime<Utc>
+    }
+}
+pub type Journeys = VecDeque<Journey>;
