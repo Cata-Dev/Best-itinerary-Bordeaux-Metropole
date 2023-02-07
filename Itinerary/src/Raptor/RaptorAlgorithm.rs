@@ -79,7 +79,7 @@ pub fn singleThreadRaptor<'r>(
             break;
         }
     }
-    scanner.constructBestJourney()
+    scanner.computeBestJourney()
 }
 
 fn multiThreadRaptor<'r>() {}
