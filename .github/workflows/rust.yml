@@ -1,0 +1,28 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: 
+      - "Itinerary/*"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "Itinerary/*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cd Itinerary && cargo build --verbose
+    - name: Clippy
+      run: cd Itinerary && cargo clippy
+#    - name: Run tests
+#      run: cargo test --verbose
