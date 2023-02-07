@@ -145,24 +145,25 @@ impl<'rd> RaptorScannerSC<'rd> {
             .iter()
             .enumerate()
         {
-            let Some(currentTrip) = possibleTrip else { continue; };
-            if &currentTrip[stopIndex]
-                < std::cmp::min(
-                    self.multiLabels //Target pruning
-                        .get(&self.targetStop.id)
-                        .earliestLabel
-                        .getArrivalTime(),
-                    self.multiLabels.get(&stopId).earliestLabel.getArrivalTime(),
-                )
-            {
-                let multiLabel = self.multiLabels.get_mut(&stopId);
-                multiLabel.earliestLabel = Label::ScheduledRoute {
-                    arrivalTime: &currentTrip[stopIndex],
-                    departureTime: &currentTrip[stopIndex],
-                    route,
-                    boardingStop: markedRoute.earliestStop,
-                };
-                markedStops.push(&self.stops[&stopId]);
+            if let Some(currentTrip) = possibleTrip {
+                if &currentTrip[stopIndex]
+                    < std::cmp::min(
+                        self.multiLabels //Target pruning
+                            .get(&self.targetStop.id)
+                            .earliestLabel
+                            .getArrivalTime(),
+                        self.multiLabels.get(&stopId).earliestLabel.getArrivalTime(),
+                    )
+                {
+                    let multiLabel = self.multiLabels.get_mut(&stopId);
+                    multiLabel.earliestLabel = Label::ScheduledRoute {
+                        arrivalTime: &currentTrip[stopIndex],
+                        departureTime: &currentTrip[stopIndex],
+                        route,
+                        boardingStop: markedRoute.earliestStop,
+                    };
+                    markedStops.push(&self.stops[&stopId]);
+                }
             }
             //HANDLE THE CATCHING OF AN EARLIER TRIP:
             if let Some(trip) = route.getEarliestTripFor(
