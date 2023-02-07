@@ -29,7 +29,7 @@ APIRefresh.result
       />
     </div>
     <p class="w-full text-center text-xs text-text-light-faded dark:text-text-dark-faded">
-      Trouver le meilleur itinéraire sur Bordeaux Métropole © 2022
+      Trouver le meilleur itinéraire sur Bordeaux Métropole © 2023
     </p>
     <button
       class="flex duration-700 justify-self-end my-1 mr-2 sm:mr-4"
