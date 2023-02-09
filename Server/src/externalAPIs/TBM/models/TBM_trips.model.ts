@@ -4,8 +4,9 @@
 
 import { Application } from "../../../declarations";
 import { InferSchemaType, Schema } from "mongoose";
+import { TBMEndpoints } from "../index";
 
-const dbTBM_Vehicles = new Schema(
+const dbTBM_Trips = new Schema(
   {
     _id: { type: Number, required: true },
     etat: { type: String, required: true },
@@ -19,11 +20,11 @@ const dbTBM_Vehicles = new Schema(
   },
 );
 
-export type dbTBM_Vehicles = InferSchemaType<typeof dbTBM_Vehicles>;
+export type dbTBM_Trips = InferSchemaType<typeof dbTBM_Trips>;
 
 // for more of what you can do here.
 export default function (app: Application) {
-  const modelName = "tbm_trips";
+  const modelName = TBMEndpoints.Trips;
   const mongooseClient = app.get("mongooseClient");
 
   // This is necessary to avoid model compilation errors in watch mode
@@ -31,5 +32,5 @@ export default function (app: Application) {
   if (mongooseClient.modelNames().includes(modelName)) {
     mongooseClient.deleteModel(modelName);
   }
-  return mongooseClient.model(modelName, dbTBM_Vehicles);
+  return mongooseClient.model(modelName, dbTBM_Trips);
 }

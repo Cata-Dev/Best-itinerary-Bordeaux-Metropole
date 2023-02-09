@@ -4,6 +4,7 @@
 
 import { Application } from "../../../declarations";
 import { Schema, InferSchemaType } from "mongoose";
+import { TBMEndpoints } from "../index";
 
 const dbAddresses = new Schema(
   {
@@ -29,7 +30,7 @@ export type dbAddresses = Omit<InferSchemaType<typeof dbAddresses>, "coords"> & 
 
 // for more of what you can do here.
 export default function (app: Application) {
-  const modelName = "addresses";
+  const modelName = TBMEndpoints.Addresses;
   const mongooseClient = app.get("mongooseClient");
 
   // This is necessary to avoid model compilation errors in watch mode
