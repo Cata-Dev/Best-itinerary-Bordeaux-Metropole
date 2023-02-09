@@ -23,7 +23,7 @@ export type dbTBM_Vehicles = InferSchemaType<typeof dbTBM_Vehicles>;
 
 // for more of what you can do here.
 export default function (app: Application) {
-  const modelName = "tbm_vehicles";
+  const modelName = "tbm_trips";
   const mongooseClient = app.get("mongooseClient");
 
   // This is necessary to avoid model compilation errors in watch mode

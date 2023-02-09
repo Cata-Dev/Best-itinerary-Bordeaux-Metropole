@@ -8,7 +8,7 @@ import TBM_Sections, { dbSections } from "./models/sections.model";
 import TBM_Stops, { dbTBM_Stops } from "./models/TBM_stops.model";
 import TBM_Lines, { dbTBM_Lines } from "./models/TBM_lines.model";
 import TBM_Schedules, { dbTBM_Schedules } from "./models/TBM_schedules.model";
-import TBM_Vehicles, { dbTBM_Vehicles } from "./models/TBM_vehicles.model";
+import TBM_Trips, { dbTBM_Trips } from "./models/TBM_trips.model";
 import TBM_Lines_routes, { dbTBM_Lines_routes } from "./models/TBM_lines_routes.model";
 import { Model } from "mongoose";
 import { logger } from "../../logger";
@@ -20,7 +20,7 @@ export enum TBMEndpoints {
   Stops = "TBM_Stops",
   Lines = "TBM_Lines",
   Schedules = "TBM_Schedules",
-  Vehicles = "TBM_Vehicles",
+  Trips = "TBM_Trips",
   Lines_routes = "TBM_Lines_routes",
 }
 
@@ -44,8 +44,8 @@ export type TBMSchema<E extends TBMEndpoints | undefined = undefined> = E extend
   ? dbTBM_Schedules
   : E extends TBMEndpoints.Stops
   ? dbTBM_Stops
-  : E extends TBMEndpoints.Vehicles
-  ? dbTBM_Vehicles
+  : E extends TBMEndpoints.Trips
+  ? dbTBM_Trips
   :
       | dbAddresses
       | dbIntersections
@@ -54,7 +54,7 @@ export type TBMSchema<E extends TBMEndpoints | undefined = undefined> = E extend
       | dbTBM_Lines
       | dbTBM_Schedules
       | dbTBM_Stops
-      | dbTBM_Vehicles;
+      | dbTBM_Trips;
 
 export interface Addresse {
   properties: {
@@ -156,7 +156,7 @@ export default (app: Application) => {
   const Stop: Model<dbTBM_Stops> = TBM_Stops(app);
   const Line: Model<dbTBM_Lines> = TBM_Lines(app);
   const Schedule: Model<dbTBM_Schedules> = TBM_Schedules(app);
-  const Vehicle: Model<dbTBM_Vehicles> = TBM_Vehicles(app);
+  const Vehicle: Model<dbTBM_Trips> = TBM_Trips(app);
   const Lines_route: Model<dbTBM_Lines_routes> = TBM_Lines_routes(app);
 
   logger.info(`Models initialized.`);
@@ -374,10 +374,10 @@ export default (app: Application) => {
     ),
 
     new Endpoint(
-      TBMEndpoints.Vehicles,
+      TBMEndpoints.Trips,
       10 * 60,
       async () => {
-        const rawVehicles: TBM_Vehicle[] = await getData("sv_cours_a", [
+        const rawTrips: TBM_Vehicle[] = await getData("sv_cours_a", [
           "filter=" +
             JSON.stringify({
               etat: {
@@ -386,7 +386,7 @@ export default (app: Application) => {
             }),
         ]);
 
-        const Vehicles: Omit<dbTBM_Vehicles, "updatedAt" | "createdAt">[] = rawVehicles.map((vehicle) => {
+        const Trips: Omit<dbTBM_Trips, "updatedAt" | "createdAt">[] = rawTrips.map((vehicle) => {
           return {
             _id: parseInt(vehicle.properties.gid),
             etat: vehicle.properties.etat,
@@ -398,9 +398,9 @@ export default (app: Application) => {
         });
 
         await Vehicle.deleteMany({
-          _id: { $nin: Vehicles.map((v) => v._id) },
+          _id: { $nin: Trips.map((v) => v._id) },
         });
-        await Vehicle.bulkWrite(bulkOps(Vehicles));
+        await Vehicle.bulkWrite(bulkOps(Trips));
 
         return true;
       },
