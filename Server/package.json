@@ -48,7 +48,7 @@
     "ignore": []
   },
   "dependencies": {
-    "@feathersjs/adapter-commons": "^5.0.0-pre.36",
+    "@feathersjs/adapter-commons": "^5.0.0-pre.37",
     "@feathersjs/authentication": "^5.0.0-pre.36",
     "@feathersjs/authentication-client": "^5.0.0-pre.36",
     "@feathersjs/configuration": "^5.0.0-pre.36",
