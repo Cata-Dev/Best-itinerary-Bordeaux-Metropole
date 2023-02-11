@@ -1,11 +1,19 @@
 import { Model } from "mongoose";
 import { EndpointName, ProviderSchema } from ".";
 import { logger } from "../logger";
+import { Deferred } from "../utils/index";
+import { TypedEventEmitter } from "../utils/TypedEmitter";
 
-export class Endpoint<N extends EndpointName> {
-  private _fetchPromise: Promise<boolean> | null = null;
+type EndpointEvents = {
+  fetch: () => void;
+  fetched: (success: boolean) => void;
+};
+
+export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
+  private deferredFetch: Deferred<boolean>;
+  private _fetching = false;
   /** Timestamp of last fetch (succeed or failed) */
-  public lastFetch: number;
+  private _lastFetch = 0;
 
   /**
    * Create a new Endpoint
@@ -20,48 +28,45 @@ export class Endpoint<N extends EndpointName> {
     private _fetch: () => Promise<boolean>,
     public readonly model: Model<ProviderSchema<N>>,
   ) {
-    this.lastFetch = 0;
+    super();
+    this.deferredFetch = new Deferred<boolean>();
+    this.deferredFetch.resolve(false); // Initialization
   }
 
-  get onCooldown(): boolean {
-    return Date.now() - this.lastFetch < this.rate * 1000;
+  public get onCooldown(): boolean {
+    return Date.now() - this._lastFetch < this.rate * 1000;
   }
 
-  get fetching(): boolean {
-    return !!this._fetchPromise;
+  public get fetching() {
+    return this._fetching;
   }
 
-  get fetchPromise(): Promise<unknown> {
-    if (this.fetching) return this._fetchPromise as Promise<boolean>;
-    return new Promise((_, rej) => {
-      rej(`No ongoing fetch for ${this.name}.`);
-    });
+  public get fetchPromise() {
+    return this.deferredFetch.promise;
+  }
+  
+  public get lastFetch() {
+    return this._lastFetch;
   }
 
-  async fetch(force = false, debug = false): Promise<boolean> {
+  public async fetch(force = false, debug = false): Promise<boolean> {
     if (this.fetching) throw new Error(`Fetch is ongoing`);
     if (!force && this.onCooldown) throw new Error(`Fetch is on cooldown`);
 
     if (debug) logger.warn(`Refreshing ${this.name}...`);
-    /**
-     * @type {Promise}
-     */
-    this._fetchPromise = new Promise((resolve, reject) => {
-      this._fetch()
-        .then((r) => {
-          this.lastFetch = Date.now();
-          resolve(r);
-        })
-        .catch((e) => {
-          if (debug) logger.error(`Fetch failed for ${this.name}`, e);
-          reject(e);
-        })
-        .finally(() => {
-          this._fetchPromise = null;
-          if (debug) logger.info(`Refreshed ${this.name}.`);
-        });
-    });
 
-    return this.fetchPromise as Promise<boolean>;
+    this.deferredFetch = new Deferred<boolean>();
+    try {
+      this.deferredFetch.resolve(await this._fetch());
+      if (debug) logger.info(`Refreshed ${this.name}.`);
+      this._lastFetch = Date.now();
+    } catch (e) {
+      if (debug) logger.error(`Fetch failed for ${this.name}`, e);
+      this.deferredFetch.reject(e);
+    } finally {
+      this._fetching = false;
+    }
+
+    return this.deferredFetch.promise;
   }
 }
