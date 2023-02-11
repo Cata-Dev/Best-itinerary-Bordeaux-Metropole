@@ -3,48 +3,36 @@ import { EndpointName, ProviderSchema } from ".";
 import { logger } from "../logger";
 
 export class Endpoint<N extends EndpointName> {
-  /** Name of the endpoint */
-  public readonly name: N;
-  /** Allowed time in seconds between two fetches */
-  public readonly rate: number;
-  private _fetch: () => Promise<boolean>;
   private _fetchPromise: Promise<boolean> | null = null;
   /** Timestamp of last fetch (succeed or failed) */
   public lastFetch: number;
-  /** Model of the linked Mongoose collection */
-  public readonly model: Model<ProviderSchema<N>>;
 
   /**
    * Create a new Endpoint
    * @param name Endpoint's name
-   * @param rate Endpoint's rate of fetch, in seconds
+   * @param rate Endpoint's allowed time in seconds between two fetches
    * @param fetch Endpoint's fetch function
-   * @param model Database model
+   * @param model Database model of the linked Mongoose collection
    */
-  constructor(name: N, rate: number, fetch: () => Promise<boolean>, model: Model<ProviderSchema<N>>) {
-    this.name = name;
-    this.rate = rate;
+  constructor(
+    public readonly name: N,
+    public readonly rate: number,
+    private _fetch: () => Promise<boolean>,
+    public readonly model: Model<ProviderSchema<N>>,
+  ) {
     this.lastFetch = 0;
-    this._fetch = fetch;
-    this.model = model;
   }
 
-  get onCooldown() {
+  get onCooldown(): boolean {
     return Date.now() - this.lastFetch < this.rate * 1000;
   }
 
-  /**
-   * @type {Boolean}
-   */
-  get fetching() {
+  get fetching(): boolean {
     return !!this._fetchPromise;
   }
 
-  /**
-   * @type {Promise}
-   */
-  get fetchPromise() {
-    if (this.fetching) return this._fetchPromise;
+  get fetchPromise(): Promise<unknown> {
+    if (this.fetching) return this._fetchPromise as Promise<boolean>;
     return new Promise((_, rej) => {
       rej(`No ongoing fetch for ${this.name}.`);
     });

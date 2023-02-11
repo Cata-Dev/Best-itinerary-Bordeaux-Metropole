@@ -1,10 +1,12 @@
-class Deferred {
-  promise: Promise<void>;
-  resolve!: (value?: never) => void;
-  reject!: (reason?: never) => void;
+export type resolveCb<T = void> = (value: T) => void;
+export type rejectCb = (reason?: any) => void;
+export class Deferred<T = unknown> {
+  public promise: Promise<T>;
+  public resolve!: resolveCb<T>;
+  public reject!: rejectCb;
 
   constructor() {
-    this.promise = new Promise((resolve, reject) => {
+    this.promise = new Promise<T>((resolve, reject) => {
       this.reject = reject;
       this.resolve = resolve;
     });
@@ -315,7 +317,7 @@ export const time = {
  * @example await wait(1000) //permet de pause l'exécution pendant 1s
  */
 export function wait(ms = 1000): Promise<void> {
-  const defP = new Deferred();
+  const defP = new Deferred<void>();
 
   setTimeout(() => {
     defP.resolve();
