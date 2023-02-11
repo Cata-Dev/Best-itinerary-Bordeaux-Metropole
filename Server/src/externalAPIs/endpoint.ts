@@ -44,7 +44,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
   public get fetchPromise() {
     return this.deferredFetch.promise;
   }
-  
+
   public get lastFetch() {
     return this._lastFetch;
   }
