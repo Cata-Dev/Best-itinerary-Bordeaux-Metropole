@@ -8,16 +8,16 @@ import { TBMEndpoints } from "../index";
 
 const dbTBM_Schedules = new Schema(
   {
-    _id: { type: Number, required: true },
+    gid: { type: Number, required: true },
     hor_theo: { type: Date, required: true },
-    hor_app: { type: Date, required: true },
-    hor_estime: { type: Date, required: true },
+    hor_app: { type: Date },
+    hor_estime: { type: Date },
     etat: {
       type: String,
       enum: ["NON_REALISE", "REALISE", "DEVIE"],
-      required: true,
     },
-    type: { type: String, enum: ["REGULIER"], required: true }, //donnée incertaine
+    type: { type: String, enum: ["REGULIER", "DEVIATION"] },
+    realtime: { type: Boolean, required: true },
     rs_sv_arret_p: { type: Number, required: true, ref: "stops" },
     rs_sv_cours_a: { type: Number, required: true, ref: "vehicles" },
   },

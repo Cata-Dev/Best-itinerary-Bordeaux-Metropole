@@ -19,7 +19,9 @@ export enum TBMEndpoints {
   Sections = "Sections",
   Stops = "TBM_Stops",
   Lines = "TBM_Lines",
+  // 2 different endpoints in 1 collection
   Schedules = "TBM_Schedules",
+  Schedules_rt = "TBM_Schedules_rt",
   Trips = "TBM_Trips",
   Lines_routes = "TBM_Lines_routes",
 }
@@ -40,7 +42,7 @@ export type TBMSchema<E extends TBMEndpoints | undefined = undefined> = E extend
   ? dbTBM_Lines
   : E extends TBMEndpoints.Lines_routes
   ? dbTBM_Lines_routes
-  : E extends TBMEndpoints.Schedules
+  : E extends TBMEndpoints.Schedules | TBMEndpoints.Schedules_rt
   ? dbTBM_Schedules
   : E extends TBMEndpoints.Stops
   ? dbTBM_Stops
@@ -56,96 +58,95 @@ export type TBMSchema<E extends TBMEndpoints | undefined = undefined> = E extend
       | dbTBM_Stops
       | dbTBM_Trips;
 
-export interface Addresse {
-  properties: {
-    nom_voie: string;
-    gid: string;
-    numero: number;
-    rep: string | null;
-    cpostal: string;
-    fantoir: string;
-    commune: string;
-  };
-  geometry: { coordinates: [number, number] };
+interface BaseTBM<T extends object = object> {
+  properties: T;
 }
 
-export interface Intersection {
+export type Addresse = BaseTBM<{
+  nom_voie: string;
+  gid: string;
+  numero: number;
+  rep: string | null;
+  cpostal: string;
+  fantoir: string;
+  commune: string;
+}> & {
   geometry: { coordinates: [number, number] };
-  properties: { gid: string; nature: string };
-}
+};
 
-export interface Section {
+export type Intersection = BaseTBM<{
+  gid: string;
+  nature: string;
+}> & {
+  geometry: { coordinates: [number, number] };
+};
+
+export type Section = BaseTBM<{
+  gid: string;
+  domanial: string;
+  groupe: number;
+  nom_voie: string;
+  rg_fv_graph_dbl: number;
+  rg_fv_graph_nd: number;
+  rg_fv_graph_na: number;
+}> & {
   geometry: { coordinates: [number, number][] };
-  properties: {
-    gid: string;
-    domanial: string;
-    groupe: number;
-    nom_voie: string;
-    rg_fv_graph_dbl: number;
-    rg_fv_graph_nd: number;
-    rg_fv_graph_na: number;
-  };
-}
+};
 
 type Vehicle = "BUS" | "TRAM" | "BATEAU";
 type Active = 0 | 1;
 
-export interface TBM_Stop {
+export type TBM_Stop = BaseTBM<{
+  gid: string;
+  libelle: string;
+  vehicule: Vehicle;
+  type: "CLASSIQUE" | "DELESTAGE" | "AUTRE" | "FICTIF";
+  actif: Active;
+}> & {
   geometry: { coordinates: [number, number] };
-  properties: {
-    gid: string;
-    libelle: string;
-    vehicule: Vehicle;
-    type: "CLASSIQUE" | "DELESTAGE" | "AUTRE" | "FICTIF";
-    actif: Active;
-  };
-}
+};
 
-export interface TBM_Line {
-  properties: {
-    gid: string;
-    libelle: string;
-    vehicule: Vehicle;
-    active: Active;
-  };
-}
+export type TBM_Line = BaseTBM<{
+  gid: string;
+  libelle: string;
+  vehicule: Vehicle;
+  active: Active;
+}>;
 
-export interface TBM_Schedule {
-  properties: {
-    gid: string;
-    hor_theo: string;
+export type TBM_Schedule = BaseTBM<{
+  gid: string;
+  hor_theo: string;
+  rs_sv_arret_p: number;
+  rs_sv_cours_a: number;
+}>;
+
+export type TBM_Schedule_rt = TBM_Schedule &
+  BaseTBM<{
     hor_app: string;
     hor_estime: string;
     etat: "NON_REALISE" | "REALISE" | "DEVIE";
-    type: "REGULIER";
+    type: "REGULIER" | "DEVIATION";
     tempsarret: number;
-    rs_sv_arret_p: number;
-    rs_sv_cours_a: number;
-  };
-}
+  }>;
 
-export interface TBM_Vehicle {
-  properties: {
-    gid: string;
-    etat: string;
-    rg_sv_arret_p_nd: number;
-    rg_sv_arret_p_na: number;
-    rs_sv_ligne_a: number;
-    rs_sv_chem_l: number;
-  };
-}
+export type TBM_Vehicle = BaseTBM<{
+  gid: string;
+  etat: string;
+  rg_sv_arret_p_nd: number;
+  rg_sv_arret_p_na: number;
+  rs_sv_ligne_a: number;
+  rs_sv_chem_l: number;
+}>;
 
-export interface TBM_Lines_route {
-  properties: {
-    gid: string;
-    libelle: string;
-    sens: string;
-    vehicule: string;
-    rs_sv_ligne_a: number;
-    rg_sv_arret_p_nd: number;
-    rg_sv_arret_p_na: number;
-  };
-}
+export type TBM_Lines_route = BaseTBM<{
+  gid: string;
+  libelle: string;
+  sens: string;
+  vehicule: string;
+  rs_sv_ligne_a: number;
+  rg_sv_arret_p_nd: number;
+  rg_sv_arret_p_na: number;
+}>;
 
 export default (app: Application) => {
   logger.log(`Initializing TBM models...`);
@@ -319,12 +320,23 @@ export default (app: Application) => {
       Line,
     ),
 
+    // Data needed
     new Endpoint(
       TBMEndpoints.Schedules,
+      24 * 3600,
+      async () => {
+        return true;
+      },
+      Schedule,
+    ),
+
+    new Endpoint(
+      TBMEndpoints.Schedules_rt,
       10,
       async () => {
         const date = new Date().toJSON().substring(0, 19);
-        const rawSchedules: TBM_Schedule[] = await getData("sv_horai_a", [
+
+        const rawSchedulesRt: TBM_Schedule_rt[] = await getData("sv_horai_a", [
           "filter=" +
             JSON.stringify({
               $or: [
@@ -350,23 +362,26 @@ export default (app: Application) => {
             }),
         ]);
 
-        const Schedules: Omit<dbTBM_Schedules, "updatedAt" | "createdAt">[] = rawSchedules.map((schedule) => {
-          return {
-            _id: parseInt(schedule.properties.gid),
-            hor_theo: new Date(schedule.properties.hor_theo),
-            hor_app: new Date(schedule.properties.hor_app),
-            hor_estime: new Date(schedule.properties.hor_estime),
-            etat: schedule.properties.etat,
-            type: schedule.properties.type,
-            rs_sv_arret_p: schedule.properties.rs_sv_arret_p,
-            rs_sv_cours_a: schedule.properties.rs_sv_cours_a,
-          };
-        });
+        const SchedulesRt: Omit<dbTBM_Schedules, "updatedAt" | "createdAt">[] = rawSchedulesRt.map(
+          (schedule) => {
+            return {
+              gid: parseInt(schedule.properties.gid),
+              realtime: true,
+              hor_theo: new Date(schedule.properties.hor_theo),
+              hor_app: new Date(schedule.properties.hor_app),
+              hor_estime: new Date(schedule.properties.hor_estime),
+              etat: schedule.properties.etat,
+              type: schedule.properties.type,
+              rs_sv_arret_p: schedule.properties.rs_sv_arret_p,
+              rs_sv_cours_a: schedule.properties.rs_sv_cours_a,
+            };
+          },
+        );
 
         await Schedule.deleteMany({
-          _id: { $nin: Schedules.map((s) => s._id) },
+          gid: { $nin: SchedulesRt.map((s) => s.gid) },
         });
-        await Schedule.bulkWrite(bulkOps(Schedules));
+        await Schedule.bulkWrite(bulkOps(SchedulesRt));
 
         return true;
       },
