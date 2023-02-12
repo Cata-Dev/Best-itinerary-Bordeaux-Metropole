@@ -10,10 +10,10 @@ const dbTBM_Trips = new Schema(
   {
     _id: { type: Number, required: true },
     etat: { type: String, required: true },
-    rs_sv_ligne_a: { type: Number, ref: "lines" },
-    rg_sv_arret_p_nd: { type: Number, required: true, ref: "stops" },
-    rg_sv_arret_p_na: { type: Number, required: true, ref: "stops" },
-    rs_sv_chem_l: { type: Number, ref: "lines_routes" },
+    rs_sv_ligne_a: { type: Number, ref: TBMEndpoints.Lines },
+    rg_sv_arret_p_nd: { type: Number, required: true, ref: TBMEndpoints.Stops },
+    rg_sv_arret_p_na: { type: Number, required: true, ref: TBMEndpoints.Stops },
+    rs_sv_chem_l: { type: Number, ref: TBMEndpoints.Lines_routes },
   },
   {
     timestamps: true,

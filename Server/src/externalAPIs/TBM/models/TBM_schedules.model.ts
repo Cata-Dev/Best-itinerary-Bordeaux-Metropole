@@ -18,8 +18,8 @@ const dbTBM_Schedules = new Schema(
     },
     type: { type: String, enum: ["REGULIER", "DEVIATION"] },
     realtime: { type: Boolean, required: true },
-    rs_sv_arret_p: { type: Number, required: true, ref: "stops" },
-    rs_sv_cours_a: { type: Number, required: true, ref: "vehicles" },
+    rs_sv_arret_p: { type: Number, required: true, ref: TBMEndpoints.Stops },
+    rs_sv_cours_a: { type: Number, required: true, ref: TBMEndpoints.Trips },
   },
   {
     timestamps: true,

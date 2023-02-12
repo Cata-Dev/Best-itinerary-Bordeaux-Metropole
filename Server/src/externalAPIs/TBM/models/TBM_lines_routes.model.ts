@@ -12,9 +12,9 @@ const dbTBM_Lines_routes = new Schema(
     libelle: { type: String, required: true },
     sens: { type: String, required: true },
     vehicule: { type: String, required: true },
-    rs_sv_ligne_a: { type: Number, required: true, ref: "lines" },
-    rg_sv_arret_p_nd: { type: Number, required: true, ref: "stops" },
-    rg_sv_arret_p_na: { type: Number, required: true, ref: "stops" },
+    rs_sv_ligne_a: { type: Number, required: true, ref: TBMEndpoints.Lines },
+    rg_sv_arret_p_nd: { type: Number, required: true, ref: TBMEndpoints.Stops },
+    rg_sv_arret_p_na: { type: Number, required: true, ref: TBMEndpoints.Stops },
   },
   {
     timestamps: true,
