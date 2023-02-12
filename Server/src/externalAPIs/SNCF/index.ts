@@ -201,7 +201,7 @@ export default (app: Application) => {
         await Schedule.deleteMany({
           _id: { $nin: schedules.map((s) => s._id) },
         });
-        await Schedule.bulkWrite(bulkOps(schedules));
+        await Schedule.bulkWrite(bulkOps("updateOne", schedules));
 
         return true;
       },
@@ -239,7 +239,7 @@ export default (app: Application) => {
           .filter(unique);
 
         await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-        await Stop.bulkWrite(bulkOps(Stops));
+        await Stop.bulkWrite(bulkOps("updateOne", Stops));
 
         return true;
       },

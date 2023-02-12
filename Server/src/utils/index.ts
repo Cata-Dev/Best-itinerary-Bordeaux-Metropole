@@ -13,23 +13,52 @@ export class Deferred<T = unknown> {
   }
 }
 
-export function formatDocToBulkOps<D extends Record<string, unknown>>(doc: D, filterKey: keyof D = "_id") {
-  return {
-    updateOne: {
-      filter: { [filterKey]: doc[filterKey] },
-      update: doc,
-      upsert: true,
-    },
-  };
+type supportedBulkOp = "updateOne" | "deleteOne";
+export function formatDocToBulkOps<D extends Record<string, unknown>>(
+  op: supportedBulkOp,
+  doc: D,
+  filterKeys: Array<keyof D>,
+) {
+  switch (op) {
+    case "updateOne":
+      return {
+        updateOne: {
+          filter: filterKeys.reduce(
+            (acc, v) => ({
+              ...acc,
+              [v]: doc[v],
+            }),
+            {},
+          ),
+          update: doc,
+          upsert: true,
+        },
+      };
+
+    case "deleteOne":
+      return {
+        deleteOne: {
+          filter: filterKeys.reduce(
+            (acc, v) => ({
+              ...acc,
+              [v]: doc[v],
+            }),
+            {},
+          ),
+        },
+      };
+  }
 }
 
 /**
- * Format documents to be bulkUpdated via bulkWrite
- * @param {Array} documents
- * @param {String} filterKey
+ * @description Format documents to be operated via bulkWrite
  */
-export function bulkOps<D extends Record<string, unknown>>(documents: D[], filterKey: keyof D = "_id") {
-  return documents.map((doc) => formatDocToBulkOps(doc, filterKey));
+export function bulkOps<D extends Record<string, unknown>>(
+  op: supportedBulkOp,
+  documents: D[],
+  filterKeys: Array<keyof D> = ["_id"],
+) {
+  return documents.map((doc) => formatDocToBulkOps(op, doc, filterKeys));
 }
 
 const X0 = 700000;

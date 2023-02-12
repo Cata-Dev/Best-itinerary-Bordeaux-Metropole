@@ -205,7 +205,7 @@ export default (app: Application) => {
         await Address.deleteMany({
           _id: { $nin: Addresses.map((i) => i._id) },
         });
-        await Address.bulkWrite(bulkOps(Addresses));
+        await Address.bulkWrite(bulkOps("updateOne", Addresses));
 
         return true;
       },
@@ -231,7 +231,7 @@ export default (app: Application) => {
         await Intersection.deleteMany({
           _id: { $nin: Intersections.map((i) => i._id) },
         });
-        await Intersection.bulkWrite(bulkOps(Intersections));
+        await Intersection.bulkWrite(bulkOps("updateOne", Intersections));
 
         return true;
       },
@@ -264,7 +264,7 @@ export default (app: Application) => {
         await Section.deleteMany({
           _id: { $nin: Sections.map((s) => s._id) },
         });
-        await Section.bulkWrite(bulkOps(Sections));
+        await Section.bulkWrite(bulkOps("updateOne", Sections));
 
         return true;
       },
@@ -290,7 +290,7 @@ export default (app: Application) => {
         });
 
         await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-        await Stop.bulkWrite(bulkOps(Stops));
+        await Stop.bulkWrite(bulkOps("updateOne", Stops));
 
         return true;
       },
@@ -313,7 +313,7 @@ export default (app: Application) => {
         });
 
         await Line.deleteMany({ _id: { $nin: Lines.map((l) => l._id) } });
-        await Line.bulkWrite(bulkOps(Lines));
+        await Line.bulkWrite(bulkOps("updateOne", Lines));
 
         return true;
       },
@@ -379,9 +379,10 @@ export default (app: Application) => {
         );
 
         await Schedule.deleteMany({
+          realtime: true,
           gid: { $nin: SchedulesRt.map((s) => s.gid) },
         });
-        await Schedule.bulkWrite(bulkOps(SchedulesRt));
+        await Schedule.bulkWrite(bulkOps("updateOne", SchedulesRt, ["gid", "realtime"]));
 
         return true;
       },
@@ -415,7 +416,7 @@ export default (app: Application) => {
         await Vehicle.deleteMany({
           _id: { $nin: Trips.map((v) => v._id) },
         });
-        await Vehicle.bulkWrite(bulkOps(Trips));
+        await Vehicle.bulkWrite(bulkOps("updateOne", Trips));
 
         return true;
       },
@@ -455,7 +456,7 @@ export default (app: Application) => {
         await Lines_route.deleteMany({
           _id: { $nin: Lines_routes.map((l_r) => l_r._id) },
         });
-        await Lines_route.bulkWrite(bulkOps(Lines_routes));
+        await Lines_route.bulkWrite(bulkOps("updateOne", Lines_routes));
 
         return true;
       },
