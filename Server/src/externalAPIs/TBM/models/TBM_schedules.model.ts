@@ -8,7 +8,7 @@ import { TBMEndpoints } from "../index";
 
 const dbTBM_Schedules = new Schema(
   {
-    gid: { type: Number, required: true },
+    gid: { type: Number, required: true, index: true },
     hor_theo: { type: Date, required: true },
     hor_app: { type: Date },
     hor_estime: { type: Date },
@@ -25,6 +25,7 @@ const dbTBM_Schedules = new Schema(
     timestamps: true,
   },
 );
+dbTBM_Schedules.index({ gid: 1, realtime: 1 });
 
 export type dbTBM_Schedules = InferSchemaType<typeof dbTBM_Schedules>;
 
