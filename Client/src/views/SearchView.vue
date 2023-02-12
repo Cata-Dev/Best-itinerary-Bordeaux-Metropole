@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRouter, useRoute, onBeforeRouteUpdate, type RouteLocationNormalized } from "vue-router";
 import LocationSearch, { type ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
-import DynamicModal, { type Modal } from "@/components/DynamicModal.vue";
+import BadeModal from "@/components/BaseModal.vue";
 import ResultItem from "@/components/ResultItem.vue";
 import {
   client,
@@ -16,6 +16,8 @@ import {
   parseJSON,
   type DefaultLocation,
   defaultLocation,
+  type colorPalette,
+  type colorComm,
 } from "@/store";
 import type { QuerySettings, Obj } from "@/store";
 import type { Itinerary } from "server";
@@ -27,19 +29,27 @@ const destination = ref<Location>(defaultLocation);
 
 const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
+const settingsCompo = ref<InstanceType<typeof ExtraSettings> | null>(null);
+const modalCompo = ref<InstanceType<typeof BadeModal> | null>(null);
 
 const searchElem = ref<HTMLButtonElement | null>(null);
-const showExtraSettingsElem = ref<HTMLButtonElement | null>(null);
+const showSettingsButton = ref<HTMLButtonElement | null>(null);
 const settings = ref<QuerySettings>({
   ...defaultQuerySettings,
   transports: { ...defaultQuerySettings.transports },
 });
-const modal = ref<Modal>({
+
+interface CustomModal {
+  title: string;
+  content: string;
+  icon: string;
+  colors: `${string}-${colorPalette<colorComm>}`[];
+}
+const modal = ref<CustomModal>({
   title: "",
   content: "",
   icon: "",
-  color: "",
-  shown: false,
+  colors: [],
 });
 
 if (client.io?.io)
@@ -47,12 +57,10 @@ if (client.io?.io)
     modal.value.title = "Erreur";
     modal.value.content = "Impossible de se connecter à l'API.";
     modal.value.icon = "exclamation-triangle";
-    modal.value.color = "alert";
-    modal.value.shown = true;
+    modal.value.colors = ["bg-alert-bg", "border-alert-t", "text-alert-t"];
+    modalCompo.value?.show(true);
     APIRefresh.reject({ code: 504 }); //generate a fake answer to ensure failure
   });
-
-const showExtraSettings = ref(false);
 
 enum StatusSearchResult {
   NONE,
@@ -198,13 +206,13 @@ async function selectResult(id: string) {
   <div class="h-full">
     <div class="h-full flex flex-col">
       <div
-        class="w-full lg:flex relative h-fit transition-top p-2 pb-1"
+        class="w-full flex relative h-fit transition-top p-2 pb-1"
         :class="{
           'top-[calc(50%-101px)]': results === StatusSearchResult.NONE,
           'top-0': results != StatusSearchResult.NONE,
         }"
       >
-        <div class="lg:w-2/3 h-fit flex justify-center lg:justify-end my-auto lg:mr-1">
+        <div class="w-2/3 h-fit flex justify-end my-auto mr-1">
           <div
             class="flex flex-col w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2"
             :loading="status.search === StatusSearchResult.LOADING"
@@ -242,14 +250,14 @@ async function selectResult(id: string) {
             </span>
           </div>
         </div>
-        <div class="lg:w-1/3 my-auto flex justify-center lg:inline lg:ml-1">
-          <div class="flex h-full w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2">
-            <div class="py-2 lg:self-center">
+        <div class="w-1/3 my-auto justify-center inline ml-1">
+          <div class="flex h-full xs:w-[80%] sm:w-[70%] w-1/2">
+            <div class="py-2 self-center">
               <button
-                ref="showExtraSettingsElem"
+                ref="showSettingsButton"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
-                :class="{ 'rotate-180': showExtraSettings }"
-                @click="(showExtraSettings = !showExtraSettings), showExtraSettingsElem?.blur()"
+                :class="{ 'rotate-180': settingsCompo?.shown }"
+                @click="settingsCompo?.show(), showSettingsButton?.blur()"
               >
                 <font-awesome-icon
                   icon="sliders-h"
@@ -275,9 +283,9 @@ async function selectResult(id: string) {
               </button>
             </div>
             <ExtraSettings
+              ref="settingsCompo"
               v-model="settings"
-              :shown="showExtraSettings"
-              class=""
+              :init-shown="false"
               @update:model-value="updateRoute()"
             />
           </div>
@@ -319,13 +327,17 @@ async function selectResult(id: string) {
       </div>
       <div v-else class="grid gap-2 row-start-3" />
     </div>
-    <DynamicModal
-      v-model:shown="modal.shown"
-      :title="modal.title"
-      :content="modal.content"
-      :icon="modal.icon"
-      :color="modal.color"
-    />
+    <BadeModal ref="modalCompo" :main-classes="modal.colors">
+      <template #title>
+        <h1 class="text-2xl text-center">
+          <font-awesome-icon :icon="modal.icon || 'spinner'" class="mr-1" />
+          {{ modal.title }}
+        </h1>
+      </template>
+      <template #content>
+        {{ modal.content }}
+      </template>
+    </BadeModal>
   </div>
 </template>
 

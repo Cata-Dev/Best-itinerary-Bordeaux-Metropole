@@ -4,13 +4,14 @@
 
 import { Application } from "../../../declarations";
 import { InferSchemaType, Schema } from "mongoose";
+import { SNCFEndpoints } from "../index";
 
 const dbSNCF_Schedules = new Schema(
   {
     _id: { type: String, required: true },
     realtime: { type: Date, required: true },
     trip: { type: Number, required: true }, //implicitly includes direction
-    stop_point: { type: Number, required: true, ref: "sncf_stops" },
+    stop_point: { type: Number, required: true, ref: SNCFEndpoints.Stops },
     route: { type: String, required: true, ref: "sncf_routes" },
   },
   {

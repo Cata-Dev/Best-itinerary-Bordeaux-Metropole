@@ -4,6 +4,7 @@
 
 import { Application } from "../../../declarations";
 import { InferSchemaType, Schema } from "mongoose";
+import { TBMEndpoints } from "../index";
 
 const dbIntersections = new Schema(
   {
@@ -20,7 +21,7 @@ export type dbIntersections = InferSchemaType<typeof dbIntersections>;
 
 // for more of what you can do here.
 export default function (app: Application) {
-  const modelName = "intersections";
+  const modelName = TBMEndpoints.Intersections;
   const mongooseClient = app.get("mongooseClient");
 
   // This is necessary to avoid model compilation errors in watch mode

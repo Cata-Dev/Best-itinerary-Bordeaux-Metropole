@@ -4,6 +4,7 @@
 
 import { Application } from "../../../declarations";
 import { InferSchemaType, Schema } from "mongoose";
+import { TBMEndpoints } from "../index";
 
 const dbSections = new Schema(
   {
@@ -14,8 +15,8 @@ const dbSections = new Schema(
     groupe: { type: Number, required: true },
     nom_voie: { type: String, required: true },
     rg_fv_graph_dbl: { type: Boolean, required: true },
-    rg_fv_graph_nd: { type: Number, required: true, ref: "nodes" },
-    rg_fv_graph_na: { type: Number, required: true, ref: "nodes" },
+    rg_fv_graph_nd: { type: Number, required: true, ref: TBMEndpoints.Intersections },
+    rg_fv_graph_na: { type: Number, required: true, ref: TBMEndpoints.Intersections },
   },
   {
     timestamps: true,
@@ -26,7 +27,7 @@ export type dbSections = InferSchemaType<typeof dbSections>;
 
 // for more of what you can do here.
 export default function (app: Application) {
-  const modelName = "sections";
+  const modelName = TBMEndpoints.Sections;
   const mongooseClient = app.get("mongooseClient");
 
   // This is necessary to avoid model compilation errors in watch mode

@@ -27,6 +27,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
   private communesNormalized: string[] = [];
   private types_voies: string[] = [];
   private reps: string[] = [];
+  private dataRefreshed: number = 0;
 
   constructor(public options: GeocodeServiceOptions) {
     this.app = options.app;
@@ -62,7 +63,16 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
       .toLowerCase()
       .normalize("NFD")
       .replace(/\p{Diacritic}/gu, "");
-    if (!this.communes) await this.refreshInternalData();
+    if (
+      this.dataRefreshed <
+        (
+          this.app.externalAPIs.endpoints.find(
+            (e) => e.name === TBMEndpoints.Addresses,
+          ) as Endpoint<TBMEndpoints.Addresses>
+        ).lastFetch ||
+      !this.communes.length
+    )
+      await this.refreshInternalData();
     type groups = "numero" | "commune" | "type_voie" | "nom_voie_lowercase" | "rep" | "code_postal";
     const regexpStr = `(?<numero>\\d+ )?(?<rep>${this.reps
       .map((r) => r.toLowerCase() + " ")
@@ -188,19 +198,28 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
     let docs: doc[] = [];
     for (const i in endpoints) {
       try {
-        let r = (await endpoints[i].model
+        const r = (await endpoints[i].model
           .find(queries[i])
           .collation({ locale: "fr", strength: 1 })
           .limit(500)
           .lean()) as doc[];
         if (r) {
-          r = r.map((r) => {
-            r.GEOCODE_type = endpoints[i].name;
-            return r;
-          });
           if (endpoints[i].name == TBMEndpoints.Addresses && _params.query?.uniqueVoies)
-            r = filterUniqueVoies(r as (dbAddresses & { GEOCODE_type: GEOCODE_type })[]);
-          docs.push(...r);
+            docs.push(
+              ...filterUniqueVoies(
+                r.map((r) => {
+                  r.GEOCODE_type = endpoints[i].name;
+                  return r;
+                }) as (dbAddresses & { GEOCODE_type: GEOCODE_type })[],
+              ),
+            );
+          else
+            docs.push(
+              ...r.map((r) => {
+                r.GEOCODE_type = endpoints[i].name;
+                return r;
+              }),
+            );
         }
       } catch (_) {}
     }

@@ -1,33 +1,64 @@
-class Deferred {
-  promise: Promise<void>;
-  resolve!: (value?: never) => void;
-  reject!: (reason?: never) => void;
+export type resolveCb<T = void> = (value: T) => void;
+export type rejectCb = (reason?: any) => void;
+export class Deferred<T = unknown> {
+  public promise: Promise<T>;
+  public resolve!: resolveCb<T>;
+  public reject!: rejectCb;
 
   constructor() {
-    this.promise = new Promise((resolve, reject) => {
+    this.promise = new Promise<T>((resolve, reject) => {
       this.reject = reject;
       this.resolve = resolve;
     });
   }
 }
 
-export function formatDocToBulkOps<D extends Record<string, unknown>>(doc: D, filterKey: keyof D = "_id") {
-  return {
-    updateOne: {
-      filter: { [filterKey]: doc[filterKey] },
-      update: doc,
-      upsert: true,
-    },
-  };
+type supportedBulkOp = "updateOne" | "deleteOne";
+export function formatDocToBulkOps<D extends Record<string, unknown>>(
+  op: supportedBulkOp,
+  doc: D,
+  filterKeys: Array<keyof D>,
+) {
+  switch (op) {
+    case "updateOne":
+      return {
+        updateOne: {
+          filter: filterKeys.reduce(
+            (acc, v) => ({
+              ...acc,
+              [v]: doc[v],
+            }),
+            {},
+          ),
+          update: doc,
+          upsert: true,
+        },
+      };
+
+    case "deleteOne":
+      return {
+        deleteOne: {
+          filter: filterKeys.reduce(
+            (acc, v) => ({
+              ...acc,
+              [v]: doc[v],
+            }),
+            {},
+          ),
+        },
+      };
+  }
 }
 
 /**
- * Format documents to be bulkUpdated via bulkWrite
- * @param {Array} documents
- * @param {String} filterKey
+ * @description Format documents to be operated via bulkWrite
  */
-export function bulkOps<D extends Record<string, unknown>>(documents: D[], filterKey: keyof D = "_id") {
-  return documents.map((doc) => formatDocToBulkOps(doc, filterKey));
+export function bulkOps<D extends Record<string, unknown>>(
+  op: supportedBulkOp,
+  documents: D[],
+  filterKeys: Array<keyof D> = ["_id"],
+) {
+  return documents.map((doc) => formatDocToBulkOps(op, doc, filterKeys));
 }
 
 const X0 = 700000;
@@ -315,7 +346,7 @@ export const time = {
  * @example await wait(1000) //permet de pause l'exécution pendant 1s
  */
 export function wait(ms = 1000): Promise<void> {
-  const defP = new Deferred();
+  const defP = new Deferred<void>();
 
   setTimeout(() => {
     defP.resolve();
