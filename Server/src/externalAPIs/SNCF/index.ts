@@ -1,10 +1,14 @@
+export enum SNCFEndpoints {
+  Schedules = "SNCF_Schedules",
+  Stops = "SNCF_Stops",
+}
+
 import axios from "axios";
 import { Application } from "../../declarations";
 import { Endpoint } from "../endpoint";
 import { bulkOps, unique, WGSToLambert93 } from "../../utils";
-import SNCF_Schedules, { dbSNCF_Schedules } from "./models/SNCF_schedules.model";
-import SNCF_Stops, { dbSNCF_Stops } from "./models/SNCF_stops.model";
-import { Model } from "mongoose";
+import SNCF_Schedules, { dbSNCF_Schedules, dbSNCF_SchedulesModel } from "./models/SNCF_schedules.model";
+import SNCF_Stops, { dbSNCF_Stops, dbSNCF_StopsModel } from "./models/SNCF_stops.model";
 import { logger } from "../../logger";
 
 /**
@@ -42,22 +46,23 @@ function formatSNCFdate(date: Date): string {
   )}T${date.getHours()}${date.getMinutes()}00`;
 }
 
-export enum SNCFEndpoints {
-  Schedules = "SNCF_Schedules",
-  Stops = "SNCF_Stops",
-}
-
 declare module "../../declarations" {
   interface ExternalAPIs {
     SNCF: { endpoints: Endpoint<SNCFEndpoints>[]; names: SNCFEndpoints };
   }
 }
 
-export type SNCFSchema<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
+export type SNCFClass<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
   ? dbSNCF_Schedules
   : E extends SNCFEndpoints.Stops
   ? dbSNCF_Stops
   : dbSNCF_Schedules | dbSNCF_Stops;
+
+export type SNCFModel<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
+  ? dbSNCF_SchedulesModel
+  : E extends SNCFEndpoints.Stops
+  ? dbSNCF_StopsModel
+  : dbSNCF_SchedulesModel | dbSNCF_StopsModel;
 
 interface SNCF_link {
   id: string;
@@ -123,8 +128,8 @@ interface SNCF_Stop {
 export default (app: Application) => {
   logger.log(`Initializing SNCF models...`);
 
-  const Schedule: Model<dbSNCF_Schedules> = SNCF_Schedules(app);
-  const Stop: Model<dbSNCF_Stops> = SNCF_Stops(app);
+  const Schedule = SNCF_Schedules(app);
+  const Stop = SNCF_Stops(app);
 
   logger.info(`Models initialized.`);
 
@@ -174,7 +179,7 @@ export default (app: Application) => {
           )
         ).route_schedules;
 
-        const schedules: Omit<dbSNCF_Schedules, "updatedAt" | "createdAt">[] = [];
+        const schedules: dbSNCF_Schedules[] = [];
         for (const route_schedule of route_schedules) {
           for (const i in route_schedule.table.rows) {
             //iterate through rows of schedules table
@@ -201,7 +206,9 @@ export default (app: Application) => {
         await Schedule.deleteMany({
           _id: { $nin: schedules.map((s) => s._id) },
         });
-        await Schedule.bulkWrite(bulkOps("updateOne", schedules));
+        await Schedule.bulkWrite(
+          bulkOps("updateOne", schedules as unknown as Record<keyof dbSNCF_Schedules, unknown>[]),
+        );
 
         return true;
       },
@@ -227,7 +234,7 @@ export default (app: Application) => {
           )
         ).stop_points;
 
-        const Stops: Omit<dbSNCF_Stops, "updatedAt" | "createdAt">[] = rawStops
+        const Stops: dbSNCF_Stops[] = rawStops
           .map((stop) => {
             return {
               _id: parseInt(stop["id"].substring(16, 24)),
@@ -239,7 +246,7 @@ export default (app: Application) => {
           .filter(unique);
 
         await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-        await Stop.bulkWrite(bulkOps("updateOne", Stops));
+        await Stop.bulkWrite(bulkOps("updateOne", Stops as unknown as Record<keyof dbSNCF_Stops, unknown>[]));
 
         return true;
       },

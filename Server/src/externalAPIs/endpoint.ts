@@ -1,5 +1,4 @@
-import { Model } from "mongoose";
-import { EndpointName, ProviderSchema } from ".";
+import { EndpointName, ProviderModel } from ".";
 import { logger } from "../logger";
 import { Deferred } from "../utils/index";
 import { TypedEventEmitter } from "../utils/TypedEmitter";
@@ -26,7 +25,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     public readonly name: N,
     public readonly rate: number,
     private _fetch: () => Promise<boolean>,
-    public readonly model: Model<ProviderSchema<N>>,
+    public readonly model: ProviderModel<N>,
   ) {
     super();
     this.deferredFetch = new Deferred<boolean>();

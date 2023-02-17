@@ -6,6 +6,10 @@ import socketio from "@feathersjs/socketio";
 import type { Application, HookContext, NextFunction } from "./declarations";
 import { configurationValidator } from "./configuration";
 import { errorHandler as errorHandlerHook, log } from "./hooks";
+
+// Needed to solve Reflect import for typegoose
+import "@abraham/reflection";
+
 import { services } from "./services";
 import { channels } from "./channels";
 import { setupExternalAPIs } from "./externalAPIs/index";

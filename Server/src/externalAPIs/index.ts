@@ -1,7 +1,7 @@
 import { Application } from "../declarations";
 
-import tbm, { TBMEndpoints, TBMSchema } from "./TBM";
-import sncf, { SNCFEndpoints, SNCFSchema } from "./SNCF";
+import tbm, { TBMEndpoints, TBMClass, TBMModel } from "./TBM";
+import sncf, { SNCFEndpoints, SNCFClass, SNCFModel } from "./SNCF";
 import { Endpoint } from "./endpoint";
 import { logger } from "../logger";
 
@@ -27,11 +27,17 @@ export const setupExternalAPIs = async (app: Application) => {
 
 export type EndpointName = TBMEndpoints | SNCFEndpoints;
 
-export type ProviderSchema<E extends EndpointName | undefined = undefined> = E extends TBMEndpoints
-  ? TBMSchema<E>
+export type ProviderClass<E extends EndpointName | undefined = undefined> = E extends TBMEndpoints
+  ? TBMClass<E>
   : E extends SNCFEndpoints
-  ? SNCFSchema<E>
-  : TBMSchema<TBMEndpoints> | SNCFSchema<SNCFEndpoints>;
+  ? SNCFClass<E>
+  : TBMClass<TBMEndpoints> | SNCFClass<SNCFEndpoints>;
+
+export type ProviderModel<E extends EndpointName | undefined = undefined> = E extends TBMEndpoints
+  ? TBMModel<E>
+  : E extends SNCFEndpoints
+  ? SNCFModel<E>
+  : TBMModel<TBMEndpoints> | SNCFModel<SNCFEndpoints>;
 
 declare module "../declarations" {
   interface ExternalAPIs {

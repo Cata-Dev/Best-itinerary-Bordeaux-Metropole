@@ -3,37 +3,47 @@
 // See http://mongoosejs.com/docs/models.html
 
 import { Application } from "../../../declarations";
-import { InferSchemaType, Schema } from "mongoose";
 import { TBMEndpoints } from "../index";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { addModelToTypegoose, buildSchema, prop, Ref } from "@typegoose/typegoose";
+import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { getName } from "@typegoose/typegoose/lib/internal/utils";
+import { dbIntersections } from "./intersections.model";
 
-const dbSections = new Schema(
-  {
-    coords: { type: [[Number]], required: true },
-    distance: { type: Number, required: true },
-    _id: { type: Number, required: true },
-    domanial: { type: Number, required: true },
-    groupe: { type: Number, required: true },
-    nom_voie: { type: String, required: true },
-    rg_fv_graph_dbl: { type: Boolean, required: true },
-    rg_fv_graph_nd: { type: Number, required: true, ref: TBMEndpoints.Intersections },
-    rg_fv_graph_na: { type: Number, required: true, ref: TBMEndpoints.Intersections },
-  },
-  {
-    timestamps: true,
-  },
-);
+@modelOptions({ options: { customName: TBMEndpoints.Sections } })
+export class dbSections extends TimeStamps {
+  @prop({ required: true })
+  public _id!: number;
 
-export type dbSections = InferSchemaType<typeof dbSections>;
+  @prop({ type: () => [[Number, Number]], required: true })
+  public coords!: [number, number][];
 
-// for more of what you can do here.
-export default function (app: Application) {
-  const modelName = TBMEndpoints.Sections;
+  @prop({ required: true })
+  public domanial!: number;
+
+  @prop({ required: true })
+  public groupe!: number;
+
+  @prop({ required: true })
+  public nom_voie!: string;
+
+  @prop({ required: true })
+  public rg_fv_graph_dbl!: boolean;
+
+  @prop({ required: true, ref: () => dbIntersections, type: () => Number })
+  public rg_fv_graph_nd!: Ref<dbIntersections, number>;
+
+  @prop({ required: true, ref: () => dbIntersections, type: () => Number })
+  public rg_fv_graph_na!: Ref<dbIntersections, number>;
+}
+
+export default function init(app: Application) {
   const mongooseClient = app.get("mongooseClient");
 
-  // This is necessary to avoid model compilation errors in watch mode
-  // see https://mongoosejs.com/docs/api/connection.html#connection_Connection-deleteModel
-  if (mongooseClient.modelNames().includes(modelName)) {
-    mongooseClient.deleteModel(modelName);
-  }
-  return mongooseClient.model(modelName, dbSections);
+  const dbSectionsSchema = buildSchema(dbSections, { existingConnection: mongooseClient });
+  const dbSectionsModelRaw = mongooseClient.model(getName(dbSections), dbSectionsSchema);
+
+  return addModelToTypegoose(dbSectionsModelRaw, dbSections, { existingConnection: mongooseClient });
 }
+
+export type dbSectionsModel = ReturnType<typeof init>;

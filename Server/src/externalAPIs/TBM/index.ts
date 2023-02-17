@@ -1,18 +1,3 @@
-import axios from "axios";
-import { Application } from "../../declarations";
-import { Endpoint } from "../endpoint";
-import { bulkOps, cartographicDistance } from "../../utils";
-import TBM_Addresses, { dbAddresses } from "./models/addresses.model";
-import TBM_Intersections, { dbIntersections } from "./models/intersections.model";
-import TBM_Sections, { dbSections } from "./models/sections.model";
-import TBM_Stops, { dbTBM_Stops } from "./models/TBM_stops.model";
-import TBM_Lines, { dbTBM_Lines } from "./models/TBM_lines.model";
-import TBM_Schedules, { dbTBM_Schedules } from "./models/TBM_schedules.model";
-import TBM_Trips, { dbTBM_Trips } from "./models/TBM_trips.model";
-import TBM_Lines_routes, { dbTBM_Lines_routes } from "./models/TBM_lines_routes.model";
-import { Model } from "mongoose";
-import { logger } from "../../logger";
-
 export enum TBMEndpoints {
   Addresses = "Addresses",
   Intersections = "Intersections",
@@ -26,13 +11,41 @@ export enum TBMEndpoints {
   Lines_routes = "TBM_Lines_routes",
 }
 
+import axios from "axios";
+import { Application } from "../../declarations";
+import { Endpoint } from "../endpoint";
+import { bulkOps, cartographicDistance } from "../../utils";
+import TBM_Addresses, { dbAddresses, dbAddressesModel } from "./models/addresses.model";
+import TBM_Intersections, { dbIntersections, dbIntersectionsModel } from "./models/intersections.model";
+import TBM_Sections, { dbSections, dbSectionsModel } from "./models/sections.model";
+import TBM_Stops, {
+  Active,
+  dbTBM_Stops,
+  dbTBM_StopsModel,
+  StopType,
+  VehicleType,
+} from "./models/TBM_stops.model";
+import TBM_Lines, { dbTBM_Lines, dbTBM_LinesModel } from "./models/TBM_lines.model";
+import TBM_Schedules, {
+  dbTBM_Schedules,
+  dbTBM_SchedulesModel,
+  RtScheduleState,
+  RtScheduleType,
+} from "./models/TBM_schedules.model";
+import TBM_Trips, { dbTBM_Trips, dbTBM_TripsModel } from "./models/TBM_trips.model";
+import TBM_Lines_routes, {
+  dbTBM_Lines_routes,
+  dbTBM_Lines_routesModel,
+} from "./models/TBM_lines_routes.model";
+import { logger } from "../../logger";
+
 declare module "../../declarations" {
   interface ExternalAPIs {
     TBM: { endpoints: Endpoint<TBMEndpoints>[]; names: TBMEndpoints };
   }
 }
 
-export type TBMSchema<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
+export type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
   ? dbAddresses
   : E extends TBMEndpoints.Intersections
   ? dbIntersections
@@ -57,6 +70,32 @@ export type TBMSchema<E extends TBMEndpoints | undefined = undefined> = E extend
       | dbTBM_Schedules
       | dbTBM_Stops
       | dbTBM_Trips;
+
+export type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
+  ? dbAddressesModel
+  : E extends TBMEndpoints.Intersections
+  ? dbIntersectionsModel
+  : E extends TBMEndpoints.Sections
+  ? dbSectionsModel
+  : E extends TBMEndpoints.Lines
+  ? dbTBM_LinesModel
+  : E extends TBMEndpoints.Lines_routes
+  ? dbTBM_Lines_routesModel
+  : E extends TBMEndpoints.Schedules | TBMEndpoints.Schedules_rt
+  ? dbTBM_SchedulesModel
+  : E extends TBMEndpoints.Stops
+  ? dbTBM_StopsModel
+  : E extends TBMEndpoints.Trips
+  ? dbTBM_TripsModel
+  :
+      | dbAddressesModel
+      | dbIntersectionsModel
+      | dbSectionsModel
+      | dbTBM_Lines_routesModel
+      | dbTBM_LinesModel
+      | dbTBM_SchedulesModel
+      | dbTBM_StopsModel
+      | dbTBM_TripsModel;
 
 interface BaseTBM<T extends object = object> {
   properties: T;
@@ -93,14 +132,11 @@ export type Section = BaseTBM<{
   geometry: { coordinates: [number, number][] };
 };
 
-type Vehicle = "BUS" | "TRAM" | "BATEAU";
-type Active = 0 | 1;
-
 export type TBM_Stop = BaseTBM<{
   gid: string;
   libelle: string;
-  vehicule: Vehicle;
-  type: "CLASSIQUE" | "DELESTAGE" | "AUTRE" | "FICTIF";
+  vehicule: VehicleType;
+  type: StopType;
   actif: Active;
 }> & {
   geometry: { coordinates: [number, number] };
@@ -109,7 +145,7 @@ export type TBM_Stop = BaseTBM<{
 export type TBM_Line = BaseTBM<{
   gid: string;
   libelle: string;
-  vehicule: Vehicle;
+  vehicule: VehicleType;
   active: Active;
 }>;
 
@@ -124,8 +160,8 @@ export type TBM_Schedule_rt = TBM_Schedule &
   BaseTBM<{
     hor_app: string;
     hor_estime: string;
-    etat: "NON_REALISE" | "REALISE" | "DEVIE";
-    type: "REGULIER" | "DEVIATION";
+    etat: RtScheduleState;
+    type: RtScheduleType;
     tempsarret: number;
   }>;
 
@@ -151,14 +187,14 @@ export type TBM_Lines_route = BaseTBM<{
 export default (app: Application) => {
   logger.log(`Initializing TBM models...`);
 
-  const Address: Model<dbAddresses> = TBM_Addresses(app);
-  const Intersection: Model<dbIntersections> = TBM_Intersections(app);
-  const Section: Model<dbSections> = TBM_Sections(app);
-  const Stop: Model<dbTBM_Stops> = TBM_Stops(app);
-  const Line: Model<dbTBM_Lines> = TBM_Lines(app);
-  const Schedule: Model<dbTBM_Schedules> = TBM_Schedules(app);
-  const Vehicle: Model<dbTBM_Trips> = TBM_Trips(app);
-  const Lines_route: Model<dbTBM_Lines_routes> = TBM_Lines_routes(app);
+  const Address = TBM_Addresses(app);
+  const Intersection = TBM_Intersections(app);
+  const Section = TBM_Sections(app);
+  const Stop = TBM_Stops(app);
+  const Line = TBM_Lines(app);
+  const Schedule = TBM_Schedules(app);
+  const Trip = TBM_Trips(app);
+  const Lines_route = TBM_Lines_routes(app);
 
   logger.info(`Models initialized.`);
 
@@ -186,7 +222,7 @@ export default (app: Application) => {
       async () => {
         const rawAddresses: Addresse[] = await getData("fv_adresse_p", ["crs=epsg:2154"]);
 
-        const Addresses: Omit<dbAddresses, "updatedAt" | "createdAt">[] = rawAddresses.map((address) => {
+        const Addresses: dbAddresses[] = rawAddresses.map((address) => {
           const voie = address.properties.nom_voie;
           return {
             _id: parseInt(address.properties.gid),
@@ -205,7 +241,9 @@ export default (app: Application) => {
         await Address.deleteMany({
           _id: { $nin: Addresses.map((i) => i._id) },
         });
-        await Address.bulkWrite(bulkOps("updateOne", Addresses));
+        await Address.bulkWrite(
+          bulkOps("updateOne", Addresses as unknown as Record<keyof dbAddresses, unknown>[]),
+        );
 
         return true;
       },
@@ -218,20 +256,20 @@ export default (app: Application) => {
       async () => {
         const rawIntersections: Intersection[] = await getData("fv_carre_p", ["crs=epsg:2154"]);
 
-        const Intersections: Omit<dbIntersections, "updatedAt" | "createdAt">[] = rawIntersections.map(
-          (intersection) => {
-            return {
-              coords: intersection.geometry.coordinates,
-              _id: parseInt(intersection.properties.gid),
-              nature: intersection.properties.nature,
-            };
-          },
-        );
+        const Intersections: dbIntersections[] = rawIntersections.map((intersection) => {
+          return {
+            coords: intersection.geometry.coordinates,
+            _id: parseInt(intersection.properties.gid),
+            nature: intersection.properties.nature,
+          };
+        });
 
         await Intersection.deleteMany({
           _id: { $nin: Intersections.map((i) => i._id) },
         });
-        await Intersection.bulkWrite(bulkOps("updateOne", Intersections));
+        await Intersection.bulkWrite(
+          bulkOps("updateOne", Intersections as unknown as Record<keyof dbIntersections, unknown>[]),
+        );
 
         return true;
       },
@@ -244,7 +282,7 @@ export default (app: Application) => {
       async () => {
         const rawSections: Section[] = await getData("fv_tronc_l", ["crs=epsg:2154"]);
 
-        const Sections: Omit<dbSections, "updatedAt" | "createdAt">[] = rawSections.map((section) => {
+        const Sections: dbSections[] = rawSections.map((section) => {
           return {
             coords: section.geometry.coordinates,
             distance: section.geometry.coordinates.reduce((acc: number, v, i, arr) => {
@@ -264,7 +302,9 @@ export default (app: Application) => {
         await Section.deleteMany({
           _id: { $nin: Sections.map((s) => s._id) },
         });
-        await Section.bulkWrite(bulkOps("updateOne", Sections));
+        await Section.bulkWrite(
+          bulkOps("updateOne", Sections as unknown as Record<keyof dbSections, unknown>[]),
+        );
 
         return true;
       },
@@ -277,7 +317,7 @@ export default (app: Application) => {
       async () => {
         const rawStops: TBM_Stop[] = await getData("sv_arret_p", ["crs=epsg:2154"]);
 
-        const Stops: Omit<dbTBM_Stops, "updatedAt" | "createdAt">[] = rawStops.map((stop) => {
+        const Stops: dbTBM_Stops[] = rawStops.map((stop) => {
           return {
             coords: stop.geometry?.coordinates ?? [Infinity, Infinity], //out of BM
             _id: parseInt(stop.properties.gid),
@@ -290,7 +330,7 @@ export default (app: Application) => {
         });
 
         await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-        await Stop.bulkWrite(bulkOps("updateOne", Stops));
+        await Stop.bulkWrite(bulkOps("updateOne", Stops as unknown as Record<keyof dbTBM_Stops, unknown>[]));
 
         return true;
       },
@@ -303,7 +343,7 @@ export default (app: Application) => {
       async () => {
         const rawLines: TBM_Line[] = await getData("sv_ligne_a");
 
-        const Lines: Omit<dbTBM_Lines, "updatedAt" | "createdAt">[] = rawLines.map((line) => {
+        const Lines = rawLines.map((line) => {
           return {
             _id: parseInt(line.properties.gid),
             libelle: line.properties.libelle,
@@ -362,27 +402,30 @@ export default (app: Application) => {
             }),
         ]);
 
-        const SchedulesRt: Omit<dbTBM_Schedules, "updatedAt" | "createdAt">[] = rawSchedulesRt.map(
-          (schedule) => {
-            return {
-              gid: parseInt(schedule.properties.gid),
-              realtime: true,
-              hor_theo: new Date(schedule.properties.hor_theo),
-              hor_app: new Date(schedule.properties.hor_app),
-              hor_estime: new Date(schedule.properties.hor_estime),
-              etat: schedule.properties.etat,
-              type: schedule.properties.type,
-              rs_sv_arret_p: schedule.properties.rs_sv_arret_p,
-              rs_sv_cours_a: schedule.properties.rs_sv_cours_a,
-            };
-          },
-        );
+        const SchedulesRt: dbTBM_Schedules[] = rawSchedulesRt.map((schedule) => {
+          return {
+            gid: parseInt(schedule.properties.gid),
+            realtime: true,
+            hor_theo: new Date(schedule.properties.hor_theo),
+            hor_app: new Date(schedule.properties.hor_app),
+            hor_estime: new Date(schedule.properties.hor_estime),
+            etat: schedule.properties.etat,
+            type: schedule.properties.type,
+            rs_sv_arret_p: schedule.properties.rs_sv_arret_p,
+            rs_sv_cours_a: schedule.properties.rs_sv_cours_a,
+          };
+        });
 
         await Schedule.deleteMany({
           realtime: true,
           gid: { $nin: SchedulesRt.map((s) => s.gid) },
         });
-        await Schedule.bulkWrite(bulkOps("updateOne", SchedulesRt, ["gid", "realtime"]));
+        await Schedule.bulkWrite(
+          bulkOps("updateOne", SchedulesRt as unknown as Record<keyof dbTBM_Schedules, unknown>[], [
+            "gid",
+            "realtime",
+          ]),
+        );
 
         return true;
       },
@@ -402,25 +445,25 @@ export default (app: Application) => {
             }),
         ]);
 
-        const Trips: Omit<dbTBM_Trips, "updatedAt" | "createdAt">[] = rawTrips.map((vehicle) => {
+        const Trips: dbTBM_Trips[] = rawTrips.map((trip) => {
           return {
-            _id: parseInt(vehicle.properties.gid),
-            etat: vehicle.properties.etat,
-            rg_sv_arret_p_nd: vehicle.properties.rg_sv_arret_p_nd,
-            rg_sv_arret_p_na: vehicle.properties.rg_sv_arret_p_na,
-            rs_sv_ligne_a: vehicle.properties.rs_sv_ligne_a,
-            rs_sv_chem_l: vehicle.properties.rs_sv_chem_l,
+            _id: parseInt(trip.properties.gid),
+            etat: trip.properties.etat,
+            rg_sv_arret_p_nd: trip.properties.rg_sv_arret_p_nd,
+            rg_sv_arret_p_na: trip.properties.rg_sv_arret_p_na,
+            rs_sv_ligne_a: trip.properties.rs_sv_ligne_a,
+            rs_sv_chem_l: trip.properties.rs_sv_chem_l,
           };
         });
 
-        await Vehicle.deleteMany({
+        await Trip.deleteMany({
           _id: { $nin: Trips.map((v) => v._id) },
         });
-        await Vehicle.bulkWrite(bulkOps("updateOne", Trips));
+        await Trip.bulkWrite(bulkOps("updateOne", Trips as unknown as Record<keyof dbTBM_Trips, unknown>[]));
 
         return true;
       },
-      Vehicle,
+      Trip,
     ),
 
     new Endpoint(
@@ -440,23 +483,23 @@ export default (app: Application) => {
             ]),
         ]);
 
-        const Lines_routes: Omit<dbTBM_Lines_routes, "updatedAt" | "createdAt">[] = rawLines_routes.map(
-          (lines_route) => {
-            return {
-              _id: parseInt(lines_route.properties.gid),
-              libelle: lines_route.properties.libelle,
-              sens: lines_route.properties.sens,
-              vehicule: lines_route.properties.vehicule,
-              rs_sv_ligne_a: lines_route.properties.rs_sv_ligne_a,
-              rg_sv_arret_p_nd: lines_route.properties.rg_sv_arret_p_nd,
-              rg_sv_arret_p_na: lines_route.properties.rg_sv_arret_p_na,
-            };
-          },
-        );
+        const Lines_routes: dbTBM_Lines_routes[] = rawLines_routes.map((lines_route) => {
+          return {
+            _id: parseInt(lines_route.properties.gid),
+            libelle: lines_route.properties.libelle,
+            sens: lines_route.properties.sens,
+            vehicule: lines_route.properties.vehicule,
+            rs_sv_ligne_a: lines_route.properties.rs_sv_ligne_a,
+            rg_sv_arret_p_nd: lines_route.properties.rg_sv_arret_p_nd,
+            rg_sv_arret_p_na: lines_route.properties.rg_sv_arret_p_na,
+          };
+        });
         await Lines_route.deleteMany({
           _id: { $nin: Lines_routes.map((l_r) => l_r._id) },
         });
-        await Lines_route.bulkWrite(bulkOps("updateOne", Lines_routes));
+        await Lines_route.bulkWrite(
+          bulkOps("updateOne", Lines_routes as unknown as Record<keyof dbTBM_Lines_routes, unknown>[]),
+        );
 
         return true;
       },
