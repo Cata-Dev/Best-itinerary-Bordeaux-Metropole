@@ -62,7 +62,7 @@
     "@feathersjs/typebox": "^5.0.0-pre.37",
     "axios": "^1.3.2",
     "feathers-hooks-common": "^7.0.0-pre.1",
-    "mongoose": "^6.9.1",
+    "mongoose": "^6.9.2",
     "node-fetch": "^3.3.0"
   },
   "devDependencies": {
