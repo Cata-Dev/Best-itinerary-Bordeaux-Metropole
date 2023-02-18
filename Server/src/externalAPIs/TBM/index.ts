@@ -29,6 +29,8 @@ import TBM_Lines, { dbTBM_Lines, dbTBM_LinesModel } from "./models/TBM_lines.mod
 import TBM_Schedules, {
   dbTBM_Schedules,
   dbTBM_SchedulesModel,
+  dbTBM_Schedules_rt,
+  dbTBM_Schedules_rtModel,
   RtScheduleState,
   RtScheduleType,
 } from "./models/TBM_schedules.model";
@@ -55,8 +57,10 @@ export type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends
   ? dbTBM_Lines
   : E extends TBMEndpoints.Lines_routes
   ? dbTBM_Lines_routes
-  : E extends TBMEndpoints.Schedules | TBMEndpoints.Schedules_rt
+  : E extends TBMEndpoints.Schedules
   ? dbTBM_Schedules
+  : E extends TBMEndpoints.Schedules_rt
+  ? dbTBM_Schedules_rt
   : E extends TBMEndpoints.Stops
   ? dbTBM_Stops
   : E extends TBMEndpoints.Trips
@@ -68,6 +72,7 @@ export type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends
       | dbTBM_Lines_routes
       | dbTBM_Lines
       | dbTBM_Schedules
+      | dbTBM_Schedules_rt
       | dbTBM_Stops
       | dbTBM_Trips;
 
@@ -81,8 +86,10 @@ export type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends
   ? dbTBM_LinesModel
   : E extends TBMEndpoints.Lines_routes
   ? dbTBM_Lines_routesModel
-  : E extends TBMEndpoints.Schedules | TBMEndpoints.Schedules_rt
+  : E extends TBMEndpoints.Schedules
   ? dbTBM_SchedulesModel
+  : E extends TBMEndpoints.Schedules_rt
+  ? dbTBM_Schedules_rtModel
   : E extends TBMEndpoints.Stops
   ? dbTBM_StopsModel
   : E extends TBMEndpoints.Trips
@@ -94,6 +101,7 @@ export type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends
       | dbTBM_Lines_routesModel
       | dbTBM_LinesModel
       | dbTBM_SchedulesModel
+      | dbTBM_Schedules_rtModel
       | dbTBM_StopsModel
       | dbTBM_TripsModel;
 
@@ -194,9 +202,9 @@ export default (app: Application) => {
   const Section = TBM_Sections(app);
   const Stop = TBM_Stops(app);
   const Line = TBM_Lines(app);
-  const Schedule = TBM_Schedules(app);
+  const [Schedule, ScheduleRt] = TBM_Schedules(app);
   const Trip = TBM_Trips(app);
-  const Lines_route = TBM_Lines_routes(app);
+  const LinesRoute = TBM_Lines_routes(app);
 
   logger.info(`Models initialized.`);
 
@@ -233,7 +241,7 @@ export default (app: Application) => {
             coords: address.geometry.coordinates,
             numero: address.properties.numero,
             rep: address.properties.rep?.toLowerCase(),
-            type_voie: voie.match(/[A-zàÀ-ÿ]+/g)![0],
+            type_voie: voie.match(/[A-zàÀ-ÿ]+/g)?.[0] ?? "",
             nom_voie: voie,
             nom_voie_lowercase: voie.toLowerCase(),
             code_postal:
@@ -407,17 +415,17 @@ export default (app: Application) => {
             }),
         ]);
 
-        const SchedulesRt: dbTBM_Schedules[] = rawSchedulesRt.map((schedule) => {
+        const SchedulesRt: dbTBM_Schedules_rt[] = rawSchedulesRt.map((scheduleRt) => {
           return {
-            gid: parseInt(schedule.properties.gid),
+            gid: parseInt(scheduleRt.properties.gid),
             realtime: true,
-            hor_theo: new Date(schedule.properties.hor_theo),
-            hor_app: new Date(schedule.properties.hor_app),
-            hor_estime: new Date(schedule.properties.hor_estime),
-            etat: schedule.properties.etat,
-            type: schedule.properties.type,
-            rs_sv_arret_p: schedule.properties.rs_sv_arret_p,
-            rs_sv_cours_a: schedule.properties.rs_sv_cours_a,
+            hor_theo: new Date(scheduleRt.properties.hor_theo),
+            hor_app: new Date(scheduleRt.properties.hor_app),
+            hor_estime: new Date(scheduleRt.properties.hor_estime),
+            etat: scheduleRt.properties.etat,
+            type: scheduleRt.properties.type,
+            rs_sv_arret_p: scheduleRt.properties.rs_sv_arret_p,
+            rs_sv_cours_a: scheduleRt.properties.rs_sv_cours_a,
           };
         });
 
@@ -426,7 +434,7 @@ export default (app: Application) => {
           gid: { $nin: SchedulesRt.map((s) => s.gid) },
         });
         await Schedule.bulkWrite(
-          bulkOps("updateOne", SchedulesRt as unknown as Record<keyof dbTBM_Schedules, unknown>[], [
+          bulkOps("updateOne", SchedulesRt as unknown as Record<keyof dbTBM_Schedules_rt, unknown>[], [
             "gid",
             "realtime",
           ]),
@@ -434,7 +442,7 @@ export default (app: Application) => {
 
         return true;
       },
-      Schedule,
+      ScheduleRt,
     ),
 
     new Endpoint(
@@ -499,16 +507,16 @@ export default (app: Application) => {
             rg_sv_arret_p_na: lines_route.properties.rg_sv_arret_p_na,
           };
         });
-        await Lines_route.deleteMany({
+        await LinesRoute.deleteMany({
           _id: { $nin: Lines_routes.map((l_r) => l_r._id) },
         });
-        await Lines_route.bulkWrite(
+        await LinesRoute.bulkWrite(
           bulkOps("updateOne", Lines_routes as unknown as Record<keyof dbTBM_Lines_routes, unknown>[]),
         );
 
         return true;
       },
-      Lines_route,
+      LinesRoute,
     ),
   ];
 

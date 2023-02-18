@@ -2,15 +2,6 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { Application } from "../../../declarations";
-import { TBMEndpoints } from "../index";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, index, prop, Ref } from "@typegoose/typegoose";
-import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
-import { dbTBM_Stops } from "./TBM_stops.model";
-import { dbTBM_Trips } from "./TBM_trips.model";
-
 export enum RtScheduleState {
   Non_realise = "NON_REALISE",
   Realise = "REALISE",
@@ -22,6 +13,22 @@ export enum RtScheduleType {
   Deviation = "DEVIATION",
 }
 
+import { Application } from "../../../declarations";
+import { TBMEndpoints } from "../index";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import {
+  addModelToTypegoose,
+  buildSchema,
+  getDiscriminatorModelForClass,
+  index,
+  prop,
+  Ref,
+} from "@typegoose/typegoose";
+import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { getName } from "@typegoose/typegoose/lib/internal/utils";
+import { dbTBM_Stops } from "./TBM_stops.model";
+import { dbTBM_Trips } from "./TBM_trips.model";
+
 @index({ gid: 1, realtime: 1 }, { unique: true })
 @modelOptions({ options: { customName: TBMEndpoints.Schedules } })
 export class dbTBM_Schedules extends TimeStamps {
@@ -30,18 +37,6 @@ export class dbTBM_Schedules extends TimeStamps {
 
   @prop({ required: true })
   public hor_theo!: Date;
-
-  @prop()
-  public hor_app?: Date;
-
-  @prop()
-  public hor_estime?: Date;
-
-  @prop({ enum: RtScheduleState })
-  public etat?: RtScheduleState;
-
-  @prop({ enum: RtScheduleType })
-  public type?: RtScheduleType;
 
   @prop({ required: true })
   public realtime!: boolean;
@@ -53,15 +48,35 @@ export class dbTBM_Schedules extends TimeStamps {
   public rs_sv_cours_a!: Ref<dbTBM_Trips, number>;
 }
 
+export class dbTBM_Schedules_rt extends dbTBM_Schedules {
+  @prop()
+  public hor_app?: Date;
+
+  @prop()
+  public hor_estime?: Date;
+
+  @prop({ enum: RtScheduleState })
+  public etat?: RtScheduleState;
+
+  @prop({ enum: RtScheduleType })
+  public type?: RtScheduleType;
+}
+
 export default function init(app: Application) {
   const mongooseClient = app.get("mongooseClient");
 
   const dbTBM_SchedulesSchema = buildSchema(dbTBM_Schedules, { existingConnection: mongooseClient });
   const dbTBM_SchedulesModelRaw = mongooseClient.model(getName(dbTBM_Schedules), dbTBM_SchedulesSchema);
 
-  return addModelToTypegoose(dbTBM_SchedulesModelRaw, dbTBM_Schedules, {
+  const dbTBM_SchedulesModel = addModelToTypegoose(dbTBM_SchedulesModelRaw, dbTBM_Schedules, {
     existingConnection: mongooseClient,
   });
+
+  return [
+    dbTBM_SchedulesModel,
+    getDiscriminatorModelForClass(dbTBM_SchedulesModel, dbTBM_Schedules_rt),
+  ] as const;
 }
 
-export type dbTBM_SchedulesModel = ReturnType<typeof init>;
+export type dbTBM_SchedulesModel = ReturnType<typeof init>[0];
+export type dbTBM_Schedules_rtModel = ReturnType<typeof init>[1];
