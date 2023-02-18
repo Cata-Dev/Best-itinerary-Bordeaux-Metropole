@@ -107,8 +107,10 @@ export type Addresse = BaseTBM<{
   numero: number;
   rep: string | null;
   cpostal: string;
+  /** Fichier annuaire topographique initialisé réduit */
   fantoir: string;
   commune: string;
+  cinsee: `${number}${number}${number}`
 }> & {
   geometry: { coordinates: [number, number] };
 };
@@ -232,7 +234,7 @@ export default (app: Application) => {
             type_voie: voie.match(/[A-zàÀ-ÿ]+/g)![0],
             nom_voie: voie,
             nom_voie_lowercase: voie.toLowerCase(),
-            code_postal: parseInt(address.properties.cpostal),
+            code_postal: parseInt(address.properties.cpostal) || parseInt(`33${address.properties.cinsee}`) || 0,
             fantoir: address.properties.fantoir,
             commune: address.properties.commune,
           };
