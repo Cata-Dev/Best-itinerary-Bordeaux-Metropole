@@ -6,6 +6,7 @@
     "target": "es2020",
     "module": "NodeNext",
     "outDir": "./lib",
+    "sourceMap": true,
     "rootDir": "./src",
     "declaration": true,
     "strict": true,
