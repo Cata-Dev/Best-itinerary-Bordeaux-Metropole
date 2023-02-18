@@ -63,6 +63,16 @@ export function bulkOps<D extends Record<string, unknown>>(
 }
 
 /**
+ * @description Wrap a map of promises into one promise
+ */
+export async function mapAsync<I, O>(
+  array: I[],
+  callback: (value: I, index: number, array: I[]) => Promise<O>,
+): Promise<O[]> {
+  return await Promise.all(array.map(callback));
+}
+
+/**
  * @description Search for a value in a **sorted** array, in O(log2(n)).
  * @param arr The **sorted** array where performing the search
  * @param el The element to look for, which will be compared
