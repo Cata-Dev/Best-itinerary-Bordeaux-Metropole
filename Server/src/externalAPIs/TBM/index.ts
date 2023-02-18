@@ -9,12 +9,13 @@ export enum TBMEndpoints {
   Schedules_rt = "TBM_Schedules_rt",
   Trips = "TBM_Trips",
   Lines_routes = "TBM_Lines_routes",
+  ScheduledRoutes = "TBM_Scheduled_routes",
 }
 
 import axios from "axios";
 import { Application } from "../../declarations";
 import { Endpoint } from "../endpoint";
-import { bulkOps, cartographicDistance } from "../../utils";
+import { binarySearch, bulkOps, cartographicDistance, mapAsync } from "../../utils";
 import TBM_Addresses, { dbAddresses, dbAddressesModel } from "./models/addresses.model";
 import TBM_Intersections, { dbIntersections, dbIntersectionsModel } from "./models/intersections.model";
 import TBM_Sections, { dbSections, dbSectionsModel } from "./models/sections.model";
@@ -40,6 +41,10 @@ import TBM_Lines_routes, {
   dbTBM_Lines_routesModel,
 } from "./models/TBM_lines_routes.model";
 import { logger } from "../../logger";
+import TBM_Scheduled_routes, {
+  dbTBM_ScheduledRoutes,
+  dbTBM_ScheduledRoutesModel,
+} from "./models/TBMScheduledRoutes.model";
 
 declare module "../../declarations" {
   interface ExternalAPIs {
@@ -65,6 +70,8 @@ export type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends
   ? dbTBM_Stops
   : E extends TBMEndpoints.Trips
   ? dbTBM_Trips
+  : E extends TBMEndpoints.ScheduledRoutes
+  ? dbTBM_ScheduledRoutes
   :
       | dbAddresses
       | dbIntersections
@@ -74,7 +81,8 @@ export type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends
       | dbTBM_Schedules
       | dbTBM_Schedules_rt
       | dbTBM_Stops
-      | dbTBM_Trips;
+      | dbTBM_Trips
+      | dbTBM_ScheduledRoutes;
 
 export type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
   ? dbAddressesModel
@@ -94,6 +102,8 @@ export type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends
   ? dbTBM_StopsModel
   : E extends TBMEndpoints.Trips
   ? dbTBM_TripsModel
+  : E extends TBMEndpoints.ScheduledRoutes
+  ? dbTBM_ScheduledRoutesModel
   :
       | dbAddressesModel
       | dbIntersectionsModel
@@ -103,7 +113,8 @@ export type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends
       | dbTBM_SchedulesModel
       | dbTBM_Schedules_rtModel
       | dbTBM_StopsModel
-      | dbTBM_TripsModel;
+      | dbTBM_TripsModel
+      | dbTBM_ScheduledRoutesModel;
 
 interface BaseTBM<T extends object = object> {
   properties: T;
@@ -205,6 +216,7 @@ export default (app: Application) => {
   const [Schedule, ScheduleRt] = TBM_Schedules(app);
   const Trip = TBM_Trips(app);
   const LinesRoute = TBM_Lines_routes(app);
+  const ScheduledRoute = TBM_Scheduled_routes(app);
 
   logger.info(`Models initialized.`);
 
@@ -442,7 +454,7 @@ export default (app: Application) => {
 
         return true;
       },
-      ScheduleRt,
+      Schedule,
     ),
 
     new Endpoint(
@@ -517,6 +529,59 @@ export default (app: Application) => {
         return true;
       },
       LinesRoute,
+    ),
+
+    new Endpoint(
+      TBMEndpoints.ScheduledRoutes,
+      Infinity,
+      async () => {
+        const stops = await Stop.find().sort({ _id: 1 });
+        const routes = await LinesRoute.find();
+        const scheduledRoutes: dbTBM_ScheduledRoutes[] = new Array(routes.length);
+
+        for (const [i, route] of routes.entries()) {
+          const relevantTrips = await Trip.find({ rs_sv_chem_l: route._id });
+          const formattedTrips = (
+            await mapAsync(relevantTrips, async (t: (typeof relevantTrips)[number]) => ({
+              tripId: t._id,
+              schedules: (
+                await ScheduleRt.find({ rs_sv_cours_a: t._id })
+              ).sort((a, b) => (a.hor_estime?.valueOf() ?? 0) - (b.hor_estime?.valueOf() ?? 0)),
+            }))
+          )
+            .filter((t) => t.schedules.length)
+            .sort(
+              (a, b) =>
+                (a.schedules[a.schedules.length - 1].hor_estime?.valueOf() ?? 0) -
+                (b.schedules[b.schedules.length - 1].hor_estime?.valueOf() ?? 0),
+            );
+
+          scheduledRoutes[i] = {
+            routeId: route._id,
+            trips: formattedTrips,
+            stops: formattedTrips[formattedTrips.length - 1].schedules.map(
+              (s) =>
+                stops[
+                  binarySearch(
+                    stops,
+                    s.rs_sv_arret_p,
+                    (stopId, stop) => (stopId.valueOf() as number) - stop._id,
+                  )
+                ],
+            ),
+          };
+        }
+
+        await ScheduledRoute.deleteMany({
+          routeId: { $nin: scheduledRoutes.map((sR) => sR.routeId) },
+        });
+        await ScheduledRoute.bulkWrite(
+          bulkOps("updateOne", scheduledRoutes as unknown as Record<keyof dbTBM_ScheduledRoutes, unknown>[]),
+        );
+
+        return true;
+      },
+      ScheduledRoute,
     ),
   ];
 
