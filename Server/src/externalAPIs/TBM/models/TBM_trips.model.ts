@@ -5,13 +5,14 @@
 import { Application } from "../../../declarations";
 import { TBMEndpoints } from "../index";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, prop, Ref } from "@typegoose/typegoose";
+import { addModelToTypegoose, buildSchema, index, prop, Ref } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Lines } from "./TBM_lines.model";
 import { dbTBM_Stops } from "./TBM_stops.model";
 import { dbTBM_Lines_routes } from "./TBM_lines_routes.model";
 
+@index({ rs_sv_chem_l: 1 })
 @modelOptions({ options: { customName: TBMEndpoints.Trips } })
 export class dbTBM_Trips extends TimeStamps {
   @prop({ required: true })

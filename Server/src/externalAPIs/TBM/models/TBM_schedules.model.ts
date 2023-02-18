@@ -30,6 +30,7 @@ import { dbTBM_Stops } from "./TBM_stops.model";
 import { dbTBM_Trips } from "./TBM_trips.model";
 
 @index({ gid: 1, realtime: 1 }, { unique: true })
+@index({ rs_sv_cours_a: 1 })
 @modelOptions({ options: { customName: TBMEndpoints.Schedules } })
 export class dbTBM_Schedules extends TimeStamps {
   @prop({ required: true, index: true })
