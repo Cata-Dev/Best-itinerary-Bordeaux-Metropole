@@ -57,7 +57,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     super.emit("fetch");
 
     this.deferredFetch = new Deferred<boolean>();
-    let result: boolean = false;
+    let result = false;
     try {
       const r = await this._fetch();
       if (debug) logger.info(`Refreshed ${this.name}.`);
