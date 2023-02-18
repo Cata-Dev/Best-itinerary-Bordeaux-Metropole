@@ -48,7 +48,7 @@ function formatSNCFdate(date: Date): string {
 
 declare module "../../declarations" {
   interface ExternalAPIs {
-    SNCF: { endpoints: Endpoint<SNCFEndpoints>[]; names: SNCFEndpoints };
+    SNCF: { endpoints: Endpoint<SNCFEndpoints>[] };
   }
 }
 
@@ -133,7 +133,9 @@ export default (app: Application) => {
 
   logger.info(`Models initialized.`);
 
-  app.externalAPIs.SNCF = {} as never;
+  app.externalAPIs.SNCF = {
+    endpoints: [],
+  };
 
   /**
    * Fetch data from SNCF API

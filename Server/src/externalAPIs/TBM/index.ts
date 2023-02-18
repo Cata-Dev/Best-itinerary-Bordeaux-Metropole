@@ -41,7 +41,7 @@ import { logger } from "../../logger";
 
 declare module "../../declarations" {
   interface ExternalAPIs {
-    TBM: { endpoints: Endpoint<TBMEndpoints>[]; names: TBMEndpoints };
+    TBM: { endpoints: Endpoint<TBMEndpoints>[] };
   }
 }
 
@@ -200,7 +200,9 @@ export default (app: Application) => {
 
   logger.info(`Models initialized.`);
 
-  app.externalAPIs.TBM = {} as never;
+  app.externalAPIs.TBM = {
+    endpoints: [],
+  };
 
   /**
    * Fetch data from TBM API
