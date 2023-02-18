@@ -12,9 +12,11 @@ export const setupExternalAPIs = async (app: Application) => {
   sncf(app);
 
   async function refresh() {
-    for (const endpoint of app.externalAPIs.endpoints.filter((endpoint) => endpoint.rate >= 24 * 3600)) {
+    for (const endpoint of app.externalAPIs.endpoints.filter(
+      (endpoint) => endpoint.rate >= 24 * 3600 && endpoint.rate < Infinity,
+    )) {
       try {
-        endpoint.fetch(undefined, app.get("debug"));
+        endpoint.fetch(undefined, app.get("debug")).catch();
       } catch (e) {
         logger.error(e);
       }
@@ -22,7 +24,12 @@ export const setupExternalAPIs = async (app: Application) => {
   }
 
   await refresh();
-  setInterval(refresh, Math.max(...app.externalAPIs.endpoints.map((endpoint) => endpoint.rate)) * 1000);
+  setInterval(
+    refresh,
+    Math.max(
+      ...app.externalAPIs.endpoints.map((endpoint) => (endpoint.rate < Infinity ? endpoint.rate : 0)),
+    ) * 1000,
+  );
 };
 
 export type EndpointName = TBMEndpoints | SNCFEndpoints;
