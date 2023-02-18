@@ -9,6 +9,7 @@ import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Schedules } from "./TBM_schedules.model";
 import { dbTBM_Stops } from "./TBM_stops.model";
+import { TBMEndpoints } from "../index";
 
 @modelOptions({ schemaOptions: { _id: false } })
 export class TripOfScheduledRoute {
@@ -19,7 +20,7 @@ export class TripOfScheduledRoute {
   public schedules!: Ref<dbTBM_Schedules>[];
 }
 
-@modelOptions({ options: { customName: "" /* TBD */ } })
+@modelOptions({ options: { customName: TBMEndpoints.ScheduledRoutes } })
 export class dbTBM_ScheduledRoutes extends TimeStamps {
   @prop({ required: true })
   public routeId!: number;
