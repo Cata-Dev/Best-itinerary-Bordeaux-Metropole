@@ -441,11 +441,11 @@ export default (app: Application) => {
           };
         });
 
-        await Schedule.deleteMany({
+        await ScheduleRt.deleteMany({
           realtime: true,
           gid: { $nin: SchedulesRt.map((s) => s.gid) },
         });
-        await Schedule.bulkWrite(
+        await ScheduleRt.bulkWrite(
           bulkOps("updateOne", SchedulesRt as unknown as Record<keyof dbTBM_Schedules_rt, unknown>[], [
             "gid",
             "realtime",
@@ -454,7 +454,7 @@ export default (app: Application) => {
 
         return true;
       },
-      Schedule,
+      ScheduleRt,
     ),
 
     new Endpoint(
@@ -557,23 +557,24 @@ export default (app: Application) => {
             );
 
           scheduledRoutes[i] = {
-            routeId: route._id,
+            _id: route._id,
             trips: formattedTrips,
-            stops: formattedTrips[formattedTrips.length - 1].schedules.map(
-              (s) =>
-                stops[
-                  binarySearch(
-                    stops,
-                    s.rs_sv_arret_p,
-                    (stopId, stop) => (stopId.valueOf() as number) - stop._id,
-                  )
-                ],
-            ),
+            stops:
+              formattedTrips[formattedTrips.length - 1]?.schedules?.map(
+                (s) =>
+                  stops[
+                    binarySearch(
+                      stops,
+                      s.rs_sv_arret_p ?? Infinity,
+                      (stopId, stop) => (stopId?.valueOf() as number) - stop._id,
+                    )
+                  ],
+              ) ?? [],
           };
         }
 
         await ScheduledRoute.deleteMany({
-          routeId: { $nin: scheduledRoutes.map((sR) => sR.routeId) },
+          _id: { $nin: scheduledRoutes.map((sR) => sR._id) },
         });
         await ScheduledRoute.bulkWrite(
           bulkOps("updateOne", scheduledRoutes as unknown as Record<keyof dbTBM_ScheduledRoutes, unknown>[]),
@@ -584,6 +585,26 @@ export default (app: Application) => {
       ScheduledRoute,
     ),
   ];
+
+  const endpointsForScheduledRoutes = app.externalAPIs.TBM.endpoints.filter(
+    (e) =>
+      e.name === TBMEndpoints.Schedules_rt ||
+      e.name === TBMEndpoints.Trips ||
+      e.name === TBMEndpoints.Lines_routes ||
+      e.name === TBMEndpoints.Stops,
+  );
+  const ScheduledRoutesEndpoint = app.externalAPIs.TBM.endpoints.find(
+    (e) => e.name === TBMEndpoints.ScheduledRoutes,
+  );
+  let refreshAvoided = 0;
+  const listener = (fetchedEndpoint: (typeof endpointsForScheduledRoutes)[number]) => (success: boolean) => {
+    // If we should pass but we avoided a refresh, continue
+    if (!success && refreshAvoided < (ScheduledRoutesEndpoint?.lastFetch ?? Infinity)) return;
+    if (endpointsForScheduledRoutes.find((e) => e.name != fetchedEndpoint.name && e.fetching))
+      return (refreshAvoided = Date.now());
+    ScheduledRoutesEndpoint?.fetch(true, app.get("debug"));
+  };
+  endpointsForScheduledRoutes.forEach((e) => e.on("fetched", listener(e)));
 
   app.externalAPIs.endpoints.push(...app.externalAPIs.TBM.endpoints);
 };
