@@ -23,7 +23,8 @@ export class TripOfScheduledRoute {
 @modelOptions({ options: { customName: TBMEndpoints.ScheduledRoutes } })
 export class dbTBM_ScheduledRoutes extends TimeStamps {
   @prop({ required: true })
-  public routeId!: number;
+  // routeId
+  public _id!: number;
 
   @prop({ required: true, type: () => TripOfScheduledRoute })
   public trips!: TripOfScheduledRoute[];
