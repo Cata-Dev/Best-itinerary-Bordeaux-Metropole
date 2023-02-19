@@ -6,12 +6,11 @@
     "target": "es2020",
     "module": "NodeNext",
     "outDir": "./lib",
+    "sourceMap": true,
     "rootDir": "./src",
     "declaration": true,
     "strict": true,
     "lib": [
-      "dom",
-      "dom.iterable",
       "esnext"
     ],
     "skipLibCheck": true,
@@ -19,6 +18,8 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "noErrorTruncation": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
   },
   "include": [
     "src"

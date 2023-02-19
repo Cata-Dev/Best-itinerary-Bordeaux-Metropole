@@ -1,5 +1,4 @@
-import { Model } from "mongoose";
-import { EndpointName, ProviderSchema } from ".";
+import { EndpointName, ProviderModel } from ".";
 import { logger } from "../logger";
 import { Deferred } from "../utils/index";
 import { TypedEventEmitter } from "../utils/TypedEmitter";
@@ -26,7 +25,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     public readonly name: N,
     public readonly rate: number,
     private _fetch: () => Promise<boolean>,
-    public readonly model: Model<ProviderSchema<N>>,
+    public readonly model: ProviderModel<N>,
   ) {
     super();
     this.deferredFetch = new Deferred<boolean>();
@@ -54,17 +53,23 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     if (!force && this.onCooldown) throw new Error(`Fetch is on cooldown`);
 
     if (debug) logger.warn(`Refreshing ${this.name}...`);
+    this._fetching = true;
+    super.emit("fetch");
 
     this.deferredFetch = new Deferred<boolean>();
+    let result = false;
     try {
-      this.deferredFetch.resolve(await this._fetch());
+      const r = await this._fetch();
       if (debug) logger.info(`Refreshed ${this.name}.`);
       this._lastFetch = Date.now();
+      result = r;
     } catch (e) {
       if (debug) logger.error(`Fetch failed for ${this.name}`, e);
-      this.deferredFetch.reject(e);
+      result = false;
     } finally {
       this._fetching = false;
+      result ? this.deferredFetch.resolve(true) : this.deferredFetch.reject(false);
+      super.emit("fetched", result);
     }
 
     return this.deferredFetch.promise;

@@ -1,5 +1,7 @@
 // For more information about this file see https://dove.feathersjs.com/guides/cli/service.class.html#custom-services
 import type { Params, ServiceInterface } from "@feathersjs/feathers";
+import type { Model } from "mongoose";
+import type { DocumentType } from "@typegoose/typegoose";
 
 import type { Application } from "../../declarations";
 import type { Geocode, GeocodeData, GeocodePatch, GeocodeQuery, GEOCODE_type } from "./geocode.schema";
@@ -8,16 +10,26 @@ export interface GeocodeServiceOptions {
   app: Application;
 }
 
+type DistributedEndpoints<N extends EndpointName> = N extends any ? Endpoint<N> : never;
+
+type DistributedProdiverClass<N extends EndpointName> = N extends any ? ProviderClass<N> : never;
+type DistributedDocumentType<N extends EndpointName> = N extends any
+  ? DocumentType<DistributedProdiverClass<N>>
+  : never;
+
+type DistributedFilterQuery<N extends EndpointName> = N extends any
+  ? FilterQuery<DistributedDocumentType<N>>
+  : never;
+
+type parsedId<N extends EndpointName> = [DistributedEndpoints<N>, DistributedFilterQuery<N>];
+
 export interface GeocodeParams extends Params<GeocodeQuery> {}
 
 import { NotFound, BadRequest } from "@feathersjs/errors";
 import { FilterQuery } from "mongoose";
-import { ProviderSchema } from "../../externalAPIs";
+import { EndpointName, ProviderClass } from "../../externalAPIs";
 import { Endpoint } from "../../externalAPIs/endpoint";
-import { dbAddresses } from "../../externalAPIs/TBM/models/addresses.model";
 import { unique } from "../../utils";
-import { dbTBM_Stops } from "../../externalAPIs/TBM/models/TBM_stops.model";
-import { dbSNCF_Stops } from "../../externalAPIs/SNCF/models/SNCF_stops.model";
 import { TBMEndpoints } from "../../externalAPIs/TBM";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF";
 
@@ -27,7 +39,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
   private communesNormalized: string[] = [];
   private types_voies: string[] = [];
   private reps: string[] = [];
-  private dataRefreshed: number = 0;
+  private dataRefreshed = 0;
 
   constructor(public options: GeocodeServiceOptions) {
     this.app = options.app;
@@ -48,10 +60,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
     this.reps = await Addresses.model.distinct("rep", { rep: { $ne: null } });
   }
 
-  async parseId(id: string): Promise<{
-    endpoints: Endpoint<GEOCODE_type>[];
-    queries: FilterQuery<ProviderSchema>[];
-  }> {
+  async parseId(id: string): Promise<parsedId<GEOCODE_type>[]> {
     const TBM_Stops = this.app.externalAPIs.endpoints.find(
       (e) => e.name === TBMEndpoints.Stops,
     ) as Endpoint<TBMEndpoints.Stops>;
@@ -96,7 +105,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
     type AddressQuery = Partial<FullAddressQuery>;
 
     if (groups) {
-      const filteredGroups = (Object.keys(groups) as groups[]).reduce(
+      const filteredGroups = (Object.keys(groups) as groups[]).reduce<object>(
         (acc, v) => (groups![v] !== undefined ? { ...acc, [v]: groups![v] } : acc),
         {},
       ) as Partial<{ [k in groups]: string }>;
@@ -127,59 +136,62 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
           $regex: this.types_voies.find((v) => v.toLowerCase() == filteredGroups.type_voie) as string,
         }; //get back the uppercase type_voie
 
-      return {
-        endpoints: [
+      return [
+        [
           this.app.externalAPIs.endpoints.find(
             (e) => e.name === TBMEndpoints.Addresses,
           ) as Endpoint<TBMEndpoints.Addresses>,
-          TBM_Stops,
-          SNCF_Stops,
+          addressQuery,
         ],
-        queries: [addressQuery, { libelle_lowercase: { $regex: id } }, { name_lowercase: { $regex: id } }],
-      };
+        [TBM_Stops, { libelle_lowercase: { $regex: id } }],
+        [SNCF_Stops, { name_lowercase: { $regex: id } }],
+      ];
     } else {
-      return {
-        endpoints: [TBM_Stops, SNCF_Stops],
-        queries: [{ libelle_lowercase: { $regex: id } }, { name_lowercase: { $regex: id } }],
-      };
+      return [
+        [TBM_Stops, { libelle_lowercase: { $regex: id } }],
+        [SNCF_Stops, { name_lowercase: { $regex: id } }],
+      ];
     }
   }
 
   async get(id: string /* _params: GeocodeParams */): Promise<Geocode> {
-    const { queries, endpoints } = await this.parseId(id);
-
-    let doc: (dbAddresses | dbTBM_Stops | dbSNCF_Stops) | null = null;
+    let doc: DistributedProdiverClass<GEOCODE_type> | null = null;
     let GEOCODE_type: GEOCODE_type = "" as never;
-    for (const i in endpoints) {
+
+    for (const [endpoint, query] of await this.parseId(id)) {
       try {
-        doc = await endpoints[i].model.findOne(queries[i]).collation({ locale: "fr", strength: 1 }).lean();
+        doc = await (endpoint.model as Model<object>)
+          .findOne(query)
+          .collation({ locale: "fr", strength: 1 })
+          .lean<DistributedProdiverClass<GEOCODE_type>>();
         if (doc) {
-          GEOCODE_type = endpoints[0].name;
+          GEOCODE_type = endpoint.name;
           break;
         }
       } catch (_) {}
     }
 
     if (!doc) throw new NotFound(`no result found for ${id}`);
+
     const result = {
       _id: doc._id,
       coords: doc.coords,
       GEOCODE_type,
-      createdAt: doc.createdAt.valueOf(),
-      updatedAt: doc.updatedAt.valueOf(),
+      createdAt: doc.createdAt!.valueOf(),
+      updatedAt: doc.updatedAt!.valueOf(),
       dedicated: {
-        ...((Object.keys(doc) as (keyof typeof doc)[]).reduce(
+        ...((Object.keys(doc) as (keyof typeof doc)[]).reduce<object>(
           (acc, v) =>
             !(v in ["_id", "coords", "GEOCODE_type", "createdAt", "updatedAt"])
               ? { ...acc, [v]: doc![v] }
               : acc,
           {},
         ) as typeof GEOCODE_type extends TBMEndpoints.Addresses
-          ? Omit<dbAddresses, "_id" | "coords" | "GEOCODE_type">
+          ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">
           : typeof GEOCODE_type extends TBMEndpoints.Stops
-          ? Omit<dbTBM_Stops, "_id" | "coords" | "GEOCODE_type">
+          ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
           : typeof GEOCODE_type extends SNCFEndpoints.Stops
-          ? Omit<dbSNCF_Stops, "_id" | "coords" | "GEOCODE_type">
+          ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
           : any),
       },
     };
@@ -189,36 +201,33 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
 
   async find(_params: Params<GeocodeQuery>): Promise<Geocode[]> {
     if (_params.query?.id === undefined) throw new BadRequest("missing id parameter in query");
-    const { queries, endpoints } = await this.parseId(_params.query.id);
 
-    const results: Geocode[] = [];
-
-    type doc = (dbAddresses | dbTBM_Stops | dbSNCF_Stops) & { GEOCODE_type: GEOCODE_type };
+    type doc = DistributedProdiverClass<GEOCODE_type> & { GEOCODE_type: GEOCODE_type };
 
     let docs: doc[] = [];
-    for (const i in endpoints) {
+    for (const [endpoint, query] of await this.parseId(_params.query.id)) {
       try {
-        const r = (await endpoints[i].model
-          .find(queries[i])
+        const r: DistributedProdiverClass<GEOCODE_type>[] = await (endpoint.model as Model<object>)
+          .find(query)
           .collation({ locale: "fr", strength: 1 })
           .limit(500)
-          .lean()) as doc[];
+          .lean<DistributedProdiverClass<GEOCODE_type>[]>();
         if (r) {
-          if (endpoints[i].name == TBMEndpoints.Addresses && _params.query?.uniqueVoies)
+          if (endpoint.name == TBMEndpoints.Addresses && _params.query?.uniqueVoies)
             docs.push(
               ...filterUniqueVoies(
-                r.map((r) => {
-                  r.GEOCODE_type = endpoints[i].name;
-                  return r;
-                }) as (dbAddresses & { GEOCODE_type: GEOCODE_type })[],
+                (r as ProviderClass<TBMEndpoints.Addresses>[]).map((r) => ({
+                  ...r,
+                  GEOCODE_type: endpoint.name,
+                })),
               ),
             );
           else
             docs.push(
-              ...r.map((r) => {
-                r.GEOCODE_type = endpoints[i].name;
-                return r;
-              }),
+              ...r.map((r) => ({
+                ...r,
+                GEOCODE_type: endpoint.name,
+              })),
             );
         }
       } catch (_) {}
@@ -228,26 +237,27 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
 
     if (_params.query.max) docs = docs.slice(0, Number(_params.query.max));
 
+    const results: Geocode[] = [];
     for (const doc of docs) {
       results.push({
         _id: doc._id,
         coords: doc.coords,
         GEOCODE_type: doc.GEOCODE_type,
-        createdAt: doc.createdAt.valueOf(),
-        updatedAt: doc.updatedAt.valueOf(),
+        createdAt: doc.createdAt!.valueOf(),
+        updatedAt: doc.updatedAt!.valueOf(),
         dedicated: {
-          ...((Object.keys(doc) as (keyof typeof doc)[]).reduce(
+          ...((Object.keys(doc) as (keyof typeof doc)[]).reduce<object>(
             (acc, v) =>
               !(v in ["_id", "coords", "GEOCODE_type", "createdAt", "updatedAt"])
                 ? { ...acc, [v]: doc![v] }
                 : acc,
             {},
           ) as typeof doc.GEOCODE_type extends TBMEndpoints.Addresses
-            ? Omit<dbAddresses, "_id" | "coords" | "GEOCODE_type">
+            ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">
             : typeof doc.GEOCODE_type extends TBMEndpoints.Stops
-            ? Omit<dbTBM_Stops, "_id" | "coords" | "GEOCODE_type">
+            ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
             : typeof doc.GEOCODE_type extends SNCFEndpoints.Stops
-            ? Omit<dbSNCF_Stops, "_id" | "coords" | "GEOCODE_type">
+            ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
             : any),
         },
       });
@@ -257,7 +267,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
   }
 }
 
-function filterUniqueVoies<T extends dbAddresses>(results: T[]) {
+function filterUniqueVoies<T extends ProviderClass<TBMEndpoints.Addresses>>(results: T[]) {
   const voies = results.map((r) => r.nom_voie_lowercase);
   const uniquesVoies = voies.filter(unique);
   return uniquesVoies.map((uv) => {

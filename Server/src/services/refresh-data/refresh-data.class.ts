@@ -12,10 +12,6 @@ export interface RefreshDataParams extends Params<RefreshDataQuery> {}
 
 import { Forbidden, GeneralError, NotFound } from "@feathersjs/errors";
 
-export interface RefreshDataServiceOptions {
-  app: Application;
-}
-
 // This is a skeleton for a custom service class. Remove or add the methods you need here
 export class RefreshDataService
   implements ServiceInterface<RefreshData, RefreshDataData, RefreshDataParams, RefreshDataPatch>
@@ -71,14 +67,14 @@ export class RefreshDataService
         throw new Forbidden({
           actualized: false,
           lastActualization: matchingEndpoint.lastFetch,
-          Reason: "Actualization is ongoing.",
+          Reason: `Actualization of ${matchingEndpoint.name} ${waitForUpdate ? "was" : "is"} ongoing.`,
         });
       }
       if (_params && _params.query?.force !== true && matchingEndpoint.onCooldown)
         throw new Forbidden({
           actualized: false,
           lastActualization: matchingEndpoint.lastFetch,
-          Reason: "Actualization is on cooldown.",
+          Reason: `Actualization of ${matchingEndpoint.name} is on cooldown.`,
         });
 
       if (waitForUpdate) {
@@ -102,7 +98,7 @@ export class RefreshDataService
           lastActualization: matchingEndpoint.lastFetch,
         };
       }
-    } else throw new NotFound(`Unknown path.`);
+    } else throw new NotFound(`Unknown endpoint.`);
   }
 }
 
