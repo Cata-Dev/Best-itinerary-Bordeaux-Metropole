@@ -49,18 +49,19 @@ export class dbTBM_Schedules extends TimeStamps {
   public rs_sv_cours_a!: Ref<dbTBM_Trips, number>;
 }
 
+@modelOptions({ options: { customName: TBMEndpoints.Schedules_rt } })
 export class dbTBM_Schedules_rt extends dbTBM_Schedules {
-  @prop()
-  public hor_app?: Date;
+  @prop({ required: true })
+  public hor_app!: Date;
 
-  @prop()
-  public hor_estime?: Date;
+  @prop({ required: true })
+  public hor_estime!: Date;
 
-  @prop({ enum: RtScheduleState })
-  public etat?: RtScheduleState;
+  @prop({ required: true, enum: RtScheduleState })
+  public etat!: RtScheduleState;
 
-  @prop({ enum: RtScheduleType })
-  public type?: RtScheduleType;
+  @prop({ required: true, enum: RtScheduleType })
+  public type!: RtScheduleType;
 }
 
 export default function init(app: Application) {
