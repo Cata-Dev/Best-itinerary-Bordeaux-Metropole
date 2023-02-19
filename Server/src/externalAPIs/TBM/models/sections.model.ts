@@ -19,6 +19,9 @@ export class dbSections extends TimeStamps {
   public coords!: [number, number][];
 
   @prop({ required: true })
+  public distance!: number;
+
+  @prop({ required: true })
   public domanial!: number;
 
   @prop({ required: true })
