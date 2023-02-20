@@ -3,33 +3,34 @@
 // See http://mongoosejs.com/docs/models.html
 
 import { Application } from "../../../declarations";
-import { InferSchemaType, Schema } from "mongoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { addModelToTypegoose, buildSchema, prop } from "@typegoose/typegoose";
+import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { getName } from "@typegoose/typegoose/lib/internal/utils";
+import { SNCFEndpoints } from "../index";
 
-const dbSNCF_Stops = new Schema(
-  {
-    _id: { type: Number, required: true },
-    coords: { type: [Number], required: true },
-    name: { type: String, required: true },
-    name_lowercase: { type: String, required: true },
-  },
-  {
-    timestamps: true,
-  },
-);
+@modelOptions({ options: { customName: SNCFEndpoints.Stops } })
+export class dbSNCF_Stops extends TimeStamps {
+  @prop({ required: true })
+  public _id!: number;
 
-export type dbSNCF_Stops = Omit<InferSchemaType<typeof dbSNCF_Stops>, "coords"> & {
-  coords: [number, number];
-};
+  @prop({ type: () => [Number, Number], required: true })
+  public coords!: [number, number];
 
-// for more of what you can do here.
-export default function (app: Application) {
-  const modelName = "sncf_stops";
+  @prop({ required: true })
+  public name!: string;
+
+  @prop({ required: true })
+  public name_lowercase!: string;
+}
+
+export default function init(app: Application) {
   const mongooseClient = app.get("mongooseClient");
 
-  // This is necessary to avoid model compilation errors in watch mode
-  // see https://mongoosejs.com/docs/api/connection.html#connection_Connection-deleteModel
-  if (mongooseClient.modelNames().includes(modelName)) {
-    mongooseClient.deleteModel(modelName);
-  }
-  return mongooseClient.model<dbSNCF_Stops>(modelName, dbSNCF_Stops);
+  const dbSNCF_StopsSchema = buildSchema(dbSNCF_Stops, { existingConnection: mongooseClient });
+  const dbSNCF_StopsModelRaw = mongooseClient.model(getName(dbSNCF_Stops), dbSNCF_StopsSchema);
+
+  return addModelToTypegoose(dbSNCF_StopsModelRaw, dbSNCF_Stops, { existingConnection: mongooseClient });
 }
+
+export type dbSNCF_StopsModel = ReturnType<typeof init>;

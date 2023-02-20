@@ -3,30 +3,33 @@
 // See http://mongoosejs.com/docs/models.html
 
 import { Application } from "../../../declarations";
-import { InferSchemaType, Schema } from "mongoose";
+import { TBMEndpoints } from "../index";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { addModelToTypegoose, buildSchema, prop } from "@typegoose/typegoose";
+import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { getName } from "@typegoose/typegoose/lib/internal/utils";
 
-const dbIntersections = new Schema(
-  {
-    coords: { type: [Number], required: true },
-    _id: { type: Number, required: true },
-    nature: { type: String, required: true },
-  },
-  {
-    timestamps: true,
-  },
-);
+@modelOptions({ options: { customName: TBMEndpoints.Intersections } })
+export class dbIntersections extends TimeStamps {
+  @prop({ required: true })
+  public _id!: number;
 
-export type dbIntersections = InferSchemaType<typeof dbIntersections>;
+  @prop({ type: () => [Number, Number], required: true })
+  public coords!: [number, number];
 
-// for more of what you can do here.
-export default function (app: Application) {
-  const modelName = "intersections";
+  @prop({ required: true })
+  public nature!: string;
+}
+
+export default function init(app: Application) {
   const mongooseClient = app.get("mongooseClient");
 
-  // This is necessary to avoid model compilation errors in watch mode
-  // see https://mongoosejs.com/docs/api/connection.html#connection_Connection-deleteModel
-  if (mongooseClient.modelNames().includes(modelName)) {
-    mongooseClient.deleteModel(modelName);
-  }
-  return mongooseClient.model(modelName, dbIntersections);
+  const dbIntersectionsSchema = buildSchema(dbIntersections, { existingConnection: mongooseClient });
+  const dbIntersectionsModelRaw = mongooseClient.model(getName(dbIntersections), dbIntersectionsSchema);
+
+  return addModelToTypegoose(dbIntersectionsModelRaw, dbIntersections, {
+    existingConnection: mongooseClient,
+  });
 }
+
+export type dbIntersectionsModel = ReturnType<typeof init>;

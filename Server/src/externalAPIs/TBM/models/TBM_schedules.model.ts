@@ -2,40 +2,83 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
+export enum RtScheduleState {
+  Non_realise = "NON_REALISE",
+  Realise = "REALISE",
+  Devie = "DEVIE",
+}
+
+export enum RtScheduleType {
+  Regulier = "REGULIER",
+  Deviation = "DEVIATION",
+}
+
 import { Application } from "../../../declarations";
-import { InferSchemaType, Schema } from "mongoose";
+import { TBMEndpoints } from "../index";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import {
+  addModelToTypegoose,
+  buildSchema,
+  getDiscriminatorModelForClass,
+  index,
+  prop,
+  Ref,
+} from "@typegoose/typegoose";
+import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { getName } from "@typegoose/typegoose/lib/internal/utils";
+import { dbTBM_Stops } from "./TBM_stops.model";
+import { dbTBM_Trips } from "./TBM_trips.model";
 
-const dbTBM_Schedules = new Schema(
-  {
-    _id: { type: Number, required: true },
-    hor_theo: { type: Date, required: true },
-    hor_app: { type: Date, required: true },
-    hor_estime: { type: Date, required: true },
-    etat: {
-      type: String,
-      enum: ["NON_REALISE", "REALISE", "DEVIE"],
-      required: true,
-    },
-    type: { type: String, enum: ["REGULIER"], required: true }, //donnée incertaine
-    rs_sv_arret_p: { type: Number, required: true, ref: "stops" },
-    rs_sv_cours_a: { type: Number, required: true, ref: "vehicles" },
-  },
-  {
-    timestamps: true,
-  },
-);
+@index({ gid: 1, realtime: 1 }, { unique: true })
+@index({ rs_sv_cours_a: 1 })
+@modelOptions({ options: { customName: TBMEndpoints.Schedules } })
+export class dbTBM_Schedules extends TimeStamps {
+  @prop({ required: true, index: true })
+  public gid!: number;
 
-export type dbTBM_Schedules = InferSchemaType<typeof dbTBM_Schedules>;
+  @prop({ required: true })
+  public hor_theo!: Date;
 
-// for more of what you can do here.
-export default function (app: Application) {
-  const modelName = "tbm_schedules";
+  @prop({ required: true })
+  public realtime!: boolean;
+
+  @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
+  public rs_sv_arret_p!: Ref<dbTBM_Stops, number>;
+
+  @prop({ required: true, ref: () => dbTBM_Trips, type: () => Number })
+  public rs_sv_cours_a!: Ref<dbTBM_Trips, number>;
+}
+
+@modelOptions({ options: { customName: TBMEndpoints.Schedules_rt } })
+export class dbTBM_Schedules_rt extends dbTBM_Schedules {
+  @prop({ required: true })
+  public hor_app!: Date;
+
+  @prop({ required: true })
+  public hor_estime!: Date;
+
+  @prop({ required: true, enum: RtScheduleState })
+  public etat!: RtScheduleState;
+
+  @prop({ required: true, enum: RtScheduleType })
+  public type!: RtScheduleType;
+}
+
+export default function init(app: Application) {
   const mongooseClient = app.get("mongooseClient");
 
-  // This is necessary to avoid model compilation errors in watch mode
-  // see https://mongoosejs.com/docs/api/connection.html#connection_Connection-deleteModel
-  if (mongooseClient.modelNames().includes(modelName)) {
-    mongooseClient.deleteModel(modelName);
-  }
-  return mongooseClient.model(modelName, dbTBM_Schedules);
+  const dbTBM_SchedulesSchema = buildSchema(dbTBM_Schedules, { existingConnection: mongooseClient });
+  const dbTBM_SchedulesModelRaw = mongooseClient.model(getName(dbTBM_Schedules), dbTBM_SchedulesSchema);
+
+  const dbTBM_SchedulesModel = addModelToTypegoose(dbTBM_SchedulesModelRaw, dbTBM_Schedules, {
+    existingConnection: mongooseClient,
+  });
+
+  return [
+    dbTBM_SchedulesModel,
+    getDiscriminatorModelForClass(dbTBM_SchedulesModel, dbTBM_Schedules_rt),
+  ] as const;
 }
+
+export type dbTBM_SchedulesModel = ReturnType<typeof init>[0];
+export type dbTBM_Schedules_rtModel = ReturnType<typeof init>[1];

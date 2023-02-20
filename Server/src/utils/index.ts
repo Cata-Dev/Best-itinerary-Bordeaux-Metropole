@@ -1,33 +1,103 @@
-class Deferred {
-  promise: Promise<void>;
-  resolve!: (value?: never) => void;
-  reject!: (reason?: never) => void;
+export type resolveCb<T = void> = (value: T) => void;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type rejectCb = (reason?: any) => void;
+export class Deferred<T = unknown> {
+  public promise: Promise<T>;
+  public resolve!: resolveCb<T>;
+  public reject!: rejectCb;
 
   constructor() {
-    this.promise = new Promise((resolve, reject) => {
+    this.promise = new Promise<T>((resolve, reject) => {
       this.reject = reject;
       this.resolve = resolve;
     });
   }
 }
 
-export function formatDocToBulkOps<D extends Record<string, unknown>>(doc: D, filterKey: keyof D = "_id") {
-  return {
-    updateOne: {
-      filter: { [filterKey]: doc[filterKey] },
-      update: doc,
-      upsert: true,
-    },
-  };
+type supportedBulkOp = "updateOne" | "deleteOne";
+export function formatDocToBulkOps<D extends Record<string, unknown>>(
+  op: supportedBulkOp,
+  doc: D,
+  filterKeys: Array<keyof D>,
+) {
+  switch (op) {
+    case "updateOne":
+      return {
+        updateOne: {
+          filter: filterKeys.reduce(
+            (acc, v) => ({
+              ...acc,
+              [v]: doc[v],
+            }),
+            {},
+          ),
+          update: doc,
+          upsert: true,
+        },
+      };
+
+    case "deleteOne":
+      return {
+        deleteOne: {
+          filter: filterKeys.reduce(
+            (acc, v) => ({
+              ...acc,
+              [v]: doc[v],
+            }),
+            {},
+          ),
+        },
+      };
+  }
 }
 
 /**
- * Format documents to be bulkUpdated via bulkWrite
- * @param {Array} documents
- * @param {String} filterKey
+ * @description Format documents to be operated via bulkWrite
  */
-export function bulkOps<D extends Record<string, unknown>>(documents: D[], filterKey: keyof D = "_id") {
-  return documents.map((doc) => formatDocToBulkOps(doc, filterKey));
+export function bulkOps<D extends Record<string, unknown>>(
+  op: supportedBulkOp,
+  documents: D[],
+  filterKeys: Array<keyof D> = ["_id"],
+) {
+  return documents.map((doc) => formatDocToBulkOps(op, doc, filterKeys));
+}
+
+/**
+ * @description Wrap a map of promises into one promise
+ */
+export async function mapAsync<I, O>(
+  array: I[],
+  callback: (value: I, index: number, array: I[]) => Promise<O>,
+): Promise<O[]> {
+  return await Promise.all(array.map(callback));
+}
+
+/**
+ * @description Search for a value in a **sorted** array, in O(log2(n)).
+ * @param arr The **sorted** array where performing the search
+ * @param el The element to look for, which will be compared
+ * @param compare A compare function that takes 2 arguments : `a` el and `b` an element of the array.
+ * It returns :
+ *    - a negative number if `a` is before `b`;
+ *    - 0 if `a` is equal to `b`;
+ *    - a positive number of `a` is after `b`.
+ * @returns The index of el if positive ; index of insertion if negative
+ */
+export function binarySearch<T, C>(arr: T[], el: C, compare: (a: C, b: T) => number) {
+  let low = 0;
+  let high = arr.length - 1;
+  while (low <= high) {
+    const mid = (high + low) >> 1; // x >> 1 == Math.floor(x/2)
+    const cmp = compare(el, arr[mid]);
+    if (cmp > 0) {
+      low = mid + 1;
+    } else if (cmp < 0) {
+      high = mid - 1;
+    } else {
+      return mid;
+    }
+  }
+  return ~low; // ~x == -x-1
 }
 
 const X0 = 700000;
@@ -315,7 +385,7 @@ export const time = {
  * @example await wait(1000) //permet de pause l'exécution pendant 1s
  */
 export function wait(ms = 1000): Promise<void> {
-  const defP = new Deferred();
+  const defP = new Deferred<void>();
 
   setTimeout(() => {
     defP.resolve();
