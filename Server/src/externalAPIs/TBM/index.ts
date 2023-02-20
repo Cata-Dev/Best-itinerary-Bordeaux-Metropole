@@ -616,11 +616,12 @@ export default (app: Application) => {
                 schedulesOfMaxLength = schedules.map((s) => s.rs_sv_arret_p as number);
               return {
                 tripId,
-                schedules: (maxLength[1] !== null && schedules.length < maxLength[1]
-                  ? new Array<DocumentType<dbTBM_Schedules_rt>["_id"]>(maxLength[1] - schedules.length)
-                      .fill(fillSchedule._id)
-                      .concat(schedules.map((s) => s._id))
-                  : schedules.map((s) => s._id)) as Types.ObjectId[], // Forcing _id type
+                schedules:
+                  maxLength[1] !== null && schedules.length < maxLength[1]
+                    ? new Array<DocumentType<dbTBM_Schedules_rt>["_id"]>(maxLength[1] - schedules.length)
+                        .fill(fillSchedule._id)
+                        .concat(schedules.map((s) => s._id))
+                    : schedules.map((s) => s._id),
               };
             });
 
