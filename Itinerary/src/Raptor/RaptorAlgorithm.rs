@@ -51,23 +51,63 @@ impl std::error::Error for RaptorError {
     }
 }
 
-pub fn singleThreadRaptor<'r>(
+struct SCRaptorOptions {
+    enableSNCF: bool, 
+    enableTBM: bool,
+    walkSpeed: u16, 
+    maxTransfer: usize,
+    enableMultithread: bool,
+}
+impl Default for SCRaptorOptions {
+    fn default() -> Self {
+        Self { enableSNCF: true, enableTBM: true, walkSpeed: 5, maxTransfer: 5, enableMultithread: false }
+    }
+}
+impl SCRaptorOptions {
+    fn new(enableSNCF: bool, enableTBM: bool, walkSpeed: u16, maxTransfer: usize, enableMultithread: bool) -> Self{
+        Self {
+            enableSNCF, enableTBM, walkSpeed, maxTransfer, enableMultithread
+        }
+    }
+    fn withWalkingSpeed(self, speed: u16) -> Self {
+        self.walkSpeed = speed;
+        self
+    }
+    fn withSNCF(self, toogle: bool) -> Self{
+        self.enableSNCF = toogle;
+        self
+    }
+    fn withTBM(self, toogle: bool) -> Self {
+        self.enableTBM = toogle;
+        self
+    }
+    fn withMaxTransfer(self, maxTransfer: usize) -> Self {
+        self.maxTransfer = maxTransfer;
+        self
+    }
+    fn withMultiThreading(self, toogle: bool) -> Self { 
+        self.enableMultithread = toogle;
+        self
+    }
+}
+
+pub fn SCRaptor<'r>(
     stops: &'r HashMap<usize, Stop<'r>>,
     departureTime: DateTime<Utc>,
     departureStop: &'r Stop<'r>,
     targetStop: &'r Stop<'r>,
-    maxTransfer: usize,
+    options: SCRaptorOptions,
 ) -> Result<Journeys, RaptorError> {
     let mut scanner: RaptorScannerSC = RaptorScannerSC::new(
-        maxTransfer,
+        options.maxTransfer,
         &departureTime,
         &departureStop.id,
-        &stops,
+        stops,
         targetStop,
     );
     let mut markedStops = vec![departureStop];
     let mut markedRoutes = HashMap::new();
-    for k in 1..maxTransfer {
+    for k in 1..options.maxTransfer {
         // Accumulate routes serving marked stops from previous round
         scanner.markRoutes(k, &mut markedRoutes, &mut markedStops);
         // Traverse each Marked Scheduled Route
@@ -82,4 +122,4 @@ pub fn singleThreadRaptor<'r>(
     scanner.computeBestJourney()
 }
 
-fn multiThreadRaptor<'r>() {}
+// fn MTSCRaptor<'r>() {}
