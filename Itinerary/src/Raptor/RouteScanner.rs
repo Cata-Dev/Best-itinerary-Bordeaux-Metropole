@@ -31,15 +31,15 @@ impl<'rd> Label<'rd> {
         }
     }
 }
-pub struct MultiLabel<'rd> {
+pub struct MultiLabels<'rd> {
     pub labels: Vec<Label<'rd>>,
     pub earliestLabel: Label<'rd>, //local pruning
 }
 
-pub struct MultiLabels<'rd> {
-    pub inner: HashMap<usize, MultiLabel<'rd>>,
+pub struct MultiLabelsManager<'rd> {
+    pub inner: HashMap<usize, MultiLabels<'rd>>,
 }
-impl<'rd> MultiLabels<'rd> {
+impl<'rd> MultiLabelsManager<'rd> {
     pub fn new(roundsCount: usize, stopsCount: usize) -> Self {
         Self {
             inner: (0..stopsCount)
@@ -47,7 +47,7 @@ impl<'rd> MultiLabels<'rd> {
                     (id, {
                         let mut labels = vec![Label::Infinite];
                         labels.reserve(roundsCount - 1);
-                        MultiLabel {
+                        MultiLabels {
                             labels,
                             earliestLabel: Label::Infinite,
                         }
@@ -56,12 +56,12 @@ impl<'rd> MultiLabels<'rd> {
                 .collect(),
         }
     }
-    pub fn get(&self, stopId: &usize) -> &MultiLabel<'rd> {
+    pub fn get(&self, stopId: &usize) -> &MultiLabels<'rd> {
         // safe since each multilabel per stop is initialized with the MultiLabel::Infinite
         unsafe { self.inner.get(stopId).unwrap_unchecked() }
     }
 
-    pub fn get_mut(&mut self, stopId: &usize) -> &mut MultiLabel<'rd> {
+    pub fn get_mut(&mut self, stopId: &usize) -> &mut MultiLabels<'rd> {
         // safe since each multilabel per stop is initialized with the MultiLabel::Infinite
         unsafe { self.inner.get_mut(stopId).unwrap_unchecked() }
     }
@@ -69,7 +69,7 @@ impl<'rd> MultiLabels<'rd> {
 
 pub struct RaptorScannerSC<'rd> {
     // 'rd: raptor datas
-    multiLabels: MultiLabels<'rd>,
+    multiLabelsManager: MultiLabelsManager<'rd>,
     stops: &'rd HashMap<usize, Stop<'rd>>,
     targetStop: &'rd Stop<'rd>,
 }
@@ -82,11 +82,11 @@ impl<'rd> RaptorScannerSC<'rd> {
         stops: &'rd HashMap<usize, Stop<'rd>>,
         targetStop: &'rd Stop<'rd>,
     ) -> Self {
-        let mut multiLabels = MultiLabels::new(roundsCount, stops.len());
+        let mut multiLabels = MultiLabelsManager::new(roundsCount, stops.len());
         multiLabels.get_mut(departureStopId).labels[0] = Label::DepartureLabel(departureTime);
         Self {
             stops,
-            multiLabels,
+            multiLabelsManager: multiLabels,
             targetStop,
         }
     }
@@ -102,9 +102,9 @@ impl<'rd> RaptorScannerSC<'rd> {
             for scheduledRoute in markedStop.scheduledRoutes.iter() {
                 // If there is already this route in the marked route
                 if let Some(markedRoute) = markedRoutes.get_mut(&scheduledRoute.id) {
-                    if self.multiLabels.get(&markedStop.id).labels[currentRound - 1]
+                    if self.multiLabelsManager.get(&markedStop.id).labels[currentRound - 1]
                         .getArrivalTime()
-                        < self.multiLabels.get(&markedRoute.earliestStop.id).labels
+                        < self.multiLabelsManager.get(&markedRoute.earliestStop.id).labels
                             [currentRound - 1]
                             .getArrivalTime()
                     {
@@ -136,7 +136,7 @@ impl<'rd> RaptorScannerSC<'rd> {
         let route = markedRoute.route;
         let mut possibleTrip = route.getEarliestTripFor(
             markedRoute.earliestStopEquivalentIndex,
-            self.multiLabels
+            self.multiLabelsManager
                 .get(&markedRoute.earliestStop.id)
                 .earliestLabel
                 .getArrivalTime(),
@@ -148,27 +148,31 @@ impl<'rd> RaptorScannerSC<'rd> {
             if let Some(currentTrip) = possibleTrip {
                 if &currentTrip[stopIndex]
                     < std::cmp::min(
-                        self.multiLabels //Target pruning
+                        self.multiLabelsManager //Target pruning
                             .get(&self.targetStop.id)
                             .earliestLabel
                             .getArrivalTime(),
-                        self.multiLabels.get(&stopId).earliestLabel.getArrivalTime(),
+                        self.multiLabelsManager.get(&stopId).earliestLabel.getArrivalTime(),
                     )
                 {
-                    let multiLabel = self.multiLabels.get_mut(&stopId);
-                    multiLabel.earliestLabel = Label::ScheduledRoute {
+                    let multiLabels = self.multiLabelsManager.get_mut(&stopId);
+                    multiLabels.labels[currentRound] = Label::ScheduledRoute {
                         arrivalTime: &currentTrip[stopIndex],
                         departureTime: &currentTrip[stopIndex],
                         route,
                         boardingStop: markedRoute.earliestStop,
                     };
+                    // Local pruning
+                    if multiLabels.earliestLabel.getArrivalTime() < multiLabels.labels[currentRound].getArrivalTime() {
+                        multiLabels.earliestLabel = multiLabels.labels[currentRound].clone();
+                    }
                     markedStops.push(&self.stops[&stopId]);
                 }
             }
             //HANDLE THE CATCHING OF AN EARLIER TRIP:
             if let Some(trip) = route.getEarliestTripFor(
                 stopIndex,
-                self.multiLabels.get(&stopIndex).labels[currentRound - 1].getArrivalTime(),
+                self.multiLabelsManager.get(&stopIndex).labels[currentRound - 1].getArrivalTime(),
             ) {
                 possibleTrip = Some(trip);
             }
@@ -177,11 +181,11 @@ impl<'rd> RaptorScannerSC<'rd> {
 
     fn scanNonScheduleRoute(&mut self, currentRound: usize, markedStop: &'rd Stop<'rd>) {
         for nonScheduledRoute in markedStop.nonScheduledRoutes.iter() {
-            let pathArrivalTime = *self.multiLabels.get(&markedStop.id).labels[currentRound]
+            let pathArrivalTime = *self.multiLabelsManager.get(&markedStop.id).labels[currentRound]
                 .getArrivalTime()
                 + nonScheduledRoute.transferTime;
             let targetStopLabels = &mut self
-                .multiLabels
+                .multiLabelsManager
                 .get_mut(&nonScheduledRoute.targetStop.id)
                 .labels;
             if targetStopLabels[currentRound].getArrivalTime() > &pathArrivalTime {
@@ -220,7 +224,7 @@ impl<'rd> RaptorScannerSC<'rd> {
         let mut journeys: Journeys = VecDeque::new();
         let mut currentId = self.targetStop.id;
         let mut finished = false;
-        let earliestLabel = &self.multiLabels.get(&currentId).earliestLabel;
+        let earliestLabel = &self.multiLabelsManager.get(&currentId).earliestLabel;
         while !finished {
             journeys.push_front(match earliestLabel {
                 Label::ScheduledRoute {
@@ -232,8 +236,8 @@ impl<'rd> RaptorScannerSC<'rd> {
                     currentId = boardingStop.id;
                     Journey::ScheduledRoute {
                         stopId: currentId,
-                        arrivalTime: *arrivalTime.clone(),
-                        departureTime: *departureTime.clone(),
+                        arrivalTime: *(arrivalTime).clone(),
+                        departureTime: *(departureTime).clone(),
                         route: route.id,
                     }
                 }
@@ -253,7 +257,7 @@ impl<'rd> RaptorScannerSC<'rd> {
                     finished = true;
                     Journey::Departure {
                         stopId: currentId,
-                        departureTime: *departureTime.clone(),
+                        departureTime: *(departureTime).clone(),
                     }
                 }
                 Label::Infinite => return Err(RaptorError::InfiniteLabel),
