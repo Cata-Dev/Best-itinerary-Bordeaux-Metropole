@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use std::collections::VecDeque;
+use std::collections::{VecDeque, HashMap};
 
 use chrono::{DateTime, Duration, Utc};
 
@@ -17,6 +17,7 @@ pub struct Stop<'r> {
     pub nonScheduledRoutes: Vec<&'r NonScheduledRoute<'r>>,
     pub scheduledRoutes: Vec<&'r ScheduledRoute>,
 }
+pub type Stops<'rd> = HashMap<usize, Stop<'rd>>;
 
 #[derive(PartialEq, Clone)]
 pub enum RouteType {
@@ -91,7 +92,7 @@ pub struct MarkedScheduledRoute<'r> {
     pub route: &'r ScheduledRoute,
 }
 
-pub enum Journey {
+pub enum TripOfJourney {
     ScheduledRoute {
         stopId: usize,
         arrivalTime: DateTime<Utc>,
@@ -108,4 +109,4 @@ pub enum Journey {
         departureTime: DateTime<Utc>
     }
 }
-pub type Journeys = VecDeque<Journey>;
+pub type Journey = VecDeque<TripOfJourney>;
