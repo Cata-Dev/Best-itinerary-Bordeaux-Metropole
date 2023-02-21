@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use crate::RaptorAlgorithm::RaptorError;
+use super::RaptorAlgorithm::RaptorError;
 
 use super::RouteStructs::*;
 use chrono::{DateTime, Utc, MAX_DATETIME};
@@ -67,19 +67,19 @@ impl<'rd> MultiLabelsManager<'rd> {
     }
 }
 
-pub struct RaptorScannerSC<'rd> {
+pub struct SCRaptorScanner<'rd> {
     // 'rd: raptor datas
     multiLabelsManager: MultiLabelsManager<'rd>,
-    stops: &'rd HashMap<usize, Stop<'rd>>,
+    stops: &'rd Stops<'rd>, 
     targetStop: &'rd Stop<'rd>,
 }
 
-impl<'rd> RaptorScannerSC<'rd> {
+impl<'rd> SCRaptorScanner<'rd> {
     pub fn new(
         roundsCount: usize,
         departureTime: &'rd DateTime<Utc>,
         departureStopId: &usize,
-        stops: &'rd HashMap<usize, Stop<'rd>>,
+        stops: &'rd Stops, 
         targetStop: &'rd Stop<'rd>,
     ) -> Self {
         let mut multiLabels = MultiLabelsManager::new(roundsCount, stops.len());
@@ -220,8 +220,8 @@ impl<'rd> RaptorScannerSC<'rd> {
     pub fn isScanCompleted(&self, markedStops: &Vec<&'rd Stop<'rd>>) -> bool {
         markedStops.len() == 0
     }
-    pub fn computeBestJourney(&self) -> Result<Journeys, RaptorError> {
-        let mut journeys: Journeys = VecDeque::new();
+    pub fn computeBestJourney(&self) -> Result<Journey, RaptorError> {
+        let mut journeys: Journey = VecDeque::new();
         let mut currentId = self.targetStop.id;
         let mut finished = false;
         let earliestLabel = &self.multiLabelsManager.get(&currentId).earliestLabel;
@@ -234,7 +234,7 @@ impl<'rd> RaptorScannerSC<'rd> {
                     boardingStop,
                 } => {
                     currentId = boardingStop.id;
-                    Journey::ScheduledRoute {
+                    TripOfJourney::ScheduledRoute {
                         stopId: currentId,
                         arrivalTime: *(arrivalTime).clone(),
                         departureTime: *(departureTime).clone(),
@@ -247,7 +247,7 @@ impl<'rd> RaptorScannerSC<'rd> {
                     boardingStop,
                 } => {
                     currentId = boardingStop.id;
-                    Journey::NonScheduledRoute {
+                    TripOfJourney::NonScheduledRoute {
                         stopId: currentId,
                         arrivalTime: arrivalTime.clone(),
                         route: route.id,
@@ -255,7 +255,7 @@ impl<'rd> RaptorScannerSC<'rd> {
                 }
                 Label::DepartureLabel(departureTime) => {
                     finished = true;
-                    Journey::Departure {
+                    TripOfJourney::Departure {
                         stopId: currentId,
                         departureTime: *(departureTime).clone(),
                     }
