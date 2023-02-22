@@ -9,7 +9,7 @@ use chrono::{DateTime, Utc};
 
 pub enum RaptorError {
     StopNotFound(&'static str),
-    InfiniteLabel
+    InfiniteLabel,
 }
 
 impl Debug for RaptorError {
@@ -17,9 +17,12 @@ impl Debug for RaptorError {
         match *self {
             Self::StopNotFound(text) => {
                 write!(f, "NotFoundError: \"{}\"", text)
-            },
+            }
             Self::InfiniteLabel => {
-                write!(f, "Infinite label encountered when determining the best journey from multilabels")
+                write!(
+                    f,
+                    "Infinite label encountered when determining the best journey from multilabels"
+                )
             }
         }
     }
@@ -34,7 +37,7 @@ impl Display for RaptorError {
                     "Raptor Algorithm encountered a Not Found Error:\"{}\"",
                     text
                 )
-            },
+            }
             Self::InfiniteLabel => {
                 write!(f, "Raptor Algorithm encountered an infinite label")
             }
@@ -51,14 +54,13 @@ impl std::error::Error for RaptorError {
     }
 }
 
-
 pub fn STSCRaptor<'r>(
-    stops: &'r Stops,
-    departureTime: &'r DateTime<Utc>,
+    stops: &'r Stops<'r>,
+    departureTime: DateTime<Utc>,
     departureStop: &'r Stop<'r>,
     targetStop: &'r Stop<'r>,
-    maxTransfer: usize
-) -> Result<Journey<'r>, RaptorError> {
+    maxTransfer: usize,
+) -> Result<Journey, RaptorError> {
     let mut scanner: SCRaptorScanner = SCRaptorScanner::new(
         maxTransfer,
         &departureTime,
@@ -83,4 +85,12 @@ pub fn STSCRaptor<'r>(
     scanner.computeBestJourney()
 }
 
-// fn MTSCRaptor<'r>() {}
+// pub fn MTSCRaptor<'r>(
+//     stops: &'r HashMap<usize, Stop<'r>>,
+//     departureTime: DateTime<Utc>,
+//     departureStop: &'r Stop<'r>,
+//     targetStop: &'r Stop<'r>,
+//     maxTransfer: usize,
+// ) -> Result<Journey, RaptorError> {
+//     todo!()
+// }
