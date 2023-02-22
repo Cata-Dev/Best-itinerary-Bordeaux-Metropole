@@ -14,6 +14,7 @@ pub enum Label<'rd> {
         boardingStop: &'rd Stop<'rd>,
     },
     NonScheduledRoute {
+        departureTime: DateTime<Utc>,
         arrivalTime: DateTime<Utc>,
         route: &'rd NonScheduledRoute<'rd>,
         boardingStop: &'rd Stop<'rd>,
@@ -70,7 +71,7 @@ impl<'rd> MultiLabelsManager<'rd> {
 pub struct SCRaptorScanner<'rd> {
     // 'rd: raptor datas
     multiLabelsManager: MultiLabelsManager<'rd>,
-    stops: &'rd Stops<'rd>, 
+    stops: &'rd Stops<'rd>,
     targetStop: &'rd Stop<'rd>,
 }
 
@@ -79,7 +80,7 @@ impl<'rd> SCRaptorScanner<'rd> {
         roundsCount: usize,
         departureTime: &'rd DateTime<Utc>,
         departureStopId: &usize,
-        stops: &'rd Stops, 
+        stops: &'rd Stops,
         targetStop: &'rd Stop<'rd>,
     ) -> Self {
         let mut multiLabels = MultiLabelsManager::new(roundsCount, stops.len());
@@ -104,8 +105,10 @@ impl<'rd> SCRaptorScanner<'rd> {
                 if let Some(markedRoute) = markedRoutes.get_mut(&scheduledRoute.id) {
                     if self.multiLabelsManager.get(&markedStop.id).labels[currentRound - 1]
                         .getArrivalTime()
-                        < self.multiLabelsManager.get(&markedRoute.earliestStop.id).labels
-                            [currentRound - 1]
+                        < self
+                            .multiLabelsManager
+                            .get(&markedRoute.earliestStop.id)
+                            .labels[currentRound - 1]
                             .getArrivalTime()
                     {
                         markedRoute.earliestStop = markedStop;
@@ -152,7 +155,10 @@ impl<'rd> SCRaptorScanner<'rd> {
                             .get(&self.targetStop.id)
                             .earliestLabel
                             .getArrivalTime(),
-                        self.multiLabelsManager.get(&stopId).earliestLabel.getArrivalTime(),
+                        self.multiLabelsManager
+                            .get(&stopId)
+                            .earliestLabel
+                            .getArrivalTime(),
                     )
                 {
                     let multiLabels = self.multiLabelsManager.get_mut(&stopId);
@@ -163,7 +169,9 @@ impl<'rd> SCRaptorScanner<'rd> {
                         boardingStop: markedRoute.earliestStop,
                     };
                     // Local pruning
-                    if multiLabels.earliestLabel.getArrivalTime() < multiLabels.labels[currentRound].getArrivalTime() {
+                    if multiLabels.earliestLabel.getArrivalTime()
+                        < multiLabels.labels[currentRound].getArrivalTime()
+                    {
                         multiLabels.earliestLabel = multiLabels.labels[currentRound].clone();
                     }
                     markedStops.push(&self.stops[&stopId]);
@@ -178,18 +186,18 @@ impl<'rd> SCRaptorScanner<'rd> {
             }
         }
     }
-
+    //TODO: Find a better way so that there is no clone
     fn scanNonScheduleRoute(&mut self, currentRound: usize, markedStop: &'rd Stop<'rd>) {
         for nonScheduledRoute in markedStop.nonScheduledRoutes.iter() {
-            let pathArrivalTime = *self.multiLabelsManager.get(&markedStop.id).labels[currentRound]
-                .getArrivalTime()
-                + nonScheduledRoute.transferTime;
+            let departureStopArrivalTime = self.multiLabelsManager.get(&markedStop.id).labels[currentRound].getArrivalTime().clone();
+            let pathArrivalTime = *self.multiLabelsManager.get(&markedStop.id).labels[currentRound].getArrivalTime() + nonScheduledRoute.transferTime;
             let targetStopLabels = &mut self
                 .multiLabelsManager
                 .get_mut(&nonScheduledRoute.targetStop.id)
                 .labels;
             if targetStopLabels[currentRound].getArrivalTime() > &pathArrivalTime {
                 targetStopLabels[currentRound] = Label::NonScheduledRoute {
+                    departureTime: departureStopArrivalTime,
                     arrivalTime: pathArrivalTime,
                     route: nonScheduledRoute,
                     boardingStop: markedStop,
@@ -220,48 +228,49 @@ impl<'rd> SCRaptorScanner<'rd> {
     pub fn isScanCompleted(&self, markedStops: &Vec<&'rd Stop<'rd>>) -> bool {
         markedStops.len() == 0
     }
-    pub fn computeBestJourney(&self) -> Result<Journey, RaptorError> {
+
+    pub fn computeBestJourney(&self) -> Result<Journey<'rd>, RaptorError> {
         let mut journeys: Journey = VecDeque::new();
-        let mut currentId = self.targetStop.id;
+        let mut currentStop = self.targetStop;
         let mut finished = false;
-        let earliestLabel = &self.multiLabelsManager.get(&currentId).earliestLabel;
+        let earliestLabel = &self.multiLabelsManager.get(&currentStop.id).earliestLabel;
         while !finished {
-            journeys.push_front(match earliestLabel {
+            match earliestLabel {
                 Label::ScheduledRoute {
                     arrivalTime,
                     departureTime,
                     route,
                     boardingStop,
                 } => {
-                    currentId = boardingStop.id;
-                    TripOfJourney::ScheduledRoute {
-                        stopId: currentId,
-                        arrivalTime: *(arrivalTime).clone(),
+                    journeys.push_front(TripOfJourney::ScheduledRoute {
+                        departureStop: boardingStop,
                         departureTime: *(departureTime).clone(),
-                        route: route.id,
-                    }
+                        arrivalStop: currentStop,
+                        arrivalTime: *(arrivalTime).clone(),
+                        routeId: route.id,
+                    });
+                    currentStop = boardingStop;
                 }
                 Label::NonScheduledRoute {
+                    departureTime,
                     arrivalTime,
                     route,
                     boardingStop,
                 } => {
-                    currentId = boardingStop.id;
-                    TripOfJourney::NonScheduledRoute {
-                        stopId: currentId,
+                    journeys.push_front(TripOfJourney::NonScheduledRoute {
+                        departureStop: boardingStop,
+                        departureTime: departureTime.clone(),
+                        arrivalStop: currentStop,
                         arrivalTime: arrivalTime.clone(),
-                        route: route.id,
-                    }
+                        routeId: route.id,
+                    });
+                    currentStop = boardingStop;
                 }
-                Label::DepartureLabel(departureTime) => {
+                Label::DepartureLabel(_) => {
                     finished = true;
-                    TripOfJourney::Departure {
-                        stopId: currentId,
-                        departureTime: *(departureTime).clone(),
-                    }
                 }
                 Label::Infinite => return Err(RaptorError::InfiniteLabel),
-            });
+            };
         }
         Ok(journeys)
     }

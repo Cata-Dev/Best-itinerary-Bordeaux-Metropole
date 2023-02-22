@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use std::collections::{VecDeque, HashMap};
+use std::collections::{HashMap, VecDeque};
 
 use chrono::{DateTime, Duration, Utc};
 
@@ -19,19 +19,10 @@ pub struct Stop<'r> {
 }
 pub type Stops<'rd> = HashMap<usize, Stop<'rd>>;
 
-#[derive(PartialEq, Clone)]
-pub enum RouteType {
-    SNCF,
-    BUS,
-    FOOT,
-    // V3,
-}
-
 #[derive(PartialEq)]
 pub struct NonScheduledRoute<'r> {
     pub id: usize,
     pub name: String,
-    pub routeType: RouteType,
     pub targetStop: &'r Stop<'r>,
     pub transferTime: Duration,
 }
@@ -40,12 +31,10 @@ pub struct NonScheduledRoute<'r> {
 pub struct ScheduledRoute {
     pub id: usize,
     pub name: String,
-    pub routeType: RouteType,
-    pub direction: String,
     pub tripsCount: usize,
     pub stopsCount: usize, //Number of Stops on the ScheduledRoute
     pub stopsTimes: Vec<DateTime<Utc>>,
-    pub stopsId: Vec<usize>, // Vec structured as [stopId1, stopdId2, ...] with stopd
+    pub stopsId: Vec<usize>, // Vec structured as [stopId1, stopdId2, ...] with stop
                              // ids being in the same order as stopTimes
 }
 
@@ -92,21 +81,20 @@ pub struct MarkedScheduledRoute<'r> {
     pub route: &'r ScheduledRoute,
 }
 
-pub enum TripOfJourney {
+pub enum TripOfJourney<'rd> {
     ScheduledRoute {
-        stopId: usize,
+        departureStop:&'rd Stop<'rd>, 
+        arrivalStop: &'rd Stop<'rd>,
         arrivalTime: DateTime<Utc>,
         departureTime: DateTime<Utc>,
-        route: usize,
+        routeId: usize,
     },
     NonScheduledRoute {
-        stopId: usize,
+        departureStop:&'rd Stop<'rd>, 
+        arrivalStop: &'rd Stop<'rd>,
         arrivalTime: DateTime<Utc>,
-        route: usize,
+        departureTime: DateTime<Utc>,
+        routeId: usize,
     },
-    Departure {
-        stopId: usize,
-        departureTime: DateTime<Utc>
-    }
 }
-pub type Journey = VecDeque<TripOfJourney>;
+pub type Journey<'rd> = VecDeque<TripOfJourney<'rd>>;
