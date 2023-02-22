@@ -147,6 +147,7 @@ export type Section = BaseTBM<{
   gid: string;
   domanial: string;
   groupe: number;
+  cat_dig: number;
   nom_voie: string;
   rg_fv_graph_dbl: number;
   rg_fv_graph_nd: number;
@@ -319,6 +320,7 @@ export default (app: Application) => {
             _id: parseInt(section.properties.gid),
             domanial: parseInt(section.properties.domanial) || 0,
             groupe: section.properties.groupe || 0,
+            cat_dig: section.properties.cat_dig,
             nom_voie: section.properties.nom_voie,
             rg_fv_graph_dbl: !!section.properties.rg_fv_graph_dbl,
             rg_fv_graph_nd: section.properties.rg_fv_graph_nd,
