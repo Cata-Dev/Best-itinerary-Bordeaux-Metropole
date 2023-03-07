@@ -1,34 +1,34 @@
 #![allow(non_snake_case)]
 use std::collections::{HashMap, VecDeque};
+use std::vec::Vec;
 
 use chrono::{DateTime, Duration, Utc};
+use serde::Deserialize;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Deserialize)]
 pub struct Coords {
     x: u32,
     y: u32,
 }
 
-#[derive(PartialEq)]
-pub struct Stop<'r> {
+#[derive(PartialEq, Deserialize)]
+pub struct Stop<'rd> {
     pub id: usize,
-    pub name: String,
     pub coords: Coords,
-    pub nonScheduledRoutes: Vec<&'r NonScheduledRoute<'r>>,
-    pub scheduledRoutes: Vec<&'r ScheduledRoute>,
+    pub nonScheduledRoutes: Vec<NonScheduledRoute>,
+    pub scheduledRoutes: Vec<&'rd ScheduledRoute>,
 }
 pub type Stops<'rd> = HashMap<usize, Stop<'rd>>;
 
-#[derive(PartialEq)]
-pub struct NonScheduledRoute<'r> {
+#[derive(PartialEq, Deserialize)]
+pub struct NonScheduledRoute {
     pub id: usize,
-    pub name: String,
-    pub targetStop: &'r Stop<'r>,
-    pub transferTime: Duration,
+    pub targetStop: usize,
+    pub distance: f32,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Deserialize, Default)]
 pub struct ScheduledRoute {
     pub id: usize,
     pub name: String,
@@ -43,7 +43,7 @@ impl<'rd> ScheduledRoute {
     pub fn getEquivalentStopId(&self, stopId: &usize) -> usize {
         unsafe {
             self.stopsId
-                .iter()
+                    .iter()
                 .position(|id| id == stopId)
                 .unwrap_unchecked()
         }
