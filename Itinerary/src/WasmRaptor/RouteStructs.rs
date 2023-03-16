@@ -2,36 +2,61 @@
 use std::collections::{HashMap, VecDeque};
 use std::vec::Vec;
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-#[derive(PartialEq, Deserialize)]
+#[derive(PartialEq, Deserialize, Debug)]
 pub struct Coords {
-    x: u32,
-    y: u32,
+    x: f32,
+    y: f32,
 }
 
-#[derive(PartialEq, Deserialize)]
-pub struct Stop<'rd> {
+#[derive(PartialEq, Deserialize, Debug)]
+pub struct Stop {
+    #[serde(rename(deserialize = "_id"))]
     pub id: usize,
     pub coords: Coords,
+    #[serde(skip)]
     pub nonScheduledRoutes: Vec<NonScheduledRoute>,
-    pub scheduledRoutes: Vec<&'rd ScheduledRoute>,
+    #[serde(skip)]
+    pub scheduledRoutes: Vec<usize>,
 }
-pub type Stops<'rd> = HashMap<usize, Stop<'rd>>;
+pub type Stops = HashMap<usize, Stop>;
 
-#[derive(PartialEq, Deserialize)]
+#[derive(PartialEq, Deserialize, Default, Debug)]
+pub enum NonScheduledRouteType { 
+    #[default]
+    Walk,
+    V3,
+}
+
+#[wasm_bindgen]
+pub struct NonScheduledRouteTravelingSpeed {
+    pub walkingSpeed: f32,
+    pub v3Speed: f32,
+}
+impl NonScheduledRouteTravelingSpeed {
+    pub fn getTravelingSpeed(&self, routeType: &NonScheduledRouteType) -> f32 {
+        match routeType {
+            NonScheduledRouteType::Walk => self.walkingSpeed,
+            NonScheduledRouteType::V3 => self.v3Speed,
+        }
+    }
+}
+
+#[derive(PartialEq, Deserialize, Debug)]
 pub struct NonScheduledRoute {
+    #[serde(rename(deserialize = "_id"))]
     pub id: usize,
+    pub routeType: NonScheduledRouteType,
     pub targetStop: usize,
     pub distance: f32,
 }
 
-#[derive(PartialEq, Deserialize, Default)]
+#[derive(PartialEq, Deserialize, Default, Debug)]
 pub struct ScheduledRoute {
     pub id: usize,
-    pub name: String,
     pub tripsCount: usize,
     pub stopsCount: usize, //Number of Stops on the ScheduledRoute
     pub stopsTimes: Vec<DateTime<Utc>>,
@@ -43,7 +68,7 @@ impl<'rd> ScheduledRoute {
     pub fn getEquivalentStopId(&self, stopId: &usize) -> usize {
         unsafe {
             self.stopsId
-                    .iter()
+                .iter()
                 .position(|id| id == stopId)
                 .unwrap_unchecked()
         }
@@ -74,15 +99,16 @@ impl<'rd> ScheduledRoute {
         return None;
     }
 }
+pub type ScheduledRoutes = HashMap<usize, ScheduledRoute>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MarkedScheduledRoute<'r> {
-    pub earliestStop: &'r Stop<'r>,
+    pub earliestStop: &'r Stop,
     pub earliestStopEquivalentIndex: usize,
     pub route: &'r ScheduledRoute,
 }
 #[wasm_bindgen]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum TripType {
     ScheduledRoute = 0,
     NonScheduledRoute = 1,
@@ -90,6 +116,7 @@ pub enum TripType {
 }
 
 #[wasm_bindgen]
+#[derive(Debug)]
 pub struct TripOfJourney {
     pub tripType: TripType,
     pub departureStopId: usize,
