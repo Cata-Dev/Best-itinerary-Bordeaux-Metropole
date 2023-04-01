@@ -147,6 +147,7 @@ export type Section = BaseTBM<{
   gid: string;
   domanial: string;
   groupe: number;
+  cat_dig: number;
   nom_voie: string;
   rg_fv_graph_dbl: number;
   rg_fv_graph_nd: number;
@@ -319,6 +320,7 @@ export default (app: Application) => {
             _id: parseInt(section.properties.gid),
             domanial: parseInt(section.properties.domanial) || 0,
             groupe: section.properties.groupe || 0,
+            cat_dig: section.properties.cat_dig,
             nom_voie: section.properties.nom_voie,
             rg_fv_graph_dbl: !!section.properties.rg_fv_graph_dbl,
             rg_fv_graph_nd: section.properties.rg_fv_graph_nd,
@@ -616,11 +618,12 @@ export default (app: Application) => {
                 schedulesOfMaxLength = schedules.map((s) => s.rs_sv_arret_p as number);
               return {
                 tripId,
-                schedules: (maxLength[1] !== null && schedules.length < maxLength[1]
-                  ? new Array<DocumentType<dbTBM_Schedules_rt>["_id"]>(maxLength[1] - schedules.length)
-                      .fill(fillSchedule._id)
-                      .concat(schedules.map((s) => s._id))
-                  : schedules.map((s) => s._id)) as Types.ObjectId[], // Forcing _id type
+                schedules:
+                  maxLength[1] !== null && schedules.length < maxLength[1]
+                    ? new Array<DocumentType<dbTBM_Schedules_rt>["_id"]>(maxLength[1] - schedules.length)
+                        .fill(fillSchedule._id)
+                        .concat(schedules.map((s) => s._id))
+                    : schedules.map((s) => s._id),
               };
             });
 
