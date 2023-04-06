@@ -55,7 +55,7 @@
     "@feathersjs/configuration": "^5.0.0-pre.38",
     "@feathersjs/errors": "^5.0.0-pre.38",
     "@feathersjs/feathers": "^5.0.0-pre.38",
-    "@feathersjs/koa": "^5.0.0-pre.38",
+    "@feathersjs/koa": "^5.0.3",
     "@feathersjs/mongodb": "^5.0.0-pre.38",
     "@feathersjs/schema": "^5.0.0-pre.38",
     "@feathersjs/socketio": "^5.0.0-pre.38",
