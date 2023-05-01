@@ -58,7 +58,7 @@
     "@feathersjs/koa": "^5.0.0-pre.38",
     "@feathersjs/mongodb": "^5.0.0-pre.38",
     "@feathersjs/schema": "^5.0.0-pre.38",
-    "@feathersjs/socketio": "^5.0.0-pre.38",
+    "@feathersjs/socketio": "^5.0.5",
     "@feathersjs/transport-commons": "^5.0.0-pre.38",
     "@feathersjs/typebox": "^5.0.0-pre.38",
     "@typegoose/typegoose": "^10.2.0-beta.3",
