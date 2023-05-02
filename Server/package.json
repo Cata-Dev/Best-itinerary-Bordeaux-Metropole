@@ -71,7 +71,7 @@
     "@feathersjs/rest-client": "^5.0.0-pre.38",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.11.18",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.2",
     "@typescript-eslint/parser": "^5.53.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.33.0",
