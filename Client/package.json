@@ -22,7 +22,7 @@
     "server": "file:../Server",
     "socket.io-client": "^4.6.1",
     "tailwindcss": "^3.2.7",
-    "vue": "^3.2.47",
+    "vue": "^3.3.1",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
