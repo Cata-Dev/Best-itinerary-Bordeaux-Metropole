@@ -1,11 +1,11 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getDataValidator, getValidator } from "@feathersjs/typebox";
+import { Type, getValidator, querySyntax } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
 
 import type { HookContext } from "../../declarations";
 import { dataValidator, queryValidator } from "../../validators";
-import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
+import { refreshDataQueryProperties } from "../refresh-data/refresh-data.schema";
 
 const FOOTStageDetails = Type.Object(
   {
@@ -120,7 +120,7 @@ export const itineraryDataSchema = Type.Object(
   },
 );
 export type ItineraryData = Static<typeof itineraryDataSchema>;
-export const itineraryDataValidator = getDataValidator(itineraryDataSchema, dataValidator);
+export const itineraryDataValidator = getValidator(itineraryDataSchema, dataValidator);
 export const itineraryDataResolver = resolve<Itinerary, HookContext>({});
 
 // Schema for updating existing entries
@@ -128,27 +128,29 @@ export const itineraryPatchSchema = Type.Partial(itineraryDataSchema, {
   $id: "ItineraryPatch",
 });
 export type ItineraryPatch = Static<typeof itineraryPatchSchema>;
-export const itineraryPatchValidator = getDataValidator(itineraryPatchSchema, dataValidator);
+export const itineraryPatchValidator = getValidator(itineraryPatchSchema, dataValidator);
 export const itineraryPatchResolver = resolve<Itinerary, HookContext>({});
 
 // Schema for allowed query properties
-export const itineraryQueryProperties = Type.Object({}, { additionalProperties: false });
-export const itineraryQuerySchema = Type.Object(
-  {
-    from: Type.String(),
-    to: Type.String(),
-    transports: Type.Optional(
-      Type.Partial(
-        Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+export const itineraryQueryProperties = Type.Intersect([
+  Type.Object(
+    {
+      from: Type.String(),
+      to: Type.String(),
+      transports: Type.Optional(
+        Type.Partial(
+          Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+        ),
       ),
-    ),
-    departureTime: Type.Optional(Type.String()),
-    maxWalkDistance: Type.Optional(Type.Integer()),
-    walkSpeed: Type.Optional(Type.Number()),
-    ...refreshDataQuerySchema.properties,
-  },
-  { additionalProperties: false },
-);
+      departureTime: Type.Optional(Type.String()),
+      maxWalkDistance: Type.Optional(Type.Integer()),
+      walkSpeed: Type.Optional(Type.Number()),
+    },
+    { additionalProperties: false },
+  ),
+  refreshDataQueryProperties,
+]);
+export const itineraryQuerySchema = querySyntax(itineraryQueryProperties);
 export type ItineraryQuery = Static<typeof itineraryQuerySchema>;
 export const itineraryQueryValidator = getValidator(itineraryQuerySchema, queryValidator);
 export const itineraryQueryResolver = resolve<ItineraryQuery, HookContext>({});

@@ -4,17 +4,20 @@ import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 import type { Application } from "../../declarations";
 import type { RefreshData, RefreshDataData, RefreshDataPatch, RefreshDataQuery } from "./refresh-data.schema";
 
+export type { RefreshData, RefreshDataData, RefreshDataPatch, RefreshDataQuery };
+
 export interface RefreshDataServiceOptions {
   app: Application;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RefreshDataParams extends Params<RefreshDataQuery> {}
 
 import { Forbidden, GeneralError, NotFound } from "@feathersjs/errors";
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class RefreshDataService
-  implements ServiceInterface<RefreshData, RefreshDataData, RefreshDataParams, RefreshDataPatch>
+export class RefreshDataService<ServiceParams extends Params = RefreshDataParams>
+  implements ServiceInterface<RefreshData, RefreshDataData, ServiceParams, RefreshDataPatch>
 {
   private readonly app: Application;
 
@@ -22,7 +25,7 @@ export class RefreshDataService
     this.app = options.app;
   }
 
-  async get(id: Id, _params?: RefreshDataParams): Promise<RefreshData> {
+  async get(id: Id, _params?: ServiceParams): Promise<RefreshData> {
     const endpoints = this.app.externalAPIs.endpoints;
     const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
     const force = (_params && _params.query?.force) ?? false;

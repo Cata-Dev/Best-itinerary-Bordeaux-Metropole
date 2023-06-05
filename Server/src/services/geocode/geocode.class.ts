@@ -6,6 +6,8 @@ import type { DocumentType } from "@typegoose/typegoose";
 import type { Application } from "../../declarations";
 import type { Geocode, GeocodeData, GeocodePatch, GeocodeQuery, GEOCODE_type } from "./geocode.schema";
 
+export type { Geocode, GeocodeData, GeocodePatch, GeocodeQuery };
+
 export interface GeocodeServiceOptions {
   app: Application;
 }
@@ -23,6 +25,7 @@ type DistributedFilterQuery<N extends EndpointName> = N extends any
 
 type parsedId<N extends EndpointName> = [DistributedEndpoints<N>, DistributedFilterQuery<N>];
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GeocodeParams extends Params<GeocodeQuery> {}
 
 import { NotFound, BadRequest } from "@feathersjs/errors";
@@ -33,7 +36,9 @@ import { unique } from "../../utils";
 import { TBMEndpoints } from "../../externalAPIs/TBM";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF";
 
-export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, GeocodeParams, GeocodePatch> {
+export class GeocodeService<ServiceParams extends Params = GeocodeParams>
+  implements ServiceInterface<Geocode, GeocodeData, ServiceParams, GeocodePatch>
+{
   private readonly app: Application;
   private communes: string[] = [];
   private communesNormalized: string[] = [];
@@ -154,7 +159,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
     }
   }
 
-  async get(id: string /* _params: GeocodeParams */): Promise<Geocode> {
+  async get(id: string /* _params?: ServiceParams */): Promise<Geocode> {
     let doc: DistributedProdiverClass<GEOCODE_type> | null = null;
     let GEOCODE_type: GEOCODE_type = "" as never;
 
@@ -199,8 +204,8 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
     return result;
   }
 
-  async find(_params: Params<GeocodeQuery>): Promise<Geocode[]> {
-    if (_params.query?.id === undefined) throw new BadRequest("missing id parameter in query");
+  async find(_params?: ServiceParams): Promise<Geocode[]> {
+    if (!_params || _params.query?.id === undefined) throw new BadRequest("missing id parameter in query");
 
     type doc = DistributedProdiverClass<GEOCODE_type> & { GEOCODE_type: GEOCODE_type };
 

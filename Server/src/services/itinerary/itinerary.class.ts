@@ -4,17 +4,20 @@ import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 import type { Application } from "../../declarations";
 import type { Itinerary, ItineraryData, ItineraryPatch, ItineraryQuery } from "./itinerary.schema";
 
+export type { Itinerary, ItineraryData, ItineraryPatch, ItineraryQuery };
+
 export interface ItineraryServiceOptions {
   app: Application;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ItineraryParams extends Params<ItineraryQuery> {}
 
 import { BadRequest, NotFound } from "@feathersjs/errors";
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class ItineraryService
-  implements ServiceInterface<Itinerary, ItineraryData, ItineraryParams, ItineraryPatch>
+export class ItineraryService<ServiceParams extends Params = ItineraryParams>
+  implements ServiceInterface<Itinerary, ItineraryData, ServiceParams, ItineraryPatch>
 {
   private readonly app: Application;
 
@@ -22,7 +25,7 @@ export class ItineraryService
     this.app = options.app;
   }
 
-  async get(id: Id, _params?: ItineraryParams): Promise<Itinerary> {
+  async get(id: Id, _params?: ServiceParams): Promise<Itinerary> {
     switch (id) {
       case "paths": {
         const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
