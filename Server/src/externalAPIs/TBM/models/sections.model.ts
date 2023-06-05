@@ -5,12 +5,12 @@
 export enum SectionDomanial {
   NonRenseigne = 0,
   Autoroute = 1,
-  RouteNationale =  2,
+  RouteNationale = 2,
   RouteDepartementale = 3,
   VoieMetropolitaine = 4,
   VoiePrivee = 5,
   CheminRural = 6,
-  Autre = 7
+  Autre = 7,
 }
 
 import { Application } from "../../../declarations";
