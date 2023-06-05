@@ -8,7 +8,7 @@ import { configurationValidator } from "./configuration";
 import { errorHandler as errorHandlerHook, log } from "./hooks";
 
 // Needed to solve Reflect import for typegoose
-import "@abraham/reflection";
+import "core-js/features/reflect";
 
 import { services } from "./services";
 import { channels } from "./channels";

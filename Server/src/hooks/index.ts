@@ -20,6 +20,7 @@ const log = async (context: HookContext, next: NextFunction) => {
         context.params?.provider || "internal"
       })`,
     );
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   } catch (error: any) {
     logger.log(
       `${time.datetocompact3(performance.timeOrigin + initialTs, true)} ⟾ ${time.datetocompact3(

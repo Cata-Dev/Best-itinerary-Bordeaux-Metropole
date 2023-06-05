@@ -1,6 +1,6 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getDataValidator, getValidator } from "@feathersjs/typebox";
+import { Type, getValidator, querySyntax } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
 
 import type { HookContext } from "../../declarations";
@@ -117,7 +117,7 @@ export const geocodeDataSchema = Type.Object(
   },
 );
 export type GeocodeData = Static<typeof geocodeDataSchema>;
-export const geocodeDataValidator = getDataValidator(geocodeDataSchema, dataValidator);
+export const geocodeDataValidator = getValidator(geocodeDataSchema, dataValidator);
 export const geocodeDataResolver = resolve<Geocode, HookContext>({});
 
 // Schema for updating existing entries
@@ -125,12 +125,11 @@ export const geocodePatchSchema = Type.Partial(geocodeDataSchema, {
   $id: "GeocodePatch",
 });
 export type GeocodePatch = Static<typeof geocodePatchSchema>;
-export const geocodePatchValidator = getDataValidator(geocodePatchSchema, dataValidator);
+export const geocodePatchValidator = getValidator(geocodePatchSchema, dataValidator);
 export const geocodePatchResolver = resolve<Geocode, HookContext>({});
 
 // Schema for allowed query properties
-export const geocodeQueryProperties = Type.Object({}, { additionalProperties: false });
-export const geocodeQuerySchema = Type.Object(
+export const geocodeQueryProperties = Type.Object(
   {
     id: Type.String(),
     uniqueVoies: Type.Boolean(),
@@ -138,6 +137,7 @@ export const geocodeQuerySchema = Type.Object(
   },
   { additionalProperties: false },
 );
+export const geocodeQuerySchema = querySyntax(geocodeQueryProperties);
 export type GeocodeQuery = Static<typeof geocodeQuerySchema>;
 export const geocodeQueryValidator = getValidator(geocodeQuerySchema, queryValidator);
 export const geocodeQueryResolver = resolve<GeocodeQuery, HookContext>({});

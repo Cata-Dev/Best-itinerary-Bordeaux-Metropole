@@ -124,7 +124,7 @@ onUpdated(() => {
       'dark:text-text-dark-primary',
     ]"
     @update:shown="
-      (s) => {
+      (s: boolean) => {
         if (s != shown) show();
       }
     "

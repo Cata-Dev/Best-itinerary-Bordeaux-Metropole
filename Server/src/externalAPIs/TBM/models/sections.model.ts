@@ -2,6 +2,17 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
+export enum SectionDomanial {
+  NonRenseigne = 0,
+  Autoroute = 1,
+  RouteNationale = 2,
+  RouteDepartementale = 3,
+  VoieMetropolitaine = 4,
+  VoiePrivee = 5,
+  CheminRural = 6,
+  Autre = 7,
+}
+
 import { Application } from "../../../declarations";
 import { TBMEndpoints } from "../index";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
@@ -19,10 +30,16 @@ export class dbSections extends TimeStamps {
   public coords!: [number, number][];
 
   @prop({ required: true })
-  public domanial!: number;
+  public distance!: number;
+
+  @prop({ required: true, enum: SectionDomanial })
+  public domanial!: SectionDomanial;
 
   @prop({ required: true })
   public groupe!: number;
+
+  @prop({ required: true })
+  public cat_dig!: number;
 
   @prop({ required: true })
   public nom_voie!: string;

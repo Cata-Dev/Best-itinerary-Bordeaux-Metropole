@@ -166,7 +166,7 @@ async function updateQuery(to = route) {
             to.query[setting] as string,
           );
     } else if (setting in settings.value)
-      (settings.value as Record<keyof QuerySettings, any>)[setting as keyof QuerySettings] = parseJSON(
+      (settings.value as Record<keyof QuerySettings, unknown>)[setting as keyof QuerySettings] = parseJSON(
         to.query[setting] as string,
       );
   }

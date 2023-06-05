@@ -4,7 +4,7 @@
   },
   "compilerOptions": {
     "target": "es2020",
-    "module": "NodeNext",
+    "module": "CommonJS",
     "outDir": "./lib",
     "sourceMap": true,
     "rootDir": "./src",

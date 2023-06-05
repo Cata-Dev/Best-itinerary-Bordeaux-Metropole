@@ -9,6 +9,7 @@ import {
 
 import type { Application } from "../../declarations";
 import { ItineraryService, getOptions } from "./itinerary.class";
+import { itineraryPath, itineraryMethods } from "./itinerary.shared";
 
 export * from "./itinerary.class";
 export * from "./itinerary.schema";
@@ -16,14 +17,14 @@ export * from "./itinerary.schema";
 // A configure function that registers the service and its hooks via `app.configure`
 export const itinerary = (app: Application) => {
   // Register our service on the Feathers application
-  app.use("itinerary", new ItineraryService(getOptions(app)), {
+  app.use(itineraryPath, new ItineraryService(getOptions(app)), {
     // A list of all methods this service exposes externally
-    methods: ["get"],
+    methods: itineraryMethods,
     // You can add additional custom events to be sent to clients here
     events: [],
   });
   // Initialize hooks
-  app.service("itinerary").hooks({
+  app.service(itineraryPath).hooks({
     around: {
       all: [
         schemaHooks.resolveExternal(itineraryExternalResolver),
@@ -49,6 +50,6 @@ export const itinerary = (app: Application) => {
 // Add this service to the service type index
 declare module "../../declarations" {
   interface ServiceTypes {
-    itinerary: ItineraryService;
+    [itineraryPath]: ItineraryService;
   }
 }
