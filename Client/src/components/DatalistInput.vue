@@ -4,7 +4,7 @@ import { defaultLocation, transportToType, type DefaultLocation } from "@/store/
 import TransportBadge from "@/components/TransportBadge.vue";
 import type { ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
 
-type modelValue = ParsedGeocodeLocation | DefaultLocation;
+type ModelValue = ParsedGeocodeLocation | DefaultLocation;
 
 interface Props<T> {
   placeholder: string;
@@ -12,14 +12,14 @@ interface Props<T> {
   modelValue: T;
 }
 
-const props = withDefaults(defineProps<Props<modelValue>>(), { datalist: () => [] });
+const props = withDefaults(defineProps<Props<ModelValue>>(), { datalist: () => [] });
 
 /**
  * Its `modelValue` is a value from props.datalist if input is in, defaultLocation otherwise
  * However, `input` is the raw input string, emitted at anytime
  */
 const emit = defineEmits<{
-  (e: "update:modelValue", value: modelValue): void;
+  (e: "update:modelValue", value: ModelValue): void;
   (e: "input", input: string): void;
 }>();
 

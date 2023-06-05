@@ -56,7 +56,7 @@ onUpdated(async () => {
     @keyup.esc="show(false)"
     @click="show(false)"
   >
-    <div class="m-auto w-fit duration-300 overflow-hidden" @click="(e) => e.stopPropagation()">
+    <div class="m-auto w-fit duration-300 overflow-hidden" @click="(e: MouseEvent) => e.stopPropagation()">
       <div class="shadow-lg flex flex-col w-full rounded-md" :class="[mainClasses]">
         <div class="flex flex-shrink-0 items-center justify-between py-4 px-2 mx-2 border-b border-inherit">
           <slot name="title"></slot>
