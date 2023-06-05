@@ -160,7 +160,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
 
     for (const [endpoint, query] of await this.parseId(id)) {
       try {
-        doc = await (endpoint.model as Model<object>)
+        doc = await (endpoint.model as unknown as Model<object>)
           .findOne(query)
           .collation({ locale: "fr", strength: 1 })
           .lean<DistributedProdiverClass<GEOCODE_type>>();
@@ -207,7 +207,7 @@ export class GeocodeService implements ServiceInterface<Geocode, GeocodeData, Ge
     let docs: doc[] = [];
     for (const [endpoint, query] of await this.parseId(_params.query.id)) {
       try {
-        const r: DistributedProdiverClass<GEOCODE_type>[] = await (endpoint.model as Model<object>)
+        const r: DistributedProdiverClass<GEOCODE_type>[] = await (endpoint.model as unknown as Model<object>)
           .find(query)
           .collation({ locale: "fr", strength: 1 })
           .limit(500)
