@@ -62,7 +62,7 @@
     "@feathersjs/typebox": "^5.0.5",
     "@typegoose/typegoose": "^11.2.0",
     "axios": "^1.4.0",
-    "core-js": "^3.30.2",
+    "core-js": "^3.31.0",
     "feathers-hooks-common": "^7.0.3",
     "node-fetch": "^3.3.0"
   },
