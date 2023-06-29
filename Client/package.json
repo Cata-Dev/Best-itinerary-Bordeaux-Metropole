@@ -20,7 +20,7 @@
     "core-js": "^3.28.0",
     "postcss": "^8.4.23",
     "server": "file:../Server/public/server-1.0.0.tgz",
-    "socket.io-client": "^4.6.2",
+    "socket.io-client": "^4.7.1",
     "tailwindcss": "^3.3.2",
     "vue": "^3.3.4",
     "vue-router": "^4.2.2"
