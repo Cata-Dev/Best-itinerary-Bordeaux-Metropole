@@ -59,7 +59,7 @@
     "@feathersjs/schema": "^5.0.5",
     "@feathersjs/socketio": "^5.0.5",
     "@feathersjs/transport-commons": "^5.0.5",
-    "@feathersjs/typebox": "^5.0.5",
+    "@feathersjs/typebox": "^5.0.7",
     "@typegoose/typegoose": "^11.2.0",
     "axios": "^1.4.0",
     "core-js": "^3.30.2",
