@@ -58,7 +58,7 @@
     "@feathersjs/mongodb": "^5.0.5",
     "@feathersjs/schema": "^5.0.5",
     "@feathersjs/socketio": "^5.0.5",
-    "@feathersjs/transport-commons": "^5.0.5",
+    "@feathersjs/transport-commons": "^5.0.8",
     "@feathersjs/typebox": "^5.0.5",
     "@typegoose/typegoose": "^11.2.0",
     "axios": "^1.4.0",
