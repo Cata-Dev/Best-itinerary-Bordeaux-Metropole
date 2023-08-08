@@ -3,9 +3,9 @@
   "port": 3030,
   "TBMkey": "",
   "SNCFkey": "",
-  "mongodb": "mongodb://localhost:27017/bibm",
-  "ssl": {
-    "key": "",
-    "cert": ""
-  }
+  "origins": [
+    "http://localhost:3030"
+  ],
+  "mongodb": "",
+  "debug": false
 }

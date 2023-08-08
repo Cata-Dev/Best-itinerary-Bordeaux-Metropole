@@ -107,6 +107,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # Others
+config/
 lib/
 data/
 .vscode/
