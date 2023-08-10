@@ -393,7 +393,9 @@ button:focus {
 }
 
 .wait-fade-in {
-  animation: wait 500ms, 300ms fadein 500ms;
+  animation:
+    wait 500ms,
+    300ms fadein 500ms;
 }
 
 .transition-scale {
