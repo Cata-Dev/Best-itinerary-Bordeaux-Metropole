@@ -206,13 +206,13 @@ async function selectResult(id: string) {
   <div class="h-full">
     <div class="h-full flex flex-col">
       <div
-        class="w-full flex relative h-fit transition-top p-2 pb-1"
+        class="w-full flex justify-center relative h-fit transition-top p-2 pb-1"
         :class="{
           'top-[calc(50%-101px)]': results === StatusSearchResult.NONE,
           'top-0': results != StatusSearchResult.NONE,
         }"
       >
-        <div class="w-2/3 h-fit flex justify-end my-auto mr-1">
+        <div class="xs:w-2/3 w-auto h-fit flex justify-end my-auto mr-1">
           <div
             class="flex flex-col w-[95%] xs:w-[80%] sm:w-[70%] lg:w-1/2"
             :loading="status.search === StatusSearchResult.LOADING"
@@ -250,7 +250,7 @@ async function selectResult(id: string) {
             </span>
           </div>
         </div>
-        <div class="w-1/3 my-auto justify-center inline ml-1">
+        <div class="xs:w-1/3 w-auto my-auto justify-center inline ml-1">
           <div class="flex h-full xs:w-[80%] sm:w-[70%] w-1/2">
             <div class="py-2 self-center">
               <button
@@ -393,7 +393,9 @@ button:focus {
 }
 
 .wait-fade-in {
-  animation: wait 500ms, 300ms fadein 500ms;
+  animation:
+    wait 500ms,
+    300ms fadein 500ms;
 }
 
 .transition-scale {
