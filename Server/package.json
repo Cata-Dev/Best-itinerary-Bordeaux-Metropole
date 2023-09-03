@@ -63,7 +63,7 @@
     "@typegoose/typegoose": "^11.2.0",
     "axios": "^1.4.0",
     "core-js": "^3.32.0",
-    "feathers-hooks-common": "^8.0.0",
+    "feathers-hooks-common": "^8.1.1",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
