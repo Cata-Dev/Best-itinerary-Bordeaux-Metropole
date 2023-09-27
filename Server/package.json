@@ -61,7 +61,7 @@
     "@feathersjs/transport-commons": "^5.0.8",
     "@feathersjs/typebox": "^5.0.8",
     "@typegoose/typegoose": "^11.2.0",
-    "axios": "^1.4.0",
+    "axios": "^1.5.1",
     "core-js": "^3.32.0",
     "feathers-hooks-common": "^8.1.1",
     "node-fetch": "^3.3.2"
