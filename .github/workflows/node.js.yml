@@ -44,6 +44,6 @@ jobs:
     # Build Server to build Client
     - run: cd Server/ && npm ci
     - run: cd Server/ && npm run bundle:client --if-present
-    - run: cd Client/ && npm i
+    - run: cd Client/ && npm i file:../Server/public/server-1.0.0.tgz && npm i
     - run: cd Client/ && npm run build --if-present
     
