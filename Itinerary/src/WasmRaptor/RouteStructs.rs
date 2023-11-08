@@ -25,7 +25,7 @@ pub struct Stop {
 pub type Stops = HashMap<usize, Stop>;
 
 #[derive(PartialEq, Deserialize, Default, Debug)]
-pub enum NonScheduledRouteType { 
+pub enum NonScheduledRouteType {
     #[default]
     Walk,
     V3,
@@ -82,6 +82,29 @@ impl<'rd> ScheduledRoute {
         tripId: usize,
         stopEquivalentIndex: usize,
     ) -> &'rd DateTime<Utc> {
+        println!("Yo");
+        let mut acc = 0;
+        for i in 0..self.tripsCount {
+            acc += self.getTripAt(tripId).len();
+        }
+        println!(
+            "Acc vs stopsCount: {:?} vs {:?}",
+            acc,
+            self.stopsCount * self.tripsCount
+        );
+        println!(
+            "Current trip, number of stops : {:?}",
+            self.getTripAt(tripId).len()
+        );
+        println!("Trips count {:?}", self.tripsCount);
+        println!("Trip Id {:?}", tripId);
+        println!("Stops Count{:?}", self.stopsCount);
+        println!("Stops ids {:?}", self.stopsId.len());
+        println!("Stop equ {:?}", stopEquivalentIndex);
+        println!(
+            "Result : {:?}",
+            tripId * self.stopsCount + stopEquivalentIndex
+        );
         &self.stopsTimes[tripId * self.stopsCount + stopEquivalentIndex]
     }
 
@@ -116,7 +139,7 @@ pub enum TripType {
 }
 
 #[wasm_bindgen]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TripOfJourney {
     pub tripType: TripType,
     pub departureStopId: usize,

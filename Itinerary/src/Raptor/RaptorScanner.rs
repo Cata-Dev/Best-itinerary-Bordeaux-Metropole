@@ -16,7 +16,7 @@ pub enum Label<'rd> {
     NonScheduledRoute {
         departureTime: DateTime<Utc>,
         arrivalTime: DateTime<Utc>,
-        route: &'rd NonScheduledRoute<'rd>,
+        route: &'rd NonScheduledRoute,
         boardingStop: &'rd Stop<'rd>,
     },
     DepartureLabel(&'rd DateTime<Utc>),
@@ -193,7 +193,7 @@ impl<'rd> SCRaptorScanner<'rd> {
             let pathArrivalTime = *self.multiLabelsManager.get(&markedStop.id).labels[currentRound].getArrivalTime() + nonScheduledRoute.transferTime;
             let targetStopLabels = &mut self
                 .multiLabelsManager
-                .get_mut(&nonScheduledRoute.targetStop.id)
+                .get_mut(&nonScheduledRoute.targetStop)
                 .labels;
             if targetStopLabels[currentRound].getArrivalTime() > &pathArrivalTime {
                 targetStopLabels[currentRound] = Label::NonScheduledRoute {

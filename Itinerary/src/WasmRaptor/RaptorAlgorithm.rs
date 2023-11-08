@@ -63,8 +63,12 @@ pub fn STSCRaptor<'r>(
     nonScheduledRouteSpeed: NonScheduledRouteTravelingSpeed,
     maxTransfer: usize,
 ) -> Result<Journey, RaptorError> {
-    let departureStop = stops.get(&departureStopId).ok_or(RaptorError::StopNotFound("Departure Stop not found"))?;
-    let targetStop = stops.get(&targetStopId).ok_or(RaptorError::StopNotFound("Target Stop not found"))?;
+    let departureStop = stops
+        .get(&departureStopId)
+        .ok_or(RaptorError::StopNotFound("Departure Stop not found"))?;
+    let targetStop = stops
+        .get(&targetStopId)
+        .ok_or(RaptorError::StopNotFound("Target Stop not found"))?;
     let mut markedStops = vec![departureStop];
     let mut markedRoutes = HashMap::new();
     let mut scanner: SCRaptorScanner = SCRaptorScanner::new(
@@ -81,8 +85,8 @@ pub fn STSCRaptor<'r>(
         // Traverse each Marked Scheduled Route
         scanner.processScheduledRoutes(k, &markedRoutes, &mut markedStops);
         // // Look at non-scheduled routes
-        scanner.processNonScheduledRoutes(k, &markedStops, &nonScheduledRouteSpeed);
-        // //    Exit condition
+        scanner.processNonScheduledRoutes(k, &mut markedStops, &nonScheduledRouteSpeed);
+        // Exit condition
         if scanner.isScanCompleted(&markedStops) {
             break;
         }

@@ -48,7 +48,7 @@ impl<'rd> MultiLabelsManager<'rd> {
                 .iter()
                 .map(|(id, _stop)| {
                     (id.clone(), {
-                        let mut labels = vec!(Label::Infinite; roundsCount);
+                        let labels = vec!(Label::Infinite; roundsCount);
                         MultiLabels {
                             labels: labels.clone(),
                             earliestLabel: Label::Infinite,
@@ -78,6 +78,9 @@ pub struct SCRaptorScanner<'rd> {
 }
 
 impl<'rd> SCRaptorScanner<'rd> {
+    /*
+    * Creates a new instance of Single-Criteria Raptor Scanner.
+    */
     pub fn new(
         stops: &'rd Stops,
         scheduledRoutes: &'rd ScheduledRoutes,
@@ -96,6 +99,10 @@ impl<'rd> SCRaptorScanner<'rd> {
         }
     }
 
+    /*
+    * For each marked stop, we mark its corresonding route.
+    * If there is multiples marked stops attached to the same route, only the earliest is taken.
+    */
     pub fn markRoutes(
         &mut self,
         currentRound: usize,
@@ -105,7 +112,8 @@ impl<'rd> SCRaptorScanner<'rd> {
         markedRoutes.clear();
         for markedStop in markedStops.iter() {
             for scheduledRouteId in markedStop.scheduledRoutes.iter() {
-                // If there is already this route in the marked route
+                // If there is already this route in the marked route, we check if markedStop's
+                // arrival time is earlier than the current markedRoute.earliestStop
                 if let Some(markedRoute) = markedRoutes.get_mut(scheduledRouteId) {
                     if self.multiLabelsManager.get(&markedStop.id).labels[currentRound - 1]
                         .getArrivalTime()

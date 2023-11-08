@@ -28,7 +28,7 @@ struct DBConfig {
 }
 
 lazy_static! {
-    static ref RAPTOR_DATA_HOLDER: Arc<RwLock<RaptorDataHolder>> =
+    pub static ref RAPTOR_DATA_HOLDER: Arc<RwLock<RaptorDataHolder>> =
         Arc::new(RaptorDataHolder::default().into());
 }
 
@@ -144,10 +144,10 @@ async fn fromCursorToVecUnchecked<'r, T>(cursor: Cursor<Document>) -> Vec<T>
 where
     T: From<Document>,
 {
-        cursor
-            .map(|value| T::from(value.unwrap()))
-            .collect::<Vec<T>>()
-            .await
+    cursor
+        .map(|value| T::from(value.unwrap()))
+        .collect::<Vec<T>>()
+        .await
 }
 
 #[wasm_bindgen]
@@ -216,6 +216,13 @@ pub enum RaptorCommand {
 }
 
 #[wasm_bindgen]
+#[derive(PartialEq)]
+pub enum ScheduleType {
+    Estimated,
+    Theoretical,
+}
+
+#[wasm_bindgen]
 pub struct RaptorManager {
     client: Client,
     commandsQueue: Vec<RaptorCommand>,
@@ -240,7 +247,15 @@ impl RaptorManager {
 
     async fn getCursorOnScheduledRoutesWith(
         client: Client,
+        scheduleType: ScheduleType,
     ) -> Result<Cursor<Document>, mongodb::error::Error> {
+        let field = {
+            if scheduleType == ScheduleType::Theoretical {
+                "hor_estime"
+            } else {
+                "hor_theo"
+            }
+        };
         let cursor = client
             .database("bibm")
             .collection::<Document>("tbm_scheduled_routes")
@@ -278,7 +293,7 @@ impl RaptorManager {
                                     "input": "$stopsTimes",
                                     "in": doc! {
                                         "$getField": doc! {
-                                            "field": "hor_estime",
+                                            "field": field,
                                             "input": "$$this"
                                         }
                                     }
@@ -293,12 +308,15 @@ impl RaptorManager {
         Ok(cursor)
     }
 
-    async fn updateScheduledRoutesWith(client: Client) -> Result<(), BIBMError> {
-        let cursor = Self::getCursorOnScheduledRoutesWith(client).await?;
+    async fn updateScheduledRoutesWith(
+        client: Client,
+        scheduleType: ScheduleType,
+    ) -> Result<(), BIBMError> {
+        let cursor = Self::getCursorOnScheduledRoutesWith(client, scheduleType).await?;
         let scheduledRoutes: ScheduledRoutes = fromCursorToVecUnchecked::<DBScheduledRoute>(cursor)
             .await
             .into_iter()
-            .map(|el| {(el.id, ScheduledRoute::from(el))})
+            .map(|el| (el.id, ScheduledRoute::from(el)))
             .collect();
         // Clear all scheduled routes for each stop
         for (_id, stop) in RAPTOR_DATA_HOLDER.write().await.stops.iter_mut() {
@@ -321,8 +339,8 @@ impl RaptorManager {
         Ok(())
     }
 
-    pub async fn updateScheduledRoutes(&self) -> Result<(), BIBMError> {
-        Self::updateScheduledRoutesWith(self.client.clone()).await
+    pub async fn updateScheduledRoutes(&self, scheduleType: ScheduleType) -> Result<(), BIBMError> {
+        Self::updateScheduledRoutesWith(self.client.clone(), scheduleType).await
     }
 
     async fn getCursorOnNonScheduledRoutesWith(
@@ -396,10 +414,14 @@ impl RaptorManager {
         Self::updateStopsWith(self.client.clone()).await
     }
 
-    pub async fn setupRaptorDatas(&self) -> Result<(), BIBMError> {
+    pub async fn setupRaptorDatas(&self, scheduleType: ScheduleType) -> Result<(), BIBMError> {
         Self::updateStopsWith(self.client.clone()).await?;
-        tokio::spawn(Self::updateScheduledRoutesWith(self.client.clone())).await??;
-        // tokio::spawn(Self::updateNonScheduledRoutesWith(self.client.clone())).await??;
+        tokio::spawn(Self::updateScheduledRoutesWith(
+            self.client.clone(),
+            scheduleType,
+        ))
+        .await??;
+        tokio::spawn(Self::updateNonScheduledRoutesWith(self.client.clone())).await??;
         Ok(())
     }
     pub async fn runSCRaptor(
