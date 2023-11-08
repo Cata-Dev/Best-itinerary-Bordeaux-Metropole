@@ -48,9 +48,8 @@ impl<'rd> MultiLabelsManager<'rd> {
                 .iter()
                 .map(|(id, _stop)| {
                     (id.clone(), {
-                        let labels = vec!(Label::Infinite; roundsCount);
                         MultiLabels {
-                            labels: labels.clone(),
+                            labels: vec!(Label::Infinite; roundsCount),
                             earliestLabel: Label::Infinite,
                         }
                     })
@@ -211,7 +210,55 @@ impl<'rd> SCRaptorScanner<'rd> {
         markedStops: &mut Vec<&'rd Stop>,
     ) {
         for markedRoute in markedRoutes.clone().values() {
-            self.scanMarkedScheduledRoute(currentRound, markedStops, &markedRoute)
+            let route = markedRoute.route;
+            let mut possibleTrip = route.getEarliestTripFor(
+                markedRoute.earliestStopEquivalentIndex,
+                self.multiLabelsManager
+                    .get(&markedRoute.earliestStop.id)
+                    .earliestLabel
+                    .getArrivalTime(),
+            );
+            for (stopIndex, &stopId) in route.stopsId[markedRoute.earliestStopEquivalentIndex..]
+                .iter()
+                .enumerate()
+            {
+                if let Some(currentTrip) = possibleTrip {
+                    if &currentTrip[stopIndex]
+                        < std::cmp::min(
+                            self.multiLabelsManager //Target pruning
+                                .get(&self.targetStop.id)
+                                .earliestLabel
+                                .getArrivalTime(),
+                            self.multiLabelsManager
+                                .get(&stopId)
+                                .earliestLabel
+                                .getArrivalTime(),
+                        )
+                    {
+                        let multiLabels = self.multiLabelsManager.get_mut(&stopId);
+                        multiLabels.labels[currentRound] = Label::ScheduledRoute {
+                            arrivalTime: &currentTrip[stopIndex],
+                            departureTime: &currentTrip[stopIndex],
+                            route,
+                            boardingStop: markedRoute.earliestStop,
+                        };
+                        // Local pruning
+                        if multiLabels.earliestLabel.getArrivalTime()
+                            < multiLabels.labels[currentRound].getArrivalTime()
+                        {
+                            multiLabels.earliestLabel = multiLabels.labels[currentRound].clone();
+                        }
+                        markedStops.push(&self.stops[&stopId]);
+                    }
+                }
+                //HANDLE THE CATCHING OF AN EARLIER TRIP:
+                if let Some(trip) = route.getEarliestTripFor(
+                    stopIndex,
+                    self.multiLabelsManager.get(&stopId).labels[currentRound - 1].getArrivalTime(),
+                ) {
+                    possibleTrip = Some(trip);
+                }
+            }
         }
     }
     pub fn processNonScheduledRoutes(
