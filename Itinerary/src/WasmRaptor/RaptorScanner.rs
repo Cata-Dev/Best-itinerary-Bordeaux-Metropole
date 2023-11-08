@@ -47,11 +47,10 @@ impl<'rd> MultiLabelsManager<'rd> {
             inner: stops
                 .iter()
                 .map(|(id, _stop)| {
-                    (id.to_owned(), {
-                        let mut labels = vec![Label::Infinite];
-                        labels.reserve(roundsCount - 1);
+                    (id.clone(), {
+                        let mut labels = vec!(Label::Infinite; roundsCount);
                         MultiLabels {
-                            labels,
+                            labels: labels.clone(),
                             earliestLabel: Label::Infinite,
                         }
                     })
@@ -75,7 +74,7 @@ pub struct SCRaptorScanner<'rd> {
     multiLabelsManager: MultiLabelsManager<'rd>,
     stops: &'rd Stops,
     scheduledRoutes: &'rd ScheduledRoutes,
-    targetStop: &'rd Stop
+    targetStop: &'rd Stop,
 }
 
 impl<'rd> SCRaptorScanner<'rd> {
@@ -119,7 +118,11 @@ impl<'rd> SCRaptorScanner<'rd> {
                         markedRoute.earliestStop = markedStop;
                     }
                 } else {
-                    let scheduledRoute = unsafe { self.scheduledRoutes.get(scheduledRouteId).unwrap_unchecked() };
+                    let scheduledRoute = unsafe {
+                        self.scheduledRoutes
+                            .get(scheduledRouteId)
+                            .unwrap_unchecked()
+                    };
                     markedRoutes.insert(
                         *scheduledRouteId,
                         MarkedScheduledRoute {
@@ -193,25 +196,6 @@ impl<'rd> SCRaptorScanner<'rd> {
         }
     }
 
-    fn scanNonScheduleRoute(&mut self, currentRound: usize, markedStop: &'rd Stop, nonScheduledRouteTravelingSpeed: &NonScheduledRouteTravelingSpeed) {
-        for nonScheduledRoute in markedStop.nonScheduledRoutes.iter() {
-            let pathArrivalTime = *self.multiLabelsManager.get(&markedStop.id).labels[currentRound]
-                .getArrivalTime()
-                + Duration::seconds((nonScheduledRoute.distance / nonScheduledRouteTravelingSpeed.getTravelingSpeed(&nonScheduledRoute.routeType)) as i64);
-            let targetStopLabels = &mut self
-                .multiLabelsManager
-                .get_mut(&nonScheduledRoute.targetStop)
-                .labels;
-            if targetStopLabels[currentRound].getArrivalTime() > &pathArrivalTime {
-                targetStopLabels[currentRound] = Label::NonScheduledRoute {
-                    arrivalTime: pathArrivalTime,
-                    route: nonScheduledRoute,
-                    boardingStop: markedStop,
-                };
-            }
-        }
-    }
-
     pub fn processScheduledRoutes(
         &mut self,
         currentRound: usize,
@@ -225,11 +209,41 @@ impl<'rd> SCRaptorScanner<'rd> {
     pub fn processNonScheduledRoutes(
         &mut self,
         currentRound: usize,
-        markedStops: &Vec<&'rd Stop>,
-        nonScheduledRouteTravelingSpeed: &NonScheduledRouteTravelingSpeed
+        markedStops: &mut Vec<&'rd Stop>,
+        nonScheduledRouteTravelingSpeed: &NonScheduledRouteTravelingSpeed,
     ) {
-        for markedStop in markedStops.iter() {
-            self.scanNonScheduleRoute(currentRound, &markedStop, nonScheduledRouteTravelingSpeed);
+        let i: usize = 0;
+        while i < markedStops.len() {
+            let markedStop = markedStops.get(i).unwrap().clone();
+            for nonScheduledRoute in markedStop.nonScheduledRoutes.iter() {
+                let pathArrivalTime = *self.multiLabelsManager.get(&markedStop.id).labels
+                    [currentRound]
+                    .getArrivalTime()
+                    + Duration::seconds(
+                        (nonScheduledRoute.distance
+                            / nonScheduledRouteTravelingSpeed
+                                .getTravelingSpeed(&nonScheduledRoute.routeType))
+                            as i64,
+                    );
+                let targetEarliestLabel = self
+                    .multiLabelsManager
+                    .get(&nonScheduledRoute.targetStop)
+                    .earliestLabel
+                    .getArrivalTime()
+                    .clone();
+                let targetStopLabels = &mut self
+                    .multiLabelsManager
+                    .get_mut(&nonScheduledRoute.targetStop)
+                    .labels;
+                if targetEarliestLabel > pathArrivalTime {
+                    targetStopLabels[currentRound] = Label::NonScheduledRoute {
+                        arrivalTime: pathArrivalTime,
+                        route: nonScheduledRoute,
+                        boardingStop: markedStop,
+                    };
+                    markedStops.push(&self.stops[&nonScheduledRoute.targetStop]);
+                }
+            }
         }
     }
     pub fn isScanCompleted(&self, markedStops: &Vec<&'rd Stop>) -> bool {
