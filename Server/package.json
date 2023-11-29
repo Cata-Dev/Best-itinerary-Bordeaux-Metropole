@@ -48,7 +48,7 @@
     "bundle:client": "npm run compile && npm pack --pack-destination ./public"
   },
   "dependencies": {
-    "@feathersjs/adapter-commons": "^5.0.11",
+    "@feathersjs/adapter-commons": "^5.0.12",
     "@feathersjs/authentication": "^5.0.11",
     "@feathersjs/authentication-client": "^5.0.11",
     "@feathersjs/configuration": "^5.0.11",
