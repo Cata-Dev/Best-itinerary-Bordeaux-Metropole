@@ -17,7 +17,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/vue-fontawesome": "^3.0.3",
     "autoprefixer": "^10.4.16",
-    "core-js": "^3.32.0",
+    "core-js": "^3.35.1",
     "postcss": "^8.4.31",
     "server": "file:../Server/public/server-1.0.0.tgz",
     "socket.io-client": "^4.7.2",
