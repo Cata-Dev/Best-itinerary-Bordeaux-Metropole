@@ -1,14 +1,15 @@
-export enum SNCFEndpoints {
-  Schedules = "SNCF_Schedules",
-  Stops = "SNCF_Stops",
-}
+import { SNCFEndpoints } from "../../../../Data/models/SNCF/names";
+export { SNCFEndpoints };
 
 import axios from "axios";
 import { Application } from "../../declarations";
 import { Endpoint } from "../endpoint";
 import { bulkOps, unique, WGSToLambert93 } from "../../utils";
-import SNCF_Schedules, { dbSNCF_Schedules, dbSNCF_SchedulesModel } from "./models/SNCF_schedules.model";
-import SNCF_Stops, { dbSNCF_Stops, dbSNCF_StopsModel } from "./models/SNCF_stops.model";
+import SNCF_Schedules, {
+  dbSNCF_Schedules,
+  dbSNCF_SchedulesModel,
+} from "../../../../Data/models/SNCF/SNCF_schedules.model";
+import SNCF_Stops, { dbSNCF_Stops, dbSNCF_StopsModel } from "../../../../Data/models/SNCF/SNCF_stops.model";
 import { logger } from "../../logger";
 
 /**
@@ -55,14 +56,14 @@ declare module "../../declarations" {
 export type SNCFClass<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
   ? dbSNCF_Schedules
   : E extends SNCFEndpoints.Stops
-  ? dbSNCF_Stops
-  : dbSNCF_Schedules | dbSNCF_Stops;
+    ? dbSNCF_Stops
+    : dbSNCF_Schedules | dbSNCF_Stops;
 
 export type SNCFModel<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
   ? dbSNCF_SchedulesModel
   : E extends SNCFEndpoints.Stops
-  ? dbSNCF_StopsModel
-  : dbSNCF_SchedulesModel | dbSNCF_StopsModel;
+    ? dbSNCF_StopsModel
+    : dbSNCF_SchedulesModel | dbSNCF_StopsModel;
 
 interface SNCF_link {
   id: string;
@@ -128,8 +129,8 @@ interface SNCF_Stop {
 export default (app: Application) => {
   logger.log(`Initializing SNCF models...`);
 
-  const Schedule = SNCF_Schedules(app);
-  const Stop = SNCF_Stops(app);
+  const Schedule = SNCF_Schedules(app.get("mongooseClient"));
+  const Stop = SNCF_Stops(app.get("mongooseClient"));
 
   logger.info(`Models initialized.`);
 

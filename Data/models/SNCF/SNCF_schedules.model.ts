@@ -2,13 +2,13 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { Application } from "../../../declarations";
-import { SNCFEndpoints } from "../index";
+import { SNCFEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, prop, Ref } from "@typegoose/typegoose";
+import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, Ref } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbSNCF_Stops } from "./SNCF_stops.model";
+import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: SNCFEndpoints.Schedules } })
 export class dbSNCF_Schedules extends TimeStamps {
@@ -28,14 +28,14 @@ export class dbSNCF_Schedules extends TimeStamps {
   public route!: string; // Should be a ref
 }
 
-export default function init(app: Application) {
-  const mongooseClient = app.get("mongooseClient");
+export default function init(db: Connection) {
+  if (getModelForClass(dbSNCF_Schedules, { existingConnection: db })) deleteModelWithClass(dbSNCF_Schedules);
 
-  const dbSNCF_SchedulesSchema = buildSchema(dbSNCF_Schedules, { existingConnection: mongooseClient });
-  const dbSNCF_SchedulesModelRaw = mongooseClient.model(getName(dbSNCF_Schedules), dbSNCF_SchedulesSchema);
+  const dbSNCF_SchedulesSchema = buildSchema(dbSNCF_Schedules, { existingConnection: db });
+  const dbSNCF_SchedulesModelRaw = db.model(getName(dbSNCF_Schedules), dbSNCF_SchedulesSchema);
 
   return addModelToTypegoose(dbSNCF_SchedulesModelRaw, dbSNCF_Schedules, {
-    existingConnection: mongooseClient,
+    existingConnection: db,
   });
 }
 
