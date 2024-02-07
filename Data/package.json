@@ -1,0 +1,26 @@
+{
+  "name": "data",
+  "version": "1.0.0",
+  "description": "Data source for BIBM",
+  "main": "",
+  "scripts": {
+    "build": "tsc --build",
+    "prettier": "prettier \"**/*.ts\" --write",
+    "type-check": "tsc -noEmit",
+    "lint": "eslint ./models/ --ext .ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "full-lint": "npm run lint && npm run type-check",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@typegoose/typegoose": "^12.1.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "eslint": "^8.52.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.3.3"
+  }
+}

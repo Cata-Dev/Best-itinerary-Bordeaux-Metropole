@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "rootDir": ".",
+    "outDir": ".",
+    "composite": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "sourceMap": true
+  },
+  "exclude": [],
+  "include": [
+    "models/**/*"
+  ]
+}
