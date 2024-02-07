@@ -6,7 +6,7 @@ import TBM_Schedules, {
   dbTBM_Schedules_rt,
   RtScheduleState,
   RtScheduleType,
-} from "../models/TBM_schedules.model";
+} from "../../../../../Data/models/TBM/TBM_schedules.model";
 
 export type TBM_Schedule = BaseTBM<{
   gid: string;
@@ -25,7 +25,7 @@ export type TBM_Schedule_rt = TBM_Schedule &
   }>;
 
 export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
-  const [Schedule, ScheduleRt] = TBM_Schedules(app);
+  const [Schedule, ScheduleRt] = TBM_Schedules(app.get("mongooseClient"));
 
   // Data needed
   return [

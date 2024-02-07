@@ -1,17 +1,6 @@
 // Top exports to avoid double-importing
-export enum TBMEndpoints {
-  Addresses = "Addresses",
-  Intersections = "Intersections",
-  Sections = "Sections",
-  Stops = "TBM_Stops",
-  Lines = "TBM_Lines",
-  // 2 different endpoints in 1 collection
-  Schedules = "TBM_Schedules",
-  Schedules_rt = "TBM_Schedules_rt",
-  Trips = "TBM_Trips",
-  Lines_routes = "TBM_Lines_routes",
-  ScheduledRoutes = "TBM_Scheduled_routes",
-}
+import { TBMEndpoints } from "../../../../Data/models/TBM/names";
+export { TBMEndpoints };
 
 export interface BaseTBM<T extends object = object> {
   properties: T;
@@ -22,19 +11,22 @@ import { Application } from "../../declarations";
 import { Endpoint } from "../endpoint";
 import { logger } from "../../logger";
 
-import { dbAddresses, dbAddressesModel } from "./models/addresses.model";
+import { dbAddresses, dbAddressesModel } from "../../../../Data/models/TBM/addresses.model";
 import addressesEndpoint from "./endpoints/addresses.endpoint";
 
-import { dbIntersections, dbIntersectionsModel } from "./models/intersections.model";
+import { dbIntersections, dbIntersectionsModel } from "../../../../Data/models/TBM/intersections.model";
 import intersectionsEndpoint from "./endpoints/intersections.endpoint";
 
-import { dbSections, dbSectionsModel } from "./models/sections.model";
+import { dbSections, dbSectionsModel } from "../../../../Data/models/TBM/sections.model";
 import sectionsEndpoint from "./endpoints/sections.endpoint";
 
-import { dbTBM_Lines, dbTBM_LinesModel } from "./models/TBM_lines.model";
+import { dbTBM_Lines, dbTBM_LinesModel } from "../../../../Data/models/TBM/TBM_lines.model";
 import TBM_linesEndpoint from "./endpoints/TBM_lines.endpoint";
 
-import { dbTBM_Lines_routes, dbTBM_Lines_routesModel } from "./models/TBM_lines_routes.model";
+import {
+  dbTBM_Lines_routes,
+  dbTBM_Lines_routesModel,
+} from "../../../../Data/models/TBM/TBM_lines_routes.model";
 import TBM_lines_routesEndpoint from "./endpoints/TBM_lines_routes.endpoint";
 
 import {
@@ -42,16 +34,19 @@ import {
   dbTBM_SchedulesModel,
   dbTBM_Schedules_rt,
   dbTBM_Schedules_rtModel,
-} from "./models/TBM_schedules.model";
+} from "../../../../Data/models/TBM/TBM_schedules.model";
 import TBM_schedulesEndpoints from "./endpoints/TBM_schedules.endpoint";
 
-import { dbTBM_Stops, dbTBM_StopsModel } from "./models/TBM_stops.model";
+import { dbTBM_Stops, dbTBM_StopsModel } from "../../../../Data/models/TBM/TBM_stops.model";
 import TBM_stopsEndpoint from "./endpoints/TBM_stops.endpoint";
 
-import { dbTBM_Trips, dbTBM_TripsModel } from "./models/TBM_trips.model";
+import { dbTBM_Trips, dbTBM_TripsModel } from "../../../../Data/models/TBM/TBM_trips.model";
 import TBM_tripsEndpoint from "./endpoints/TBM_trips.endpoint";
 
-import { dbTBM_ScheduledRoutes, dbTBM_ScheduledRoutesModel } from "./models/TBMScheduledRoutes.model";
+import {
+  dbTBM_ScheduledRoutes,
+  dbTBM_ScheduledRoutesModel,
+} from "../../../../Data/models/TBM/TBMScheduledRoutes.model";
 import TBMScheduledRoutesEndpoint, {
   TBMScheduledRoutesEndpointHook,
 } from "./endpoints/TBMScheduledRoutes.endpoint";

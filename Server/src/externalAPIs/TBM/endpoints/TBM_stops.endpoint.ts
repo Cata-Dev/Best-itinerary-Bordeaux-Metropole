@@ -2,7 +2,12 @@ import { BaseTBM, TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "../models/TBM_stops.model";
+import TBM_Stops, {
+  Active,
+  dbTBM_Stops,
+  StopType,
+  VehicleType,
+} from "../../../../../Data/models/TBM/TBM_stops.model";
 
 export type TBM_Stop = BaseTBM<{
   gid: string;
@@ -15,7 +20,7 @@ export type TBM_Stop = BaseTBM<{
 };
 
 export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
-  const Stop = TBM_Stops(app);
+  const Stop = TBM_Stops(app.get("mongooseClient"));
 
   return [
     new Endpoint(

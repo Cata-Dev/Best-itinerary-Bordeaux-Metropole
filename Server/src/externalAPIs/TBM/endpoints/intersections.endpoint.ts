@@ -2,7 +2,7 @@ import { BaseTBM, TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Intersections, { dbIntersections } from "../models/intersections.model";
+import TBM_Intersections, { dbIntersections } from "../../../../../Data/models/TBM/intersections.model";
 
 export type Intersection = BaseTBM<{
   gid: string;
@@ -12,7 +12,7 @@ export type Intersection = BaseTBM<{
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
-  const Intersection = TBM_Intersections(app);
+  const Intersection = TBM_Intersections(app.get("mongooseClient"));
 
   return [
     new Endpoint(

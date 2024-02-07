@@ -26,5 +26,10 @@
   ],
   "exclude": [
     "test"
+  ],
+  "references": [
+    {
+      "path": "../Data"
+    }
   ]
 }
