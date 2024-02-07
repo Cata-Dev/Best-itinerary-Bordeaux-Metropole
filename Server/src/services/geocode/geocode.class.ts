@@ -12,14 +12,14 @@ export interface GeocodeServiceOptions {
   app: Application;
 }
 
-type DistributedEndpoints<N extends EndpointName> = N extends any ? Endpoint<N> : never;
+type DistributedEndpoints<N extends EndpointName> = N extends unknown ? Endpoint<N> : never;
 
-type DistributedProdiverClass<N extends EndpointName> = N extends any ? ProviderClass<N> : never;
-type DistributedDocumentType<N extends EndpointName> = N extends any
+type DistributedProdiverClass<N extends EndpointName> = N extends unknown ? ProviderClass<N> : never;
+type DistributedDocumentType<N extends EndpointName> = N extends unknown
   ? DocumentType<DistributedProdiverClass<N>>
   : never;
 
-type DistributedFilterQuery<N extends EndpointName> = N extends any
+type DistributedFilterQuery<N extends EndpointName> = N extends unknown
   ? FilterQuery<DistributedDocumentType<N>>
   : never;
 
@@ -62,7 +62,7 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
         .replace(/\p{Diacritic}/gu, ""),
     );
     this.types_voies = await Addresses.model.distinct("type_voie");
-    this.reps = await Addresses.model.distinct("rep", { rep: { $ne: null } });
+    this.reps = (await Addresses.model.distinct("rep", { rep: { $ne: null } })) as string[];
   }
 
   async parseId(id: string): Promise<parsedId<GEOCODE_type>[]> {
@@ -197,7 +197,8 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
           ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
           : typeof GEOCODE_type extends SNCFEndpoints.Stops
           ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-          : any),
+          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            any),
       },
     };
 
@@ -263,7 +264,8 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
             ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
             : typeof doc.GEOCODE_type extends SNCFEndpoints.Stops
             ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-            : any),
+            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              any),
         },
       });
     }
