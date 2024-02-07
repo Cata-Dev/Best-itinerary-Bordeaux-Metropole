@@ -1,1 +1,2 @@
-run.bat
+node_modules/
+*.tsbuildinfo

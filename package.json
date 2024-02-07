@@ -1,0 +1,11 @@
+{
+  "name": "bibm-root",
+  "workspaces": {
+    "packages": [
+      "Client/",
+      "Server/",
+      "Data/",
+      "Compute/"
+    ]
+  }
+}
