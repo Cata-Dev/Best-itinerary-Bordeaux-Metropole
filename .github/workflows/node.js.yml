@@ -39,7 +39,9 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'pnpm'
-    # Build Server to build Client
+    # Build Data to build Server to build Client
+    - run: cd Data/ && pnpm install
+    - run: cd Data/ && pnpm run build --if-present
     - run: cd Server/ && pnpm install
     - run: cd Server/ && pnpm run bundle:client --if-present
     - run: cd Client/ && pnpm add file:../Server/public/server-1.0.0.tgz
