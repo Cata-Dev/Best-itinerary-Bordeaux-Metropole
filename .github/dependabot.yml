@@ -1,6 +1,14 @@
 version: 2
 updates:
-- package-ecosystem: npm
+- package-ecosystem: pnpm
+  directory: "/Data"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  target-branch: "dev"
+  assignees:
+  - Catatomik
+- package-ecosystem: pnpm
   directory: "/Client"
   schedule:
     interval: daily
@@ -8,7 +16,7 @@ updates:
   target-branch: "dev"
   assignees:
   - Catatomik
-- package-ecosystem: npm
+- package-ecosystem: pnpm
   directory: "/Server"
   schedule:
     interval: daily
