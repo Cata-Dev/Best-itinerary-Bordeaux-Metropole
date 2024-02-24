@@ -6,7 +6,7 @@ import TBM_Schedules, {
   dbTBM_Schedules_rt,
   RtScheduleState,
   RtScheduleType,
-} from "../../../../../Data/models/TBM/TBM_schedules.model";
+} from "data/lib/models/TBM/TBM_schedules.model";
 
 export type TBM_Schedule = BaseTBM<{
   gid: string;

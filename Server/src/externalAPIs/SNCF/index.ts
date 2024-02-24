@@ -1,4 +1,4 @@
-import { SNCFEndpoints } from "../../../../Data/models/SNCF/names";
+import { SNCFEndpoints } from "data/lib/models/SNCF/names";
 export { SNCFEndpoints };
 
 import axios from "axios";
@@ -8,8 +8,8 @@ import { bulkOps, unique, WGSToLambert93 } from "../../utils";
 import SNCF_Schedules, {
   dbSNCF_Schedules,
   dbSNCF_SchedulesModel,
-} from "../../../../Data/models/SNCF/SNCF_schedules.model";
-import SNCF_Stops, { dbSNCF_Stops, dbSNCF_StopsModel } from "../../../../Data/models/SNCF/SNCF_stops.model";
+} from "data/lib/models/SNCF/SNCF_schedules.model";
+import SNCF_Stops, { dbSNCF_Stops, dbSNCF_StopsModel } from "data/lib/models/SNCF/SNCF_stops.model";
 import { logger } from "../../logger";
 
 /**

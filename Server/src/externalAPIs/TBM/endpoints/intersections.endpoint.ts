@@ -2,7 +2,7 @@ import { BaseTBM, TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Intersections, { dbIntersections } from "../../../../../Data/models/TBM/intersections.model";
+import TBM_Intersections, { dbIntersections } from "data/lib/models/TBM/intersections.model";
 
 export type Intersection = BaseTBM<{
   gid: string;

@@ -4,16 +4,10 @@ import { TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps, mapAsync } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import {
-  RtScheduleState,
-  RtScheduleType,
-  dbTBM_Schedules_rt,
-} from "../../../../../Data/models/TBM/TBM_schedules.model";
-import { dbTBM_Lines_routes } from "../../../../../Data/models/TBM/TBM_lines_routes.model";
-import { dbTBM_Trips } from "../../../../../Data/models/TBM/TBM_trips.model";
-import TBM_Scheduled_routes, {
-  dbTBM_ScheduledRoutes,
-} from "../../../../../Data/models/TBM/TBMScheduledRoutes.model";
+import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/lib/models/TBM/TBM_schedules.model";
+import { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
+import { dbTBM_Trips } from "data/lib/models/TBM/TBM_trips.model";
+import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "data/lib/models/TBM/TBMScheduledRoutes.model";
 
 export default (
   app: Application,

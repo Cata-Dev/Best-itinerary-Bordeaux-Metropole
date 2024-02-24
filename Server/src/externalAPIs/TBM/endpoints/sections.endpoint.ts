@@ -2,7 +2,7 @@ import { BaseTBM, TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps, cartographicDistance } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Sections, { dbSections } from "../../../../../Data/models/TBM/sections.model";
+import TBM_Sections, { dbSections } from "data/lib/models/TBM/sections.model";
 
 export type Section = BaseTBM<{
   gid: string;
