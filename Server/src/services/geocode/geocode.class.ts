@@ -194,11 +194,11 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
         ) as typeof GEOCODE_type extends TBMEndpoints.Addresses
           ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">
           : typeof GEOCODE_type extends TBMEndpoints.Stops
-          ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-          : typeof GEOCODE_type extends SNCFEndpoints.Stops
-          ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            any),
+            ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
+            : typeof GEOCODE_type extends SNCFEndpoints.Stops
+              ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
+              : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                any),
       },
     };
 
@@ -261,11 +261,11 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
           ) as typeof doc.GEOCODE_type extends TBMEndpoints.Addresses
             ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">
             : typeof doc.GEOCODE_type extends TBMEndpoints.Stops
-            ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-            : typeof doc.GEOCODE_type extends SNCFEndpoints.Stops
-            ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              any),
+              ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
+              : typeof doc.GEOCODE_type extends SNCFEndpoints.Stops
+                ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
+                : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  any),
         },
       });
     }
