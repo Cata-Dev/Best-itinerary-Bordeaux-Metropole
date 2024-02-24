@@ -41,9 +41,8 @@ jobs:
         cache: 'pnpm'
     # Build Data to build Server to build Client
     - run: pnpm -F "data" --config.dedupe-peer-dependents=false install
-    - run: cd Data/ && pnpm run --if-present build
     - run: pnpm -F "server" --config.dedupe-peer-dependents=false install
     - run: cd Server/ && pnpm run --if-present bundle:client
-    - run: cd Client/ && pnpm add file:../Server/public/server-1.0.0.tgz
+    - run: pnpm -F "client" --config.dedupe-peer-dependents=false install
     - run: cd Client/ && pnpm run --if-present build
     
