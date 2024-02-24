@@ -43,6 +43,6 @@ jobs:
     - run: pnpm -F "data" --config.dedupe-peer-dependents=false install
     - run: pnpm -F "server" --config.dedupe-peer-dependents=false install
     - run: cd Server/ && pnpm run --if-present bundle:client
-    - run: pnpm -F "client" --config.dedupe-peer-dependents=false install
+    - run: pnpm -F "client" --config.dedupe-peer-dependents=false add file:../Server/public/server-1.0.0.tgz
     - run: cd Client/ && pnpm run --if-present build
     
