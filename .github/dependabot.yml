@@ -1,23 +1,7 @@
 version: 2
 updates:
 - package-ecosystem: npm
-  directory: "/Data"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 99
-  target-branch: "dev"
-  assignees:
-  - Catatomik
-- package-ecosystem: npm
-  directory: "/Client"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 99
-  target-branch: "dev"
-  assignees:
-  - Catatomik
-- package-ecosystem: npm
-  directory: "/Server"
+  directory: "/"
   schedule:
     interval: daily
   open-pull-requests-limit: 99
