@@ -26,10 +26,10 @@ defineProps({
       type === 'FOOT'
         ? 'bg-walking-bg'
         : type === 'TBM'
-        ? 'bg-tbm-bg'
-        : type === 'SNCF'
-        ? 'bg-sncf-bg'
-        : 'bg-slate-700'
+          ? 'bg-tbm-bg'
+          : type === 'SNCF'
+            ? 'bg-sncf-bg'
+            : 'bg-slate-700'
     "
   >
     <font-awesome-icon
