@@ -40,9 +40,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'pnpm'
     # Build Data to build Server to build Client
-    - run: cd Data/ && pnpm install
+    - run: pnpm -F "data" --config.dedupe-peer-dependents=false install
     - run: cd Data/ && pnpm run build --if-present
-    - run: cd Server/ && pnpm install
+    - run: pnpm -F "server" --config.dedupe-peer-dependents=false install
     - run: cd Server/ && pnpm run bundle:client --if-present
     - run: cd Client/ && pnpm add file:../Server/public/server-1.0.0.tgz
     - run: cd Client/ && pnpm run build --if-present
