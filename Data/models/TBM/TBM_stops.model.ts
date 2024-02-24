@@ -29,7 +29,7 @@ export class dbTBM_Stops extends TimeStamps {
   @prop({ required: true })
   public _id!: number;
 
-  @prop({ type: () => [Number, Number], required: true })
+  @prop({ type: () => [Number], required: true })
   public coords!: [number, number];
 
   @prop({ required: true })
