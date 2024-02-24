@@ -4,7 +4,7 @@
 
 import { TBMEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
+import { type ReturnModelType, addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 
@@ -52,7 +52,7 @@ export class dbTBM_Stops extends TimeStamps {
 //   coords: [number, number];
 // };
 
-export default function init(db: Connection) {
+export default function init(db: Connection): ReturnModelType<typeof dbTBM_Stops> {
   if (getModelForClass(dbTBM_Stops, { existingConnection: db })) deleteModelWithClass(dbTBM_Stops);
 
   const dbTBM_StopsSchema = buildSchema(dbTBM_Stops, { existingConnection: db });

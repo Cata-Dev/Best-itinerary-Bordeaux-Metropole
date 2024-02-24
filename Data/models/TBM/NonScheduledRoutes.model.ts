@@ -2,7 +2,7 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, Ref } from "@typegoose/typegoose";
+import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, type Ref, type ReturnModelType } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
@@ -24,7 +24,7 @@ export class dbFootPaths {
   public path?: Ref<dbFootGraphNodes, dbFootGraphNodes["_id"]>[]; // Ref[] to intersections | stops
 }
 
-export default function init(db: Connection) {
+export default function init(db: Connection): ReturnModelType<typeof dbFootPaths> {
   if (getModelForClass(dbFootPaths, { existingConnection: db })) deleteModelWithClass(dbFootPaths);
 
   const dbFootPathsSchema = buildSchema(dbFootPaths, { existingConnection: db });

@@ -4,7 +4,16 @@
 
 import { TBMEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, index, prop, Ref } from "@typegoose/typegoose";
+import {
+  addModelToTypegoose,
+  buildSchema,
+  deleteModelWithClass,
+  getModelForClass,
+  index,
+  prop,
+  type Ref,
+  type ReturnModelType,
+} from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Lines } from "./TBM_lines.model";
@@ -34,7 +43,7 @@ export class dbTBM_Trips extends TimeStamps {
   public rs_sv_chem_l!: Ref<dbTBM_Lines_routes, number>;
 }
 
-export default function init(db: Connection) {
+export default function init(db: Connection): ReturnModelType<typeof dbTBM_Trips> {
   if (getModelForClass(dbTBM_Trips, { existingConnection: db })) deleteModelWithClass(dbTBM_Trips);
 
   const dbTBM_TripsSchema = buildSchema(dbTBM_Trips, { existingConnection: db });

@@ -24,7 +24,8 @@ import {
   getModelForClass,
   index,
   prop,
-  Ref,
+  type Ref,
+  type ReturnModelType,
 } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
@@ -67,7 +68,7 @@ export class dbTBM_Schedules_rt extends dbTBM_Schedules {
   public type!: RtScheduleType;
 }
 
-export default function init(db: Connection) {
+export default function init(db: Connection): readonly [ReturnModelType<typeof dbTBM_Schedules>, ReturnModelType<typeof dbTBM_Schedules_rt>] {
   if (getModelForClass(dbTBM_Schedules, { existingConnection: db })) deleteModelWithClass(dbTBM_Schedules);
   if (getModelForClass(dbTBM_Schedules_rt, { existingConnection: db })) deleteModelWithClass(dbTBM_Schedules_rt);
 

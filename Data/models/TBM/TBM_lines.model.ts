@@ -4,10 +4,10 @@
 
 import { TBMEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
+import { type ReturnModelType, addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
-import { Active, VehicleType } from "./TBM_stops.model";
+import { type Active, VehicleType } from "./TBM_stops.model";
 import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: TBMEndpoints.Lines } })
@@ -25,7 +25,7 @@ export class dbTBM_Lines extends TimeStamps {
   public active!: Active;
 }
 
-export default function init(db: Connection) {
+export default function init(db: Connection): ReturnModelType<typeof dbTBM_Lines> {
   if (getModelForClass(dbTBM_Lines, { existingConnection: db })) deleteModelWithClass(dbTBM_Lines);
 
   const dbTBM_LinesSchema = buildSchema(dbTBM_Lines, { existingConnection: db });

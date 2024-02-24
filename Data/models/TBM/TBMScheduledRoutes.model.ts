@@ -3,7 +3,7 @@
 // See http://mongoosejs.com/docs/models.html
 
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, Ref } from "@typegoose/typegoose";
+import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, type Ref, type ReturnModelType } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Schedules_rt } from "./TBM_schedules.model";
@@ -33,7 +33,7 @@ export class dbTBM_ScheduledRoutes extends TimeStamps {
   public stops!: Ref<dbTBM_Stops, number>[];
 }
 
-export default function init(db: Connection) {
+export default function init(db: Connection): ReturnModelType<typeof dbTBM_ScheduledRoutes> {
   if (getModelForClass(dbTBM_ScheduledRoutes, { existingConnection: db })) deleteModelWithClass(dbTBM_ScheduledRoutes);
 
   const dbTBM_ScheduledRoutesSchema = buildSchema(dbTBM_ScheduledRoutes, {

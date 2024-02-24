@@ -15,7 +15,7 @@ export enum SectionDomanial {
 
 import { TBMEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, Ref } from "@typegoose/typegoose";
+import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, type Ref, type ReturnModelType } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbIntersections } from "./intersections.model";
@@ -54,7 +54,7 @@ export class dbSections extends TimeStamps {
   public rg_fv_graph_na!: Ref<dbIntersections, number>;
 }
 
-export default function init(db: Connection) {
+export default function init(db: Connection): ReturnModelType<typeof dbSections> {
   if (getModelForClass(dbSections, { existingConnection: db })) deleteModelWithClass(dbSections);
 
   const dbSectionsSchema = buildSchema(dbSections, { existingConnection: db });

@@ -10,6 +10,7 @@ import {
   getModelWithString,
   prop,
   Ref,
+  ReturnModelType,
 } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
@@ -59,7 +60,9 @@ export class dbFootGraphEdges extends dbFootGraph {
   public ends!: [Ref<dbFootGraphNodes, dbFootGraphNodes["_id"]>, Ref<dbFootGraphNodes, dbFootGraphNodes["_id"]>];
 }
 
-export default function init(db: Connection) {
+export default function init(
+  db: Connection,
+): readonly [ReturnModelType<typeof dbFootGraph>, ReturnModelType<typeof dbFootGraphNodes>, ReturnModelType<typeof dbFootGraphEdges>] {
   if (getModelWithString(getName(dbFootGraph))) deleteModelWithClass(dbFootGraph);
   if (getModelWithString(getName(dbFootGraphNodes))) deleteModelWithClass(dbFootGraphNodes);
   if (getModelWithString(getName(dbFootGraphEdges))) deleteModelWithClass(dbFootGraphEdges);
