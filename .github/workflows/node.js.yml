@@ -9,12 +9,14 @@ on:
     paths:
       - 'Client/*'
       - 'Server/*'
+      - 'Data/*'
       - '.github/workflows/*'
   pull_request:
     branches: [ main, dev ]
     paths:
       - 'Client/*'
       - 'Server/*'
+      - 'Data/*'
       - '.github/workflows/*'
 
 jobs:
@@ -28,22 +30,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - uses: pnpm/action-setup@v3
+      with:
+        version: 8
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: |
-          Server/package-lock.json
-          Client/package-lock.json
-    - name: Install latest npm
-      run: |
-          npm install -g npm &&
-          npm --version &&
-          npm list -g --depth 0
+        cache: 'pnpm'
     # Build Server to build Client
-    - run: cd Server/ && npm ci
-    - run: cd Server/ && npm run bundle:client --if-present
-    - run: cd Client/ && npm i file:../Server/public/server-1.0.0.tgz
-    - run: cd Client/ && npm run build --if-present
+    - run: cd Server/ && pnpm install
+    - run: cd Server/ && pnpm run bundle:client --if-present
+    - run: cd Client/ && pnpm add file:../Server/public/server-1.0.0.tgz
+    - run: cd Client/ && pnpm run build --if-present
     
