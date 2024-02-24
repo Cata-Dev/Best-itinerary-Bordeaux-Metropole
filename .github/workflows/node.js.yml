@@ -9,12 +9,14 @@ on:
     paths:
       - 'Client/*'
       - 'Server/*'
+      - 'Data/*'
       - '.github/workflows/*'
   pull_request:
     branches: [ main, dev ]
     paths:
       - 'Client/*'
       - 'Server/*'
+      - 'Data/*'
       - '.github/workflows/*'
 
 jobs:
