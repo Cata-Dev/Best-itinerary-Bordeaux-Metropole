@@ -123,12 +123,6 @@ importers:
       '@typegoose/typegoose':
         specifier: ^12.1.0
         version: 12.1.0(mongoose@8.1.3)
-      mongoose:
-        specifier: ^8.1.3
-        version: 8.1.3
-      raptor:
-        specifier: github:cata-dev/raptor#no-local-pruning
-        version: github.com/cata-dev/raptor/4528101838da0fd9cb723f96cddf2aac3f8be701
     devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
