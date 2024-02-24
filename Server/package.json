@@ -69,7 +69,7 @@
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@feathersjs/cli": "5.0.21",
+    "@feathersjs/cli": "5.0.22",
     "@feathersjs/rest-client": "^5.0.22",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.20",
