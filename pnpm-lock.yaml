@@ -123,12 +123,6 @@ importers:
       '@typegoose/typegoose':
         specifier: ^12.2.0
         version: 12.2.0(mongoose@8.2.0)
-      mongoose:
-        specifier: ^8.2.0
-        version: 8.2.0
-      raptor:
-        specifier: github:cata-dev/raptor#no-local-pruning
-        version: github.com/cata-dev/raptor/4528101838da0fd9cb723f96cddf2aac3f8be701
     devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -195,7 +189,7 @@ importers:
         version: 3.36.0
       data:
         specifier: file:../Data
-        version: file:Data
+        version: file:Data(mongoose@8.2.0)
       feathers-hooks-common:
         specifier: ^8.1.2
         version: 8.1.2(@feathersjs/feathers@5.0.22)
@@ -6457,22 +6451,14 @@ packages:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: false
 
-  file:Data:
+  file:Data(mongoose@8.2.0):
     resolution: {directory: Data, type: directory}
+    id: file:Data
     name: data
     dependencies:
       '@typegoose/typegoose': 12.2.0(mongoose@8.2.0)
-      mongoose: 8.2.0
-      raptor: github.com/cata-dev/raptor/4528101838da0fd9cb723f96cddf2aac3f8be701
     transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
+      - mongoose
     dev: false
 
   file:Server/public/server-1.0.0.tgz(mongodb@6.3.0)(typescript@5.3.3):
@@ -6497,7 +6483,7 @@ packages:
       '@typegoose/typegoose': 12.2.0(mongoose@8.2.0)
       axios: 1.6.7
       core-js: 3.36.0
-      data: file:Data
+      data: file:Data(mongoose@8.2.0)
       feathers-hooks-common: 8.1.2(@feathersjs/feathers@5.0.22)
       mongoose: 8.2.0
       node-fetch: 3.3.2
