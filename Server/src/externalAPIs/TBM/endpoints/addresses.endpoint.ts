@@ -2,7 +2,7 @@ import { BaseTBM, TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Addresses, { dbAddresses } from "../models/addresses.model";
+import TBM_Addresses, { dbAddresses } from "data/lib/models/TBM/addresses.model";
 
 export type Addresse = BaseTBM<{
   nom_voie: string;
@@ -19,7 +19,7 @@ export type Addresse = BaseTBM<{
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
-  const Address = TBM_Addresses(app);
+  const Address = TBM_Addresses(app.get("mongooseClient"));
 
   return [
     new Endpoint(

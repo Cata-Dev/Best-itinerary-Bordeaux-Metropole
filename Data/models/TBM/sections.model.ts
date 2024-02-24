@@ -13,13 +13,13 @@ export enum SectionDomanial {
   Autre = 7,
 }
 
-import { Application } from "../../../declarations";
-import { TBMEndpoints } from "../index";
+import { TBMEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, prop, Ref } from "@typegoose/typegoose";
+import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, type Ref, type ReturnModelType } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbIntersections } from "./intersections.model";
+import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: TBMEndpoints.Sections } })
 export class dbSections extends TimeStamps {
@@ -54,13 +54,13 @@ export class dbSections extends TimeStamps {
   public rg_fv_graph_na!: Ref<dbIntersections, number>;
 }
 
-export default function init(app: Application) {
-  const mongooseClient = app.get("mongooseClient");
+export default function init(db: Connection): ReturnModelType<typeof dbSections> {
+  if (getModelForClass(dbSections, { existingConnection: db })) deleteModelWithClass(dbSections);
 
-  const dbSectionsSchema = buildSchema(dbSections, { existingConnection: mongooseClient });
-  const dbSectionsModelRaw = mongooseClient.model(getName(dbSections), dbSectionsSchema);
+  const dbSectionsSchema = buildSchema(dbSections, { existingConnection: db });
+  const dbSectionsModelRaw = db.model(getName(dbSections), dbSectionsSchema);
 
-  return addModelToTypegoose(dbSectionsModelRaw, dbSections, { existingConnection: mongooseClient });
+  return addModelToTypegoose(dbSectionsModelRaw, dbSections, { existingConnection: db });
 }
 
 export type dbSectionsModel = ReturnType<typeof init>;

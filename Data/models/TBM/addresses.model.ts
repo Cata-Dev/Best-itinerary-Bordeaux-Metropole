@@ -2,12 +2,12 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { Application } from "../../../declarations";
-import { TBMEndpoints } from "../index";
+import { TBMEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, prop } from "@typegoose/typegoose";
+import { type ReturnModelType, addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
+import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: TBMEndpoints.Addresses } })
 export class dbAddresses extends TimeStamps {
@@ -42,13 +42,13 @@ export class dbAddresses extends TimeStamps {
   public commune!: string;
 }
 
-export default function init(app: Application) {
-  const mongooseClient = app.get("mongooseClient");
+export default function init(db: Connection): ReturnModelType<typeof dbAddresses> {
+  if (getModelForClass(dbAddresses, { existingConnection: db })) deleteModelWithClass(dbAddresses);
 
-  const dbAddressesSchema = buildSchema(dbAddresses, { existingConnection: mongooseClient });
-  const dbAddressesModelRaw = mongooseClient.model(getName(dbAddresses), dbAddressesSchema);
+  const dbAddressesSchema = buildSchema(dbAddresses, { existingConnection: db });
+  const dbAddressesModelRaw = db.model(getName(dbAddresses), dbAddressesSchema);
 
-  return addModelToTypegoose(dbAddressesModelRaw, dbAddresses, { existingConnection: mongooseClient });
+  return addModelToTypegoose(dbAddressesModelRaw, dbAddresses, { existingConnection: db });
 }
 
 export type dbAddressesModel = ReturnType<typeof init>;

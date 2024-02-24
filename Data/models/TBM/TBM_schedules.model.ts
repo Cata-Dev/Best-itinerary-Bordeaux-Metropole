@@ -14,21 +14,24 @@ export enum RtScheduleType {
   Deviation = "DEVIATION",
 }
 
-import { Application } from "../../../declarations";
-import { TBMEndpoints } from "../index";
+import { TBMEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
   addModelToTypegoose,
   buildSchema,
+  deleteModelWithClass,
   getDiscriminatorModelForClass,
+  getModelForClass,
   index,
   prop,
-  Ref,
+  type Ref,
+  type ReturnModelType,
 } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Stops } from "./TBM_stops.model";
 import { dbTBM_Trips } from "./TBM_trips.model";
+import { Connection } from "mongoose";
 
 @index({ gid: 1, realtime: 1 }, { unique: true })
 @index({ rs_sv_cours_a: 1 })
@@ -65,20 +68,18 @@ export class dbTBM_Schedules_rt extends dbTBM_Schedules {
   public type!: RtScheduleType;
 }
 
-export default function init(app: Application) {
-  const mongooseClient = app.get("mongooseClient");
+export default function init(db: Connection): readonly [ReturnModelType<typeof dbTBM_Schedules>, ReturnModelType<typeof dbTBM_Schedules_rt>] {
+  if (getModelForClass(dbTBM_Schedules, { existingConnection: db })) deleteModelWithClass(dbTBM_Schedules);
+  if (getModelForClass(dbTBM_Schedules_rt, { existingConnection: db })) deleteModelWithClass(dbTBM_Schedules_rt);
 
-  const dbTBM_SchedulesSchema = buildSchema(dbTBM_Schedules, { existingConnection: mongooseClient });
-  const dbTBM_SchedulesModelRaw = mongooseClient.model(getName(dbTBM_Schedules), dbTBM_SchedulesSchema);
+  const dbTBM_SchedulesSchema = buildSchema(dbTBM_Schedules, { existingConnection: db });
+  const dbTBM_SchedulesModelRaw = db.model(getName(dbTBM_Schedules), dbTBM_SchedulesSchema);
 
   const dbTBM_SchedulesModel = addModelToTypegoose(dbTBM_SchedulesModelRaw, dbTBM_Schedules, {
-    existingConnection: mongooseClient,
+    existingConnection: db,
   });
 
-  return [
-    dbTBM_SchedulesModel,
-    getDiscriminatorModelForClass(dbTBM_SchedulesModel, dbTBM_Schedules_rt),
-  ] as const;
+  return [dbTBM_SchedulesModel, getDiscriminatorModelForClass(dbTBM_SchedulesModel, dbTBM_Schedules_rt)] as const;
 }
 
 export type dbTBM_SchedulesModel = ReturnType<typeof init>[0];

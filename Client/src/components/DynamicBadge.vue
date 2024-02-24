@@ -27,8 +27,8 @@ defineProps({
       color === 'success'
         ? [{ 'bg-success-bg': bg }, 'border-success-t']
         : color === 'info'
-        ? [{ 'bg-info-bg': bg }, 'border-info-t']
-        : [{ 'bg-alert-bg': bg }, 'border-alert-t']
+          ? [{ 'bg-info-bg': bg }, 'border-info-t']
+          : [{ 'bg-alert-bg': bg }, 'border-alert-t']
     "
   >
     <span

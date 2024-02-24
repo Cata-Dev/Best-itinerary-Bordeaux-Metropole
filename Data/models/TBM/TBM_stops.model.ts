@@ -2,10 +2,9 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { Application } from "../../../declarations";
-import { TBMEndpoints } from "../index";
+import { TBMEndpoints } from "./names";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, prop } from "@typegoose/typegoose";
+import { type ReturnModelType, addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 
@@ -23,13 +22,14 @@ export enum StopType {
 }
 
 export type Active = 0 | 1;
+import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: TBMEndpoints.Stops } })
 export class dbTBM_Stops extends TimeStamps {
   @prop({ required: true })
   public _id!: number;
 
-  @prop({ type: () => [Number, Number], required: true })
+  @prop({ type: () => [Number], required: true })
   public coords!: [number, number];
 
   @prop({ required: true })
@@ -52,13 +52,13 @@ export class dbTBM_Stops extends TimeStamps {
 //   coords: [number, number];
 // };
 
-export default function init(app: Application) {
-  const mongooseClient = app.get("mongooseClient");
+export default function init(db: Connection): ReturnModelType<typeof dbTBM_Stops> {
+  if (getModelForClass(dbTBM_Stops, { existingConnection: db })) deleteModelWithClass(dbTBM_Stops);
 
-  const dbTBM_StopsSchema = buildSchema(dbTBM_Stops, { existingConnection: mongooseClient });
-  const dbTBM_StopsModelRaw = mongooseClient.model(getName(dbTBM_Stops), dbTBM_StopsSchema);
+  const dbTBM_StopsSchema = buildSchema(dbTBM_Stops, { existingConnection: db });
+  const dbTBM_StopsModelRaw = db.model(getName(dbTBM_Stops), dbTBM_StopsSchema);
 
-  return addModelToTypegoose(dbTBM_StopsModelRaw, dbTBM_Stops, { existingConnection: mongooseClient });
+  return addModelToTypegoose(dbTBM_StopsModelRaw, dbTBM_Stops, { existingConnection: db });
 }
 
 export type dbTBM_StopsModel = ReturnType<typeof init>;

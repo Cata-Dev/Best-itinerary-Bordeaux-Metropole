@@ -1,13 +1,13 @@
-import { DocumentType } from "@typegoose/typegoose";
+import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { HydratedDocument } from "mongoose";
 import { TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps, mapAsync } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "../models/TBM_schedules.model";
-import { dbTBM_Lines_routes } from "../models/TBM_lines_routes.model";
-import { dbTBM_Trips } from "../models/TBM_trips.model";
-import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "../models/TBMScheduledRoutes.model";
+import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/lib/models/TBM/TBM_schedules.model";
+import { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
+import { dbTBM_Trips } from "data/lib/models/TBM/TBM_trips.model";
+import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "data/lib/models/TBM/TBMScheduledRoutes.model";
 
 export default (
   app: Application,
@@ -15,7 +15,7 @@ export default (
   TBM_schedulesRtEndpointInstantiated: Endpoint<TBMEndpoints.Schedules_rt>,
   TBM_tripsEndpointInstantiated: Endpoint<TBMEndpoints.Trips>,
 ) => {
-  const ScheduledRoute = TBM_Scheduled_routes(app);
+  const ScheduledRoute = TBM_Scheduled_routes(app.get("mongooseClient"));
 
   return [
     new Endpoint(
@@ -25,12 +25,9 @@ export default (
         const routeProjection = {
           _id: 1,
         };
-        const routes = await TBM_lines_routesEndpointInstantiated.model
-          .find<HydratedDocument<Pick<DocumentType<dbTBM_Lines_routes>, keyof typeof routeProjection>>>(
-            {},
-            routeProjection,
-          )
-          .lean();
+        const routes = (await TBM_lines_routesEndpointInstantiated.model
+          .find<HydratedDocument<Pick<dbTBM_Lines_routes, keyof typeof routeProjection>>>({}, routeProjection)
+          .lean()) as Pick<dbTBM_Lines_routes, keyof typeof routeProjection>[];
 
         const fillSchedule =
           (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
@@ -59,13 +56,12 @@ export default (
         const scheduledRoutes: dbTBM_ScheduledRoutes[] = new Array(routes.length);
         for (const [i, route] of routes.entries()) {
           const relevantTrips = await TBM_tripsEndpointInstantiated.model
-            .find<HydratedDocument<Pick<DocumentType<dbTBM_Trips>, keyof typeof tripProjection>>>(
-              { rs_sv_chem_l: route._id },
-              tripProjection,
-            )
+            .find<
+              HydratedDocument<Pick<DocumentType<dbTBM_Trips>, keyof typeof tripProjection>>
+            >({ rs_sv_chem_l: route._id }, tripProjection)
             .lean();
 
-          /** [tripId, length of schedules] */
+          /** `[tripId, length of schedules]` */
           let maxLength: [number, number] | [null, -1] = [null, -1];
           let schedulesOfMaxLength: dbTBM_Schedules_rt["rs_sv_arret_p"][] = [];
 
@@ -75,16 +71,17 @@ export default (
                 const schedules = await TBM_schedulesRtEndpointInstantiated.model
                   .find<
                     HydratedDocument<
-                      Pick<DocumentType<dbTBM_Schedules_rt>, keyof typeof scheduleRtProjection>
+                      Pick<
+                        dbTBM_Schedules_rt & mongoose.Require_id<dbTBM_Schedules_rt>,
+                        keyof typeof scheduleRtProjection
+                      >
                     >
                   >({ rs_sv_cours_a: t._id, etat: { $ne: RtScheduleState.Annule } }, scheduleRtProjection)
                   .lean();
-                if (schedules.length > (maxLength[1] ?? 0)) maxLength = [t._id, schedules.length];
+                if (schedules.length > maxLength[1]) maxLength = [t._id, schedules.length];
                 return {
                   tripId: t._id,
-                  schedules: schedules.sort(
-                    (a, b) => (a.hor_estime?.valueOf() ?? 0) - (b.hor_estime?.valueOf() ?? 0),
-                  ),
+                  schedules: schedules.sort((a, b) => a.hor_estime.valueOf() - b.hor_estime.valueOf()),
                 };
               })
             )
@@ -100,12 +97,11 @@ export default (
                   schedulesOfMaxLength = schedules.map((s) => s.rs_sv_arret_p as number);
                 return {
                   tripId,
-                  schedules:
-                    maxLength[1] > -1 && schedules.length < maxLength[1]
-                      ? new Array<DocumentType<dbTBM_Schedules_rt>["_id"]>(maxLength[1] - schedules.length)
-                          .fill(fillSchedule._id)
-                          .concat(schedules.map((s) => s._id))
-                      : schedules.map((s) => s._id),
+                  schedules: new Array<DocumentType<dbTBM_Schedules_rt>["_id"]>(
+                    (maxLength[1] > -1 ? maxLength[1] : schedules.length) - schedules.length,
+                  )
+                    .fill(fillSchedule._id)
+                    .concat(schedules.map(({ _id }) => _id)),
                 };
               });
 
@@ -117,7 +113,7 @@ export default (
         }
 
         await ScheduledRoute.deleteMany({
-          _id: { $nin: scheduledRoutes.map((sR) => sR._id) },
+          _id: { $nin: scheduledRoutes.map(({ _id }) => _id) },
         });
 
         await ScheduledRoute.bulkWrite(

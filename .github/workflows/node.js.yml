@@ -30,18 +30,36 @@ jobs:
         node-version: [ 18.x ]
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: pnpm/action-setup@v3
-      with:
-        version: 8
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
-    # Build Server to build Client
-    - run: cd Server/ && pnpm install
-    - run: cd Server/ && pnpm run bundle:client --if-present
-    - run: cd Client/ && pnpm add file:../Server/public/server-1.0.0.tgz
-    - run: cd Client/ && pnpm run build --if-present
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+              
+      # Build Data to build Server to build Client
+      - run: pnpm -F "data" --config.dedupe-peer-dependents=false install
+      - run: pnpm -F "server" --config.dedupe-peer-dependents=false install
+      - run: cd Server/ && pnpm run --if-present bundle:client
+      - run: pnpm -F "client" --config.dedupe-peer-dependents=false add file:../Server/public/server-1.0.0.tgz
+      - run: cd Client/ && pnpm run --if-present build
     

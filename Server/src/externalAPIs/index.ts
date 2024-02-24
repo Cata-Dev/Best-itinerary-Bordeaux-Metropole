@@ -37,14 +37,14 @@ export type EndpointName = TBMEndpoints | SNCFEndpoints;
 export type ProviderClass<E extends EndpointName | undefined = undefined> = E extends TBMEndpoints
   ? TBMClass<E>
   : E extends SNCFEndpoints
-  ? SNCFClass<E>
-  : TBMClass<TBMEndpoints> | SNCFClass<SNCFEndpoints>;
+    ? SNCFClass<E>
+    : TBMClass<TBMEndpoints> | SNCFClass<SNCFEndpoints>;
 
 export type ProviderModel<E extends EndpointName | undefined = undefined> = E extends TBMEndpoints
   ? TBMModel<E>
   : E extends SNCFEndpoints
-  ? SNCFModel<E>
-  : TBMModel<TBMEndpoints> | SNCFModel<SNCFEndpoints>;
+    ? SNCFModel<E>
+    : TBMModel<TBMEndpoints> | SNCFModel<SNCFEndpoints>;
 
 declare module "../declarations" {
   interface ExternalAPIs {

@@ -2,14 +2,14 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { Application } from "../../../declarations";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, prop, Ref } from "@typegoose/typegoose";
+import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, type Ref, type ReturnModelType } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Schedules_rt } from "./TBM_schedules.model";
 import { dbTBM_Stops } from "./TBM_stops.model";
-import { TBMEndpoints } from "../index";
+import { TBMEndpoints } from "./names";
+import { Connection } from "mongoose";
 
 @modelOptions({ schemaOptions: { _id: false } })
 export class TripOfScheduledRoute {
@@ -33,19 +33,16 @@ export class dbTBM_ScheduledRoutes extends TimeStamps {
   public stops!: Ref<dbTBM_Stops, number>[];
 }
 
-export default function init(app: Application) {
-  const mongooseClient = app.get("mongooseClient");
+export default function init(db: Connection): ReturnModelType<typeof dbTBM_ScheduledRoutes> {
+  if (getModelForClass(dbTBM_ScheduledRoutes, { existingConnection: db })) deleteModelWithClass(dbTBM_ScheduledRoutes);
 
   const dbTBM_ScheduledRoutesSchema = buildSchema(dbTBM_ScheduledRoutes, {
-    existingConnection: mongooseClient,
+    existingConnection: db,
   });
-  const dbTBM_ScheduledRoutesModelRaw = mongooseClient.model(
-    getName(dbTBM_ScheduledRoutes),
-    dbTBM_ScheduledRoutesSchema,
-  );
+  const dbTBM_ScheduledRoutesModelRaw = db.model(getName(dbTBM_ScheduledRoutes), dbTBM_ScheduledRoutesSchema);
 
   return addModelToTypegoose(dbTBM_ScheduledRoutesModelRaw, dbTBM_ScheduledRoutes, {
-    existingConnection: mongooseClient,
+    existingConnection: db,
   });
 }
 

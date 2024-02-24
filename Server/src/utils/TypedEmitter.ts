@@ -9,5 +9,5 @@ export declare interface TypedEventEmitter<Events extends EmittedEvents> {
   emit<E extends keyof Events>(event: E, ...args: Parameters<Events[E]>): boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-declaration-merging
 export class TypedEventEmitter<Events extends EmittedEvents> extends EventEmitter {}
