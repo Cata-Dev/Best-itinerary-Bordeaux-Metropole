@@ -13,6 +13,7 @@
   },
   "exclude": [],
   "include": [
-    "models/**/*"
+    "models/**/*",
+    "eslint.config.mjs"
   ]
 }
