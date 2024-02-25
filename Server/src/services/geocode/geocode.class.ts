@@ -36,7 +36,7 @@ import { unique } from "../../utils";
 import { TBMEndpoints } from "../../externalAPIs/TBM";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF";
 
-export class GeocodeService<ServiceParams extends Params = GeocodeParams>
+export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
   implements ServiceInterface<Geocode, GeocodeData, ServiceParams, GeocodePatch>
 {
   private readonly app: Application;
@@ -111,7 +111,7 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
 
     if (groups) {
       const filteredGroups = (Object.keys(groups) as groups[]).reduce<object>(
-        (acc, v) => (groups![v] !== undefined ? { ...acc, [v]: groups![v] } : acc),
+        (acc, v) => (groups[v] !== undefined ? { ...acc, [v]: groups[v] } : acc),
         {},
       ) as Partial<{ [k in groups]: string }>;
       let k: keyof typeof filteredGroups;
@@ -126,10 +126,10 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
         addressQuery.code_postal = parseInt(filteredGroups.code_postal);
       if (filteredGroups.type_voie !== undefined || filteredGroups.nom_voie_lowercase !== undefined)
         addressQuery.nom_voie_lowercase = {
-          $regex: `${filteredGroups.type_voie || ""} ${
+          $regex: `${filteredGroups.type_voie ?? ""} ${
             (filteredGroups.commune
               ? filteredGroups.nom_voie_lowercase?.replace(new RegExp(`${filteredGroups.commune}$`), "")
-              : filteredGroups.nom_voie_lowercase) || ""
+              : filteredGroups.nom_voie_lowercase) ?? ""
           }`.trim(),
         };
       if (filteredGroups.commune)
@@ -138,7 +138,7 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
         }; //get back the uppercase commune
       if (filteredGroups.type_voie)
         addressQuery.type_voie = {
-          $regex: this.types_voies.find((v) => v.toLowerCase() == filteredGroups.type_voie) as string,
+          $regex: this.types_voies.find((v) => v.toLowerCase() == filteredGroups.type_voie)!,
         }; //get back the uppercase type_voie
 
       return [
@@ -184,29 +184,27 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
       GEOCODE_type,
       createdAt: doc.createdAt!.valueOf(),
       updatedAt: doc.updatedAt!.valueOf(),
-      dedicated: {
-        ...((Object.keys(doc) as (keyof typeof doc)[]).reduce<object>(
-          (acc, v) =>
-            !(v in ["_id", "coords", "GEOCODE_type", "createdAt", "updatedAt"])
-              ? { ...acc, [v]: doc![v] }
-              : acc,
-          {},
-        ) as typeof GEOCODE_type extends TBMEndpoints.Addresses
-          ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">
-          : typeof GEOCODE_type extends TBMEndpoints.Stops
-            ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-            : typeof GEOCODE_type extends SNCFEndpoints.Stops
-              ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-              : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                any),
-      },
+      dedicated: (Object.keys(doc) as (keyof typeof doc)[]).reduce<object>(
+        (acc, v) =>
+          !(v in ["_id", "coords", "GEOCODE_type", "createdAt", "updatedAt"])
+            ? { ...acc, [v]: doc![v] }
+            : acc,
+        {},
+      ) as typeof GEOCODE_type extends TBMEndpoints.Addresses
+        ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">
+        : typeof GEOCODE_type extends TBMEndpoints.Stops
+          ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
+          : typeof GEOCODE_type extends SNCFEndpoints.Stops
+            ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
+            : never,
     };
 
     return result;
   }
 
   async find(_params?: ServiceParams): Promise<Geocode[]> {
-    if (!_params || _params.query?.id === undefined) throw new BadRequest("missing id parameter in query");
+    if (!_params || typeof _params.query?.id !== "string")
+      throw new BadRequest("missing id parameter in query");
 
     type doc = DistributedProdiverClass<GEOCODE_type> & { GEOCODE_type: GEOCODE_type };
 
@@ -251,22 +249,19 @@ export class GeocodeService<ServiceParams extends Params = GeocodeParams>
         GEOCODE_type: doc.GEOCODE_type,
         createdAt: doc.createdAt!.valueOf(),
         updatedAt: doc.updatedAt!.valueOf(),
-        dedicated: {
-          ...((Object.keys(doc) as (keyof typeof doc)[]).reduce<object>(
-            (acc, v) =>
-              !(v in ["_id", "coords", "GEOCODE_type", "createdAt", "updatedAt"])
-                ? { ...acc, [v]: doc![v] }
-                : acc,
-            {},
-          ) as typeof doc.GEOCODE_type extends TBMEndpoints.Addresses
-            ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">
-            : typeof doc.GEOCODE_type extends TBMEndpoints.Stops
-              ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-              : typeof doc.GEOCODE_type extends SNCFEndpoints.Stops
-                ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
-                : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  any),
-        },
+        dedicated: (Object.keys(doc) as (keyof typeof doc)[]).reduce<object>(
+          (acc, v) =>
+            !(v in ["_id", "coords", "GEOCODE_type", "createdAt", "updatedAt"])
+              ? { ...acc, [v]: doc[v] }
+              : acc,
+          {},
+        ) as typeof doc.GEOCODE_type extends TBMEndpoints.Addresses
+          ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">
+          : typeof doc.GEOCODE_type extends TBMEndpoints.Stops
+            ? Omit<ProviderClass<TBMEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
+            : typeof doc.GEOCODE_type extends SNCFEndpoints.Stops
+              ? Omit<ProviderClass<SNCFEndpoints.Stops>, "_id" | "coords" | "GEOCODE_type">
+              : never,
       });
     }
 
@@ -279,7 +274,7 @@ function filterUniqueVoies<T extends ProviderClass<TBMEndpoints.Addresses>>(resu
   const uniquesVoies = voies.filter(unique);
   return uniquesVoies.map((uv) => {
     const min = Math.min(...results.filter((r) => r.nom_voie_lowercase === uv).map((r) => r.numero));
-    return results.find((r) => r.nom_voie_lowercase === uv && r.numero === min) as T;
+    return results.find((r) => r.nom_voie_lowercase === uv && r.numero === min)!;
   });
 }
 

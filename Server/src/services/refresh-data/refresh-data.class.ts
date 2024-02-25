@@ -15,8 +15,17 @@ export interface RefreshDataParams extends Params<RefreshDataQuery> {}
 
 import { Forbidden, GeneralError, NotFound } from "@feathersjs/errors";
 
+export function hasLastActualization(obj: unknown): obj is { lastActualization: number } {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "lastActualization" in obj &&
+    typeof obj.lastActualization == "number"
+  );
+}
+
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class RefreshDataService<ServiceParams extends Params = RefreshDataParams>
+export class RefreshDataService<ServiceParams extends RefreshDataParams = RefreshDataParams>
   implements ServiceInterface<RefreshData, RefreshDataData, ServiceParams, RefreshDataPatch>
 {
   private readonly app: Application;
@@ -43,7 +52,8 @@ export class RefreshDataService<ServiceParams extends Params = RefreshDataParams
               lastActualization = Date.now();
             })
             .catch((r) => {
-              if (r.lastActualization > lastActualization) lastActualization = r.lastActualization;
+              if (hasLastActualization(r) && r.lastActualization > lastActualization)
+                lastActualization = r.lastActualization;
             })
             .finally(() => {
               if (waitForUpdate) {
@@ -95,7 +105,7 @@ export class RefreshDataService<ServiceParams extends Params = RefreshDataParams
           });
         }
       } else {
-        matchingEndpoint.fetch(force, this.app.get("debug"));
+        void matchingEndpoint.fetch(force, this.app.get("debug"));
         return {
           actualized: null, //we don't know anything
           lastActualization: matchingEndpoint.lastFetch,

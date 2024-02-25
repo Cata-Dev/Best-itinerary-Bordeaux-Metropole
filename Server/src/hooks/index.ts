@@ -15,28 +15,33 @@ const log = async (context: HookContext, next: NextFunction) => {
         Date.now(),
         true,
       )} (${(performance.now() - initialTs).toFixed(2)}ms) | ${colorFunctions.fB(
-        `${context.http?.status || "200"} ${context.method.toUpperCase()}`,
+        `${context.http?.status ?? "200"} ${context.method.toUpperCase()}`,
       )} ${context.path}${context.id ? "/" + colorFunctions.fY(context.id) : ""} (provider: ${
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         context.params?.provider || "internal"
       })`,
     );
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  } catch (error: any) {
+  } catch (error) {
     logger.log(
       `${time.datetocompact3(performance.timeOrigin + initialTs, true)} ⟾ ${time.datetocompact3(
         Date.now(),
         true,
       )} (${(performance.now() - initialTs).toFixed(2)}ms) | ${colorFunctions.fR(
-        `${context.http?.status || error?.code || "500"} ${context.method.toUpperCase()}`,
+        `${(context.http?.status ?? ("code" in (error as object) && (error as { code: number }).code)) || "500"} ${context.method.toUpperCase()}`,
       )} ${context.path}${context.id ? "/" + colorFunctions.fY(context.id) : ""} (provider: ${
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         context.params?.provider || "internal"
       })`,
     );
   }
 };
 
-const errorHandler = async (context: HookContext) => {
-  if (context.error) {
+function isError(e: unknown): e is { code?: number; stack?: unknown } {
+  return typeof e === "object" && e !== null && ("code" in e || "stack" in e);
+}
+
+const errorHandler = (context: HookContext) => {
+  if (isError(context.error)) {
     const error = context.error;
     if (!error.code) {
       const newError = new errors.GeneralError("server error");

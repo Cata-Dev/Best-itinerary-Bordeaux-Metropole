@@ -3,10 +3,10 @@ import { logger } from "../logger";
 import { Deferred } from "../utils/index";
 import { TypedEventEmitter } from "../utils/TypedEmitter";
 
-type EndpointEvents = {
+interface EndpointEvents {
   fetch: () => void;
   fetched: (success: boolean) => void;
-};
+}
 
 export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
   private deferredFetch: Deferred<boolean>;

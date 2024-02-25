@@ -40,7 +40,10 @@ import TBM_stopsEndpoint from "./endpoints/TBM_stops.endpoint";
 import { dbTBM_Trips, dbTBM_TripsModel } from "data/lib/models/TBM/TBM_trips.model";
 import TBM_tripsEndpoint from "./endpoints/TBM_trips.endpoint";
 
-import { dbTBM_ScheduledRoutes, dbTBM_ScheduledRoutesModel } from "data/lib/models/TBM/TBMScheduledRoutes.model";
+import {
+  dbTBM_ScheduledRoutes,
+  dbTBM_ScheduledRoutesModel,
+} from "data/lib/models/TBM/TBMScheduledRoutes.model";
 import TBMScheduledRoutesEndpoint, {
   TBMScheduledRoutesEndpointHook,
 } from "./endpoints/TBMScheduledRoutes.endpoint";
@@ -124,7 +127,7 @@ export default (app: Application) => {
   async function getData<T>(id: string, queries: string[] = []): Promise<T> {
     const bURL = "https://data.bordeaux-metropole.fr/";
     const url = `geojson?key=${app.get("TBMkey")}&typename=${id}&${queries.join("&")}`;
-    const { data } = await axios.get(`${bURL}${url}`, {
+    const { data }: { data: { features: T } } = await axios.get(`${bURL}${url}`, {
       maxContentLength: 4_000_000_000,
       maxBodyLength: 4_000_000_000,
     });

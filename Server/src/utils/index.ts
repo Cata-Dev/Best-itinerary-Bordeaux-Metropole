@@ -18,7 +18,7 @@ type supportedBulkOp = "updateOne" | "deleteOne";
 export function formatDocToBulkOps<D extends Record<string, unknown>>(
   op: supportedBulkOp,
   doc: D,
-  filterKeys: Array<keyof D>,
+  filterKeys: (keyof D)[],
 ) {
   switch (op) {
     case "updateOne":
@@ -57,7 +57,7 @@ export function formatDocToBulkOps<D extends Record<string, unknown>>(
 export function bulkOps<D extends Record<string, unknown>>(
   op: supportedBulkOp,
   documents: D[],
-  filterKeys: Array<keyof D> = ["_id"],
+  filterKeys: (keyof D)[] = ["_id"],
 ) {
   return documents.map((doc) => formatDocToBulkOps(op, doc, filterKeys));
 }
@@ -160,11 +160,11 @@ export const degToRad = (deg: number) => {
 export const geographicDistance = (lon1: number, lat1: number, lon2: number, lat2: number): number => {
   const earthRadiusKm = 6371;
 
-  const dLat = module.exports.degToRad(lat2 - lat1);
-  const dLon = module.exports.degToRad(lon2 - lon1);
+  const dLat = degToRad(lat2 - lat1);
+  const dLon = degToRad(lon2 - lon1);
 
-  lat1 = module.exports.degToRad(lat1);
-  lat2 = module.exports.degToRad(lat2);
+  lat1 = degToRad(lat1);
+  lat2 = degToRad(lat2);
 
   const a = Math.sin(dLat / 2) ** 2 + Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -179,7 +179,7 @@ export const cartographicDistance = (x1: number, y1: number, x2: number, y2: num
   return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 };
 
-export const sumObj = <T extends number>(obj: { [k: string]: T } = {}, keys = []) => {
+export const sumObj = <T extends number>(obj: Record<string, T> = {}, keys = []) => {
   return keys
     .map((k) => String(k))
     .filter((k) => k in obj)

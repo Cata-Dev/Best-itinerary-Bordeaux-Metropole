@@ -32,8 +32,8 @@ export default (app: Application, getData: <T>(id: string, queries: string[]) =>
     new Endpoint(
       TBMEndpoints.Schedules,
       24 * 3600,
-      async () => {
-        return true;
+      () => {
+        return new Promise<true>((res) => res(true));
       },
       Schedule,
     ),

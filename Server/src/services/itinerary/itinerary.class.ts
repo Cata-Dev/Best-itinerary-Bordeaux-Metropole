@@ -14,9 +14,14 @@ export interface ItineraryServiceOptions {
 export interface ItineraryParams extends Params<ItineraryQuery> {}
 
 import { BadRequest, NotFound } from "@feathersjs/errors";
+import { hasLastActualization } from "../refresh-data/refresh-data.class";
+
+function hasData(obj: unknown): obj is { data: unknown } {
+  return typeof obj === "object" && obj !== null && "data" in obj;
+}
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class ItineraryService<ServiceParams extends Params = ItineraryParams>
+export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryParams>
   implements ServiceInterface<Itinerary, ItineraryData, ServiceParams, ItineraryPatch>
 {
   private readonly app: Application;
@@ -28,7 +33,8 @@ export class ItineraryService<ServiceParams extends Params = ItineraryParams>
   async get(id: Id, _params?: ServiceParams): Promise<Itinerary> {
     switch (id) {
       case "paths": {
-        const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
+        const waitForUpdate =
+          (_params && (_params.query as { waitForUpdate?: boolean })?.waitForUpdate) ?? false;
         return new Promise((res) => {
           if (!_params || !(_params.query?.from && _params.query?.to))
             throw new BadRequest(`Missing parameter(s).`);
@@ -50,7 +56,12 @@ export class ItineraryService<ServiceParams extends Params = ItineraryParams>
                 if (waitForUpdate) lastActualization = Date.now();
               })
               .catch((r) => {
-                if (waitForUpdate && r.data.lastActualization > lastActualization)
+                if (
+                  waitForUpdate &&
+                  hasData(r) &&
+                  hasLastActualization(r.data) &&
+                  r.data.lastActualization > lastActualization
+                )
                   lastActualization = r.data.lastActualization;
               })
               .finally(() => {
