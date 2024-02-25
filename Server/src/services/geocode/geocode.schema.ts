@@ -1,6 +1,6 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getValidator, querySyntax } from "@feathersjs/typebox";
+import { Type, getValidator } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
 
 import type { HookContext } from "../../declarations";
@@ -8,6 +8,7 @@ import { dataValidator, queryValidator } from "../../validators";
 import { TBMEndpoints } from "../../externalAPIs/TBM/index";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF/index";
 import { TBMVehicles } from "../itinerary/itinerary.schema";
+import type { GeocodeService } from "./geocode.class";
 
 const AddressesObject = Type.Object(
   {
@@ -105,9 +106,9 @@ export const geocodeSchema = Type.Union(
   { $id: "Geocode" },
 );
 export type Geocode = Static<typeof geocodeSchema>;
-export const geocodeResolver = resolve<Geocode, HookContext>({});
+export const geocodeResolver = resolve<Geocode, HookContext<GeocodeService>>({});
 
-export const geocodeExternalResolver = resolve<Geocode, HookContext>({});
+export const geocodeExternalResolver = resolve<Geocode, HookContext<GeocodeService>>({});
 
 // Schema for creating new entries
 export const geocodeDataSchema = Type.Object(
@@ -118,7 +119,7 @@ export const geocodeDataSchema = Type.Object(
 );
 export type GeocodeData = Static<typeof geocodeDataSchema>;
 export const geocodeDataValidator = getValidator(geocodeDataSchema, dataValidator);
-export const geocodeDataResolver = resolve<Geocode, HookContext>({});
+export const geocodeDataResolver = resolve<Geocode, HookContext<GeocodeService>>({});
 
 // Schema for updating existing entries
 export const geocodePatchSchema = Type.Partial(geocodeDataSchema, {
@@ -126,10 +127,12 @@ export const geocodePatchSchema = Type.Partial(geocodeDataSchema, {
 });
 export type GeocodePatch = Static<typeof geocodePatchSchema>;
 export const geocodePatchValidator = getValidator(geocodePatchSchema, dataValidator);
-export const geocodePatchResolver = resolve<Geocode, HookContext>({});
+export const geocodePatchResolver = resolve<Geocode, HookContext<GeocodeService>>({});
 
 // Schema for allowed query properties
-export const geocodeQueryProperties = Type.Object(
+// Unused here, custom service without storage
+export const geocodeQueryProperties = Type.Object({});
+export const geocodeQuerySchema = Type.Object(
   {
     id: Type.String(),
     uniqueVoies: Type.Boolean(),
@@ -137,7 +140,6 @@ export const geocodeQueryProperties = Type.Object(
   },
   { additionalProperties: false },
 );
-export const geocodeQuerySchema = querySyntax(geocodeQueryProperties);
 export type GeocodeQuery = Static<typeof geocodeQuerySchema>;
 export const geocodeQueryValidator = getValidator(geocodeQuerySchema, queryValidator);
-export const geocodeQueryResolver = resolve<GeocodeQuery, HookContext>({});
+export const geocodeQueryResolver = resolve<GeocodeQuery, HookContext<GeocodeService>>({});

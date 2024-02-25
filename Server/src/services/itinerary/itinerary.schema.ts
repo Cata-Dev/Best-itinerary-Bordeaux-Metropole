@@ -1,11 +1,13 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getValidator, querySyntax } from "@feathersjs/typebox";
+import { Type, getValidator } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
 
 import type { HookContext } from "../../declarations";
 import { dataValidator, queryValidator } from "../../validators";
-import { refreshDataQueryProperties } from "../refresh-data/refresh-data.schema";
+import type { ItineraryService } from "./itinerary.class";
+
+import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
 
 const FOOTStageDetails = Type.Object(
   {
@@ -108,9 +110,9 @@ export const itinerarySchema = Type.Object(
 );
 
 export type Itinerary = Static<typeof itinerarySchema>;
-export const itineraryResolver = resolve<Itinerary, HookContext>({});
+export const itineraryResolver = resolve<Itinerary, HookContext<ItineraryService>>({});
 
-export const itineraryExternalResolver = resolve<Itinerary, HookContext>({});
+export const itineraryExternalResolver = resolve<Itinerary, HookContext<ItineraryService>>({});
 
 // Schema for creating new entries
 export const itineraryDataSchema = Type.Object(
@@ -121,7 +123,7 @@ export const itineraryDataSchema = Type.Object(
 );
 export type ItineraryData = Static<typeof itineraryDataSchema>;
 export const itineraryDataValidator = getValidator(itineraryDataSchema, dataValidator);
-export const itineraryDataResolver = resolve<Itinerary, HookContext>({});
+export const itineraryDataResolver = resolve<Itinerary, HookContext<ItineraryService>>({});
 
 // Schema for updating existing entries
 export const itineraryPatchSchema = Type.Partial(itineraryDataSchema, {
@@ -129,28 +131,32 @@ export const itineraryPatchSchema = Type.Partial(itineraryDataSchema, {
 });
 export type ItineraryPatch = Static<typeof itineraryPatchSchema>;
 export const itineraryPatchValidator = getValidator(itineraryPatchSchema, dataValidator);
-export const itineraryPatchResolver = resolve<Itinerary, HookContext>({});
+export const itineraryPatchResolver = resolve<Itinerary, HookContext<ItineraryService>>({});
 
 // Schema for allowed query properties
-export const itineraryQueryProperties = Type.Intersect([
-  Type.Object(
-    {
-      from: Type.String(),
-      to: Type.String(),
-      transports: Type.Optional(
-        Type.Partial(
-          Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+// Unused here, custom service without storage
+export const itineraryQueryProperties = Type.Object({});
+export const itineraryQuerySchema = Type.Intersect(
+  [
+    Type.Object(
+      {
+        from: Type.String(),
+        to: Type.String(),
+        transports: Type.Optional(
+          Type.Partial(
+            Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+          ),
         ),
-      ),
-      departureTime: Type.Optional(Type.String()),
-      maxWalkDistance: Type.Optional(Type.Integer()),
-      walkSpeed: Type.Optional(Type.Number()),
-    },
-    { additionalProperties: false },
-  ),
-  refreshDataQueryProperties,
-]);
-export const itineraryQuerySchema = querySyntax(itineraryQueryProperties);
+        departureTime: Type.Optional(Type.String()),
+        maxWalkDistance: Type.Optional(Type.Integer()),
+        walkSpeed: Type.Optional(Type.Number()),
+      },
+      { additionalProperties: false },
+    ),
+    refreshDataQuerySchema,
+  ],
+  { additionalProperties: false },
+);
 export type ItineraryQuery = Static<typeof itineraryQuerySchema>;
 export const itineraryQueryValidator = getValidator(itineraryQuerySchema, queryValidator);
-export const itineraryQueryResolver = resolve<ItineraryQuery, HookContext>({});
+export const itineraryQueryResolver = resolve<ItineraryQuery, HookContext<ItineraryService>>({});
