@@ -92,6 +92,9 @@ importers:
       '@typegoose/typegoose':
         specifier: ^12.2.0
         version: 12.2.0(mongoose@8.2.0)
+      raptor:
+        specifier: github:cata-dev/raptor#no-local-pruning
+        version: github.com/cata-dev/raptor/4528101838da0fd9cb723f96cddf2aac3f8be701
     devDependencies:
       eslint:
         specifier: ^8.57.0
@@ -5368,6 +5371,7 @@ packages:
     name: data
     dependencies:
       '@typegoose/typegoose': 12.2.0(mongoose@8.2.0)
+      raptor: github.com/cata-dev/raptor/4528101838da0fd9cb723f96cddf2aac3f8be701
     transitivePeerDependencies:
       - mongoose
     dev: false
@@ -5412,4 +5416,11 @@ packages:
       - supports-color
       - typescript
       - utf-8-validate
+    dev: false
+
+  github.com/cata-dev/raptor/4528101838da0fd9cb723f96cddf2aac3f8be701:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/4528101838da0fd9cb723f96cddf2aac3f8be701}
+    name: raptor
+    version: 0.2.0
+    requiresBuild: true
     dev: false

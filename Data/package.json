@@ -17,7 +17,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@typegoose/typegoose": "^12.2.0"
+    "@typegoose/typegoose": "^12.2.0",
+    "raptor": "github:cata-dev/raptor#no-local-pruning"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
