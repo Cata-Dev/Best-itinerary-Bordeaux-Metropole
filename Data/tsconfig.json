@@ -4,16 +4,13 @@
     "module": "CommonJS",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "rootDir": ".",
     "outDir": "lib/",
-    "composite": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
+    "declaration": true,
     "sourceMap": true
   },
-  "exclude": [],
   "include": [
-    "models/**/*",
-    "eslint.config.mjs"
+    "src"
   ]
 }
