@@ -8,7 +8,10 @@ interface EndpointEvents {
   fetched: (success: boolean) => void;
 }
 
-export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
+export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
+  EndpointEvents,
+  keyof EndpointEvents
+> {
   private deferredFetch: Deferred<boolean>;
   private _fetching = false;
   /** Timestamp of last fetch (succeed or failed) */
