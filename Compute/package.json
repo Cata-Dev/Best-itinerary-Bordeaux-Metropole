@@ -1,0 +1,29 @@
+{
+  "name": "compute",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --build src",
+    "prettier": "prettier \"**/*.ts\" --write",
+    "type-check": "tsc --project src -noEmit",
+    "lint": "eslint ./src/ --fix",
+    "full-lint": "npm run lint && npm run type-check",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^7.1.0"
+  },
+  "dependencies": {
+    "@hokify/agenda": "^6.3.0",
+    "@typegoose/typegoose": "^12.2.0",
+    "core-js": "^3.36.0",
+    "data": "link:../Data",
+    "raptor": "github:cata-dev/raptor#no-local-pruning"
+  }
+}

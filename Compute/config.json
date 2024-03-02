@@ -1,0 +1,5 @@
+{
+  "dbAddress": "mongodb://0.0.0.0:27017/",
+  "sourceDataDB": "bibm",
+  "mainDB": "bibm-compute"
+}
