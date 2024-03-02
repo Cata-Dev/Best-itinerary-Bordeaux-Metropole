@@ -1,4 +1,4 @@
-import { app, gracefulStop } from "./base";
+import { app, askShutdown } from "./base";
 import initComputeJob from "./jobs/compute";
 
 void (async () => {
@@ -17,6 +17,12 @@ void (async () => {
   });
   await app.agenda.start();
 })();
+
+function gracefulStop() {
+  askShutdown()
+    .catch((err) => console.error("Error during shutdown", err))
+    .finally(() => process.exit(0));
+}
 
 process.on("SIGTERM", gracefulStop);
 process.on("SIGINT", gracefulStop);

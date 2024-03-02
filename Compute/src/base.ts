@@ -27,12 +27,13 @@ export const app: Application = {
   config,
 };
 
-export const gracefulStop = () => {
-  app.agenda
-    .stop()
-    .catch(console.error)
-    .finally(() => {
-      console.log("Agenda instance stopped");
-      process.exit(0);
-    });
-};
+export function askShutdown() {
+  return new Promise<string>((res, rej) => {
+    app.agenda
+      .stop()
+      .then(() => {
+        res("Agenda instance stopped");
+      })
+      .catch(rej);
+  });
+}
