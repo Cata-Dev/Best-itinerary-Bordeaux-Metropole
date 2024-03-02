@@ -190,9 +190,6 @@ importers:
       axios:
         specifier: ^1.6.7
         version: 1.6.7
-      compute:
-        specifier: link:../Compute
-        version: link:../Compute
       core-js:
         specifier: ^3.36.0
         version: 3.36.0
