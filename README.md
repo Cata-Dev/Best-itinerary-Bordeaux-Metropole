@@ -4,3 +4,7 @@
 
 # Best-itinerary-Bordeaux-Metropole
 Calculate the best itineraries between points A and B
+
+## Overview
+
+See [BIBM](https://catadev.org/private/BIBM), from [BIBM.drawio](./BIBM.drawio).
