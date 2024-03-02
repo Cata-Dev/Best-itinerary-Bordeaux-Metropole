@@ -111,6 +111,9 @@ importers:
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
+      shx:
+        specifier: ^0.3.4
+        version: 0.3.4
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -187,6 +190,9 @@ importers:
       axios:
         specifier: ^1.6.7
         version: 1.6.7
+      compute:
+        specifier: link:../Compute
+        version: link:../Compute
       core-js:
         specifier: ^3.36.0
         version: 3.36.0
@@ -5837,6 +5843,7 @@ packages:
   /shelljs@0.8.5:
     resolution: {integrity: sha512-TiwcRcrkhHvbrZbnRcFYMLl30Dfov3HKqzp5tO5b4pt6G/SezKcYhmDg15zXVBswHmctSAQKznqNW2LO5tTDow==}
     engines: {node: '>=4'}
+    hasBin: true
     dependencies:
       glob: 7.2.3
       interpret: 1.4.0
@@ -5846,6 +5853,7 @@ packages:
   /shx@0.3.4:
     resolution: {integrity: sha512-N6A9MLVqjxZYcVn8hLmtneQWIJtp8IKzMP4eMnx+nqkvXoqinUPCbUFLp2UcWTEIUONhlk0ewxr/jaVGlc+J+g==}
     engines: {node: '>=6'}
+    hasBin: true
     dependencies:
       minimist: 1.2.8
       shelljs: 0.8.5

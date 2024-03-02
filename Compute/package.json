@@ -2,20 +2,22 @@
   "name": "compute",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/base.js",
   "scripts": {
     "build": "tsc --build src",
     "prettier": "prettier \"**/*.ts\" --write",
     "type-check": "tsc --project src -noEmit",
     "lint": "eslint ./src/ --fix",
     "full-lint": "npm run lint && npm run type-check",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "pnpm run build && shx cp ./src/agendaCustom.d.ts ./lib"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
+    "shx": "^0.3.4",
     "typescript": "^5.3.3",
     "typescript-eslint": "^7.1.0"
   },
