@@ -26,6 +26,7 @@
     "@typegoose/typegoose": "^12.2.0",
     "core-js": "^3.36.0",
     "data": "link:../Data",
+    "mongoose": "^8.2.0",
     "raptor": "github:cata-dev/raptor#no-local-pruning"
   }
 }
