@@ -62,6 +62,7 @@
     "@feathersjs/typebox": "^5.0.22",
     "@typegoose/typegoose": "^12.2.0",
     "axios": "^1.6.7",
+    "common": "link:../Common",
     "core-js": "^3.36.0",
     "data": "file:../Data",
     "feathers-hooks-common": "^8.1.2",

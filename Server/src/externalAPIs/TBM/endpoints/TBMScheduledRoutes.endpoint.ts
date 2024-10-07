@@ -1,8 +1,9 @@
 import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { HydratedDocument } from "mongoose";
+import { mapAsync } from "common/lib/async";
 import { TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps, mapAsync } from "../../../utils";
+import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/lib/models/TBM/TBM_schedules.model";
 import { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";

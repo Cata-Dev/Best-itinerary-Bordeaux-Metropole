@@ -1,8 +1,9 @@
 import errors from "@feathersjs/errors";
 import { performance } from "perf_hooks";
+import { colorFunctions } from "common/lib/colors";
 import { HookContext, NextFunction } from "../declarations";
 import { logger } from "../logger";
-import { time, colorFunctions } from "../utils";
+import { compactDate } from "../utils";
 
 const log = async (context: HookContext, next: NextFunction) => {
   const initialTs = performance.now();
@@ -11,7 +12,7 @@ const log = async (context: HookContext, next: NextFunction) => {
     await next();
 
     logger.log(
-      `${time.datetocompact3(performance.timeOrigin + initialTs, true)} ⟾ ${time.datetocompact3(
+      `${compactDate(performance.timeOrigin + initialTs, true)} ⟾ ${compactDate(
         Date.now(),
         true,
       )} (${(performance.now() - initialTs).toFixed(2)}ms) | ${colorFunctions.fB(
@@ -23,7 +24,7 @@ const log = async (context: HookContext, next: NextFunction) => {
     );
   } catch (error) {
     logger.log(
-      `${time.datetocompact3(performance.timeOrigin + initialTs, true)} ⟾ ${time.datetocompact3(
+      `${compactDate(performance.timeOrigin + initialTs, true)} ⟾ ${compactDate(
         Date.now(),
         true,
       )} (${(performance.now() - initialTs).toFixed(2)}ms) | ${colorFunctions.fR(
