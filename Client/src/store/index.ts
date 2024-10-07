@@ -36,7 +36,6 @@ export { toggleDarkMode, theme, client, APIRefresh, defaultQuerySettings, defaul
 export type { QuerySettings, DefaultLocation, colorTransports, colorComm, colorPalette };
 
 export {
-  duration,
   formatDate,
   transportToIcon,
   transportToType,
