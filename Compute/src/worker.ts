@@ -1,61 +1,81 @@
-import { isMainThread, parentPort } from "node:worker_threads";
-import { getHeapStatistics } from "v8";
+import { parentPort, threadId, workerData } from "node:worker_threads";
+import { makeLogger } from "common/lib/logger";
 import { app, askShutdown } from "./base";
 import initComputeJob from "./jobs/compute";
+import { Message, isMessage, makeMessage } from "./utils/para";
 
-async function start() {
+declare module "./utils/para" {
+  interface Messages {
+    started: undefined;
+    stop: undefined;
+    stopped: undefined;
+  }
+}
+
+async function start(data: Message<"data">["data"]) {
+  const { init, updateData } = initComputeJob(data);
+
   await app.agenda.ready;
 
-  await initComputeJob(app);
+  await init(app);
+  app.logger.log("Compute job initialized.");
 
   app.agenda.on("start", (job) => {
-    console.log(`Job ${job.attrs.name} starting`);
+    app.logger.log(`Job ${job.attrs.name} starting`);
   });
   app.agenda.on("complete", (job) => {
-    console.log(`Job ${job.attrs.name} finished`);
+    app.logger.info(`Job ${job.attrs.name} finished`);
   });
   app.agenda.on("fail", (err, job) => {
-    console.log(`Job ${job.attrs.name} failed`, err);
+    app.logger.error(`Job ${job.attrs.name} failed`, err);
   });
-  await app.agenda.start();
+
+  app.agenda
+    .start()
+    .then(() => app.logger.info(`Agenda started.`))
+    .catch(app.logger.error);
+
+  return updateData;
 }
 
-function gracefulStop() {
-  askShutdown()
-    .catch((err) => console.error("Error during shutdown", err))
-    .finally(() => process.exit(0));
-}
+if (parentPort) {
+  app.logger = makeLogger(`[W-${threadId}]`);
+  const updateData = new Promise<ReturnType<typeof initComputeJob>["updateData"]>((res, rej) => {
+    app.logger.info("Starting...");
 
-if (isMainThread) {
-  // Manually started
-  start().catch(console.error);
+    if (!isMessage(workerData) || workerData.code !== "data") {
+      return rej("Invalid init data.");
+    }
 
-  process.on("SIGTERM", gracefulStop);
-  process.on("SIGINT", gracefulStop);
-} else if (parentPort) {
+    start(workerData.data)
+      .then((fun) => {
+        res(fun);
+        app.logger.info("Started.");
+        parentPort?.postMessage(makeMessage("started", undefined));
+      })
+      .catch((err) => app.logger.error("Error during startup", err));
+  });
+
   // Worker spawned by code
   parentPort.on("message", (message) => {
-    switch (message) {
-      case "start":
-        void start()
-          .then(() => parentPort?.postMessage({ code: "started" }))
-          .catch((err) => console.error("Error during startup", err));
+    if (!isMessage(message)) return;
+
+    switch (message.code) {
+      case "data":
+        void updateData.then((fun) => fun(message.data));
+        app.logger.info("Refreshed data.");
+
         break;
 
       case "stop":
         void askShutdown()
-          .catch((err) => console.error("Error during shutdown", err))
+          .then(() => app.logger.info("Gracefully stopped."))
+          .catch((err) => app.logger.error("Error during shutdown", err))
           .finally(() => {
-            parentPort?.postMessage({ code: "stopped" });
+            parentPort?.postMessage(makeMessage("stopped", undefined));
             process.exit(0);
           });
         break;
-
-      case "memory":
-        parentPort?.postMessage({
-          code: "memory",
-          data: getHeapStatistics().total_heap_size / 1e6,
-        });
     }
   });
 }

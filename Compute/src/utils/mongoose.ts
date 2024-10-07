@@ -9,7 +9,7 @@ export async function initDB(app: Application, db: Application["config"]["source
 
   await connection.asPromise();
 
-  console.info(`Database ${connection.db.databaseName} connected.`);
+  app.logger.log(`Database ${connection.db.databaseName} connected.`);
 
   return connection;
 }

@@ -1,4 +1,5 @@
 import { Agenda as OriginalAgenda } from "@hokify/agenda";
+import { makeLogger } from "common/lib/logger";
 import type { Agenda } from "./agendaCustom";
 import config from "../config.json";
 
@@ -9,9 +10,15 @@ export interface Config {
 }
 
 export interface Application {
-  agenda: Agenda;
-  config: Config;
+  readonly agenda: Agenda;
+  readonly config: Config;
+  /**
+   * Feel free to override it with a custom logger (prefixes)
+   */
+  logger: ReturnType<typeof makeLogger>;
 }
+
+const logger = makeLogger();
 
 const agenda = new OriginalAgenda({
   db: {
@@ -20,12 +27,14 @@ const agenda = new OriginalAgenda({
   lockLimit: 100,
   processEvery: 2_000,
 });
-agenda.once("ready", () => console.log("Agenda instance ready"));
 
 export const app: Application = {
   agenda,
   config,
+  logger,
 };
+
+agenda.once("ready", () => app.logger.log("Agenda instance ready"));
 
 export function askShutdown() {
   return new Promise<string>((res, rej) => {

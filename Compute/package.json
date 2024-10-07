@@ -5,7 +5,7 @@
   "main": "lib/base.js",
   "scripts": {
     "build": "tsc --build src",
-    "prettier": "prettier \"**/*.ts\" --write",
+    "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
     "type-check": "tsc --project src -noEmit",
     "lint": "eslint ./src/ --fix",
     "full-lint": "npm run lint && npm run type-check",
@@ -24,9 +24,10 @@
   "dependencies": {
     "@hokify/agenda": "^6.3.0",
     "@typegoose/typegoose": "^12.2.0",
+    "common": "link:../Common",
     "core-js": "^3.36.0",
     "data": "link:../Data",
     "mongoose": "^8.2.0",
-    "raptor": "github:cata-dev/raptor#no-local-pruning"
+    "raptor": "github:cata-dev/raptor#para-friendly"
   }
 }
