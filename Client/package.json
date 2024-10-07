@@ -9,7 +9,7 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint ./src/ --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "prettier": "npx prettier \"**/*.{js,ts,vue,html}\" --write"
+    "prettier": "npx prettier \"**/*.{js,ts,vue,html}\" --write --config ../.prettierrc"
   },
   "dependencies": {
     "@feathersjs/socketio-client": "^5.0.22",

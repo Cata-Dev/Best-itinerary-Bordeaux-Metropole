@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build": "tsc --build",
-    "prettier": "prettier \"**/*.ts\" --write",
+    "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
     "type-check": "tsc -noEmit",
     "lint": "eslint ./src/ --fix",
     "full-lint": "pnpm run lint && pnpm run type-check",
