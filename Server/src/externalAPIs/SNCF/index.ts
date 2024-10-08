@@ -2,9 +2,10 @@ import { SNCFEndpoints } from "data/lib/models/SNCF/names";
 export { SNCFEndpoints };
 
 import axios from "axios";
+import { unique } from "common/lib/filters";
 import { Application } from "../../declarations";
 import { Endpoint } from "../endpoint";
-import { bulkOps, unique, WGSToLambert93 } from "../../utils";
+import { bulkOps, WGSToLambert93 } from "../../utils";
 import SNCF_Schedules, {
   dbSNCF_Schedules,
   dbSNCF_SchedulesModel,

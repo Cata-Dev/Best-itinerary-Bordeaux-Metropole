@@ -1,8 +1,9 @@
 import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { HydratedDocument } from "mongoose";
+import { mapAsync } from "common/lib/async";
 import { TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps, mapAsync } from "../../../utils";
+import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/lib/models/TBM/TBM_schedules.model";
 import { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
@@ -33,9 +34,9 @@ export default (
           (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
           (await TBM_schedulesRtEndpointInstantiated.model.create({
             gid: Infinity,
-            hor_theo: new Date(8_640_000_000_000_000),
-            hor_app: new Date(8_640_000_000_000_000),
-            hor_estime: new Date(8_640_000_000_000_000),
+            hor_theo: new Date(0),
+            hor_app: new Date(0),
+            hor_estime: new Date(0),
             realtime: true,
             etat: RtScheduleState.Realise,
             type: RtScheduleType.Regulier,

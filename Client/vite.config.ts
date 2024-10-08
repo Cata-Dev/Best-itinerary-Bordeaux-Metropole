@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ["server"],
+    include: ["server", "common"],
   },
   build: {
     commonjsOptions: {

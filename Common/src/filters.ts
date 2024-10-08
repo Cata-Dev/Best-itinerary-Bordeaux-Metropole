@@ -1,0 +1,6 @@
+/**
+ * @description Checks uniqueness of a value in an array
+ */
+export function unique<T>(v: T, i: number, arr: T[]): boolean {
+  return arr.indexOf(v) === i;
+}

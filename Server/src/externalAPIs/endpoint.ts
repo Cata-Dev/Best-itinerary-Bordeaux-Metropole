@@ -1,6 +1,6 @@
 import { EndpointName, ProviderModel } from ".";
 import { logger } from "../logger";
-import { Deferred } from "../utils/index";
+import { Deferred } from "common/lib/async";
 import { TypedEventEmitter } from "../utils/TypedEmitter";
 
 interface EndpointEvents {
