@@ -34,9 +34,9 @@ export default (
           (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
           (await TBM_schedulesRtEndpointInstantiated.model.create({
             gid: Infinity,
-            hor_theo: new Date(8_640_000_000_000_000),
-            hor_app: new Date(8_640_000_000_000_000),
-            hor_estime: new Date(8_640_000_000_000_000),
+            hor_theo: new Date(0),
+            hor_app: new Date(0),
+            hor_estime: new Date(0),
             realtime: true,
             etat: RtScheduleState.Realise,
             type: RtScheduleType.Regulier,
