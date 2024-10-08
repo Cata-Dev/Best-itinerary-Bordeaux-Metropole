@@ -9,6 +9,7 @@ import { makeLogger } from "common/lib/logger";
 declare module "./utils/para" {
   interface Messages {
     data: Awaited<ReturnType<typeof makeData>>;
+    stop: undefined;
   }
 }
 

@@ -7,7 +7,6 @@ import { Message, isMessage, makeMessage } from "./utils/para";
 declare module "./utils/para" {
   interface Messages {
     started: undefined;
-    stop: undefined;
     stopped: undefined;
   }
 }
@@ -44,7 +43,7 @@ if (parentPort) {
     app.logger.info("Starting...");
 
     if (!isMessage(workerData) || workerData.code !== "data") {
-      return rej("Invalid init data.");
+      return rej(new Error("Invalid init data."));
     }
 
     start(workerData.data)
