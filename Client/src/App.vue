@@ -14,7 +14,10 @@ setVh(wh);
 
 window.onresize = () => {
   const nWh = window.innerHeight;
-  if (wh != nWh) (wh = nWh), setVh(nWh);
+  if (wh != nWh) {
+    wh = nWh;
+    setVh(nWh);
+  }
 };
 </script>
 
@@ -34,11 +37,13 @@ window.onresize = () => {
 
 <style scoped>
 .h-real-screen {
-  height: 100vh; /* Fallback for browsers that do not support Custom Properties */
+  height: 100vh;
+  /* Fallback for browsers that do not support Custom Properties */
   height: calc(var(--vh, 1vh) * 100);
 }
 
 @tailwind base;
+
 @layer base {
   /* Width */
   ::-webkit-scrollbar {
@@ -49,6 +54,7 @@ window.onresize = () => {
   ::-webkit-scrollbar-track {
     @apply bg-bg-light;
   }
+
   .dark::-webkit-scrollbar-track {
     @apply bg-bg-dark;
   }
@@ -58,6 +64,7 @@ window.onresize = () => {
     @apply bg-bg-light-contrasted;
     @apply rounded-md;
   }
+
   .dark::-webkit-scrollbar-thumb {
     @apply bg-bg-dark-contrasted;
   }
@@ -66,6 +73,7 @@ window.onresize = () => {
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-bg-light-overcontrasted;
   }
+
   .dark::-webkit-scrollbar-thumb:hover {
     @apply bg-bg-dark-overcontrasted;
   }
