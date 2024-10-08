@@ -83,7 +83,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
             })),
           );
 
-        if (!bestJourneys.length) throw "No journey found";
+        if (!bestJourneys.length) throw new Error("No journey found");
 
         // Keep only fastest journey & shortest journey
         const fastestJourney = bestJourneys.at(-1)!;

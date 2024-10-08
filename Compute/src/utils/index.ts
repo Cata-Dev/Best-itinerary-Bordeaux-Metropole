@@ -52,7 +52,7 @@ export function binarySearch<T, C>(arr: T[], el: C, compare: (a: C, b: T) => num
  * @param defaults Default properties
  * @returns New object based from {@link obj} with initialized properties
  */
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+ 
 export function withDefaults<O extends object>(obj: Partial<O>, defaults: O): O {
   return (Object.keys(defaults) as (keyof O)[]).reduce(
     (acc, k) => (k in acc ? acc : ((acc[k] = defaults[k]), acc)),
