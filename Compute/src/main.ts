@@ -1,8 +1,8 @@
 import { isMainThread, Worker } from "node:worker_threads";
 import { cpus } from "os";
 import { join } from "path";
-import { app, askShutdown, makeQueue } from "./base";
-import { isMessage, makeMessage } from "./utils/para";
+import { askShutdown, makeQueue } from "./base";
+import { isMessage, makeMessage, Message } from "./utils/para";
 import { makeData } from "./prepare";
 import { makeLogger } from "common/lib/logger";
 
@@ -15,15 +15,15 @@ declare module "./utils/para" {
 
 const logger = makeLogger(`[MAIN]`);
 
-async function main() {
+export async function main(workersCount: number, data?: Message<"data">["data"]) {
   const app = makeQueue();
   app.logger = logger;
 
-  const data = await makeData(app);
+  data ??= await makeData(app);
 
   // Init main instance
   const workers = Array.from(
-    { length: cpus().length },
+    { length: workersCount },
     () => new Worker(join(__dirname, "worker.js"), { workerData: makeMessage("data", data) }),
   );
 
@@ -46,6 +46,10 @@ async function main() {
   }
 
   return {
+    app,
+    updateData: (data: Message<"data">["data"]) =>
+      workers.forEach((w) => w.postMessage(makeMessage("data", data))),
+
     gracefulStop: () => {
       app.logger.info("Gracefully stopping...");
 
@@ -80,15 +84,15 @@ async function main() {
   };
 }
 
-if (isMainThread) {
-  app.logger.log(`Main starting...`);
+if (require.main === module && isMainThread) {
+  logger.log(`Main starting...`);
 
-  main()
+  void main(cpus().length)
     .then(({ gracefulStop }) => {
       process.on("SIGTERM", gracefulStop);
       process.on("SIGINT", gracefulStop);
 
-      app.logger.log(`Main started.`);
+      logger.log(`Main started.`);
     })
-    .catch(app.logger.error);
+    .catch(logger.error);
 }
