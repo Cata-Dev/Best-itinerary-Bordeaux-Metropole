@@ -2,7 +2,7 @@ import { makeLogger } from "common/lib/logger";
 import { Queue, QueueBaseOptions, Worker } from "bullmq";
 import config from "../config.json";
 import { mapAsync } from "./utils/asyncs";
-import { JobData, JobName, Processor } from "./jobs";
+import { JobData, JobName, JobResult, Processor } from "./jobs";
 
 export interface Config {
   redis: {
@@ -17,9 +17,9 @@ export interface Config {
 type InstanceType = "queue" | "worker";
 type Instances<Tuple extends [...JobName[]], T extends InstanceType | "processor"> = {
   [Index in keyof Tuple]: T extends "queue"
-    ? Queue<JobData<Tuple[Index]>, unknown, Tuple[Index]>
+    ? Queue<JobData<Tuple[Index]>, JobResult<Tuple[Index]>, Tuple[Index]>
     : T extends "worker"
-      ? Worker<JobData<Tuple[Index]>, unknown, Tuple[Index]>
+      ? Worker<JobData<Tuple[Index]>, JobResult<Tuple[Index]>, Tuple[Index]>
       : T extends "processor"
         ? Processor<Tuple[Index]>
         : never;
