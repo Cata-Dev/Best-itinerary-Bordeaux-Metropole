@@ -1,5 +1,5 @@
 import { makeLogger } from "common/lib/logger";
-import { Queue, QueueBaseOptions, Worker } from "bullmq";
+import { Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
 import config from "../config.json";
 import { mapAsync } from "./utils/asyncs";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
@@ -15,14 +15,16 @@ export interface Config {
 }
 
 type InstanceType = "queue" | "worker";
-type Instances<Tuple extends [...JobName[]], T extends InstanceType | "processor"> = {
+type Instances<Tuple extends [...JobName[]], T extends InstanceType | "processor" | "queuesEvents"> = {
   [Index in keyof Tuple]: T extends "queue"
     ? Queue<JobData<Tuple[Index]>, JobResult<Tuple[Index]>, Tuple[Index]>
     : T extends "worker"
       ? Worker<JobData<Tuple[Index]>, JobResult<Tuple[Index]>, Tuple[Index]>
       : T extends "processor"
         ? Processor<Tuple[Index]>
-        : never;
+        : T extends "queuesEvents"
+          ? QueueEvents
+          : never;
 };
 
 const jobNames = ["compute"] as const satisfies JobName[];
@@ -37,7 +39,10 @@ export interface BaseApplication {
 
 export type Application<T extends InstanceType = InstanceType> = BaseApplication &
   (T extends "queue"
-    ? { queues: Instances<typeof jobNames, "queue"> }
+    ? {
+        queues: Instances<typeof jobNames, "queue">;
+        queuesEvents: Instances<typeof jobNames, "queuesEvents">;
+      }
     : T extends "worker"
       ? { workers: Instances<typeof jobNames, "worker"> }
       : never);
@@ -60,7 +65,14 @@ export function makeQueue() {
     .then(() => app.logger.log("Queue ready"))
     .catch(logger.error);
 
-  return { ...app, queues } satisfies Application<"queue">;
+  return {
+    ...app,
+    queues,
+    queuesEvents: queues.map((q) => new QueueEvents(q.name, { connection })) as Instances<
+      typeof jobNames,
+      "queuesEvents"
+    >,
+  } satisfies Application<"queue">;
 }
 
 export function makeWorker(processors: Instances<typeof jobNames, "processor">) {
