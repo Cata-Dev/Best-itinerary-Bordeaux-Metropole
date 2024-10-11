@@ -4,6 +4,7 @@ import { join } from "path";
 import { askShutdown, makeQueue } from "./base";
 import { isMessage, makeMessage, Message } from "./utils/para";
 import { makeData } from "./prepare";
+import { Deferred } from "common/lib/async";
 import { makeLogger } from "common/lib/logger";
 
 declare module "./utils/para" {
@@ -53,6 +54,8 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
     gracefulStop: () => {
       app.logger.info("Gracefully stopping...");
 
+      const def = new Deferred();
+
       const workersStopped = new Promise<void>((res) => {
         let count = 0;
 
@@ -72,14 +75,10 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
       });
 
       workersStopped.catch(app.logger.error).finally(() => {
-        askShutdown(app)
-          .then(app.logger.log)
-          .catch(app.logger.error)
-          .finally(() => {
-            app.logger.info("Gracefully stopped, exiting.");
-            process.exit(0);
-          });
+        askShutdown(app).then(def.resolve).catch(def.reject);
       });
+
+      return def.promise;
     },
   };
 }
@@ -89,8 +88,13 @@ if (require.main === module && isMainThread) {
 
   void main(cpus().length)
     .then(({ gracefulStop }) => {
-      process.on("SIGTERM", gracefulStop);
-      process.on("SIGINT", gracefulStop);
+      const askShutdown = () => {
+        void gracefulStop;
+        logger.info("Gracefully stopped, exiting.");
+      };
+
+      process.on("SIGTERM", askShutdown);
+      process.on("SIGINT", askShutdown);
 
       logger.log(`Main started.`);
     })
