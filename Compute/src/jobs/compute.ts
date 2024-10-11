@@ -5,6 +5,7 @@ import "core-js/features/reflect";
 
 import type { Journey, RAPTORRunSettings } from "raptor";
 import SharedRAPTOR from "raptor/lib/shared";
+import { FootPath } from "raptor/lib/Structures";
 import { SharedRAPTORData } from "raptor/lib/SharedStructures";
 import { defaultRAPTORRunSettings } from "data/lib/values/RAPTOR";
 import ResultModelInit, {
@@ -14,17 +15,21 @@ import ResultModelInit, {
   routeId,
   stopId,
 } from "data/lib/models/Compute/result.model";
+import type { BaseApplication } from "../base";
 import { withDefaults } from "../utils";
+import type { JobFn } from ".";
+import { DocumentType } from "@typegoose/typegoose";
 
 declare module "." {
   interface Jobs {
-    compute: (ps: stopId, pt: stopId, date: Date, settings: Partial<RAPTORRunSettings>) => number;
+    compute: (
+      ps: stopId,
+      pt: stopId,
+      date: Date,
+      settings: Partial<RAPTORRunSettings>,
+    ) => DocumentType<dbComputeResult>["_id"];
   }
 }
-
-import type { Application } from "../base";
-import type { jobFn } from ".";
-import { FootPath } from "raptor/lib/Structures";
 
 type DBJourney = LabelBase[];
 function journeyDBFormatter(j: Journey<stopId, routeId>): DBJourney {
@@ -44,66 +49,58 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
     RAPTORInstance = new SharedRAPTOR(RAPTORData);
   };
 
-  const init = (async (app: Application) => {
+  const init = (async (app: BaseApplication) => {
     const dataDB = await initDB(app, app.config.mainDB);
     const resultModel = ResultModelInit(dataDB);
 
-    app.agenda.define(
-      "compute",
-      async ({
-        attrs: {
-          data: [ps, pt, departureDate, reqSettings],
-        },
-      }) => {
-        // Convert to para-specific data (pointers)
-        const convertedPs = RAPTORData.stopPointerFromId(ps);
-        if (!convertedPs) throw new Error(`Invalid ps ${ps}`);
+    return async ({ data: [ps, pt, departureDate, reqSettings] }) => {
+      // Convert to para-specific data (pointers)
+      const convertedPs = RAPTORData.stopPointerFromId(ps);
+      if (!convertedPs) throw new Error(`Invalid ps ${ps}`);
 
-        const convertedPt = RAPTORData.stopPointerFromId(pt);
-        if (!convertedPt) throw new Error(`Invalid pt ${pt}`);
+      const convertedPt = RAPTORData.stopPointerFromId(pt);
+      if (!convertedPt) throw new Error(`Invalid pt ${pt}`);
 
-        const settings = withDefaults(reqSettings, defaultRAPTORRunSettings);
+      const settings = withDefaults(reqSettings, defaultRAPTORRunSettings);
 
-        RAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
-        const bestJourneys = RAPTORInstance.getBestJourneys(pt)
-          .filter((j): j is Journey<stopId, routeId> => !!j)
-          .map((j) =>
-            j.map((l) => ({
-              ...l,
-              // Convert back pointers to stop ids
-              ...("boardedAt" in l ? { boardedAt: RAPTORData.stops.get(l.boardedAt)!.id } : {}),
-              ...("transfer" in l
-                ? {
-                    transfer: {
-                      ...l.transfer,
-                      to: RAPTORData.stops.get(l.transfer.to)!.id,
-                    } satisfies FootPath<stopId>,
-                  }
-                : {}),
-            })),
-          );
-
-        if (!bestJourneys.length) throw new Error("No journey found");
-
-        // Keep only fastest journey & shortest journey
-        const fastestJourney = bestJourneys.at(-1)!;
-        const shortestJourney = bestJourneys.reduce(
-          (acc, v) => (acc.length < v.length ? acc : v),
-          bestJourneys[0],
+      RAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
+      const bestJourneys = RAPTORInstance.getBestJourneys(pt)
+        .filter((j): j is Journey<stopId, routeId> => !!j)
+        .map((j) =>
+          j.map((l) => ({
+            ...l,
+            // Convert back pointers to stop ids
+            ...("boardedAt" in l ? { boardedAt: RAPTORData.stops.get(l.boardedAt)!.id } : {}),
+            ...("transfer" in l
+              ? {
+                  transfer: {
+                    ...l.transfer,
+                    to: RAPTORData.stops.get(l.transfer.to)!.id,
+                  } satisfies FootPath<stopId>,
+                }
+              : {}),
+          })),
         );
 
-        const { _id } = await resultModel.create({
-          from: ps,
-          to: pt,
-          journeys: [fastestJourney, shortestJourney].map((j) => journeyDBFormatter(j)),
-          settings,
-        } satisfies dbComputeResult);
+      if (!bestJourneys.length) throw new Error("No journey found");
 
-        return _id;
-      },
-      { concurrency: 1, priority: "high" },
-    );
-  }) satisfies jobFn;
+      // Keep only fastest journey & shortest journey
+      const fastestJourney = bestJourneys.at(-1)!;
+      const shortestJourney = bestJourneys.reduce(
+        (acc, v) => (acc.length < v.length ? acc : v),
+        bestJourneys[0],
+      );
+
+      const { _id } = await resultModel.create({
+        from: ps,
+        to: pt,
+        journeys: [fastestJourney, shortestJourney].map((j) => journeyDBFormatter(j)),
+        settings,
+      } satisfies dbComputeResult);
+
+      return _id;
+    };
+  }) satisfies JobFn<"compute">;
 
   return { init, updateData };
 }

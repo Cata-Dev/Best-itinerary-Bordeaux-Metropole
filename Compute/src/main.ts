@@ -1,7 +1,7 @@
 import { isMainThread, Worker } from "node:worker_threads";
 import { cpus } from "os";
 import { join } from "path";
-import { app } from "./base";
+import { app, askShutdown, makeQueue } from "./base";
 import { isMessage, makeMessage } from "./utils/para";
 import { makeData } from "./prepare";
 import { makeLogger } from "common/lib/logger";
@@ -13,9 +13,12 @@ declare module "./utils/para" {
   }
 }
 
-app.logger = makeLogger(`[MAIN]`);
+const logger = makeLogger(`[MAIN]`);
 
 async function main() {
+  const app = makeQueue();
+  app.logger = logger;
+
   const data = await makeData(app);
 
   // Init main instance
@@ -65,8 +68,13 @@ async function main() {
       });
 
       workersStopped.catch(app.logger.error).finally(() => {
-        app.logger.info("Gracefully stopped, exiting.");
-        process.exit(0);
+        askShutdown(app)
+          .then(app.logger.log)
+          .catch(app.logger.error)
+          .finally(() => {
+            app.logger.info("Gracefully stopped, exiting.");
+            process.exit(0);
+          });
       });
     },
   };
