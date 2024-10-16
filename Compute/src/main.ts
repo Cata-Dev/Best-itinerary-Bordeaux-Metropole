@@ -4,8 +4,8 @@ import { join } from "path";
 import { askShutdown, makeQueue } from "./base";
 import { isMessage, makeMessage, Message } from "./utils/para";
 import { makeData } from "./prepare";
-import { Deferred } from "common/lib/async";
-import { makeLogger } from "common/lib/logger";
+import { Deferred } from "common/async";
+import { makeLogger } from "common/logger";
 
 declare module "./utils/para" {
   interface Messages {

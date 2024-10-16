@@ -1,5 +1,5 @@
 import { parentPort, threadId, workerData } from "node:worker_threads";
-import { makeLogger } from "common/lib/logger";
+import { makeLogger } from "common/logger";
 import { app as bApp, askShutdown, makeWorker, Application } from "./base";
 import initComputeJob from "./jobs/compute";
 import { Message, isMessage, makeMessage } from "./utils/para";

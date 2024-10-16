@@ -1,5 +1,4 @@
-import { makeLogger } from "common/lib/logger";
-import { Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
+import { makeLogger } from "common/logger";
 import config from "../config.json";
 import { mapAsync } from "./utils/asyncs";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
