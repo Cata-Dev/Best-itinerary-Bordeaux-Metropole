@@ -81,6 +81,8 @@ export default async function (app: BaseApplication) {
    * @returns `[closest point, edge containing this point, indice of segment composing the edge]`
    */
   const approachPoint = (coords: [number, number]): [Point, dbFootGraphEdges["_id"], number] | null => {
+    const point = new Point(...coords);
+
     /**@description [distance to closest point, closest point, edge containing this point, indice of segment composing the edge (i;i+1 in Section coords)] */
     const closestPoint: [number, Point | null, dbFootGraphEdges["_id"] | null, number | null] = [
       Infinity,
@@ -91,7 +93,6 @@ export default async function (app: BaseApplication) {
 
     for (const [edge, segs] of mappedSegments) {
       for (const [n, seg] of segs.entries()) {
-        const point = new Point(...coords);
         const localClosestPoint = seg.closestPointFromPoint(point);
         const distance = Point.distance(point, localClosestPoint);
         if (distance < closestPoint[0]) {
