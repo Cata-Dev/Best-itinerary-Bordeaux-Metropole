@@ -19,7 +19,12 @@ declare module "." {
     // Foot path One-To-One
     computeFp: (ps: GeoPoint, pt: GeoPoint) => { distance: number; path: path<FootGraphNode> };
     // Foot path One-To-All (all being stops)
-    computeFpOTA: (ps: GeoPoint, alias?: string) => { distances: Record<number, number>; alias?: string };
+    computeFpOTA: (
+      ps: GeoPoint,
+      alias?: string,
+      // TODO : use it
+      options?: { maxDist: number },
+    ) => { distances: Record<number, number>; alias?: string };
   }
 }
 
@@ -202,14 +207,14 @@ export default async function (app: BaseApplication) {
       // Graph private to One-To-All computations
       const footGraph = makeGraph();
 
-      return ({ data: [ps, alias] }) => {
+      return ({ data: [ps, alias, options = { maxDist: 1e3 }] }) => {
         // Approach points into foot graph
         const aps = approachPoint(ps);
         if (!aps) throw new Error("Couldn't approach starting point.");
 
         const apsName = refreshWithApproachedPoint(footGraph, "aps", aps);
 
-        const [dist] = Dijkstra(footGraph, [apsName as FootGraphNode]);
+        const [dist] = Dijkstra(footGraph, [apsName as FootGraphNode], { maxCumulWeight: options.maxDist });
 
         revertFromApproachedPoint(footGraph, apsName, aps[1]);
 
@@ -219,7 +224,9 @@ export default async function (app: BaseApplication) {
               // Keep only distances to approached stops
               Array.from(dist.entries()).reduce(
                 (acc, [node, dist]) =>
-                  node.startsWith("as") ? { ...acc, [node.replace("as=", "")]: dist } : acc,
+                  !isNaN(parseInt(`${dist}`)) && node.startsWith("as")
+                    ? { ...acc, [node.replace("as=", "")]: dist }
+                    : acc,
                 {},
               ),
             alias,
