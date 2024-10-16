@@ -1,3 +1,5 @@
+import "core-js/features/reflect";
+
 import { isMainThread, Worker } from "node:worker_threads";
 import { cpus } from "os";
 import { join } from "path";

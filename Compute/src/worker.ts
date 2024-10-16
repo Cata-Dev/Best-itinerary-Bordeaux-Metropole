@@ -1,3 +1,5 @@
+import "core-js/features/reflect";
+
 import { parentPort, threadId, workerData } from "node:worker_threads";
 import { makeLogger } from "common/logger";
 import { app as bApp, askShutdown, makeWorker, Application } from "./base";
