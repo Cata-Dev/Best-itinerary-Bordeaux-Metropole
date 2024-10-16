@@ -7,7 +7,6 @@ import type { HookContext } from "../../declarations";
 import { dataValidator, queryValidator } from "../../validators";
 import { TBMEndpoints } from "../../externalAPIs/TBM/index";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF/index";
-import { TBMVehicles } from "../itinerary/itinerary.schema";
 import type { GeocodeService } from "./geocode.class";
 
 const AddressesObject = Type.Object(
@@ -25,6 +24,8 @@ const AddressesObject = Type.Object(
 );
 
 const Addresses = Type.Literal(TBMEndpoints.Addresses);
+
+export const TBMVehicles = Type.Union([Type.Literal("BUS"), Type.Literal("TRAM"), Type.Literal("BATEAU")]);
 
 const TBM_StopsObject = Type.Object(
   {

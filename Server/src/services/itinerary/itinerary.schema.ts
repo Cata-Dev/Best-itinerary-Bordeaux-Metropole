@@ -8,7 +8,7 @@ import { dataValidator, queryValidator } from "../../validators";
 import type { ItineraryService } from "./itinerary.class";
 
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
-import { coords, GEOCODE_type, geocodeSchema } from "../geocode/geocode.schema";
+import { coords, GEOCODE_type, geocodeSchema, TBMVehicles } from "../geocode/geocode.schema";
 
 const FOOTStageDetails = Type.Object(
   {
@@ -16,8 +16,6 @@ const FOOTStageDetails = Type.Object(
   },
   { $id: "FOOTStageDetails", additionalProperties: false },
 );
-
-export const TBMVehicles = Type.Union([Type.Literal("BUS"), Type.Literal("TRAM"), Type.Literal("BATEAU")]);
 
 const TBMStageDetails = Type.Object(
   {
