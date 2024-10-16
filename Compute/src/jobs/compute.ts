@@ -24,7 +24,7 @@ import type { BaseApplication } from "../base";
 import { withDefaults } from "../utils";
 import type { JobFn, JobResult } from ".";
 import { DocumentType } from "@typegoose/typegoose";
-import { TBMEndpoints } from "server/lib/externalAPIs/TBM";
+import { TBMEndpoints } from "server/externalAPIs/TBM/index";
 
 // type IdType<M> = M extends { _id: infer I } ? I : never;
 
