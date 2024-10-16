@@ -1,7 +1,7 @@
 import { WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { Dijkstra, path } from "@catatomik/dijkstra";
 import footGraphModelInit, { dbFootGraphEdges } from "data/lib/models/TBM/FootGraph.model";
-import { WGSToLambert93, euclideanDistance } from "common/geographics";
+import { euclideanDistance } from "common/geographics";
 import { JobFn, JobResult } from ".";
 import { BaseApplication } from "../base";
 import { initDB } from "../utils/mongoose";
@@ -168,10 +168,6 @@ export default async function (app: BaseApplication) {
       const footGraph = makeGraph();
 
       return ({ data: [ps, pt] }) => {
-        // First, convert into Lambert93 coordinates
-        ps = WGSToLambert93(...ps);
-        pt = WGSToLambert93(...pt);
-
         // Approach points into foot graph
         const aps = approachPoint(ps);
         if (!aps) throw new Error("Couldn't approach starting point.");
@@ -203,9 +199,6 @@ export default async function (app: BaseApplication) {
       const footGraph = makeGraph();
 
       return ({ data: [ps, alias] }) => {
-        // First, convert into Lambert93 coordinates
-        ps = WGSToLambert93(...ps);
-
         // Approach points into foot graph
         const aps = approachPoint(ps);
         if (!aps) throw new Error("Couldn't approach starting point.");
