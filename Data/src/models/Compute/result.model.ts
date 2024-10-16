@@ -2,6 +2,7 @@
 //
 // See http://mongoosejs.com/docs/models.html
 export enum JourneyLabelType {
+  Base = "B",
   Foot = "F",
   Vehicle = "V",
 }
@@ -24,7 +25,6 @@ import {
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
-import { dbFootPaths } from "../TBM/NonScheduledRoutes.model";
 import { dbTBM_ScheduledRoutes } from "../TBM/TBMScheduledRoutes.model";
 import { RAPTORRunSettings } from "raptor";
 import { dbTBM_Stops } from "../TBM/TBM_stops.model";
@@ -59,12 +59,20 @@ export class LabelBase {
   public time!: number;
 }
 
+class transfer {
+  @prop({ required: true })
+  public to: stopId | string;
+
+  @prop({ required: true })
+  public length: number;
+}
+
 export class LabelFoot extends LabelBase {
   @prop({ required: true })
   public boardedAt!: stopId | string;
 
-  @prop({ required: true, ref: () => dbFootPaths })
-  public transfer!: Ref<dbFootPaths>;
+  @prop({ required: true })
+  public transfer!: transfer;
 }
 
 export function isLabelFoot(label: LabelBase): label is LabelFoot {
@@ -153,6 +161,7 @@ export class dbComputeResult extends TimeStamps {
     required: true,
     type: [[LabelBase]],
     discriminators: () => [
+      { type: LabelBase, value: JourneyLabelType.Base },
       { type: LabelFoot, value: JourneyLabelType.Foot },
       { type: LabelVehicle, value: JourneyLabelType.Vehicle },
     ],
