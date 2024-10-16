@@ -104,7 +104,10 @@ export default async function (app: BaseApplication) {
       }
     }
 
-    return closestPoint[1] !== null && closestPoint[2] !== null && closestPoint[3] !== null
+    return closestPoint[0] < 10e3 &&
+      closestPoint[1] !== null &&
+      closestPoint[2] !== null &&
+      closestPoint[3] !== null
       ? [closestPoint[1], closestPoint[2], closestPoint[3]]
       : null;
   };
