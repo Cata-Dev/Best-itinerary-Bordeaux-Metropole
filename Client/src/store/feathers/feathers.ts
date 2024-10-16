@@ -1,7 +1,9 @@
 import io from "socket.io-client";
 import socketio from "@feathersjs/socketio-client";
+import type { TBMEndpoints } from "server/lib/externalAPIs/TBM";
 import { createClient } from "server";
-import type { Itinerary } from "server";
+import type { Itinerary, ItineraryQuery } from "server";
+import type { TransportMode } from "../";
 
 const connection = socketio(
   io("https://bibm.catadev.org", {
@@ -25,10 +27,24 @@ APIRefresh.result = new Promise((resolve, reject) => {
   APIRefresh.reject = reject;
 });
 
+interface ItineraryQueryLocationOverride {
+  type: Exclude<TransportMode, "FOOT"> | TBMEndpoints.Addresses;
+}
+
+type Location = Omit<ItineraryQuery["from"], keyof ItineraryQueryLocationOverride> &
+  ItineraryQueryLocationOverride;
+
+const defaultLocation = {
+  id: -1,
+  type: "Addresses" as TBMEndpoints.Addresses,
+  coords: [-1, -1] satisfies [unknown, unknown],
+  alias: "unknown",
+} satisfies Location;
+
 client
   .service("itinerary")
   .get("paths", {
-    query: { waitForUpdate: true, from: "unknow", to: "unknow" },
+    query: { waitForUpdate: true, from: defaultLocation, to: defaultLocation },
   })
   .then((r) => {
     if (r.code && r.code == 200) {
@@ -39,4 +55,5 @@ client
     APIRefresh.reject(e);
   });
 
-export { client, APIRefresh };
+export { client, APIRefresh, defaultLocation };
+export type { Location };

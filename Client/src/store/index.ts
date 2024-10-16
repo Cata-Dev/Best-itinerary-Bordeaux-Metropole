@@ -1,5 +1,5 @@
 import { theme, toggleDarkMode } from "./theme/theme";
-import { client, APIRefresh } from "./feathers/feathers";
+import { client, APIRefresh, defaultLocation } from "./feathers/feathers";
 import type { TransportProvider } from "./utils";
 
 interface QuerySettings {
@@ -19,21 +19,13 @@ const defaultQuerySettings: QuerySettings = {
   },
 };
 
-const defaultLocation = {
-  display: "" as const,
-  type: "ADRESSE" as const,
-  value: [0, 0] as const,
-};
-
-type DefaultLocation = typeof defaultLocation;
-
 type colorTransports = "walking" | "tbm" | "sncf";
 type colorComm = "info" | "alert" | "success";
 type colorType = "bg" | "t";
 type colorPalette<Base extends string> = `${Base}-${colorType}`;
 
 export { toggleDarkMode, theme, client, APIRefresh, defaultQuerySettings, defaultLocation };
-export type { QuerySettings, DefaultLocation, colorTransports, colorComm, colorPalette };
+export type { QuerySettings, colorTransports, colorComm, colorPalette };
 
 export {
   formatDate,

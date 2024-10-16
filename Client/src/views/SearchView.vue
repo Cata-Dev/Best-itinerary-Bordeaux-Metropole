@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute, onBeforeRouteUpdate, type RouteLocationNormalized } from "vue-router";
-import LocationSearch, { type ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
+import type { TBMEndpoints } from "server/lib/externalAPIs/TBM";
+import type { SNCFEndpoints } from "server/lib/externalAPIs/SNCF";
+import type { Itinerary, ItineraryQuery } from "server";
+import LocationSearch from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
 import BadeModal from "@/components/BaseModal.vue";
 import ResultItem from "@/components/ResultItem.vue";
@@ -14,15 +17,12 @@ import {
   compareObjectForEach,
   type TransportProvider,
   parseJSON,
-  type DefaultLocation,
   defaultLocation,
   type colorPalette,
   type colorComm,
 } from "@/store";
 import type { QuerySettings, Obj } from "@/store";
-import type { Itinerary } from "server";
-
-type Location = ParsedGeocodeLocation | DefaultLocation;
+import type { Location } from "@/store/feathers/feathers";
 
 const source = ref<Location>(defaultLocation);
 const destination = ref<Location>(defaultLocation);
@@ -76,7 +76,7 @@ interface Status {
 const status = ref<Status>({
   search: StatusSearchResult.NONE,
 });
-const results = ref<Itinerary["paths"] | StatusSearchResult>(StatusSearchResult.NONE);
+const results = ref<Itinerary | StatusSearchResult>(StatusSearchResult.NONE);
 const result = ref<Itinerary["paths"][number] | null>();
 const router = useRouter();
 const route = useRoute();
@@ -86,11 +86,23 @@ const actualRoute = ref<RouteLocationNormalized | null>(null);
 onMounted(updateQuery);
 onBeforeRouteUpdate((to) => updateQuery(to));
 
+function normalizeLocationForQuery(loc: Location): ItineraryQuery["from"] {
+  return {
+    ...loc,
+    type:
+      loc.type === "BATEAU" || loc.type === "BUS" || loc.type === "TRAM"
+        ? ("TBM_Stops" as TBMEndpoints.Stops)
+        : loc.type === "TRAIN"
+          ? ("SNCF_Stops" as SNCFEndpoints.Stops)
+          : ("Addresses" as TBMEndpoints.Addresses),
+  };
+}
+
 /**
  * @description fetch new results for current query
  */
 async function fetchResults() {
-  if (!source.value.display.length || !destination.value.display.length)
+  if (!source.value.alias.length || !destination.value.alias.length)
     return (status.value.search = StatusSearchResult.ERROR);
 
   status.value.search = StatusSearchResult.LOADING;
@@ -98,14 +110,14 @@ async function fetchResults() {
   try {
     const r = await client.service("itinerary").get("paths", {
       query: {
-        from: source.value.display,
-        to: destination.value.display,
+        from: normalizeLocationForQuery(source.value),
+        to: normalizeLocationForQuery(destination.value),
         ...settings.value,
       },
     });
     if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
 
-    results.value = r.paths;
+    results.value = r;
     if (result.value) result.value = null;
 
     status.value.search = StatusSearchResult.SUCCESS;
@@ -124,8 +136,8 @@ async function fetchResults() {
 async function updateRoute() {
   const query: Record<string, string> = {};
 
-  if (source.value.display.length) query.from = source.value.display;
-  if (destination.value.display.length) query.to = destination.value.display;
+  if (source.value.alias.length) query.from = source.value.alias;
+  if (destination.value.alias.length) query.to = destination.value.alias;
 
   compareObjectForEach(
     settings.value,
@@ -173,9 +185,9 @@ async function updateQuery(to = route) {
 
   const updates: Promise<unknown>[] = [];
   // Force even if empty to clear input
-  if (source.value.display !== to.query.from && sourceCompo.value)
+  if (source.value.alias !== to.query.from && sourceCompo.value)
     updates.push(sourceCompo.value?.forceInput((to.query.from as string | undefined) ?? ""));
-  if (destination.value.display !== to.query.to && destinationCompo.value)
+  if (destination.value.alias !== to.query.to && destinationCompo.value)
     updates.push(destinationCompo.value?.forceInput((to.query.to as string | undefined) ?? ""));
   await Promise.all(updates);
 
@@ -192,13 +204,12 @@ async function updateQuery(to = route) {
   return true;
 }
 
-async function selectResult(id: string) {
-  if (!(results.value instanceof Array)) return;
+async function selectResult(idx: number) {
+  if (typeof results.value === "number") return;
 
-  const r = results.value.find((r) => r.id === id);
-  result.value = r;
+  result.value = results.value.paths[idx];
 
-  router.push({ query: route.query, hash: `#${id}` });
+  router.push({ query: route.query, hash: `#${idx}` });
 }
 </script>
 
@@ -224,9 +235,9 @@ async function selectResult(id: string) {
                 name="source"
                 placeholder="Départ"
                 @update:model-value="
-                  if ((actualRoute?.query.from || '') !== source.display) updateRoute();
-                  if (source.display.length) {
-                    if (!destination.display.length) destinationCompo?.focus();
+                  if ((actualRoute?.query.from || '') !== source.alias) updateRoute();
+                  if (source.alias.length) {
+                    if (!destination.alias.length) destinationCompo?.focus();
                     else searchElem?.focus();
                   }
                 "
@@ -240,9 +251,9 @@ async function selectResult(id: string) {
                 placeholder="Arrivée"
                 class="mt-2"
                 @update:model-value="
-                  if ((actualRoute?.query.to || '') !== destination.display) updateRoute();
-                  if (destination.display.length) {
-                    if (!source.display.length) sourceCompo?.focus();
+                  if ((actualRoute?.query.to || '') !== destination.alias) updateRoute();
+                  if (destination.alias.length) {
+                    if (!source.alias.length) sourceCompo?.focus();
                     else searchElem?.focus();
                   }
                 "
@@ -293,7 +304,7 @@ async function selectResult(id: string) {
       </div>
       <div v-if="result && route.hash" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
-          :title="`Alternative #${(results as any[]).indexOf(result) + 1}`"
+          :title="`Alternative #${(results as Itinerary).paths.indexOf(result) + 1}`"
           :total-duration="result.totalDuration"
           :total-distance="result.totalDistance"
           :departure="result.departure"
@@ -311,9 +322,8 @@ async function selectResult(id: string) {
           'fade-in': !route.hash || result === null,
         }"
       >
-        <template v-for="(r, i) of results" :key="r.id">
+        <template v-for="(r, i) of results.paths" :key="i">
           <ResultItem
-            :result-id="r.id"
             :title="`Alternative #${i + 1}`"
             :total-duration="r.totalDuration"
             :total-distance="r.totalDistance"
@@ -321,7 +331,7 @@ async function selectResult(id: string) {
             :from="r.from"
             :path="r.stages"
             class="cursor-pointer"
-            @click="selectResult(r.id)"
+            @click="selectResult(i)"
           />
         </template>
       </div>

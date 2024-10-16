@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { defaultLocation, transportToType, type DefaultLocation } from "@/store/";
+import { defaultLocation, transportToType } from "@/store/";
 import TransportBadge from "@/components/TransportBadge.vue";
-import type { ParsedGeocodeLocation } from "@/components/LocationSearch.vue";
+import type { Location } from "@/store/feathers/feathers";
 
-type ModelValue = ParsedGeocodeLocation | DefaultLocation;
+type ModelValue = Location;
 
 interface Props<T> {
   placeholder: string;
@@ -33,10 +33,10 @@ watch(
 const showDatalist = ref<boolean>(false);
 
 const inputElem = ref<HTMLInputElement>();
-const input = ref(props.modelValue.display);
+const input = ref(props.modelValue.alias);
 
 function refreshModelValue() {
-  const value = props.datalist.find((el) => el.display === input.value);
+  const value = props.datalist.find((el) => el.alias === input.value);
   emit("update:modelValue", value ?? defaultLocation);
 }
 
@@ -83,10 +83,10 @@ defineExpose({
         v-for="(e, i) in datalist"
         :key="i"
         class="px-1 py-2 text-sm cursor-pointer hover:bg-bg-light-contrasted hover:dark:bg-bg-dark-contrasted"
-        @mousedown="forceInput(e.display)"
+        @mousedown="forceInput(e.alias)"
       >
         <span class="ml-1 mr-2">
-          {{ e.display }}
+          {{ e.alias }}
         </span>
         <TransportBadge
           v-if="e.type"

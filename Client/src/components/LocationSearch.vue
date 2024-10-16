@@ -1,62 +1,57 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import DatalistInput from "./DatalistInput.vue";
-import { client, defaultLocation, type DefaultLocation, type TransportMode } from "../store/";
 import type { Geocode } from "server";
-
-export interface ParsedGeocodeLocation {
-  display: string;
-  type: Exclude<TransportMode, "FOOT"> | "ADRESSE";
-  value: [number, number];
-}
-
-type ModelValue = ParsedGeocodeLocation | DefaultLocation;
+import DatalistInput from "./DatalistInput.vue";
+import { client, defaultLocation } from "../store/";
+import type { Location } from "@/store/feathers/feathers";
 
 interface Props {
   name: string;
   placeholder: string;
-  modelValue: ModelValue;
+  modelValue: Location;
 }
 
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: "update:modelValue", modelValue: ModelValue): void;
+  (e: "update:modelValue", modelValue: Props["modelValue"]): void;
 }>();
 
-const datalist = ref<ParsedGeocodeLocation[]>();
+const datalist = ref<Props["modelValue"][]>();
 /**
  * The valid location (emitted modelValue)
  */
-const modelValue = ref<ModelValue>(props.modelValue);
+const modelValue = ref<Props["modelValue"]>(props.modelValue);
 const updated = ref(0);
 const updating = ref(false);
 
-function parseGeocode(s: Geocode): Omit<ParsedGeocodeLocation, "value"> {
+function parseGeocode(s: Geocode): Props["modelValue"] {
   switch (s.GEOCODE_type) {
     case "Addresses":
       return {
-        display: `${s.dedicated.numero} ${"rep" in s.dedicated ? s.dedicated.rep + " " : ""}${
+        alias: `${s.dedicated.numero} ${"rep" in s.dedicated ? s.dedicated.rep + " " : ""}${
           s.dedicated.nom_voie
         } ${s.dedicated.commune}`,
-        type: "ADRESSE",
+        type: s.GEOCODE_type,
+        id: s._id,
+        coords: s.coords,
       };
 
     case "TBM_Stops":
-      return { display: s.dedicated.libelle, type: s.dedicated.vehicule };
+      return { alias: s.dedicated.libelle, type: s.dedicated.vehicule, coords: s.coords, id: s._id };
 
     case "SNCF_Stops":
-      return { display: s.dedicated.name, type: "TRAIN" };
+      return { alias: s.dedicated.name, type: "TRAIN", coords: s.coords, id: s._id };
 
     default:
-      return { display: "Unsupported location", type: "ADRESSE" };
+      return { ...defaultLocation, alias: "Unsupported location" };
   }
 }
 
 /**
  * @returns Can be empty
  */
-async function fetchSuggestions(value: string): Promise<ParsedGeocodeLocation[]> {
+async function fetchSuggestions(value: string): Promise<Props["modelValue"][]> {
   let suggestions: Geocode[] = [];
   try {
     suggestions = await client.service("geocode").find({ query: { id: value, max: 25, uniqueVoies: true } });
@@ -73,7 +68,7 @@ async function refreshSuggestions(value: string) {
 
   if (!value || value.length < 5) {
     datalist.value = [];
-    if (modelValue.value.display.length) {
+    if (modelValue.value.alias.length) {
       modelValue.value = defaultLocation;
       emit("update:modelValue", defaultLocation);
     }
@@ -90,13 +85,13 @@ async function refreshSuggestions(value: string) {
   datalist.value = suggestions;
   updated.value = now;
 
-  const validLocation = suggestions.find((l) => l.display === value);
+  const validLocation = suggestions.find((l) => l.alias === value);
   if (validLocation) {
     modelValue.value = validLocation;
     emit("update:modelValue", validLocation);
   } else {
     // If modelValue needs reset
-    if (modelValue.value.display.length) {
+    if (modelValue.value.alias.length) {
       modelValue.value = defaultLocation;
       emit("update:modelValue", defaultLocation);
     }
