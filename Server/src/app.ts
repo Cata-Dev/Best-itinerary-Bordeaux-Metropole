@@ -15,6 +15,7 @@ import { channels } from "./channels";
 import { setupExternalAPIs } from "./externalAPIs/index";
 import { logErrorHook } from "./logger";
 import { setupMongoose, teardownMongoose } from "./mongoose";
+import { setupCompute, teardownCompute } from "./compute";
 
 const app: Application = koa(feathers()) as Application;
 
@@ -54,12 +55,13 @@ app.hooks({
 app.hooks({
   setup: [
     setupMongoose,
+    setupCompute,
     async (context: HookContext, next: NextFunction) => {
       setupExternalAPIs(context.app);
       await next();
     },
   ],
-  teardown: [teardownMongoose],
+  teardown: [teardownMongoose, teardownCompute],
 });
 
 export { app };

@@ -65,6 +65,7 @@
     "@typegoose/typegoose": "^12.8.0",
     "axios": "^1.7.7",
     "common": "link:../Common",
+    "compute": "link:../Compute",
     "core-js": "^3.38.1",
     "data": "file:../Data",
     "feathers-hooks-common": "^8.2.1",
