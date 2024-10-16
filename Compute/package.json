@@ -22,12 +22,14 @@
     "typescript-eslint": "^8.8.1"
   },
   "dependencies": {
+    "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@typegoose/typegoose": "^12.8.0",
     "bullmq": "^5.19.0",
     "common": "link:../Common",
     "core-js": "^3.38.1",
     "data": "link:../Data",
     "mongoose": "^8.2.0",
-    "raptor": "github:cata-dev/raptor#para-friendly"
+    "raptor": "github:cata-dev/raptor#para-friendly",
+    "server": "link:../Server"
   }
 }
