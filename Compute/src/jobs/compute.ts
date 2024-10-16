@@ -69,7 +69,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
 
     return async (job) => {
       const {
-        data: [ps, pt, departureDate, reqSettings],
+        data: [ps, pt, departureDateStr, reqSettings],
       } = job;
       let childrenResults:
         | Awaited<ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>>[string][]
@@ -162,6 +162,8 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       if (!convertedPt) throw new Error(`Invalid pt ${ptId}`);
 
       const settings = withDefaults(reqSettings, defaultRAPTORRunSettings);
+      // String because stringified by Redis
+      const departureDate = new Date(departureDateStr);
 
       RAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
       const bestJourneys = RAPTORInstance.getBestJourneys(convertedPt)
