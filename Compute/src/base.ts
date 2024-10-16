@@ -1,7 +1,11 @@
+import { FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
 import { makeLogger } from "common/logger";
+import { ItineraryQuery } from "server";
 import config from "../config.json";
 import { mapAsync } from "./utils/asyncs";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
+import { RAPTORRunSettings } from "raptor";
+import { TBMEndpoints } from "server/lib/externalAPIs/TBM";
 
 export interface Config {
   redis: {
@@ -13,8 +17,11 @@ export interface Config {
   mainDB: string;
 }
 
-type InstanceType = "queue" | "worker";
-type Instances<Tuple extends [...JobName[]], T extends InstanceType | "processor" | "queuesEvents"> = {
+type SchedulerInstanceType = "queue" | "worker";
+type Instances<
+  Tuple extends [...JobName[]],
+  T extends SchedulerInstanceType | "processor" | "queuesEvents",
+> = {
   [Index in keyof Tuple]: T extends "queue"
     ? Queue<JobData<Tuple[Index]>, JobResult<Tuple[Index]>, Tuple[Index]>
     : T extends "worker"
@@ -26,7 +33,7 @@ type Instances<Tuple extends [...JobName[]], T extends InstanceType | "processor
           : never;
 };
 
-const jobNames = ["compute"] as const satisfies JobName[];
+const jobNames = ["compute", "computeFp", "computeFpOTA"] as const satisfies JobName[];
 
 export interface BaseApplication {
   readonly config: Config;
@@ -36,11 +43,21 @@ export interface BaseApplication {
   logger: ReturnType<typeof makeLogger>;
 }
 
-export type Application<T extends InstanceType = InstanceType> = BaseApplication &
+export type Application<T extends SchedulerInstanceType = SchedulerInstanceType> = BaseApplication &
   (T extends "queue"
     ? {
         queues: Instances<typeof jobNames, "queue">;
         queuesEvents: Instances<typeof jobNames, "queuesEvents">;
+        computeFullJourney: (
+          from: ItineraryQuery["from"],
+          to: ItineraryQuery["to"],
+          departureTime: Date,
+          settings: Partial<RAPTORRunSettings>,
+        ) => Promise<
+          Omit<Awaited<ReturnType<InstanceType<typeof FlowProducer>["add"]>>, "job"> & {
+            job: Awaited<ReturnType<Instances<typeof jobNames, "queue">["0"]["add"]>>;
+          }
+        >;
       }
     : T extends "worker"
       ? { workers: Instances<typeof jobNames, "worker"> }
@@ -57,12 +74,23 @@ const connection = {
   ...app.config.redis,
 } satisfies QueueBaseOptions["connection"];
 
+type DistributedFlowJobBase<T> = T extends JobName ? FlowJobBase<T> : never;
+
+interface FlowJobBase<N extends JobName> {
+  name: N;
+  queueName: N;
+  data: JobData<N>;
+  children?: DistributedFlowJobBase<JobName>[];
+}
+
 export function makeQueue() {
   const queues = jobNames.map((j) => new Queue(j, { connection })) as Instances<typeof jobNames, "queue">;
 
   mapAsync(queues, (q) => q.waitUntilReady())
     .then(() => app.logger.log("Queue ready"))
     .catch(logger.error);
+
+  const flowProducer = new FlowProducer({ connection });
 
   return {
     ...app,
@@ -71,13 +99,44 @@ export function makeQueue() {
       typeof jobNames,
       "queuesEvents"
     >,
-  } satisfies Application<"queue">;
+    computeFullJourney: (from, to, departureTime, settings) =>
+      flowProducer.add({
+        name: "compute",
+        queueName: "compute",
+        data: [from, to, departureTime, settings],
+        children: [
+          ...(from.type === TBMEndpoints.Addresses
+            ? [
+                {
+                  name: "computeFpOTA" as const,
+                  queueName: "computeFpOTA" as const,
+                  data: [from.coords, "ps"] satisfies [(typeof from)["coords"], unknown],
+                },
+              ]
+            : []),
+          ...(to.type === TBMEndpoints.Addresses
+            ? [
+                {
+                  name: "computeFpOTA" as const,
+                  queueName: "computeFpOTA" as const,
+                  data: [to.coords, "pt"] satisfies [(typeof from)["coords"], unknown],
+                },
+              ]
+            : []),
+        ],
+      } satisfies FlowJobBase<"compute">),
+  } as Application<"queue">;
 }
 
-export function makeWorker(processors: Instances<typeof jobNames, "processor">) {
+export function makeWorker(
+  /**
+   *  Should be `Instances<typeof jobNames, "processor">`
+   */
+  processors: Instances<typeof jobNames, "processor">,
+) {
   const workers = jobNames.map(
     (n, i) =>
-      new Worker(n, processors[i], {
+      new Worker(n, (processors as Processor<JobName>[])[i], {
         connection,
       }),
   ) as Instances<typeof jobNames, "worker">;
@@ -91,8 +150,9 @@ export function makeWorker(processors: Instances<typeof jobNames, "processor">) 
 
 export function askShutdown(app: Application) {
   return new Promise<string>((res, rej) => {
-    mapAsync("queues" in app ? app.queues : (app.workers as Instances<typeof jobNames, InstanceType>), (i) =>
-      i.close(),
+    mapAsync(
+      "queues" in app ? app.queues : (app.workers as Instances<typeof jobNames, SchedulerInstanceType>),
+      (i) => i.close(),
     )
       .then(() => {
         res("Instance stopped");
