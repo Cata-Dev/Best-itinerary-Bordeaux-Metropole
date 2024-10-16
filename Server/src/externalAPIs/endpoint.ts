@@ -63,15 +63,21 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
     let result = false;
     try {
       const r = await this._fetch();
+
       if (debug) logger.info(`Refreshed ${this.name}.`);
+
       this._lastFetch = Date.now();
       result = r;
     } catch (e) {
       if (debug) logger.error(`Fetch failed for ${this.name}`, e);
+
       result = false;
     } finally {
       this._fetching = false;
-      result ? this.deferredFetch.resolve(true) : this.deferredFetch.reject(false);
+
+      if (result) this.deferredFetch.resolve(true);
+      else this.deferredFetch.reject(false);
+
       super.emit("fetched", result);
     }
 

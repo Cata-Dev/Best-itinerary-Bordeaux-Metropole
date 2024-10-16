@@ -100,7 +100,7 @@ export function compactDate(date: Date | number, includeMs: boolean): string {
     if (ms < 100) ms = "0" + ms;
     else if (ms < 10) ms = "00" + ms;
     return `${h}:${mi}:${s}${includeMs ? `.${ms}` : ""}`;
-  } catch (e) {
+  } catch (_) {
     return "?";
   }
 }

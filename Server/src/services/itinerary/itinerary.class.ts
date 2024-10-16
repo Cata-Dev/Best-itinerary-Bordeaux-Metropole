@@ -10,7 +10,7 @@ export interface ItineraryServiceOptions {
   app: Application;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ItineraryParams extends Params<ItineraryQuery> {}
 
 import { BadRequest, NotFound, GeneralError } from "@feathersjs/errors";
