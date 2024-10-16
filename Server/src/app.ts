@@ -28,7 +28,7 @@ app.use(errorHandler());
 app.use(parseAuthentication());
 app.use(bodyParser());
 
-// Configure services and transports
+// Configure transports
 app.configure(rest());
 app.configure(
   socketio({
@@ -37,8 +37,6 @@ app.configure(
     },
   }),
 );
-app.configure(services);
-app.configure(channels);
 
 // Register hooks that run on all service methods
 app.hooks({
@@ -51,6 +49,7 @@ app.hooks({
     all: [errorHandlerHook],
   },
 });
+
 // Register application setup and teardown hooks here
 app.hooks({
   setup: [
@@ -58,6 +57,12 @@ app.hooks({
     setupCompute,
     async (context: HookContext, next: NextFunction) => {
       setupExternalAPIs(context.app);
+      await next();
+    },
+    async (_: HookContext, next: NextFunction) => {
+      // Configure services
+      app.configure(services);
+      app.configure(channels);
       await next();
     },
   ],
