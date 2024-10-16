@@ -8,7 +8,7 @@ import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClas
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Lines } from "./TBM_lines.model";
-import { dbTBM_Stops } from "./TBM_stops.model";
+import { dbTBM_Stops, VehicleType } from "./TBM_stops.model";
 import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: TBMEndpoints.Lines_routes } })
@@ -23,7 +23,7 @@ export class dbTBM_Lines_routes extends TimeStamps {
   public sens!: string;
 
   @prop({ required: true })
-  public vehicule!: string;
+  public vehicule!: VehicleType;
 
   @prop({ required: true, ref: () => dbTBM_Lines, type: () => Number })
   public rs_sv_ligne_a!: Ref<dbTBM_Lines, number>;
