@@ -53,7 +53,7 @@
   "scripts": {
     "dev": "nodemon -x ts-node src/index.ts",
     "compile": "shx rm -rf lib/ && tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json && node ./scripts/prepare-package-json.js",
-    "start": "node lib/",
+    "start": "node lib/cjs/",
     "prettier": "npx prettier \"**/*.ts\" --write --config ../.prettierrc",
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
     "test": "pnpm run mocha",
