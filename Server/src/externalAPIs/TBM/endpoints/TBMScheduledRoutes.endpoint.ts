@@ -1,6 +1,6 @@
 import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { HydratedDocument } from "mongoose";
-import { mapAsync } from "common/lib/async";
+import { mapAsync } from "common/async";
 import { TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";

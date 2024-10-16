@@ -1,6 +1,7 @@
+import { euclideanDistance } from "common/geographics";
 import { BaseTBM, TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps, cartographicDistance } from "../../../utils";
+import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import TBM_Sections, { dbSections } from "data/lib/models/TBM/sections.model";
 
@@ -34,7 +35,7 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
           return {
             coords: section.geometry.coordinates,
             distance: section.geometry.coordinates.reduce((acc: number, v, i, arr) => {
-              if (i < arr.length - 1) return acc + cartographicDistance(...v, ...arr[i + 1]);
+              if (i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
               return acc;
             }, 0),
             _id: parseInt(section.properties.gid),
