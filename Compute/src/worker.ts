@@ -2,6 +2,7 @@ import { parentPort, threadId, workerData } from "node:worker_threads";
 import { makeLogger } from "common/logger";
 import { app as bApp, askShutdown, makeWorker, Application } from "./base";
 import initComputeJob from "./jobs/compute";
+import initComputeFpJob from "./jobs/computeFp";
 import { Message, isMessage, makeMessage } from "./utils/para";
 
 declare module "./utils/para" {
@@ -17,7 +18,9 @@ async function start(data: Message<"data">["data"]) {
   const computeProc = await init(bApp);
   bApp.logger.log("Compute job initialized.");
 
-  const app = makeWorker([computeProc]);
+  const { fp: computeFpInit, fpOTA: computeFpOTAInit } = await initComputeFpJob(bApp);
+
+  const app = makeWorker([computeProc, computeFpInit(), computeFpOTAInit()]);
 
   app.workers.forEach((worker) => {
     worker.on("active", (job) => {
