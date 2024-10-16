@@ -1,4 +1,4 @@
-import { FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
+import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
 import { makeLogger } from "common/logger";
 import { ItineraryQuery } from "server";
 import config from "../config.json";
@@ -76,7 +76,7 @@ const connection = {
 
 type DistributedFlowJobBase<T> = T extends JobName ? FlowJobBase<T> : never;
 
-interface FlowJobBase<N extends JobName> {
+interface FlowJobBase<N extends JobName> extends FlowJob {
   name: N;
   queueName: N;
   data: JobData<N>;
@@ -111,6 +111,9 @@ export function makeQueue() {
                   name: "computeFpOTA" as const,
                   queueName: "computeFpOTA" as const,
                   data: [from.coords, "ps"] satisfies [(typeof from)["coords"], unknown],
+                  opts: {
+                    failParentOnFailure: true,
+                  },
                 },
               ]
             : []),
@@ -120,6 +123,9 @@ export function makeQueue() {
                   name: "computeFpOTA" as const,
                   queueName: "computeFpOTA" as const,
                   data: [to.coords, "pt"] satisfies [(typeof from)["coords"], unknown],
+                  opts: {
+                    failParentOnFailure: true,
+                  },
                 },
               ]
             : []),
