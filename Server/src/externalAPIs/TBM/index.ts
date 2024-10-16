@@ -126,7 +126,7 @@ export default (app: Application) => {
    */
   async function getData<T>(id: string, queries: string[] = []): Promise<T> {
     const bURL = "https://data.bordeaux-metropole.fr/";
-    const url = `geojson?key=${app.get("TBMkey")}&typename=${id}&${queries.join("&")}`;
+    const url = `geojson?key=${app.get("server").TBMkey}&typename=${id}&${queries.join("&")}`;
     const { data }: { data: { features: T } } = await axios.get(`${bURL}${url}`, {
       maxContentLength: 4_000_000_000,
       maxBodyLength: 4_000_000_000,

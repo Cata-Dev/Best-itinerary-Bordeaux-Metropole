@@ -1,4 +1,14 @@
 import { feathers } from "@feathersjs/feathers";
+
+import { join, delimiter } from "path";
+process.env.NODE_CONFIG_DIR = [
+  join(__dirname, "../../../Data/config/"),
+  join(__dirname, "../../config/"),
+  // In ts-node
+  join(__dirname, "../../Data/config/"),
+  join(__dirname, "../config/"),
+].join(delimiter);
+
 import configuration from "@feathersjs/configuration";
 import { koa, rest, bodyParser, errorHandler, parseAuthentication, cors } from "@feathersjs/koa";
 import socketio from "@feathersjs/socketio";
@@ -33,7 +43,7 @@ app.configure(rest());
 app.configure(
   socketio({
     cors: {
-      origin: app.get("origins"),
+      origin: app.get("server").origins,
     },
   }),
 );

@@ -6,12 +6,16 @@ import { dataValidator } from "./validators";
 export const configurationSchema = Type.Intersect([
   defaultAppConfiguration,
   Type.Object({
-    host: Type.String(),
-    port: Type.Number(),
-    TBMkey: Type.String(),
-    SNCFkey: Type.String(),
-    origins: Type.Array(Type.String()),
-    mongodb: Type.String(),
+    server: Type.Object({
+      host: Type.String(),
+      port: Type.Number(),
+      TBMkey: Type.String(),
+      SNCFkey: Type.String(),
+      origins: Type.Array(Type.String()),
+    }),
+    dbAddress: Type.String(),
+    sourceDB: Type.String(),
+    computeDB: Type.String(),
     debug: Type.Optional(Type.Boolean()),
   }),
 ]);

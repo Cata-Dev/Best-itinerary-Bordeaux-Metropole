@@ -63,15 +63,15 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
 
   constructor(public options: ItineraryServiceOptions) {
     this.app = options.app;
-    this.resultModel = resultModelInit(this.app.get("mongooseClient"));
-    this.AddressesModel = AddressesModelInit(this.app.get("mongooseClient"));
-    this.TBMStopsModel = TBMStopsModelInit(this.app.get("mongooseClient"));
-    this.TBMSchedulesModel = TBMSchedulesModelInit(this.app.get("mongooseClient"))[1];
-    this.TBMLinesRoutesModel = TBMLinesRoutesModelInit(this.app.get("mongooseClient"));
-    this.TBMLinesModel = TBMLinesModelInit(this.app.get("mongooseClient"));
-    this.SNCFStopsModel = SNCFStopsModelInit(this.app.get("mongooseClient"));
-    this.NonScheduledRoutesModel = NonScheduledRoutesModelInit(this.app.get("mongooseClient"));
-    this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("mongooseClient"));
+    this.resultModel = resultModelInit(this.app.get("computeDBConn"));
+    this.AddressesModel = AddressesModelInit(this.app.get("sourceDBConn"));
+    this.TBMStopsModel = TBMStopsModelInit(this.app.get("sourceDBConn"));
+    this.TBMSchedulesModel = TBMSchedulesModelInit(this.app.get("sourceDBConn"))[1];
+    this.TBMLinesRoutesModel = TBMLinesRoutesModelInit(this.app.get("sourceDBConn"));
+    this.TBMLinesModel = TBMLinesModelInit(this.app.get("sourceDBConn"));
+    this.SNCFStopsModel = SNCFStopsModelInit(this.app.get("sourceDBConn"));
+    this.NonScheduledRoutesModel = NonScheduledRoutesModelInit(this.app.get("sourceDBConn"));
+    this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("sourceDBConn"));
   }
 
   async get(id: Id, _params?: ServiceParams): Promise<Itinerary> {

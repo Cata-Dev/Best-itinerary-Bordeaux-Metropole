@@ -6,14 +6,22 @@ import tseslint from "typescript-eslint";
 export default tseslint.config({
   // @ts-ignore
   files: ["**/*.ts"],
-  extends: [eslint.configs.recommended, ...tseslint.configs.recommendedTypeChecked, ...tseslint.configs.stylisticTypeChecked],
+  extends: [
+    eslint.configs.recommended,
+    ...tseslint.configs.recommendedTypeChecked,
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
   languageOptions: {
     parser: tseslint.parser,
     parserOptions: {
-      project: true,
+      tsconfigRootDir: import.meta.dirname,
+      project: "./src/tsconfig.json",
     },
   },
   rules: {
-    "@typescript-eslint/no-unused-vars": ["error", { caughtErrorsIgnorePattern: "^_+$", argsIgnorePattern: "^_+$", varsIgnorePattern: "^_+$" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { caughtErrorsIgnorePattern: "^_+$", argsIgnorePattern: "^_+$", varsIgnorePattern: "^_+$" },
+    ],
   },
 });

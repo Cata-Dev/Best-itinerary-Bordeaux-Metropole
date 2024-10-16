@@ -14,7 +14,7 @@ export type TBM_Vehicle = BaseTBM<{
 }>;
 
 export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
-  const Trip = TBM_Trips(app.get("mongooseClient"));
+  const Trip = TBM_Trips(app.get("sourceDBConn"));
 
   return [
     new Endpoint(

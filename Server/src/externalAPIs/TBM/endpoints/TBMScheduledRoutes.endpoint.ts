@@ -16,7 +16,7 @@ export default (
   TBM_schedulesRtEndpointInstantiated: Endpoint<TBMEndpoints.Schedules_rt>,
   TBM_tripsEndpointInstantiated: Endpoint<TBMEndpoints.Trips>,
 ) => {
-  const ScheduledRoute = TBM_Scheduled_routes(app.get("mongooseClient"));
+  const ScheduledRoute = TBM_Scheduled_routes(app.get("sourceDBConn"));
 
   return [
     new Endpoint(

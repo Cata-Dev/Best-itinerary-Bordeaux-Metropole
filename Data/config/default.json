@@ -1,0 +1,19 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 3030,
+    "TBMkey": "",
+    "SNCFkey": "",
+    "origins": ["http://localhost:3030"]
+  },
+  "compute": {
+    "redis": {
+      "host": "localhost",
+      "port": 1234
+    }
+  },
+  "dbAddress": "mongodb://0.0.0.0:27017/",
+  "sourceDB": "",
+  "computeDB": "",
+  "debug": false
+}

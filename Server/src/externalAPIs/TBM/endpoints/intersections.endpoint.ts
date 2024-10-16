@@ -12,7 +12,7 @@ export type Intersection = BaseTBM<{
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
-  const Intersection = TBM_Intersections(app.get("mongooseClient"));
+  const Intersection = TBM_Intersections(app.get("sourceDBConn"));
 
   return [
     new Endpoint(

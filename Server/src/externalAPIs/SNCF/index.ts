@@ -131,8 +131,8 @@ interface SNCF_Stop {
 export default (app: Application) => {
   logger.log(`Initializing SNCF models...`);
 
-  const Schedule = SNCF_Schedules(app.get("mongooseClient"));
-  const Stop = SNCF_Stops(app.get("mongooseClient"));
+  const Schedule = SNCF_Schedules(app.get("sourceDBConn"));
+  const Stop = SNCF_Stops(app.get("sourceDBConn"));
 
   logger.info(`Models initialized.`);
 
@@ -154,7 +154,7 @@ export default (app: Application) => {
     const bURL = "https://api.sncf.com/v1";
     const url = `/${Object.keys(paths)
       .map((k) => `${k}/${paths[k]}`)
-      .join("/")}/${feature}?key=${app.get("SNCFkey")}&${Object.keys(queries)
+      .join("/")}/${feature}?key=${app.get("server").SNCFkey}&${Object.keys(queries)
       .map((k) => `${k}=${queries[k]}`)
       .join("&")}`;
     const { data }: { data: T } = await axios.get(`${bURL}${url}`);

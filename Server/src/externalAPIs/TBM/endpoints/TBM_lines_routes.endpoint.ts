@@ -16,7 +16,7 @@ export type TBM_Lines_route = BaseTBM<{
 }>;
 
 export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
-  const LinesRoute = TBM_Lines_routes(app.get("mongooseClient"));
+  const LinesRoute = TBM_Lines_routes(app.get("sourceDBConn"));
 
   return [
     new Endpoint(

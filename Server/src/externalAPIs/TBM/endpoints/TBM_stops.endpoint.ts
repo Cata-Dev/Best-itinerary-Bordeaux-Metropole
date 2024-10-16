@@ -15,7 +15,7 @@ export type TBM_Stop = BaseTBM<{
 };
 
 export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
-  const Stop = TBM_Stops(app.get("mongooseClient"));
+  const Stop = TBM_Stops(app.get("sourceDBConn"));
 
   return [
     new Endpoint(

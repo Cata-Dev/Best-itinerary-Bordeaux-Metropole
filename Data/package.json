@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "Data source for BIBM",
   "files": [
-    "lib/"
+    "lib/",
+    "config/"
   ],
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc -b src",
     "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
-    "type-check": "tsc -noEmit",
+    "type-check": "tsc --project src -noEmit",
     "lint": "eslint ./src/ --fix",
     "full-lint": "pnpm run lint && pnpm run type-check",
     "test": "echo \"Error: no test specified\" && exit 1",

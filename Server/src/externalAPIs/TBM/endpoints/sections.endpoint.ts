@@ -22,7 +22,7 @@ export type Section = BaseTBM<{
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
-  const Section = TBM_Sections(app.get("mongooseClient"));
+  const Section = TBM_Sections(app.get("sourceDBConn"));
 
   return [
     new Endpoint(
