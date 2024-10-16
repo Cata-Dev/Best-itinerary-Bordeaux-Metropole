@@ -5,7 +5,7 @@ import config from "../config.json";
 import { mapAsync } from "./utils/asyncs";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
 import { RAPTORRunSettings } from "raptor";
-import { TBMEndpoints } from "server/lib/externalAPIs/TBM";
+import { TBMEndpoints } from "server/externalAPIs/TBM/index";
 
 export interface Config {
   redis: {
