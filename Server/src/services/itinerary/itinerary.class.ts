@@ -24,6 +24,7 @@ import resultModelInit, {
   isLabelFoot,
   isLabelVehicle,
   isLocationAddress,
+  isLocationSNCF,
   isLocationTBM,
   LabelFoot,
   LabelVehicle,
@@ -123,13 +124,14 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
 
         const job = (await this.app.get("compute").app.computeFullJourney(...params)).job;
         let resultId: (typeof job)["returnvalue"];
+
         try {
           resultId = await job.waitUntilFinished(this.app.get("compute").app.queuesEvents[0]);
         } catch (e) {
           throw new GeneralError("Error while computing paths", e);
         }
-        const result = await this.resultModel.findById(resultId);
 
+        const result = await this.resultModel.findById(resultId);
         if (!result) throw new GeneralError("Internal error while retrieving results");
 
         return {
@@ -141,8 +143,10 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
             const from = isLocationAddress(result.from)
               ? formatAddress((await this.AddressesModel.findById(result.from.id).lean())!)
               : isLocationTBM(result.from)
-                ? (await this.TBMStopsModel.findById(result.from).lean())?.libelle
-                : (await this.SNCFStopsModel.findById(result.from).lean())?.name;
+                ? (await this.TBMStopsModel.findById(result.from.id).lean())?.libelle
+                : isLocationSNCF(result.from)
+                  ? (await this.SNCFStopsModel.findById(result.from.id).lean())?.name
+                  : null;
 
             if (!from) throw new GeneralError("Could not populate journey.");
 
@@ -151,7 +155,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
               from,
               stages: await mapAsync<LabelFoot | LabelVehicle, Itinerary["paths"][number]["stages"][number]>(
                 j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {
-                  if (!isLabelFoot(l) || !isLabelVehicle(l)) throw new Error("");
+                  if (!isLabelFoot(l) && !isLabelVehicle(l)) throw new Error("Unexpected journey.");
                   return true;
                 }),
                 async (l, i, arr) => {
@@ -160,24 +164,28 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
                       ? isLocationAddress(result.to)
                         ? formatAddress((await this.AddressesModel.findById(result.to.id).lean())!)
                         : isLocationTBM(result.to)
-                          ? (await this.TBMStopsModel.findById(result.to).lean())?.libelle
-                          : (await this.SNCFStopsModel.findById(result.to).lean())?.name
-                      : typeof arr[i + 1].boardedAt === "number"
-                        ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
-                        : (arr[i + 1].boardedAt as string);
+                          ? (await this.TBMStopsModel.findById(result.to.id).lean())?.libelle
+                          : isLocationSNCF(result.to)
+                            ? (await this.SNCFStopsModel.findById(result.to.id).lean())?.name
+                            : null
+                      : isLabelFoot(l)
+                        ? typeof l.transfer.to === "number"
+                          ? (await this.TBMStopsModel.findById(l.transfer.to).lean())?.libelle
+                          : l.transfer.to
+                        : typeof arr[i + 1].boardedAt === "number"
+                          ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
+                          : (arr[i + 1].boardedAt as string);
 
                   if (!to) throw new GeneralError("Could not populate journey.");
 
                   if (isLabelFoot(l)) {
-                    const distance = (await this.NonScheduledRoutesModel.findById(l.transfer).lean())!
-                      .distance;
-
                     return {
                       to,
                       type: "FOOT",
-                      duration: distance / result.settings.walkSpeed,
+                      // m / m*s-1 = s
+                      duration: l.transfer.length / result.settings.walkSpeed,
                       details: {
-                        distance,
+                        distance: l.transfer.length,
                       },
                     } satisfies Itinerary["paths"][number]["stages"][number];
                   }
@@ -203,8 +211,8 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
                   return {
                     to,
                     type: "TBM",
-                    // Arrival - departure
-                    duration: l.time - departureTime,
+                    // Arrival - departure, in sec
+                    duration: (l.time - departureTime) / 1e3,
                     details: {
                       departure: departureTime,
                       direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
