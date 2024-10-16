@@ -4,9 +4,9 @@
   "description": "",
   "main": "lib/base.js",
   "scripts": {
-    "build": "tsc --build src",
+    "build": "tsc -b",
     "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
-    "type-check": "tsc --project src -noEmit",
+    "type-check": "tsc -noEmit",
     "lint": "eslint ./src/ --fix",
     "full-lint": "npm run lint && npm run type-check",
     "test": "echo \"Error: no test specified\" && exit 1",

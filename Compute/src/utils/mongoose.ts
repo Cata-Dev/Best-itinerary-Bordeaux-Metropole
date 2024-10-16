@@ -1,7 +1,7 @@
 import { createConnection } from "mongoose";
 import type { Application, BaseApplication } from "../base";
 
-export async function initDB(app: BaseApplication, db: Application["config"]["sourceDataDB" | "mainDB"]) {
+export async function initDB(app: BaseApplication, db: Application["config"]["sourceDB" | "computeDB"]) {
   const connection = createConnection(
     app.config.dbAddress + db,
     //{ useNewUrlParser: true }

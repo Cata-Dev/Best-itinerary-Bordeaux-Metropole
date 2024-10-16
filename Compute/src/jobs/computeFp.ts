@@ -41,7 +41,7 @@ type Edge = Omit<dbFootGraphEdges, keyof EdgeOverwritten> & EdgeOverwritten;
 type FootGraphNode = Edge["ends"][0] | ReturnType<typeof approachedPointName>;
 
 export default async function (app: BaseApplication) {
-  const sourceDataDB = await initDB(app, app.config.sourceDataDB);
+  const sourceDataDB = await initDB(app, app.config.sourceDB);
 
   const FootGraphEdgesModel = footGraphModelInit(sourceDataDB)[2];
 

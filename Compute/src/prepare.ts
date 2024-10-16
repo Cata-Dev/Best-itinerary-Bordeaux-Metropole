@@ -20,7 +20,7 @@ async function makeData(
 ): Promise<Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]> {
   app.logger.info("Preparing data....");
 
-  const sourceDataDB = await initDB(app, app.config.sourceDataDB);
+  const sourceDataDB = await initDB(app, app.config.sourceDB);
   const stopsModel = stopsModelInit(sourceDataDB);
   const TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(sourceDataDB);
   const NonScheduledRoutesModel = NonScheduledRoutesModelInit(sourceDataDB);

@@ -1,9 +1,0 @@
-{
-  "redis": {
-    "host": "",
-    "port": 1234
-  },
-  "dbAddress": "",
-  "sourceDataDB": "",
-  "mainDB": ""
-}

@@ -1,7 +1,7 @@
 import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
 import { makeLogger } from "common/logger";
 import { ItineraryQuery } from "server";
-import config from "../config.json";
+import config from "data/config/default.json";
 import { mapAsync } from "./utils/asyncs";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
 import { RAPTORRunSettings } from "raptor";
@@ -13,8 +13,8 @@ export interface Config {
     port: number;
   };
   dbAddress: string;
-  sourceDataDB: string;
-  mainDB: string;
+  sourceDB: string;
+  computeDB: string;
 }
 
 type SchedulerInstanceType = "queue" | "worker";
@@ -66,7 +66,10 @@ export type Application<T extends SchedulerInstanceType = SchedulerInstanceType>
 const logger = makeLogger();
 
 export const app = {
-  config,
+  config: {
+    ...config,
+    ...config.compute,
+  },
   logger,
 } satisfies BaseApplication;
 
