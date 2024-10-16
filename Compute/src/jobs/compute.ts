@@ -3,20 +3,21 @@ import { initDB } from "../utils/mongoose";
 // Needed to solve "Reflect.getMetadata is not a function" error of typegoose
 import "core-js/features/reflect";
 
-import type { Journey, RAPTORRunSettings } from "raptor";
+import type { RAPTORRunSettings } from "raptor";
 import SharedRAPTOR from "raptor/lib/shared";
 import { Stop } from "raptor/lib/Structures";
 import { SharedRAPTORData } from "raptor/lib/SharedStructures";
 import { defaultRAPTORRunSettings } from "data/lib/values/RAPTOR";
 import ResultModelInit, {
   JourneyLabelType,
+  LabelBase,
+  LabelFoot,
+  LabelVehicle,
   LocationAddress,
   LocationSNCF,
   LocationTBM,
   LocationType,
   dbComputeResult,
-  routeId,
-  stopId,
 } from "data/lib/models/Compute/result.model";
 import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
 import { ItineraryQuery } from "server";
@@ -39,12 +40,31 @@ declare module "." {
   }
 }
 
-type DBJourney = dbComputeResult["journeys"][number];
-function journeyDBFormatter(j: Journey<stopId, routeId>): DBJourney {
-  return j.map<dbComputeResult["journeys"][number][number]>((label) => ({
-    ...label,
-    type: "transfer" in label ? JourneyLabelType.Foot : JourneyLabelType.Vehicle,
-  }));
+type DBJourney = (LabelBase | LabelFoot | LabelVehicle)[];
+function journeyDBFormatter(j: NonNullable<ReturnType<SharedRAPTOR["getBestJourneys"]>[number]>): DBJourney {
+  return j.map((label) => {
+    if ("transfer" in label) {
+      return {
+        ...label,
+        type: JourneyLabelType.Foot,
+      } satisfies LabelFoot;
+    }
+
+    if ("route" in label) {
+      if (typeof label.route.id === "string") throw new Error("Invalid route to retrieve.");
+
+      return {
+        ...label,
+        route: label.route.id,
+        type: JourneyLabelType.Vehicle,
+      } satisfies LabelVehicle;
+    }
+
+    return {
+      ...label,
+      type: JourneyLabelType.Base,
+    } satisfies LabelBase;
+  });
 }
 
 // Acts as a factory
@@ -58,10 +78,10 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
   };
 
   const init = (async (app: BaseApplication) => {
-    const dataDB = await initDB(app, app.config.mainDB);
+    const dataDB = await initDB(app, app.config.computeDB);
     const resultModel = ResultModelInit(dataDB);
 
-    const sourceDataDB = await initDB(app, app.config.sourceDataDB);
+    const sourceDataDB = await initDB(app, app.config.sourceDB);
     const stops = stopsModelInit(sourceDataDB);
 
     // https://www.mongodb.com/docs/manual/core/aggregation-pipeline-optimization/#-sort----limit-coalescence
@@ -109,7 +129,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         });
 
         psId = SharedRAPTORData.serializeId(psIdNumber);
-      } else psId = (await stops.findOne({ coords: ps }))?._id ?? -1;
+      } else psId = (await stops.findOne({ coords: ps.coords }))?._id ?? -1;
 
       if (psId === -1) throw new Error("Cannot find ps");
 
@@ -149,7 +169,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         });
 
         ptId = SharedRAPTORData.serializeId(ptIdNumber);
-      } else ptId = (await stops.findOne({ coords: pt }))?._id ?? -1;
+      } else ptId = (await stops.findOne({ coords: pt.coords }))?._id ?? -1;
       if (ptId === -1) throw new Error("Cannot find pt");
 
       RAPTORData.attachData(Array.from(attachStops.values()), []);
@@ -166,8 +186,9 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       const departureDate = new Date(departureDateStr);
 
       RAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
+
       const bestJourneys = RAPTORInstance.getBestJourneys(convertedPt)
-        .filter((j): j is Journey<stopId, routeId> => !!j)
+        .filter((j): j is NonNullable<ReturnType<typeof RAPTORInstance.getBestJourneys>[number]> => !!j)
         .map((j) =>
           j.map((l) => ({
             ...l,
