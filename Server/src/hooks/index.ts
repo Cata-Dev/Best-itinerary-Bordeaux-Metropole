@@ -1,6 +1,6 @@
 import errors from "@feathersjs/errors";
 import { performance } from "perf_hooks";
-import { colorFunctions } from "common/lib/colors";
+import { colorFunctions } from "common/colors";
 import { HookContext, NextFunction } from "../declarations";
 import { logger } from "../logger";
 import { compactDate } from "../utils";
