@@ -43,16 +43,20 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: "./pnpm-lock.yaml"
 
-      # Build Common to build Data to build Server to build Client
-      - run: pnpm -F "common" --config.dedupe-peer-dependents=false install
+      # Globally install
+      - run: pnpm --config.dedupe-peer-dependents=false install
 
-      - run: pnpm -F "data" --config.dedupe-peer-dependents=false install
+      - name: Build Common
+        run: cd Common/ && pnpm run --if-present build
 
-      - run: pnpm -F "compute" --config.dedupe-peer-dependents=false install
-      - run: cd Compute/ && pnpm run --if-present build
+      - name: Build Data
+        run: cd Data/ && pnpm run --if-present build
 
-      - run: pnpm -F "server" --config.dedupe-peer-dependents=false install
-      - run: cd Server/ && pnpm run --if-present build
+      - name: Build Compute
+        run: cd Compute/ && pnpm run --if-present build
 
-      - run: pnpm -F "client" --config.dedupe-peer-dependents=false install
-      - run: cd Client/ && pnpm run --if-present build
+      - name: Build Server
+        run: cd Server/ && pnpm run --if-present build
+
+      - name: Build Client
+        run: cd Client/ && pnpm run --if-present build
