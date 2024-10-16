@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute, onBeforeRouteUpdate, type RouteLocationNormalized } from "vue-router";
-import type { TBMEndpoints } from "server/lib/externalAPIs/TBM";
-import type { SNCFEndpoints } from "server/lib/externalAPIs/SNCF";
+import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
+import type { SNCFEndpoints } from "server/externalAPIs/SNCF/index";
 import type { Itinerary, ItineraryQuery } from "server";
 import LocationSearch from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";

@@ -1,6 +1,6 @@
 import io from "socket.io-client";
 import socketio from "@feathersjs/socketio-client";
-import type { TBMEndpoints } from "server/lib/externalAPIs/TBM";
+import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
 import { createClient } from "server";
 import type { Itinerary, ItineraryQuery } from "server";
 import type { TransportMode } from "../";

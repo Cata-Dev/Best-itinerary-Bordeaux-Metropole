@@ -35,8 +35,8 @@ importers:
         specifier: ^8.4.47
         version: 8.4.47
       server:
-        specifier: file:../Server/public/server-1.0.0.tgz
-        version: file:Server/public/server-1.0.0.tgz(@aws-sdk/credential-providers@3.525.0)(mongodb@6.9.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))(socks@2.8.1)(typescript@5.6.2)
+        specifier: link:../Server
+        version: link:../Server
       socket.io-client:
         specifier: ^4.8.0
         version: 4.8.0
@@ -1845,9 +1845,6 @@ packages:
     resolution: {integrity: sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==}
     engines: {node: '>= 12'}
 
-  data@file:Data:
-    resolution: {directory: Data, type: directory}
-
   de-indent@1.0.2:
     resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
 
@@ -3193,11 +3190,6 @@ packages:
 
   serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
-
-  server@file:Server/public/server-1.0.0.tgz:
-    resolution: {integrity: sha512-IJHo9nsEZThAtlfoSt47VaHS+2pHXJOJtka25UFcM7IhEt6vW1osOV1w58NXJTasyLnUvQ/yndGkHnqgBv5fXQ==, tarball: file:Server/public/server-1.0.0.tgz}
-    version: 1.0.0
-    engines: {node: '>= 18.19.0'}
 
   set-function-length@1.2.1:
     resolution: {integrity: sha512-j4t6ccc+VsKwYHso+kElc5neZpjtq9EnRICFZtWyBsLojhmeF/ZBd/elqm22WJh/BziDe/SBiOeAt0m2mfLD0g==}
@@ -5734,21 +5726,6 @@ snapshots:
 
   data-uri-to-buffer@4.0.1: {}
 
-  data@file:Data(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
-    dependencies:
-      '@typegoose/typegoose': 12.8.0(mongoose@8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
-      mongoose: 8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
-      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/cca5700fad2550f2337401fba43cedce49a0a614
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-
   de-indent@1.0.2: {}
 
   debug@3.2.7:
@@ -7226,44 +7203,6 @@ snapshots:
   serialize-javascript@6.0.2:
     dependencies:
       randombytes: 2.1.0
-
-  server@file:Server/public/server-1.0.0.tgz(@aws-sdk/credential-providers@3.525.0)(mongodb@6.9.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))(socks@2.8.1)(typescript@5.6.2):
-    dependencies:
-      '@feathersjs/adapter-commons': 5.0.30
-      '@feathersjs/authentication': 5.0.30(typescript@5.6.2)
-      '@feathersjs/authentication-client': 5.0.30(typescript@5.6.2)
-      '@feathersjs/configuration': 5.0.30(typescript@5.6.2)
-      '@feathersjs/errors': 5.0.30
-      '@feathersjs/feathers': 5.0.30
-      '@feathersjs/koa': 5.0.30(typescript@5.6.2)
-      '@feathersjs/mongodb': 5.0.30(mongodb@6.9.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
-      '@feathersjs/schema': 5.0.30(typescript@5.6.2)
-      '@feathersjs/socketio': 5.0.30
-      '@feathersjs/transport-commons': 5.0.30
-      '@feathersjs/typebox': 5.0.30(typescript@5.6.2)
-      '@typegoose/typegoose': 12.8.0(mongoose@8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
-      axios: 1.7.7
-      common: link:../Common
-      compute: link:../Compute
-      core-js: 3.38.1
-      data: file:Data(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
-      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.30)
-      mongoose: 8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
-      node-fetch: 3.3.2
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - bufferutil
-      - debug
-      - gcp-metadata
-      - kerberos
-      - mongodb
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-      - utf-8-validate
 
   set-function-length@1.2.1:
     dependencies:
