@@ -2,6 +2,12 @@ import { createConnection, Connection } from "mongoose";
 import { HookContext, NextFunction } from "./declarations";
 import { logger } from "./logger";
 
+declare module "./declarations" {
+  interface Configuration {
+    mongooseClient: Connection;
+  }
+}
+
 export async function setupMongoose(context: HookContext, next: NextFunction) {
   const connection = await createConnection(context.app.get("mongodb")).asPromise();
   logger.info("Database connected.");
@@ -13,10 +19,4 @@ export async function teardownMongoose(context: HookContext, next: NextFunction)
   await context.app.get("mongooseClient").close();
   logger.info("Database disconnected.");
   await next();
-}
-
-declare module "./declarations" {
-  interface Configuration {
-    mongooseClient: Connection;
-  }
 }
