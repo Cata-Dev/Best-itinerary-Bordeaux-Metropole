@@ -120,8 +120,8 @@ importers:
         specifier: link:../Data
         version: link:../Data
       raptor:
-        specifier: github:cata-dev/raptor#no-local-pruning
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/f32d8a50f1caa79e9c171ef9ff41a0d0f5a4d217
+        specifier: github:cata-dev/raptor#cfd0ab0376d9a4d68f15e039ac74a4f77a83a7c7
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/cfd0ab0376d9a4d68f15e039ac74a4f77a83a7c7
     devDependencies:
       eslint:
         specifier: ^8.57.0
@@ -149,7 +149,7 @@ importers:
         version: 8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor#no-local-pruning
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/f32d8a50f1caa79e9c171ef9ff41a0d0f5a4d217
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/cca5700fad2550f2337401fba43cedce49a0a614
     devDependencies:
       eslint:
         specifier: ^9.12.0
@@ -3165,8 +3165,12 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/f32d8a50f1caa79e9c171ef9ff41a0d0f5a4d217:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/f32d8a50f1caa79e9c171ef9ff41a0d0f5a4d217}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/cca5700fad2550f2337401fba43cedce49a0a614:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/cca5700fad2550f2337401fba43cedce49a0a614}
+    version: 0.2.0
+
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/cfd0ab0376d9a4d68f15e039ac74a4f77a83a7c7:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/cfd0ab0376d9a4d68f15e039ac74a4f77a83a7c7}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -3289,7 +3293,7 @@ packages:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
 
   server@file:Server/public/server-1.0.0.tgz:
-    resolution: {integrity: sha512-3ri1xLJOP87GGVLJxPKGMZJTaeuDgi7MN3D0PU1bhQbLBsifqyzqEg/vzmi39cuS6qmNOt3hlN/FUdwA+9WkZw==, tarball: file:Server/public/server-1.0.0.tgz}
+    resolution: {integrity: sha512-IJHo9nsEZThAtlfoSt47VaHS+2pHXJOJtka25UFcM7IhEt6vW1osOV1w58NXJTasyLnUvQ/yndGkHnqgBv5fXQ==, tarball: file:Server/public/server-1.0.0.tgz}
     version: 1.0.0
     engines: {node: '>= 18.19.0'}
 
@@ -6007,7 +6011,7 @@ snapshots:
     dependencies:
       '@typegoose/typegoose': 12.8.0(mongoose@8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       mongoose: 8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
-      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/f32d8a50f1caa79e9c171ef9ff41a0d0f5a4d217
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/cca5700fad2550f2337401fba43cedce49a0a614
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
       - '@mongodb-js/zstd'
@@ -7161,7 +7165,7 @@ snapshots:
 
   mquery@5.0.0:
     dependencies:
-      debug: 4.3.4(supports-color@5.5.0)
+      debug: 4.3.7(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -7425,7 +7429,9 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/f32d8a50f1caa79e9c171ef9ff41a0d0f5a4d217: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/cca5700fad2550f2337401fba43cedce49a0a614: {}
+
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/cfd0ab0376d9a4d68f15e039ac74a4f77a83a7c7: {}
 
   raw-body@2.5.2:
     dependencies:
@@ -7579,6 +7585,7 @@ snapshots:
       '@typegoose/typegoose': 12.8.0(mongoose@8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       axios: 1.7.7
       common: link:../Common
+      compute: link:../Compute
       core-js: 3.38.1
       data: file:Data(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.30)

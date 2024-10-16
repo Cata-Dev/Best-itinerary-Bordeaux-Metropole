@@ -26,6 +26,6 @@
     "@typegoose/typegoose": "^12.2.0",
     "core-js": "^3.36.0",
     "data": "link:../Data",
-    "raptor": "github:cata-dev/raptor#no-local-pruning"
+    "raptor": "github:cata-dev/raptor#cfd0ab0376d9a4d68f15e039ac74a4f77a83a7c7"
   }
 }
