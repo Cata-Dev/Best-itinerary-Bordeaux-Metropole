@@ -147,8 +147,6 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
             if (!from) throw new GeneralError("Could not populate journey.");
 
             return {
-              totalDuration: 0,
-              totalDistance: 0,
               departure: j[0].time,
               from,
               stages: await mapAsync<LabelFoot | LabelVehicle, Itinerary["paths"][number]["stages"][number]>(

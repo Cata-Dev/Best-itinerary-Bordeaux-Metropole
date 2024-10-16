@@ -94,8 +94,6 @@ export const itinerarySchema = Type.Object(
     paths: Type.Array(
       Type.Object(
         {
-          totalDuration: Type.Integer(),
-          totalDistance: Type.Integer(),
           departure: Type.Integer(),
           from: Type.String(),
           stages: Type.Array(Stage, { uniqueItems: true }),
