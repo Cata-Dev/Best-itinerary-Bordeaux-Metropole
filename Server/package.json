@@ -44,7 +44,9 @@
     "prettier": "npx prettier \"**/*.ts\" --write --config ../.prettierrc",
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
     "test": "pnpm run mocha",
+    "type-check": "tsc -noEmit",
     "lint": "eslint ./src/",
+    "full-lint": "npm run lint && npm run type-check",
     "bundle:client": "pnpm run compile && pnpm pack --pack-destination ./public"
   },
   "dependencies": {
