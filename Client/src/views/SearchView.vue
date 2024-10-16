@@ -22,7 +22,7 @@ import {
   type colorComm,
 } from "@/store";
 import type { QuerySettings, Obj } from "@/store";
-import type { Location } from "@/store/feathers/feathers";
+import type { Location } from "@/store";
 
 const source = ref<Location>(defaultLocation);
 const destination = ref<Location>(defaultLocation);
@@ -108,11 +108,19 @@ async function fetchResults() {
   status.value.search = StatusSearchResult.LOADING;
 
   try {
+    const departureTime = new Date();
+    departureTime.setHours(
+      ...(settings.value.departureTime.split(":").map((time) => parseInt(time)) as [number, number]),
+    );
+
     const r = await client.service("itinerary").get("paths", {
       query: {
         from: normalizeLocationForQuery(source.value),
         to: normalizeLocationForQuery(destination.value),
         ...settings.value,
+        departureTime: departureTime.toISOString(),
+        // From km/h to m/s
+        walkSpeed: (settings.value.walkSpeed / 1e3) * 3_600,
       },
     });
     if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
@@ -154,7 +162,8 @@ async function updateRoute() {
  * @description Refresh settings / locations according to the current route
  */
 async function updateQuery(to = route) {
-  if (equalObjects(actualRoute.value, to)) return (actualRoute.value = to);
+  if (equalObjects(actualRoute.value?.query, to.query)) return;
+
   actualRoute.value = to;
 
   if ((!to.query.from || !to.query.to) && results.value instanceof Array) {
@@ -194,10 +203,9 @@ async function updateQuery(to = route) {
   if (to.query.from && to.query.to && !(results.value instanceof Array)) await fetchResults(); //Update results if detecting a new query, but don't override existing results ?
 
   if (to.hash) {
-    if (results.value instanceof Array) {
-      const r = results.value.find((r) => r.id === to.hash.replace("#", ""));
-      if (r) result.value = r;
-      // else -> can't find this result in current computed results. Gonna retrieve it from database, if existing.
+    if (typeof results.value !== "number") {
+      const idx = parseInt(to.hash.replace("#", ""));
+      if (!isNaN(idx) && idx < results.value.paths.length) result.value = results.value.paths[idx];
     }
   }
 
@@ -235,7 +243,7 @@ async function selectResult(idx: number) {
                 name="source"
                 placeholder="Départ"
                 @update:model-value="
-                  if ((actualRoute?.query.from || '') !== source.alias) updateRoute();
+                  if ((actualRoute?.query.from ?? '') !== source.alias) updateRoute();
                   if (source.alias.length) {
                     if (!destination.alias.length) destinationCompo?.focus();
                     else searchElem?.focus();
@@ -251,7 +259,7 @@ async function selectResult(idx: number) {
                 placeholder="Arrivée"
                 class="mt-2"
                 @update:model-value="
-                  if ((actualRoute?.query.to || '') !== destination.alias) updateRoute();
+                  if ((actualRoute?.query.to ?? '') !== destination.alias) updateRoute();
                   if (destination.alias.length) {
                     if (!source.alias.length) sourceCompo?.focus();
                     else searchElem?.focus();
@@ -305,8 +313,13 @@ async function selectResult(idx: number) {
       <div v-if="result && route.hash" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
           :title="`Alternative #${(results as Itinerary).paths.indexOf(result) + 1}`"
-          :total-duration="result.totalDuration"
-          :total-distance="result.totalDistance"
+          :total-duration="result.stages.reduce((acc, v) => acc + v.duration, 0)"
+          :total-distance="
+            result.stages.reduce(
+              (acc, v) => acc + ('details' in v && 'distance' in v.details ? v.details.distance : 0),
+              0,
+            )
+          "
           :departure="result.departure"
           :from="result.from"
           :path="result.stages"
@@ -325,8 +338,13 @@ async function selectResult(idx: number) {
         <template v-for="(r, i) of results.paths" :key="i">
           <ResultItem
             :title="`Alternative #${i + 1}`"
-            :total-duration="r.totalDuration"
-            :total-distance="r.totalDistance"
+            :total-duration="r.stages.reduce((acc, v) => acc + v.duration, 0)"
+            :total-distance="
+              r.stages.reduce(
+                (acc, v) => acc + ('details' in v && 'distance' in v.details ? v.details.distance : 0),
+                0,
+              )
+            "
             :departure="r.departure"
             :from="r.from"
             :path="r.stages"

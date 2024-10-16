@@ -3,7 +3,7 @@ import { ref } from "vue";
 import type { Geocode } from "server";
 import DatalistInput from "./DatalistInput.vue";
 import { client, defaultLocation } from "../store/";
-import type { Location } from "@/store/feathers/feathers";
+import type { Location } from "@/store";
 
 interface Props {
   name: string;
@@ -57,7 +57,7 @@ async function fetchSuggestions(value: string): Promise<Props["modelValue"][]> {
     suggestions = await client.service("geocode").find({ query: { id: value, max: 25, uniqueVoies: true } });
   } catch (_) {}
 
-  return suggestions.map((s) => ({ value: s.coords, ...parseGeocode(s) }));
+  return suggestions.map(parseGeocode);
 }
 
 let lastInput = "";

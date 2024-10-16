@@ -2,7 +2,7 @@
 import { ref, watch } from "vue";
 import { defaultLocation, transportToType } from "@/store/";
 import TransportBadge from "@/components/TransportBadge.vue";
-import type { Location } from "@/store/feathers/feathers";
+import type { Location } from "@/store";
 
 type ModelValue = Location;
 
