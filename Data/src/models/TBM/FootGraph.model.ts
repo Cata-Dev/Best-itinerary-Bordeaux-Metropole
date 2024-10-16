@@ -30,7 +30,10 @@ export function dbSectionId(_id: number) {
 @modelOptions({ options: { customName: "FootGraph" } })
 export class dbFootGraph {
   @prop({ required: true, type: () => String })
-  public _id!: ReturnType<typeof approachedStopName> | ReturnType<typeof dbIntersectionId> | ReturnType<typeof dbSectionId>;
+  public _id!:
+    | ReturnType<typeof approachedStopName>
+    | ReturnType<typeof dbIntersectionId>
+    | ReturnType<typeof dbSectionId>;
 }
 
 @modelOptions({ options: { customName: "FootGraphNode" } })
@@ -57,12 +60,19 @@ export class dbFootGraphEdges extends dbFootGraph {
   public coords!: [number, number][];
 
   @prop({ required: true, ref: () => dbFootGraphNodes, type: () => [String, String] })
-  public ends!: [Ref<dbFootGraphNodes, dbFootGraphNodes["_id"]>, Ref<dbFootGraphNodes, dbFootGraphNodes["_id"]>];
+  public ends!: [
+    Ref<dbFootGraphNodes, dbFootGraphNodes["_id"]>,
+    Ref<dbFootGraphNodes, dbFootGraphNodes["_id"]>,
+  ];
 }
 
 export default function init(
   db: Connection,
-): readonly [ReturnModelType<typeof dbFootGraph>, ReturnModelType<typeof dbFootGraphNodes>, ReturnModelType<typeof dbFootGraphEdges>] {
+): readonly [
+  ReturnModelType<typeof dbFootGraph>,
+  ReturnModelType<typeof dbFootGraphNodes>,
+  ReturnModelType<typeof dbFootGraphEdges>,
+] {
   if (getModelWithString(getName(dbFootGraph))) deleteModelWithClass(dbFootGraph);
   if (getModelWithString(getName(dbFootGraphNodes))) deleteModelWithClass(dbFootGraphNodes);
   if (getModelWithString(getName(dbFootGraphEdges))) deleteModelWithClass(dbFootGraphEdges);

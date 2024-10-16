@@ -2,7 +2,15 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, type Ref, type ReturnModelType } from "@typegoose/typegoose";
+import {
+  addModelToTypegoose,
+  buildSchema,
+  deleteModelWithClass,
+  getModelForClass,
+  prop,
+  type Ref,
+  type ReturnModelType,
+} from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
