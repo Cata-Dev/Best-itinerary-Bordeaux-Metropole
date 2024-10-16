@@ -1,6 +1,6 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getValidator } from "@feathersjs/typebox";
+import { ObjectIdSchema, Type, getValidator } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
 
 import type { HookContext } from "../../declarations";
@@ -8,6 +8,7 @@ import { dataValidator, queryValidator } from "../../validators";
 import type { ItineraryService } from "./itinerary.class";
 
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
+import { coords, GEOCODE_type, geocodeSchema } from "../geocode/geocode.schema";
 
 const FOOTStageDetails = Type.Object(
   {
@@ -91,10 +92,10 @@ export const itinerarySchema = Type.Object(
     code: Type.Integer({ minimum: 200, maximum: 599 }),
     message: Type.String(),
     lastActualization: Type.Integer(),
+    id: ObjectIdSchema(),
     paths: Type.Array(
       Type.Object(
         {
-          id: Type.String(),
           totalDuration: Type.Integer(),
           totalDistance: Type.Integer(),
           departure: Type.Integer(),
@@ -136,12 +137,26 @@ export const itineraryPatchResolver = resolve<Itinerary, HookContext<ItinerarySe
 // Schema for allowed query properties
 // Unused here, custom service without storage
 export const itineraryQueryProperties = Type.Object({});
+const locationQuery = Type.Object(
+  {
+    type: GEOCODE_type,
+    coords,
+    // Would be a mapped type https://github.com/sinclairzx81/typebox?tab=readme-ov-file#types-mapped but not yet in @feathersjs/typebox
+    id: Type.Union([
+      geocodeSchema.anyOf[0].properties._id,
+      geocodeSchema.anyOf[1].properties._id,
+      geocodeSchema.anyOf[2].properties._id,
+    ]),
+    alias: Type.String(),
+  },
+  { additionalProperties: false },
+);
 export const itineraryQuerySchema = Type.Intersect(
   [
     Type.Object(
       {
-        from: Type.String(),
-        to: Type.String(),
+        from: locationQuery,
+        to: locationQuery,
         transports: Type.Optional(
           Type.Partial(
             Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),

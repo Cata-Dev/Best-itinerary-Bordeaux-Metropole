@@ -54,9 +54,9 @@ const SNCF_StopsObject = Type.Object(
 
 const SNCF_Stops = Type.Literal(SNCFEndpoints.Stops);
 
-const coords = Type.Tuple([Type.Number(), Type.Number()]);
+export const coords = Type.Tuple([Type.Number(), Type.Number()]);
 
-const GEOCODE_type = Type.Union([Addresses, TBM_Stops, SNCF_Stops]);
+export const GEOCODE_type = Type.Union([Addresses, TBM_Stops, SNCF_Stops]);
 export type GEOCODE_type = Static<typeof GEOCODE_type>;
 
 const GeocodeBase = Type.Object(
