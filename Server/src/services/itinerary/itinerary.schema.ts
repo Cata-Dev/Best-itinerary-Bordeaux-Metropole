@@ -147,24 +147,30 @@ const locationQuery = Type.Object(
   },
   { additionalProperties: false },
 );
-export const itineraryQuerySchema = Type.Intersect(
+export const itineraryQuerySchema = Type.Union(
   [
-    Type.Object(
-      {
-        from: locationQuery,
-        to: locationQuery,
-        transports: Type.Optional(
-          Type.Partial(
-            Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+    Type.Intersect([
+      Type.Object(
+        {
+          from: locationQuery,
+          to: locationQuery,
+          transports: Type.Optional(
+            Type.Partial(
+              Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+            ),
           ),
-        ),
-        departureTime: Type.Optional(Type.String()),
-        maxWalkDistance: Type.Optional(Type.Integer()),
-        walkSpeed: Type.Optional(Type.Number()),
-      },
-      { additionalProperties: false },
-    ),
-    refreshDataQuerySchema,
+          departureTime: Type.Optional(Type.String()),
+          maxWalkDistance: Type.Optional(Type.Integer()),
+          walkSpeed: Type.Optional(Type.Number()),
+        },
+        { additionalProperties: false },
+      ),
+      refreshDataQuerySchema,
+    ]),
+    // Retrieve old result
+    Type.Object({
+      id: Type.String(),
+    }),
   ],
   { additionalProperties: false },
 );

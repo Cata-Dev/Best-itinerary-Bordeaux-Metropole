@@ -21,6 +21,7 @@ function hasData(obj: unknown): obj is { data: unknown } {
 }
 
 import resultModelInit, {
+  dbComputeResult,
   isLabelFoot,
   isLabelVehicle,
   isLocationAddress,
@@ -75,14 +76,102 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
     this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("sourceDBConn"));
   }
 
+  private populateResult(result: dbComputeResult): Promise<Itinerary["paths"]> {
+    return mapAsync(result.journeys, async (j) => {
+      const from = isLocationAddress(result.from)
+        ? formatAddress((await this.AddressesModel.findById(result.from.id).lean())!)
+        : isLocationTBM(result.from)
+          ? (await this.TBMStopsModel.findById(result.from.id).lean())?.libelle
+          : isLocationSNCF(result.from)
+            ? (await this.SNCFStopsModel.findById(result.from.id).lean())?.name
+            : null;
+
+      if (!from) throw new GeneralError("Could not populate journey.");
+
+      return {
+        departure: j[0].time,
+        from,
+        stages: await mapAsync<LabelFoot | LabelVehicle, Itinerary["paths"][number]["stages"][number]>(
+          j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {
+            if (!isLabelFoot(l) && !isLabelVehicle(l)) throw new Error("Unexpected journey.");
+            return true;
+          }),
+          async (l, i, arr) => {
+            const to =
+              i === arr.length - 1
+                ? isLocationAddress(result.to)
+                  ? formatAddress((await this.AddressesModel.findById(result.to.id).lean())!)
+                  : isLocationTBM(result.to)
+                    ? (await this.TBMStopsModel.findById(result.to.id).lean())?.libelle
+                    : isLocationSNCF(result.to)
+                      ? (await this.SNCFStopsModel.findById(result.to.id).lean())?.name
+                      : null
+                : isLabelFoot(l)
+                  ? typeof l.transfer.to === "number"
+                    ? (await this.TBMStopsModel.findById(l.transfer.to).lean())?.libelle
+                    : l.transfer.to
+                  : typeof arr[i + 1].boardedAt === "number"
+                    ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
+                    : (arr[i + 1].boardedAt as string);
+
+            if (!to) throw new GeneralError("Could not populate journey.");
+
+            if (isLabelFoot(l)) {
+              return {
+                to,
+                type: "FOOT",
+                // m / m*s-1 = s
+                duration: l.transfer.length / result.settings.walkSpeed,
+                details: {
+                  distance: l.transfer.length,
+                },
+              } satisfies Itinerary["paths"][number]["stages"][number];
+            }
+
+            // Only remaining possibility
+            if (!isLabelVehicle(l)) throw new GeneralError("Unexpected error while populating journey");
+            const scheduledRoute = (await this.TBMScheduledRoutesModel.findById(l.route).lean())!;
+
+            // Can only be first label of journey, ignored in `arr` by `slice(1)`
+            if (typeof l.boardedAt === "string")
+              throw new GeneralError("Unexpected error while populating journey");
+
+            const departureTime = (await this.TBMSchedulesModel.findById(
+              scheduledRoute.trips[l.tripIndex].schedules[scheduledRoute.stops.indexOf(l.boardedAt)],
+            ).lean())!.hor_estime.getTime();
+
+            const lineRoute = await this.TBMLinesRoutesModel.findById(l.route, undefined, {
+              populate: ["rs_sv_ligne_a"],
+            });
+            if (!lineRoute || !isDocument(lineRoute.rs_sv_ligne_a))
+              throw new GeneralError("Unexpected error while populating journey");
+
+            return {
+              to,
+              type: "TBM",
+              // Arrival - departure, in sec
+              duration: (l.time - departureTime) / 1e3,
+              details: {
+                departure: departureTime,
+                direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
+                line: lineRoute.rs_sv_ligne_a.libelle,
+                type: lineRoute.vehicule,
+              },
+            } satisfies Itinerary["paths"][number]["stages"][number];
+          },
+        ),
+      };
+    });
+  }
+
   async get(id: Id, _params?: ServiceParams): Promise<Itinerary> {
     switch (id) {
       case "paths": {
-        if (!_params || !(_params.query?.from && _params.query?.to))
+        if (!_params || !_params.query || !("from" in _params.query && "to" in _params.query))
           throw new BadRequest(`Missing parameter(s).`);
 
-        const waitForUpdate =
-          (_params && (_params.query as { waitForUpdate?: boolean })?.waitForUpdate) ?? false;
+        const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
+        const force = (_params && _params.query?.force) ?? false;
 
         const RAPTORSettings: JobData<"compute">[3] = {};
         if (_params.query.walkSpeed) RAPTORSettings.walkSpeed = _params.query.walkSpeed;
@@ -101,8 +190,8 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
             .service("refresh-data")
             .get(e.name, {
               query: {
-                waitForUpdate: _params.query?.waitForUpdate ?? false,
-                force: _params.query?.force ?? false,
+                waitForUpdate,
+                force,
               },
             })
             .catch((r) => {
@@ -139,91 +228,23 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
           message: "OK",
           lastActualization,
           id: resultId,
-          paths: await mapAsync(result.journeys, async (j) => {
-            const from = isLocationAddress(result.from)
-              ? formatAddress((await this.AddressesModel.findById(result.from.id).lean())!)
-              : isLocationTBM(result.from)
-                ? (await this.TBMStopsModel.findById(result.from.id).lean())?.libelle
-                : isLocationSNCF(result.from)
-                  ? (await this.SNCFStopsModel.findById(result.from.id).lean())?.name
-                  : null;
+          paths: await this.populateResult(result),
+        };
+      }
 
-            if (!from) throw new GeneralError("Could not populate journey.");
+      case "oldResult": {
+        if (!_params || !_params.query || !("id" in _params.query))
+          throw new BadRequest(`Missing "id" parameter.`);
 
-            return {
-              departure: j[0].time,
-              from,
-              stages: await mapAsync<LabelFoot | LabelVehicle, Itinerary["paths"][number]["stages"][number]>(
-                j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {
-                  if (!isLabelFoot(l) && !isLabelVehicle(l)) throw new Error("Unexpected journey.");
-                  return true;
-                }),
-                async (l, i, arr) => {
-                  const to =
-                    i === arr.length - 1
-                      ? isLocationAddress(result.to)
-                        ? formatAddress((await this.AddressesModel.findById(result.to.id).lean())!)
-                        : isLocationTBM(result.to)
-                          ? (await this.TBMStopsModel.findById(result.to.id).lean())?.libelle
-                          : isLocationSNCF(result.to)
-                            ? (await this.SNCFStopsModel.findById(result.to.id).lean())?.name
-                            : null
-                      : isLabelFoot(l)
-                        ? typeof l.transfer.to === "number"
-                          ? (await this.TBMStopsModel.findById(l.transfer.to).lean())?.libelle
-                          : l.transfer.to
-                        : typeof arr[i + 1].boardedAt === "number"
-                          ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
-                          : (arr[i + 1].boardedAt as string);
+        const result = await this.resultModel.findById(_params.query.id);
+        if (!result) throw new NotFound("Unknown result.");
 
-                  if (!to) throw new GeneralError("Could not populate journey.");
-
-                  if (isLabelFoot(l)) {
-                    return {
-                      to,
-                      type: "FOOT",
-                      // m / m*s-1 = s
-                      duration: l.transfer.length / result.settings.walkSpeed,
-                      details: {
-                        distance: l.transfer.length,
-                      },
-                    } satisfies Itinerary["paths"][number]["stages"][number];
-                  }
-
-                  // Only remaining possibility
-                  if (!isLabelVehicle(l)) throw new GeneralError("Unexpected error while populating journey");
-                  const scheduledRoute = (await this.TBMScheduledRoutesModel.findById(l.route).lean())!;
-
-                  // Can only be first label of journey, ignored in `arr` by `slice(1)`
-                  if (typeof l.boardedAt === "string")
-                    throw new GeneralError("Unexpected error while populating journey");
-
-                  const departureTime = (await this.TBMSchedulesModel.findById(
-                    scheduledRoute.trips[l.tripIndex].schedules[scheduledRoute.stops.indexOf(l.boardedAt)],
-                  ).lean())!.hor_estime.getTime();
-
-                  const lineRoute = await this.TBMLinesRoutesModel.findById(l.route, undefined, {
-                    populate: ["rs_sv_ligne_a"],
-                  });
-                  if (!lineRoute || !isDocument(lineRoute.rs_sv_ligne_a))
-                    throw new GeneralError("Unexpected error while populating journey");
-
-                  return {
-                    to,
-                    type: "TBM",
-                    // Arrival - departure, in sec
-                    duration: (l.time - departureTime) / 1e3,
-                    details: {
-                      departure: departureTime,
-                      direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
-                      line: lineRoute.rs_sv_ligne_a.libelle,
-                      type: lineRoute.vehicule,
-                    },
-                  } satisfies Itinerary["paths"][number]["stages"][number];
-                },
-              ),
-            };
-          }),
+        return {
+          code: 200,
+          message: "OK",
+          lastActualization: 0,
+          id: _params.query.id,
+          paths: await this.populateResult(result),
         };
       }
 
