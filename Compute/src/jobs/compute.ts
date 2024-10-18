@@ -85,7 +85,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
     const stops = stopsModelInit(sourceDataDB);
 
     // https://www.mongodb.com/docs/manual/core/aggregation-pipeline-optimization/#-sort----limit-coalescence
-    const maxStopId = (await stops.find({}, { _id: 1 }).sort({ _id: -1 }).limit(1))[0]._id;
+    const maxStopId = (await stops.find({}, { _id: 1 }).sort({ _id: -1 }).limit(1))[0]?._id ?? 0;
 
     return async (job) => {
       const {
