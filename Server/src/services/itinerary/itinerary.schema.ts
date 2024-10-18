@@ -172,7 +172,7 @@ export const itineraryQuerySchema = Type.Union(
       id: Type.String(),
     }),
   ],
-  { additionalProperties: false },
+  { additionalProperties: true },
 );
 export type ItineraryQuery = Static<typeof itineraryQuerySchema>;
 export const itineraryQueryValidator = getValidator(itineraryQuerySchema, queryValidator);
