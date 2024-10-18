@@ -42,8 +42,10 @@ function initData(sectionsModel: dbSectionsModel): () => Promise<Data & { update
   // Might be a shallow copy!
   return async () => {
     const lastUpdate =
-      (await sectionsModel.find({}, { _id: 1 }).sort({ updatedAt: -1 }).limit(1))[0]?.updatedAt?.getTime() ??
-      -1;
+      (
+        await sectionsModel.find({}, { updatedAt: 1 }).sort({ updatedAt: -1 }).limit(1)
+      )[0]?.updatedAt?.getTime() ?? -1;
+
     if (dataCache.date >= lastUpdate) {
       // Use cache
       dataCache.updated = false;
