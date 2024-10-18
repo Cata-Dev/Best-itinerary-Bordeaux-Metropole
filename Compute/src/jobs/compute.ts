@@ -32,8 +32,8 @@ import { TBMEndpoints } from "server/externalAPIs/TBM/index";
 declare module "." {
   interface Jobs {
     compute: (
-      ps: ItineraryQuery["from"],
-      pt: ItineraryQuery["to"],
+      ps: Extract<ItineraryQuery, { from: unknown }>["from"],
+      pt: Extract<ItineraryQuery, { to: unknown }>["to"],
       date: Date,
       settings: Partial<RAPTORRunSettings>,
     ) => DocumentType<dbComputeResult>["_id"];

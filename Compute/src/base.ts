@@ -49,8 +49,8 @@ export type Application<T extends SchedulerInstanceType = SchedulerInstanceType>
         queues: Instances<typeof jobNames, "queue">;
         queuesEvents: Instances<typeof jobNames, "queuesEvents">;
         computeFullJourney: (
-          from: ItineraryQuery["from"],
-          to: ItineraryQuery["to"],
+          from: Extract<ItineraryQuery, { from: unknown }>["from"],
+          to: Extract<ItineraryQuery, { to: unknown }>["to"],
           departureTime: Date,
           settings: Partial<RAPTORRunSettings>,
         ) => Promise<
