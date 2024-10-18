@@ -1,5 +1,5 @@
 import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
-import { approachedStopName } from "data/lib/models/TBM/FootGraph.model";
+import { approachedStopName } from "data/lib/models/TBM/NonScheduledRoutes.model";
 import sectionsModelInit from "data/lib/models/TBM/sections.model";
 import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
 import nonScheduledRoutesModelInit, { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";

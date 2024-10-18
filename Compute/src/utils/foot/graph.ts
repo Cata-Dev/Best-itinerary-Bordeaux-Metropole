@@ -1,7 +1,7 @@
 import { HydratedDocument, ProjectionType } from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
 import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { approachedStopName } from "data/lib/models/TBM/FootGraph.model";
+import { approachedStopName } from "data/lib/models/TBM/NonScheduledRoutes.model";
 import { dbSections as dbSectionsRaw, dbSectionsModel } from "data/lib/models/TBM/sections.model";
 import { dbTBM_Stops, dbTBM_StopsModel } from "data/lib/models/TBM/TBM_stops.model";
 import { euclideanDistance } from "common/geographics";
