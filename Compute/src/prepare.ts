@@ -11,7 +11,7 @@ import TBMScheduledRoutesModelInit, {
   dbTBM_ScheduledRoutes,
 } from "data/lib/models/TBM/TBMScheduledRoutes.model";
 import NonScheduledRoutesModelInit, { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";
-import { populateRef, unpackRefType } from "./utils";
+import { populateRef, UnpackRefType } from "./utils";
 import { mapAsync } from "./utils/asyncs";
 import { Application } from "./base";
 
@@ -40,7 +40,7 @@ async function makeData(
   >;
   type dbScheduledRoute = Pick<dbTBM_ScheduledRoutes, keyof typeof dbScheduledRoutesProjection>;
   interface ScheduledRoutesOverwritten /* extends dbTBM_ScheduledRoutes */ {
-    stops: unpackRefType<dbScheduledRoute["stops"]>;
+    stops: UnpackRefType<dbScheduledRoute["stops"]>;
     trips: {
       tripId: dbScheduledRoute["trips"][number]["tripId"];
       // Not a Document because of lean
@@ -59,8 +59,8 @@ async function makeData(
   >;
   type dbNonScheduledRoute = Pick<dbFootPaths, keyof typeof dbNonScheduledRoutesProjection>;
   interface NonScheduledRoutesOverwritten extends dbNonScheduledRoute {
-    from: unpackRefType<dbNonScheduledRoute["from"]>;
-    to: unpackRefType<dbNonScheduledRoute["to"]>;
+    from: UnpackRefType<dbNonScheduledRoute["from"]>;
+    to: UnpackRefType<dbNonScheduledRoute["to"]>;
   }
   type NonScheduledRoute = Omit<dbNonScheduledRoute, keyof NonScheduledRoutesOverwritten> &
     NonScheduledRoutesOverwritten;

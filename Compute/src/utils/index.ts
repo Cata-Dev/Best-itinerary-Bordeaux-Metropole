@@ -1,7 +1,7 @@
 import type { Ref } from "@typegoose/typegoose";
 import type { RefType } from "@typegoose/typegoose/lib/types";
 
-export type unpackRefType<T> =
+export type UnpackRefType<T> =
   T extends Ref<infer D>
     ? D extends {
         _id?: RefType;
