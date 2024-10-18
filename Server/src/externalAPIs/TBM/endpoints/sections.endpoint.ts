@@ -4,6 +4,7 @@ import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import TBM_Sections, { dbSections } from "data/lib/models/TBM/sections.model";
+import { logger } from "../../../logger";
 
 export type Section = BaseTBM<{
   gid: string;
@@ -65,6 +66,12 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
         return true;
       },
       Section,
-    ),
+    ).on("fetched", (success) => {
+      if (!success) return;
+      app
+        .get("compute")
+        .app.queues[3].add("computeNSR", [5e3])
+        .catch((err) => logger.error("Failed to start computing Non Schedules Routes", err));
+    }),
   ] as const;
 };

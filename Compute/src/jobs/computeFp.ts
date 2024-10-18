@@ -124,5 +124,46 @@ export default async function (app: BaseApplication) {
         );
       };
     } satisfies JobFn<"computeFpOTA">,
+    // Rarely used & can be slow : do not prepare a lot of things but init on-the-go
+    computeNSR: function fpNSRInit() {
+      const nonScheduledRoutesModel = nonScheduledRoutesModelInit(sourceDataDB);
+      const stopsModel = stopsModelInit(sourceDataDB);
+
+      return async ({ data: [maxDist, getFullPaths = false] }) => {
+        const { stops, graph } = await makeFootStopsGraph(sectionsModel, stopsModel);
+
+        // Compute all paths
+
+        // Update db
+        await nonScheduledRoutesModel.deleteMany({});
+
+        for (const stopId of stops.keys()) {
+          const [dist, prev] = Dijkstra(
+            graph,
+            [approachedStopName(stopId) as unpackGraphNode<typeof graph>],
+            {
+              maxCumulWeight: maxDist,
+            },
+          );
+
+          void nonScheduledRoutesModel.insertMany(
+            Array.from(stops.keys()).reduce<dbFootPaths[]>((acc, to) => {
+              const stopNode = approachedStopName(to);
+              const distance = dist.get(stopNode);
+
+              if (distance)
+                acc.push({
+                  from: stopId,
+                  to,
+                  distance,
+                  path: getFullPaths ? tracePath(prev, stopNode) : undefined,
+                });
+
+              return acc;
+            }, []),
+          );
+        }
+      };
+    } satisfies JobFn<"computeNSR">,
   };
 }

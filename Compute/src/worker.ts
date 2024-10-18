@@ -20,9 +20,13 @@ async function start(data: Message<"data">["data"]) {
   const computeProc = await init(bApp);
   bApp.logger.log("Compute job initialized.");
 
-  const { fp: computeFpInit, fpOTA: computeFpOTAInit } = await initComputeFpJob(bApp);
+  const {
+    fp: computeFpInit,
+    fpOTA: computeFpOTAInit,
+    computeNSR: computeNSRInit,
+  } = await initComputeFpJob(bApp);
 
-  const app = makeWorker([computeProc, computeFpInit(), computeFpOTAInit()]);
+  const app = makeWorker([computeProc, await computeFpInit(), await computeFpOTAInit(), computeNSRInit()]);
 
   app.workers.forEach((worker) => {
     worker.on("active", (job) => {

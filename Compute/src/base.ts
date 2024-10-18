@@ -33,7 +33,7 @@ type Instances<
           : never;
 };
 
-const jobNames = ["compute", "computeFp", "computeFpOTA"] as const satisfies JobName[];
+const jobNames = ["compute", "computeFp", "computeFpOTA", "computeNSR"] as const satisfies JobName[];
 
 export interface BaseApplication {
   readonly config: Config;
