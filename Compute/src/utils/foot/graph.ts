@@ -52,7 +52,7 @@ function initData(sectionsModel: dbSectionsModel): () => Promise<Data & { update
 
     // Query graph data
     dataCache.edges = new Map<dbSections["_id"], Section>(
-      (await sectionsModel.find({}, sectionsProjection).lean().exec()).map((s) => [s._id, s as Section]),
+      (await sectionsModel.find({}, sectionsProjection).lean()).map((s) => [s._id, s as Section]),
     );
 
     // Pre-generate mapped segments to fasten the process (and not redundant computing)
