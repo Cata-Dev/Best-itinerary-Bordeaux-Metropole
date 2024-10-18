@@ -59,13 +59,17 @@ jobs:
         run: pnpm -F "compute" install
 
       - name: Build Compute
-        run: cd Compute/ && pnpm run --if-present build
+        # Will fail for the 1st time, but still emit required files to continue building
+        run: cd Compute/ && pnpm run --if-present build || true
 
       - name: Install Server
         run: pnpm -F "server" install
 
       - name: Build Server
         run: cd Server/ && pnpm run --if-present compile
+
+      - name: Build Compute (2)
+        run: cd Compute/ && pnpm run --if-present build
 
       - name: Install Client
         run: pnpm -F "client" install
