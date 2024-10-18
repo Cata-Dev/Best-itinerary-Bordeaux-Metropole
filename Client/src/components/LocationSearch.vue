@@ -1,31 +1,30 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import type { Geocode } from "server";
 import DatalistInput from "./DatalistInput.vue";
-import { client, defaultLocation } from "../store/";
+import { client, defaultLocation, equalObjects } from "../store/";
 import type { Location } from "@/store";
 
 interface Props {
   name: string;
   placeholder: string;
-  modelValue: Location;
 }
+defineProps<Props>();
 
-const props = defineProps<Props>();
+const model = defineModel<Location | null>();
 
-const emit = defineEmits<{
-  (e: "update:modelValue", modelValue: Props["modelValue"]): void;
-}>();
+watch(model, (val, oldVal) => {
+  if (!equalObjects(val, oldVal))
+    refreshSuggestions(val?.alias ?? null).then(() => {
+      if (val?.alias) inputCompo.value?.forceInput(val.alias);
+    });
+});
 
-const datalist = ref<Props["modelValue"][]>();
-/**
- * The valid location (emitted modelValue)
- */
-const modelValue = ref<Props["modelValue"]>(props.modelValue);
-const updated = ref(0);
-const updating = ref(false);
+const datalist = ref<Location[]>([]);
+const updated = ref<number>(-1);
+const updating = ref<boolean>(false);
 
-function parseGeocode(s: Geocode): Props["modelValue"] {
+function parseGeocode(s: Geocode): Location {
   switch (s.GEOCODE_type) {
     case "Addresses":
       return {
@@ -51,7 +50,7 @@ function parseGeocode(s: Geocode): Props["modelValue"] {
 /**
  * @returns Can be empty
  */
-async function fetchSuggestions(value: string): Promise<Props["modelValue"][]> {
+async function fetchSuggestions(value: string): Promise<Location[]> {
   let suggestions: Geocode[] = [];
   try {
     suggestions = await client.service("geocode").find({ query: { id: value, max: 25, uniqueVoies: true } });
@@ -60,18 +59,21 @@ async function fetchSuggestions(value: string): Promise<Props["modelValue"][]> {
   return suggestions.map(parseGeocode);
 }
 
-let lastInput = "";
+let lastInput: string | null = "";
 
-async function refreshSuggestions(value: string) {
+/**
+ * Updates suggestions according to provided value.
+ * Side effect on {@link datalist}.
+ */
+async function refreshSuggestions(value: string | null) {
+  // Could have been the same through `forceInput`
   if (value === lastInput) return;
   lastInput = value;
 
   if (!value || value.length < 5) {
+    // Will trigger update of model from Datalist
     datalist.value = [];
-    if (modelValue.value.alias.length) {
-      modelValue.value = defaultLocation;
-      emit("update:modelValue", defaultLocation);
-    }
+
     return;
   }
 
@@ -79,32 +81,20 @@ async function refreshSuggestions(value: string) {
 
   const suggestions = await fetchSuggestions(value);
 
-  // If another call was fastest, skip this one
+  // If another call was faster, skip this one
   if (now < updated.value) return;
 
   datalist.value = suggestions;
   updated.value = now;
-
-  const validLocation = suggestions.find((l) => l.alias === value);
-  if (validLocation) {
-    modelValue.value = validLocation;
-    emit("update:modelValue", validLocation);
-  } else {
-    // If modelValue needs reset
-    if (modelValue.value.alias.length) {
-      modelValue.value = defaultLocation;
-      emit("update:modelValue", defaultLocation);
-    }
-  }
 }
 
 const inputCompo = ref<InstanceType<typeof DatalistInput> | null>(null);
 
 /**
- * Will call forceIpunt on datalistInput
+ * Will call forceInput on datalistInput
  */
 async function forceInput(v: string) {
-  // force refreshing before the datalist does
+  // Force refreshing before the datalist does
   updating.value = true;
   await refreshSuggestions(v);
   updating.value = false;
@@ -112,14 +102,12 @@ async function forceInput(v: string) {
   inputCompo.value?.forceInput(v);
 }
 
-function focus() {
-  inputCompo.value?.focus();
-}
-
 defineExpose({
-  focus,
+  focus: inputCompo.value?.focus,
   forceInput,
 });
+
+const popUp = alert;
 </script>
 
 <template>
@@ -127,7 +115,7 @@ defineExpose({
     :loading="updating"
     class="flex w-full items-stretch relative px-3 py-2 bg-bg-light dark:bg-bg-dark rounded-full shadow-xl"
   >
-    <button class="flex mr-1 items-center">
+    <button class="flex mr-1 items-center" @click="popUp('Not yet :(')">
       <font-awesome-icon
         icon="crosshairs"
         class="text-text-light-primary dark:text-text-dark-primary text-2xl"
@@ -135,7 +123,7 @@ defineExpose({
     </button>
     <DatalistInput
       ref="inputCompo"
-      v-model="modelValue"
+      v-model="model"
       :placeholder="placeholder"
       :datalist="datalist"
       class="px-2 flex-grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"

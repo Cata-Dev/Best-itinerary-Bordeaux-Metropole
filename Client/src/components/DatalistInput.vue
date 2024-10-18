@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { defaultLocation, transportToType } from "@/store/";
+import { equalObjects, transportToType } from "@/store/";
 import TransportBadge from "@/components/TransportBadge.vue";
 import type { Location } from "@/store";
+import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
 
 type ModelValue = Location;
 
 interface Props<T> {
   placeholder: string;
-  datalist?: T[];
-  modelValue: T;
+  datalist: T[];
 }
 
-const props = withDefaults(defineProps<Props<ModelValue>>(), { datalist: () => [] });
+const model = defineModel<ModelValue | null>();
 
-/**
- * Its `modelValue` is a value from props.datalist if input is in, defaultLocation otherwise
- * However, `input` is the raw input string, emitted at anytime
- */
+const props = defineProps<Props<ModelValue>>();
+
 const emit = defineEmits<{
-  (e: "update:modelValue", value: ModelValue): void;
+  /**
+   * Raw input string, emitted every time it changes
+   */
   (e: "input", input: string): void;
 }>();
 
@@ -33,11 +33,17 @@ watch(
 const showDatalist = ref<boolean>(false);
 
 const inputElem = ref<HTMLInputElement>();
-const input = ref(props.modelValue.alias);
+const input = ref<string>(model.value?.alias ?? "");
 
+/**
+ * Emits new modelValue only if value found & it's different from cur ent
+ */
 function refreshModelValue() {
-  const value = props.datalist.find((el) => el.alias === input.value);
-  emit("update:modelValue", value ?? defaultLocation);
+  const value = props.datalist.find((el) => el.alias === input.value) ?? null;
+
+  if (equalObjects(model.value, value)) return;
+
+  model.value = value;
 }
 
 function newInput() {
@@ -67,11 +73,11 @@ defineExpose({
   <div class="w-full relative bg-bg-light dark:bg-bg-dark">
     <input
       ref="inputElem"
-      :value="input"
+      v-model="input"
       type="text"
       class="w-full flex-grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
       :placeholder="placeholder"
-      @input="(input = ($event.target as HTMLInputElement).value), newInput()"
+      @input="newInput()"
       @focus="showDatalist = true"
       @focusout="showDatalist = false"
     />
@@ -89,9 +95,8 @@ defineExpose({
           {{ e.alias }}
         </span>
         <TransportBadge
-          v-if="e.type"
-          :type="transportToType(e.type.replace('ADRESSE', 'FOOT'))"
-          :transport="e.type.replace('ADRESSE', 'FOOT')"
+          :type="transportToType(e.type.replace('Addresses' as TBMEndpoints.Addresses, 'FOOT'))"
+          :transport="e.type.replace('Addresses' as TBMEndpoints.Addresses, 'FOOT')"
           :custom-text="e.type.toLowerCase().capitalize()"
           class="mr-1"
         />

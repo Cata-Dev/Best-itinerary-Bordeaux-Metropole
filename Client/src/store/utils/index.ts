@@ -14,10 +14,10 @@ function formatDate(date: string | number | Date, hourOnly = false): string {
   return `${h}:${mi}`;
 }
 
-export type UnknowIcon = "question-circle";
+export type UnknownIcon = "question-circle";
 export type TransportIcon = "walking" | "bus" | "train" | "ship" | "subway";
 
-const icons: Record<TransportMode | UnknowLitteral, TransportIcon | UnknowIcon> = {
+const icons: Record<TransportMode | UnknownLiteral, TransportIcon | UnknownIcon> = {
   FOOT: "walking",
   BUS: "bus",
   TRAM: "train",
@@ -35,7 +35,7 @@ function transportToIcon(transport: string): string {
   return transport in icons ? icons[transport as keyof typeof icons] : icons["UNKNOW"];
 }
 
-export type UnknowLitteral = "UNKNOW";
+export type UnknownLiteral = "UNKNOW";
 export type TransportMode = "FOOT" | "BUS" | "TRAM" | "BATEAU" | "TRAIN";
 export type TransportProvider = "FOOT" | "TBM" | "SNCF";
 
@@ -123,6 +123,13 @@ function compareObjectForEach<V extends string | number | boolean>(
   return o1;
 }
 
+function formatDateToInput(date: Date) {
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, -1)
+    .substring(0, 4 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 2);
+}
+
 function parseJSON(json: string) {
   try {
     return JSON.parse(json);
@@ -163,6 +170,7 @@ export {
   equalObjects,
   rebaseObject,
   compareObjectForEach,
+  formatDateToInput,
   parseJSON,
   getNewTopZIndex,
 };
