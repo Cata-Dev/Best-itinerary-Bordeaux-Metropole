@@ -134,6 +134,9 @@ importers:
       server:
         specifier: link:../Server
         version: link:../Server
+      shx:
+        specifier: ^0.3.4
+        version: 0.3.4
     devDependencies:
       '@types/node':
         specifier: '18'
