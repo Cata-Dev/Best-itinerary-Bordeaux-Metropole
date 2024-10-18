@@ -43,20 +43,32 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: "./pnpm-lock.yaml"
 
-      # Globally install
-      - run: pnpm --config.dedupe-peer-dependents=false install
+      - name: Install Common
+        run: pnpm -F "common" install
 
       - name: Build Common
         run: cd Common/ && pnpm run --if-present build
 
+      - name: Install Data
+        run: pnpm -F "data" install
+
       - name: Build Data
         run: cd Data/ && pnpm run --if-present build
+
+      - name: Install Compute
+        run: pnpm -F "compute" install
 
       - name: Build Compute
         run: cd Compute/ && pnpm run --if-present build
 
+      - name: Install Server
+        run: pnpm -F "server" install
+
       - name: Build Server
-        run: cd Server/ && pnpm run --if-present build
+        run: cd Server/ && pnpm run --if-present compile
+
+      - name: Install Client
+        run: pnpm -F "client" install
 
       - name: Build Client
         run: cd Client/ && pnpm run --if-present build
