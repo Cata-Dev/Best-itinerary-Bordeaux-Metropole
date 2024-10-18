@@ -95,7 +95,17 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         | Awaited<ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>>[string][]
         | null = null;
 
-      const attachStops = new Map<number, Stop<number, number>>();
+      const attachStops = new Map<
+        keyof Awaited<
+          ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>
+        >[string]["distances"],
+        Stop<
+          keyof Awaited<
+            ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>
+          >[string]["distances"],
+          number
+        >
+      >();
 
       let psId: Parameters<typeof RAPTORData.stops.get>[0] = -1;
       // Need to insert point to be used as starting point in RAPTOR
