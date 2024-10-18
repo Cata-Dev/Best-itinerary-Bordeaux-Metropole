@@ -1,13 +1,21 @@
-import { WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { Dijkstra, path } from "@catatomik/dijkstra";
-import footGraphModelInit, { dbFootGraphEdges } from "data/lib/models/TBM/FootGraph.model";
-import { euclideanDistance } from "common/geographics";
+import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
+import { approachedStopName } from "data/lib/models/TBM/FootGraph.model";
+import sectionsModelInit from "data/lib/models/TBM/sections.model";
+import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
+import nonScheduledRoutesModelInit, { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";
 import { JobFn, JobResult } from ".";
 import { BaseApplication } from "../base";
 import { initDB } from "../utils/mongoose";
-import { unpackRefType } from "../utils";
-import Segment from "../utils/geometry/Segment";
-import Point from "../utils/geometry/Point";
+import {
+  approachPoint,
+  FootGraphNode,
+  initData,
+  makeFootStopsGraph,
+  makeGraph,
+  refreshWithApproachedPoint,
+  revertFromApproachedPoint,
+} from "../utils/foot/graph";
+import { unpackGraphNode } from "@catatomik/dijkstra/lib/utils/Graph";
 
 /**
  * Geographical point, WGS coordinates
@@ -17,7 +25,7 @@ export type GeoPoint = [lat: number, long: number];
 declare module "." {
   interface Jobs {
     // Foot path One-To-One
-    computeFp: (ps: GeoPoint, pt: GeoPoint) => { distance: number; path: path<FootGraphNode> };
+    computeFp: (ps: GeoPoint, pt: GeoPoint) => { distance: number; path: path<FootGraphNode<"aps" | "apt">> };
     // Foot path One-To-All (all being stops)
     computeFpOTA: (
       ps: GeoPoint,
@@ -25,175 +33,51 @@ declare module "." {
       // TODO : use it
       options?: { maxDist: number },
     ) => { distances: Record<number, number>; alias?: string };
+    // NonScheduledRoutes
+    computeNSR: (maxDist: number, getFullPaths?: boolean) => void;
   }
 }
-
-export function approachedPointName(name: string) {
-  return `ap-${name}` as const;
-}
-
-interface EdgeOverwritten {
-  // Will never be populated
-  ends: [unpackRefType<dbFootGraphEdges["ends"][0]>, unpackRefType<dbFootGraphEdges["ends"][1]>];
-}
-type Edge = Omit<dbFootGraphEdges, keyof EdgeOverwritten> & EdgeOverwritten;
-
-type FootGraphNode = Edge["ends"][0] | ReturnType<typeof approachedPointName>;
 
 export default async function (app: BaseApplication) {
   const sourceDataDB = await initDB(app, app.config.sourceDB);
 
-  const FootGraphEdgesModel = footGraphModelInit(sourceDataDB)[2];
+  const sectionsModel = sectionsModelInit(sourceDataDB);
 
-  // Query graph data
-  const edges = new Map<dbFootGraphEdges["_id"], Edge>(
-    (await FootGraphEdgesModel.find({}).lean().exec()).map((s) => [s._id, s as Edge]),
-  );
-
-  // Pre-generate mapped segments to fasten the process (and not redundant computing)
-  // A segment describes a portion of an edge
-  const mappedSegments = new Map<dbFootGraphEdges["_id"], Segment[]>();
-  for (const [id, edge] of edges) {
-    mappedSegments.set(
-      id,
-      edge.coords.reduce<Segment[]>(
-        (acc, v, i) =>
-          i >= edge.coords.length - 1
-            ? acc
-            : [...acc, new Segment(new Point(...v), new Point(...edge.coords[i + 1]))],
-        [],
-      ),
-    );
-  }
-
-  // Build graph
-  const makeGraph = () => {
-    const footGraph = new WeightedGraph<FootGraphNode>();
-
-    for (const {
-      ends: [s, t],
-      distance,
-    } of edges.values()) {
-      footGraph.addEdge(s, t, distance);
-    }
-
-    return footGraph;
-  };
-
-  /**
-   *
-   * @param coords
-   * @returns `[closest point, edge containing this point, indice of segment composing the edge]`
-   */
-  const approachPoint = (coords: [number, number]): [Point, dbFootGraphEdges["_id"], number] | null => {
-    const point = new Point(...coords);
-
-    /**@description [distance to closest point, closest point, edge containing this point, indice of segment composing the edge (i;i+1 in Section coords)] */
-    const closestPoint: [number, Point | null, dbFootGraphEdges["_id"] | null, number | null] = [
-      Infinity,
-      null,
-      null,
-      null,
-    ];
-
-    for (const [edge, segs] of mappedSegments) {
-      for (const [n, seg] of segs.entries()) {
-        const localClosestPoint = seg.closestPointFromPoint(point);
-        const distance = Point.distance(point, localClosestPoint);
-        if (distance < closestPoint[0]) {
-          closestPoint[0] = distance;
-          closestPoint[1] = localClosestPoint;
-          closestPoint[2] = edge;
-          closestPoint[3] = n;
-        }
-      }
-    }
-
-    return closestPoint[0] < 10e3 &&
-      closestPoint[1] !== null &&
-      closestPoint[2] !== null &&
-      closestPoint[3] !== null
-      ? [closestPoint[1], closestPoint[2], closestPoint[3]]
-      : null;
-  };
-
-  /**
-   * Pushes approached point into graph, just like a proxy on a edge
-   * @returns Name of point added to graph
-   */
-  const refreshWithApproachedPoint = (
-    footGraph: WeightedGraph<FootGraphNode>,
-    name: string,
-    [closestPoint, edgeId, n]: Exclude<ReturnType<typeof approachPoint>, null>,
-  ) => {
-    const {
-      coords,
-      ends: [s, t],
-    } = edges.get(edgeId)!;
-
-    // Compute distance from start edge to approachedStop
-    const toApproachedStop: number =
-      coords.reduce((acc, v, i, arr) => {
-        if (i < n && i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
-        return acc;
-      }, 0) + Point.distance(closestPoint, new Point(...coords[n]));
-
-    // Compute distance form approachedStop to end edge
-    const fromApproachedStop: number =
-      coords.reduce((acc, v, i, arr) => {
-        if (i > n && i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
-        return acc;
-      }, 0) + Point.distance(closestPoint, new Point(...coords[n]));
-
-    // Remove edge from p1 to p2
-    footGraph.removeEdge(s, t);
-
-    const insertedNode = approachedPointName(name);
-
-    footGraph.addEdge(s, insertedNode, toApproachedStop);
-    footGraph.addEdge(insertedNode, t, fromApproachedStop);
-
-    return insertedNode;
-  };
-
-  const revertFromApproachedPoint = (
-    footGraph: WeightedGraph<FootGraphNode>,
-    insertedNode: ReturnType<typeof approachedPointName>,
-    edgeId: dbFootGraphEdges["_id"],
-  ) => {
-    const {
-      distance,
-      ends: [s, t],
-    } = edges.get(edgeId)!;
-
-    footGraph.removeEdge(insertedNode, t);
-    footGraph.removeEdge(s, insertedNode);
-    footGraph.addEdge(s, t, distance);
-  };
+  const queryData = initData(sectionsModel);
 
   return {
-    fp: function fpInit() {
+    fp: async function fpInit() {
+      let { edges, mappedSegments, updated } = await queryData();
       // Graph private to One-To-One computations
-      const footGraph = makeGraph();
+      let footGraph = makeGraph<"aps" | "apt">(edges);
 
-      return ({ data: [ps, pt] }) => {
+      return async ({ data: [ps, pt] }) => {
+        ({ edges, mappedSegments, updated } = await queryData());
+        if (updated)
+          // Need to re-make foot graph
+          footGraph = makeGraph<"aps" | "apt">(edges);
+
         // Approach points into foot graph
-        const aps = approachPoint(ps);
+        const aps = approachPoint(mappedSegments, ps);
         if (!aps) throw new Error("Couldn't approach starting point.");
-        const apt = approachPoint(pt);
+        const apt = approachPoint(mappedSegments, pt);
         if (!apt) throw new Error("Couldn't approach target point.");
 
-        const apsName = refreshWithApproachedPoint(footGraph, "aps", aps);
-        const aptName = refreshWithApproachedPoint(footGraph, "apt", apt);
+        refreshWithApproachedPoint(edges, footGraph, "aps", aps);
+        refreshWithApproachedPoint(edges, footGraph, "apt", apt);
 
-        const path = Dijkstra(footGraph, [apsName as FootGraphNode, aptName as FootGraphNode]);
+        const path = Dijkstra(footGraph, [
+          "aps" as unpackGraphNode<typeof footGraph>,
+          "apt" as unpackGraphNode<typeof footGraph>,
+        ]);
 
-        revertFromApproachedPoint(footGraph, apsName, aps[1]);
-        revertFromApproachedPoint(footGraph, aptName, apt[1]);
+        // In reverted order!
+        revertFromApproachedPoint(edges, footGraph, "apt", apt[1]);
+        revertFromApproachedPoint(edges, footGraph, "aps", aps[1]);
 
         return new Promise<JobResult<"computeFp">>((res) =>
           res({
-            distance: path.reduce(
+            distance: path.reduce<number>(
               (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
               0,
             ),
@@ -203,20 +87,28 @@ export default async function (app: BaseApplication) {
       };
     } satisfies JobFn<"computeFp">,
 
-    fpOTA: function fpOTAInit() {
+    fpOTA: async function fpOTAInit() {
+      let { edges, mappedSegments, updated } = await queryData();
       // Graph private to One-To-All computations
-      const footGraph = makeGraph();
+      let footGraph = makeGraph<"aps" | "apt">(edges);
 
-      return ({ data: [ps, alias, options = { maxDist: 1e3 }] }) => {
+      return async ({ data: [ps, alias, options = { maxDist: 1e3 }] }) => {
+        ({ edges, mappedSegments, updated } = await queryData());
+        if (updated)
+          // Need to re-make foot graph
+          footGraph = makeGraph<"aps">(edges);
+
         // Approach points into foot graph
-        const aps = approachPoint(ps);
+        const aps = approachPoint(mappedSegments, ps);
         if (!aps) throw new Error("Couldn't approach starting point.");
 
-        const apsName = refreshWithApproachedPoint(footGraph, "aps", aps);
+        refreshWithApproachedPoint(edges, footGraph, "aps", aps);
 
-        const [dist] = Dijkstra(footGraph, [apsName as FootGraphNode], { maxCumulWeight: options.maxDist });
+        const [dist] = Dijkstra(footGraph, ["aps" as unpackGraphNode<typeof footGraph>], {
+          maxCumulWeight: options.maxDist,
+        });
 
-        revertFromApproachedPoint(footGraph, apsName, aps[1]);
+        revertFromApproachedPoint(edges, footGraph, "aps", aps[1]);
 
         return new Promise<JobResult<"computeFpOTA">>((res) =>
           res({
@@ -224,9 +116,7 @@ export default async function (app: BaseApplication) {
               // Keep only distances to approached stops
               Array.from(dist.entries()).reduce(
                 (acc, [node, dist]) =>
-                  !isNaN(parseInt(`${dist}`)) && node.startsWith("as")
-                    ? { ...acc, [node.replace("as=", "")]: dist }
-                    : acc,
+                  !isNaN(parseInt(`${dist}`)) && typeof node === "number" ? { ...acc, [node]: dist } : acc,
                 {},
               ),
             alias,
