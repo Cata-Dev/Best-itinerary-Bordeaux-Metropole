@@ -55,11 +55,12 @@ jobs:
       - name: Build Data
         run: cd Data/ && pnpm run --if-present build
 
+      # Will fail for the 1st time, but still emit required files to continue building
+
       - name: Install Compute
-        run: pnpm -F "compute" install
+        run: pnpm -F "compute" install || true
 
       - name: Build Compute
-        # Will fail for the 1st time, but still emit required files to continue building
         run: cd Compute/ && pnpm run --if-present build || true
 
       - name: Install Server
