@@ -25,12 +25,12 @@
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@typegoose/typegoose": "^12.8.0",
     "bullmq": "^5.19.0",
-    "common": "link:../Common",
+    "common": "workspace:*",
     "core-js": "^3.38.1",
-    "data": "link:../Data",
+    "data": "workspace:*",
     "mongoose": "^8.2.0",
     "raptor": "github:cata-dev/raptor#para-friendly",
-    "server": "link:../Server",
+    "server": "workspace:*",
     "shx": "^0.3.4"
   }
 }

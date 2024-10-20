@@ -77,10 +77,10 @@
     "@feathersjs/typebox": "^5.0.30",
     "@typegoose/typegoose": "^12.8.0",
     "axios": "^1.7.7",
-    "common": "link:../Common",
-    "compute": "link:../Compute",
+    "common": "workspace:*",
+    "compute": "workspace:*",
     "core-js": "^3.38.1",
-    "data": "file:../Data",
+    "data": "workspace:*",
     "feathers-hooks-common": "^8.2.1",
     "mongoose": "^8.7.0",
     "node-fetch": "^3.3.2"
