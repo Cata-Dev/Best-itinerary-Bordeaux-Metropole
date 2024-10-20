@@ -176,7 +176,9 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
         const RAPTORSettings: JobData<"compute">[3] = {};
         if (_params.query.walkSpeed) RAPTORSettings.walkSpeed = _params.query.walkSpeed;
 
-        const params: Parameters<ReturnType<typeof this.app.get<"compute">>["app"]["computeFullJourney"]> = [
+        const params: Parameters<
+          ReturnType<typeof this.app.get<"computeInstance">>["app"]["computeFullJourney"]
+        > = [
           _params.query.from,
           _params.query.to,
           new Date(_params.query.departureTime ?? Date.now()),
@@ -211,11 +213,11 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
           lastActualization = Date.now();
         }
 
-        const job = (await this.app.get("compute").app.computeFullJourney(...params)).job;
+        const job = (await this.app.get("computeInstance").app.computeFullJourney(...params)).job;
         let resultId: (typeof job)["returnvalue"];
 
         try {
-          resultId = await job.waitUntilFinished(this.app.get("compute").app.queuesEvents[0]);
+          resultId = await job.waitUntilFinished(this.app.get("computeInstance").app.queuesEvents[0]);
         } catch (e) {
           throw new GeneralError("Error while computing paths", e);
         }

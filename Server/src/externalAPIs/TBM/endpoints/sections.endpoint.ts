@@ -69,7 +69,7 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
     ).on("fetched", (success) => {
       if (!success) return;
       app
-        .get("compute")
+        .get("computeInstance")
         .app.queues[3].add("computeNSR", [5e3])
         .catch((err) => logger.error("Failed to start computing Non Schedules Routes", err));
     }),
