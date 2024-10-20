@@ -16,6 +16,8 @@ import {
   revertFromApproachedPoint,
 } from "../utils/foot/graph";
 import { unpackGraphNode } from "@catatomik/dijkstra/lib/utils/Graph";
+import { limiter } from "../utils/asyncs";
+import { Duration } from "common/benchmark";
 
 /**
  * Geographical point, WGS coordinates
@@ -33,7 +35,9 @@ declare module "." {
       // TODO : use it
       options?: { maxDist: number },
     ) => { distances: Record<number, number>; alias?: string };
-    // NonScheduledRoutes
+    // NonScheduledRoutes, all done by one processor - process could be parallelized,
+    // but it would need a parallelized Dijkstra/graph
+    // => long process, but it's expected
     computeNSR: (maxDist: number, getFullPaths?: boolean) => void;
   }
 }
@@ -137,6 +141,14 @@ export default async function (app: BaseApplication) {
         // Update db
         await nonScheduledRoutesModel.deleteMany({});
 
+        // Log every x percent
+        const LOG_EVERY = 5;
+        // Limit pending inserts to 10k
+        const lim = limiter(10e3);
+        let stopsTreatedCount = 0;
+        let NSRInsertedCount = 0;
+        let lastChunkInsertLogTime = Date.now();
+
         for (const stopId of stops.keys()) {
           const [dist, prev] = Dijkstra(
             graph,
@@ -146,22 +158,40 @@ export default async function (app: BaseApplication) {
             },
           );
 
-          void nonScheduledRoutesModel.insertMany(
-            Array.from(stops.keys()).reduce<dbFootPaths[]>((acc, to) => {
-              const stopNode = approachedStopName(to);
-              const distance = dist.get(stopNode);
+          const toInsert = Array.from(stops.keys()).reduce<dbFootPaths[]>((acc, to) => {
+            if (to === stopId) return acc;
 
-              if (distance)
-                acc.push({
-                  from: stopId,
-                  to,
-                  distance,
-                  path: getFullPaths ? tracePath(prev, stopNode) : undefined,
-                });
+            const stopNode = approachedStopName(to);
+            const distance = dist.get(stopNode);
+            if (distance === undefined || distance === Infinity) return acc;
 
-              return acc;
-            }, []),
-          );
+            acc.push({
+              from: stopId,
+              to,
+              distance,
+              path: getFullPaths ? tracePath(prev, stopNode) : undefined,
+            });
+
+            return acc;
+          }, []);
+
+          const prom = nonScheduledRoutesModel.insertMany(toInsert, { ordered: false, rawResult: true });
+          prom
+            .then((inserted) => {
+              stopsTreatedCount++;
+              NSRInsertedCount += inserted.insertedCount;
+              if (stopsTreatedCount % Math.round((stops.size / 100) * LOG_EVERY) === 0) {
+                const newTime = Date.now();
+                app.logger.debug(
+                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                  `Inserting to NSR done at ${Math.round((stopsTreatedCount / stops.size) * 1000) / 10}%, inserted NSR : ${NSRInsertedCount}. Time since last ${LOG_EVERY}% compute & insert : ${new Duration(newTime - lastChunkInsertLogTime)}`,
+                );
+                lastChunkInsertLogTime = newTime;
+              }
+            })
+            .catch((err) => app.logger.error("Cannot insert to NSR", err));
+
+          await lim(prom, toInsert.length);
         }
       };
     } satisfies JobFn<"computeNSR">,
