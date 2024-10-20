@@ -29,7 +29,7 @@
     "core-js": "^3.38.1",
     "data": "workspace:*",
     "mongoose": "^8.2.0",
-    "raptor": "github:cata-dev/raptor#para-friendly",
+    "raptor": "github:cata-dev/raptor#no-local-pruning",
     "server": "workspace:*",
     "shx": "^0.3.4"
   }

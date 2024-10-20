@@ -129,8 +129,8 @@ importers:
         specifier: ^8.2.0
         version: 8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
-        specifier: github:cata-dev/raptor#para-friendly
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/a6e8a4e726baade4dfbfd6900dc92f2e1585d97d
+        specifier: github:cata-dev/raptor#no-local-pruning
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/a4203d65b4289e433a282870baee9cd70b83bdf5
       server:
         specifier: workspace:*
         version: link:../Server
@@ -173,7 +173,7 @@ importers:
         version: 8.7.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor#no-local-pruning
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/a6cc2cf454b5141c18513d273f0c9d60c14dd800
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/a4203d65b4289e433a282870baee9cd70b83bdf5
     devDependencies:
       '@types/config':
         specifier: ^3.3.5
@@ -3080,12 +3080,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/a6cc2cf454b5141c18513d273f0c9d60c14dd800:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/a6cc2cf454b5141c18513d273f0c9d60c14dd800}
-    version: 0.2.0
-
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/a6e8a4e726baade4dfbfd6900dc92f2e1585d97d:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/a6e8a4e726baade4dfbfd6900dc92f2e1585d97d}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/a4203d65b4289e433a282870baee9cd70b83bdf5:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/a4203d65b4289e433a282870baee9cd70b83bdf5}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -7080,9 +7076,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/a6cc2cf454b5141c18513d273f0c9d60c14dd800: {}
-
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/a6e8a4e726baade4dfbfd6900dc92f2e1585d97d: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/a4203d65b4289e433a282870baee9cd70b83bdf5: {}
 
   raw-body@2.5.2:
     dependencies:
