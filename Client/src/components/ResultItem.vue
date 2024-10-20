@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TransportBadge from "@/components/TransportBadge.vue";
-import { duration, formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
+import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
+import { duration } from "common/time";
 import type { Itinerary } from "server";
 
 interface Props {

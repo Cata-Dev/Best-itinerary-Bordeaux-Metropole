@@ -14,7 +14,7 @@
   "contributors": [],
   "bugs": {},
   "engines": {
-    "node": ">= 18.13.0"
+    "node": ">= 18.19.0"
   },
   "feathers": {
     "language": "ts",
@@ -31,57 +31,71 @@
     "lib": "src",
     "test": "test"
   },
+  "exports": {
+    ".": {
+      "types": "./lib/types/client.d.ts",
+      "require": "./lib/cjs/client.js",
+      "import": "./lib/esm/client.js",
+      "default": "./lib/esm/client.js"
+    },
+    "./*": {
+      "types": "./lib/types/*.d.ts",
+      "require": "./lib/cjs/*.js",
+      "import": "./lib/esm/*.js",
+      "default": "./lib/esm/*.js"
+    }
+  },
   "files": [
-    "lib/client.js",
-    "lib/**/*.d.ts",
-    "lib/**/*.shared.js"
+    "lib/"
   ],
-  "main": "lib/client",
   "scripts": {
     "dev": "nodemon -x ts-node src/index.ts",
-    "compile": "shx rm -rf lib/ && tsc",
-    "start": "node lib/",
-    "prettier": "npx prettier \"**/*.ts\" --write",
+    "compile": "shx rm -rf lib/ && tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json && node ./scripts/prepare-package-json.js",
+    "start": "node lib/cjs/",
+    "prettier": "npx prettier \"**/*.ts\" --write --config ../.prettierrc",
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
     "test": "pnpm run mocha",
-    "lint": "eslint ./src/ --ext .ts",
-    "bundle:client": "pnpm run compile && pnpm pack --pack-destination ./public"
+    "type-check": "tsc -noEmit",
+    "lint": "eslint ./src/",
+    "full-lint": "npm run lint && npm run type-check",
+    "prepare": "pnpm run compile"
   },
   "dependencies": {
-    "@feathersjs/adapter-commons": "^5.0.22",
-    "@feathersjs/authentication": "^5.0.22",
-    "@feathersjs/authentication-client": "^5.0.22",
-    "@feathersjs/configuration": "^5.0.22",
-    "@feathersjs/errors": "^5.0.22",
-    "@feathersjs/feathers": "^5.0.22",
-    "@feathersjs/koa": "^5.0.22",
-    "@feathersjs/mongodb": "^5.0.22",
-    "@feathersjs/schema": "^5.0.22",
-    "@feathersjs/socketio": "^5.0.22",
-    "@feathersjs/transport-commons": "^5.0.22",
-    "@feathersjs/typebox": "^5.0.22",
-    "@typegoose/typegoose": "^12.2.0",
-    "axios": "^1.6.7",
-    "core-js": "^3.36.0",
-    "data": "file:../Data",
-    "feathers-hooks-common": "^8.1.2",
-    "mongoose": "^8.2.0",
+    "@feathersjs/adapter-commons": "^5.0.30",
+    "@feathersjs/authentication": "^5.0.30",
+    "@feathersjs/authentication-client": "^5.0.30",
+    "@feathersjs/configuration": "^5.0.30",
+    "@feathersjs/errors": "^5.0.30",
+    "@feathersjs/feathers": "^5.0.30",
+    "@feathersjs/koa": "^5.0.30",
+    "@feathersjs/mongodb": "^5.0.30",
+    "@feathersjs/schema": "^5.0.30",
+    "@feathersjs/socketio": "^5.0.30",
+    "@feathersjs/transport-commons": "^5.0.30",
+    "@feathersjs/typebox": "^5.0.30",
+    "@typegoose/typegoose": "^12.8.0",
+    "axios": "^1.7.7",
+    "common": "workspace:*",
+    "compute": "workspace:*",
+    "core-js": "^3.38.1",
+    "data": "workspace:*",
+    "feathers-hooks-common": "^8.2.1",
+    "mongoose": "^8.7.0",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@feathersjs/cli": "5.0.21",
-    "@feathersjs/rest-client": "^5.0.22",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.20",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@feathersjs/cli": "5.0.30",
+    "@feathersjs/rest-client": "^5.0.30",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "^18.19.54",
     "cross-env": "^7.0.3",
-    "eslint": "^8.57.0",
-    "mocha": "^10.3.0",
-    "nodemon": "^3.1.0",
-    "prettier": "^3.2.5",
+    "eslint": "^9.12.0",
+    "mocha": "^10.7.3",
+    "nodemon": "^3.1.7",
+    "prettier": "^3.3.3",
     "shx": "^0.3.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.8.1"
   }
 }

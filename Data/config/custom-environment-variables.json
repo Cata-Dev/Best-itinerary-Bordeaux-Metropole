@@ -1,0 +1,25 @@
+{
+  "server": {
+    "host": "SERVER_HOST",
+    "port": {
+      "__name": "SERVER_PORT",
+      "__format": "number"
+    },
+    "TBMkey": "TBM_KEY",
+    "SNCFkey": "SNCF_KEY",
+    "origins": "ALLOWED_ORIGINS"
+  },
+  "compute": {
+    "redis": {
+      "host": "REDIS_HOST",
+      "port": {
+        "__name": "REDIS_PORT",
+        "__format": "number"
+      }
+    }
+  },
+  "dbAddress": "MONGODB_URL",
+  "sourceDB": "DB_SOURCE_NAME",
+  "computeDB": "DB_COMPUTE_NAME",
+  "debug": "DEBUG"
+}

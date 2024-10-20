@@ -5,25 +5,21 @@ import sncf, { SNCFEndpoints, SNCFClass, SNCFModel } from "./SNCF";
 import { Endpoint } from "./endpoint";
 import { logger } from "../logger";
 
-export const setupExternalAPIs = async (app: Application) => {
+export const setupExternalAPIs = (app: Application) => {
   app.externalAPIs = { endpoints: [] } as never;
 
   tbm(app);
   sncf(app);
 
-  async function refresh() {
+  function refresh() {
     for (const endpoint of app.externalAPIs.endpoints.filter(
       (endpoint) => endpoint.rate >= 24 * 3600 && endpoint.rate < Infinity,
     )) {
-      try {
-        endpoint.fetch(undefined, app.get("debug")).catch();
-      } catch (e) {
-        logger.error(e);
-      }
+      endpoint.fetch(undefined, app.get("debug")).catch((e) => logger.error(e));
     }
   }
 
-  await refresh();
+  refresh();
   setInterval(
     refresh,
     Math.max(

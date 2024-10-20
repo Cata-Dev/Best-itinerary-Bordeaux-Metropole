@@ -1,18 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "CommonJS",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "rootDir": ".",
-    "outDir": "lib/",
-    "composite": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
-    "sourceMap": true
+    "outDir": ".",
+    "resolveJsonModule": true,
+    "composite": true
   },
-  "exclude": [],
-  "include": [
-    "models/**/*"
-  ]
+  "files": ["./config/default.json"]
 }

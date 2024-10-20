@@ -1,13 +1,16 @@
 import { EventEmitter } from "events";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type EmittedEvents = Record<string | symbol, (...args: any) => any>;
+// @typescript-eslint/consistent-indexed-object-style
+type EmittedEvents<T extends string | number | symbol> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [k in T]: (...args: any) => any;
+};
 
-export declare interface TypedEventEmitter<Events extends EmittedEvents> {
-  on<E extends keyof Events>(event: E, listener: Events[E]): this;
+export declare interface TypedEventEmitter<Events extends EmittedEvents<N>, N extends string> {
+  on<E extends N>(event: E, listener: Events[E]): this;
 
-  emit<E extends keyof Events>(event: E, ...args: Parameters<Events[E]>): boolean;
+  emit<E extends N>(event: E, ...args: Parameters<Events[E]>): boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-declaration-merging
-export class TypedEventEmitter<Events extends EmittedEvents> extends EventEmitter {}
+export class TypedEventEmitter<Events extends EmittedEvents<N>, N extends string> extends EventEmitter {}

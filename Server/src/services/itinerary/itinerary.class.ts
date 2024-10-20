@@ -13,107 +13,243 @@ export interface ItineraryServiceOptions {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ItineraryParams extends Params<ItineraryQuery> {}
 
-import { BadRequest, NotFound } from "@feathersjs/errors";
+import { BadRequest, NotFound, GeneralError } from "@feathersjs/errors";
+import { hasLastActualization } from "../refresh-data/refresh-data.class";
+
+function hasData(obj: unknown): obj is { data: unknown } {
+  return typeof obj === "object" && obj !== null && "data" in obj;
+}
+
+import resultModelInit, {
+  dbComputeResult,
+  isLabelFoot,
+  isLabelVehicle,
+  isLocationAddress,
+  isLocationSNCF,
+  isLocationTBM,
+  LabelFoot,
+  LabelVehicle,
+} from "data/lib/models/Compute/result.model";
+import NonScheduledRoutesModelInit from "data/lib/models/TBM/NonScheduledRoutes.model";
+import TBMScheduledRoutesModelInit from "data/lib/models/TBM/TBMScheduledRoutes.model";
+import AddressesModelInit, { dbAddresses } from "data/lib/models/TBM/addresses.model";
+import TBMStopsModelInit from "data/lib/models/TBM/TBM_stops.model";
+import TBMSchedulesModelInit from "data/lib/models/TBM/TBM_schedules.model";
+import TBMLinesRoutesModelInit from "data/lib/models/TBM/TBM_lines_routes.model";
+import TBMLinesModelInit from "data/lib/models/TBM/TBM_lines.model";
+import SNCFStopsModelInit from "data/lib/models/SNCF/SNCF_stops.model";
+// To force TypeScript detect "compute" as a JobName
+import "compute/lib/jobs/compute";
+import { JobData } from "compute/lib/jobs";
+import { mapAsync } from "common/async";
+import { isDocument } from "@typegoose/typegoose";
+
+function formatAddress(addressDoc: dbAddresses) {
+  return `${addressDoc.numero} ${"rep" in addressDoc ? addressDoc.rep + " " : ""}${addressDoc.nom_voie} ${addressDoc.commune}`;
+}
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class ItineraryService<ServiceParams extends Params = ItineraryParams>
+export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryParams>
   implements ServiceInterface<Itinerary, ItineraryData, ServiceParams, ItineraryPatch>
 {
   private readonly app: Application;
+  private readonly resultModel: ReturnType<typeof resultModelInit>;
+  private readonly TBMStopsModel: ReturnType<typeof TBMStopsModelInit>;
+  private readonly TBMSchedulesModel: ReturnType<typeof TBMSchedulesModelInit>[1];
+  private readonly TBMLinesRoutesModel: ReturnType<typeof TBMLinesRoutesModelInit>;
+  private readonly TBMLinesModel: ReturnType<typeof TBMLinesModelInit>;
+  private readonly AddressesModel: ReturnType<typeof AddressesModelInit>;
+  private readonly SNCFStopsModel: ReturnType<typeof SNCFStopsModelInit>;
+  private readonly NonScheduledRoutesModel: ReturnType<typeof NonScheduledRoutesModelInit>;
+  private readonly TBMScheduledRoutesModel: ReturnType<typeof TBMScheduledRoutesModelInit>;
 
   constructor(public options: ItineraryServiceOptions) {
     this.app = options.app;
+    this.resultModel = resultModelInit(this.app.get("computeDBConn"));
+    this.AddressesModel = AddressesModelInit(this.app.get("sourceDBConn"));
+    this.TBMStopsModel = TBMStopsModelInit(this.app.get("sourceDBConn"));
+    this.TBMSchedulesModel = TBMSchedulesModelInit(this.app.get("sourceDBConn"))[1];
+    this.TBMLinesRoutesModel = TBMLinesRoutesModelInit(this.app.get("sourceDBConn"));
+    this.TBMLinesModel = TBMLinesModelInit(this.app.get("sourceDBConn"));
+    this.SNCFStopsModel = SNCFStopsModelInit(this.app.get("sourceDBConn"));
+    this.NonScheduledRoutesModel = NonScheduledRoutesModelInit(this.app.get("sourceDBConn"));
+    this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("sourceDBConn"));
+  }
+
+  private populateResult(result: dbComputeResult): Promise<Itinerary["paths"]> {
+    return mapAsync(result.journeys, async (j) => {
+      const from = isLocationAddress(result.from)
+        ? formatAddress((await this.AddressesModel.findById(result.from.id).lean())!)
+        : isLocationTBM(result.from)
+          ? (await this.TBMStopsModel.findById(result.from.id).lean())?.libelle
+          : isLocationSNCF(result.from)
+            ? (await this.SNCFStopsModel.findById(result.from.id).lean())?.name
+            : null;
+
+      if (!from) throw new GeneralError("Could not populate journey.");
+
+      return {
+        departure: j[0].time,
+        from,
+        stages: await mapAsync<LabelFoot | LabelVehicle, Itinerary["paths"][number]["stages"][number]>(
+          j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {
+            if (!isLabelFoot(l) && !isLabelVehicle(l)) throw new Error("Unexpected journey.");
+            return true;
+          }),
+          async (l, i, arr) => {
+            const to =
+              i === arr.length - 1
+                ? isLocationAddress(result.to)
+                  ? formatAddress((await this.AddressesModel.findById(result.to.id).lean())!)
+                  : isLocationTBM(result.to)
+                    ? (await this.TBMStopsModel.findById(result.to.id).lean())?.libelle
+                    : isLocationSNCF(result.to)
+                      ? (await this.SNCFStopsModel.findById(result.to.id).lean())?.name
+                      : null
+                : isLabelFoot(l)
+                  ? typeof l.transfer.to === "number"
+                    ? (await this.TBMStopsModel.findById(l.transfer.to).lean())?.libelle
+                    : l.transfer.to
+                  : typeof arr[i + 1].boardedAt === "number"
+                    ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
+                    : (arr[i + 1].boardedAt as string);
+
+            if (!to) throw new GeneralError("Could not populate journey.");
+
+            if (isLabelFoot(l)) {
+              return {
+                to,
+                type: "FOOT",
+                // m / m*s-1 = s
+                duration: l.transfer.length / result.settings.walkSpeed,
+                details: {
+                  distance: l.transfer.length,
+                },
+              } satisfies Itinerary["paths"][number]["stages"][number];
+            }
+
+            // Only remaining possibility
+            if (!isLabelVehicle(l)) throw new GeneralError("Unexpected error while populating journey");
+            const scheduledRoute = (await this.TBMScheduledRoutesModel.findById(l.route).lean())!;
+
+            // Can only be first label of journey, ignored in `arr` by `slice(1)`
+            if (typeof l.boardedAt === "string")
+              throw new GeneralError("Unexpected error while populating journey");
+
+            const departureTime = (await this.TBMSchedulesModel.findById(
+              scheduledRoute.trips[l.tripIndex].schedules[scheduledRoute.stops.indexOf(l.boardedAt)],
+            ).lean())!.hor_estime.getTime();
+
+            const lineRoute = await this.TBMLinesRoutesModel.findById(l.route, undefined, {
+              populate: ["rs_sv_ligne_a"],
+            });
+            if (!lineRoute || !isDocument(lineRoute.rs_sv_ligne_a))
+              throw new GeneralError("Unexpected error while populating journey");
+
+            return {
+              to,
+              type: "TBM",
+              // Arrival - departure, in sec
+              duration: (l.time - departureTime) / 1e3,
+              details: {
+                departure: departureTime,
+                direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
+                line: lineRoute.rs_sv_ligne_a.libelle,
+                type: lineRoute.vehicule,
+              },
+            } satisfies Itinerary["paths"][number]["stages"][number];
+          },
+        ),
+      };
+    });
   }
 
   async get(id: Id, _params?: ServiceParams): Promise<Itinerary> {
     switch (id) {
       case "paths": {
+        if (!_params || !_params.query || !("from" in _params.query && "to" in _params.query))
+          throw new BadRequest(`Missing parameter(s).`);
+
         const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
-        return new Promise((res) => {
-          if (!_params || !(_params.query?.from && _params.query?.to))
-            throw new BadRequest(`Missing parameter(s).`);
+        const force = (_params && _params.query?.force) ?? false;
 
-          const endpoints = this.app.externalAPIs.endpoints.filter((endpoint) => endpoint.rate < 24 * 3600);
-          let count = 0;
-          let lastActualization = 0;
-          //ask for possible non-daily data actualization
-          for (const endpoint of endpoints) {
-            this.app
-              .service("refresh-data")
-              .get(endpoint.name, {
-                query: {
-                  waitForUpdate: _params.query?.waitForUpdate ?? false,
-                  force: _params.query?.force ?? false,
-                },
-              })
-              .then(() => {
-                if (waitForUpdate) lastActualization = Date.now();
-              })
-              .catch((r) => {
-                if (waitForUpdate && r.data.lastActualization > lastActualization)
-                  lastActualization = r.data.lastActualization;
-              })
-              .finally(() => {
-                if (waitForUpdate) {
-                  count++;
-                  if (count === endpoints.length) compute();
-                }
-              });
-          }
+        const RAPTORSettings: JobData<"compute">[3] = {};
+        if (_params.query.walkSpeed) RAPTORSettings.walkSpeed = _params.query.walkSpeed;
 
-          if (!waitForUpdate) compute();
+        const params: Parameters<
+          ReturnType<typeof this.app.get<"computeInstance">>["app"]["computeFullJourney"]
+        > = [
+          _params.query.from,
+          _params.query.to,
+          new Date(_params.query.departureTime ?? Date.now()),
+          RAPTORSettings,
+        ];
 
-          //temporary
-          function compute() {
-            res({
-              code: 200,
-              message: "Should calculate rust best itineraries, but OK.",
-              lastActualization,
-              paths: [
-                {
-                  id: "6541ed4dze", //unique ID referencing result in Database. Allows result to be saved.
-                  totalDuration: 1563, //seconds
-                  totalDistance: 34230, //meters
-                  departure: Date.now(),
-                  from: "4 Rue du Pont de la Grave Bègles",
-                  stages: [
-                    { type: "FOOT", to: "France Alouette", duration: 163, details: { distance: 150 } },
-                    {
-                      type: "TBM",
-                      to: "Village Cap de Bos",
-                      duration: 365,
-                      details: {
-                        type: "BUS",
-                        line: "44",
-                        direction: "Pessac Candau",
-                        departure: Date.now() + 163 * 1000,
-                      },
-                    },
-                    { type: "FOOT", to: "France Alouette", duration: 324, details: { distance: 221 } },
-                    {
-                      type: "SNCF",
-                      to: "France Alouette",
-                      duration: 850,
-                      details: {
-                        type: "TRAIN",
-                        line: "TER-NA",
-                        direction: "Bordeaux Saint-Jean",
-                        departure: Date.now() + 528 * 1000,
-                      },
-                    },
-                    {
-                      type: "FOOT",
-                      to: "Lycée Général et Technologique Pape Clément",
-                      duration: 185,
-                      details: { distance: 168 },
-                    },
-                  ],
-                },
-              ],
-            });
-          }
-        });
+        const endpoints = this.app.externalAPIs.endpoints.filter((endpoint) => endpoint.rate < 24 * 3600);
+        let lastActualization = 0;
+        const actualization = mapAsync(endpoints, (e) =>
+          this.app
+            .service("refresh-data")
+            .get(e.name, {
+              query: {
+                waitForUpdate,
+                force,
+              },
+            })
+            .catch((r) => {
+              if (
+                waitForUpdate &&
+                hasData(r) &&
+                hasLastActualization(r.data) &&
+                r.data.lastActualization > lastActualization
+              )
+                lastActualization = r.data.lastActualization;
+            }),
+        );
+
+        if (waitForUpdate) {
+          // Ask for a possible non-daily data actualization
+          await actualization;
+          lastActualization = Date.now();
+        }
+
+        const job = (await this.app.get("computeInstance").app.computeFullJourney(...params)).job;
+        let resultId: (typeof job)["returnvalue"];
+
+        try {
+          resultId = await job.waitUntilFinished(this.app.get("computeInstance").app.queuesEvents[0]);
+        } catch (e) {
+          throw new GeneralError("Error while computing paths", e);
+        }
+
+        const result = await this.resultModel.findById(resultId);
+        if (!result) throw new GeneralError("Internal error while retrieving results");
+
+        return {
+          code: 200,
+          message: "OK",
+          lastActualization,
+          id: resultId,
+          paths: await this.populateResult(result),
+        };
       }
+
+      case "oldResult": {
+        if (!_params || !_params.query || !("id" in _params.query))
+          throw new BadRequest(`Missing "id" parameter.`);
+
+        const result = await this.resultModel.findById(_params.query.id);
+        if (!result) throw new NotFound("Unknown result.");
+
+        return {
+          code: 200,
+          message: "OK",
+          lastActualization: 0,
+          id: _params.query.id,
+          paths: await this.populateResult(result),
+        };
+      }
+
       default:
         throw new NotFound("Unknown command.");
     }

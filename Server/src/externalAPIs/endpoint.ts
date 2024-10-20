@@ -1,14 +1,17 @@
 import { EndpointName, ProviderModel } from ".";
 import { logger } from "../logger";
-import { Deferred } from "../utils/index";
+import { Deferred } from "common/async";
 import { TypedEventEmitter } from "../utils/TypedEmitter";
 
-type EndpointEvents = {
+interface EndpointEvents {
   fetch: () => void;
   fetched: (success: boolean) => void;
-};
+}
 
-export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
+export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
+  EndpointEvents,
+  keyof EndpointEvents
+> {
   private deferredFetch: Deferred<boolean>;
   private _fetching = false;
   /** Timestamp of last fetch (succeed or failed) */
@@ -60,15 +63,21 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     let result = false;
     try {
       const r = await this._fetch();
+
       if (debug) logger.info(`Refreshed ${this.name}.`);
+
       this._lastFetch = Date.now();
       result = r;
     } catch (e) {
       if (debug) logger.error(`Fetch failed for ${this.name}`, e);
+
       result = false;
     } finally {
       this._fetching = false;
-      result ? this.deferredFetch.resolve(true) : this.deferredFetch.reject(false);
+
+      if (result) this.deferredFetch.resolve(true);
+      else this.deferredFetch.reject(false);
+
       super.emit("fetched", result);
     }
 

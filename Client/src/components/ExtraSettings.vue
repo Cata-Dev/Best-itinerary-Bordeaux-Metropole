@@ -56,11 +56,11 @@ onUpdated(() => {
       <div class="m-2">
         <div class="flex flex-col">
           <div class="flex items-center">
-            <p class="mr-2">Heure de départ</p>
+            <p class="mr-2">Date de départ</p>
             <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
               <input
                 v-model="settings.departureTime"
-                type="time"
+                type="datetime-local"
                 class="bg-transparent text-inherit time"
                 :class="{ dark: theme === 'dark' }"
                 @input="$emit('update:modelValue', settings)"
@@ -139,7 +139,7 @@ onUpdated(() => {
           <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
             <input
               v-model="settings.departureTime"
-              type="time"
+              type="datetime-local"
               class="bg-transparent text-inherit time"
               :class="{ dark: theme === 'dark' }"
               @input="$emit('update:modelValue', settings)"
@@ -197,9 +197,5 @@ onUpdated(() => {
 <style scoped>
 .time.dark::-webkit-calendar-picker-indicator {
   filter: invert(90%);
-}
-
-.time::-webkit-datetime-edit {
-  max-width: 5ch;
 }
 </style>

@@ -1,8 +1,9 @@
 import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { HydratedDocument } from "mongoose";
+import { mapAsync } from "common/async";
 import { TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps, mapAsync } from "../../../utils";
+import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/lib/models/TBM/TBM_schedules.model";
 import { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
@@ -15,7 +16,7 @@ export default (
   TBM_schedulesRtEndpointInstantiated: Endpoint<TBMEndpoints.Schedules_rt>,
   TBM_tripsEndpointInstantiated: Endpoint<TBMEndpoints.Trips>,
 ) => {
-  const ScheduledRoute = TBM_Scheduled_routes(app.get("mongooseClient"));
+  const ScheduledRoute = TBM_Scheduled_routes(app.get("sourceDBConn"));
 
   return [
     new Endpoint(
@@ -25,17 +26,17 @@ export default (
         const routeProjection = {
           _id: 1,
         };
-        const routes = (await TBM_lines_routesEndpointInstantiated.model
+        const routes = await TBM_lines_routesEndpointInstantiated.model
           .find<HydratedDocument<Pick<dbTBM_Lines_routes, keyof typeof routeProjection>>>({}, routeProjection)
-          .lean()) as Pick<dbTBM_Lines_routes, keyof typeof routeProjection>[];
+          .lean();
 
         const fillSchedule =
           (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
           (await TBM_schedulesRtEndpointInstantiated.model.create({
             gid: Infinity,
-            hor_theo: new Date(8_640_000_000_000_000),
-            hor_app: new Date(8_640_000_000_000_000),
-            hor_estime: new Date(8_640_000_000_000_000),
+            hor_theo: new Date(0),
+            hor_app: new Date(0),
+            hor_estime: new Date(0),
             realtime: true,
             etat: RtScheduleState.Realise,
             type: RtScheduleType.Regulier,
@@ -53,7 +54,7 @@ export default (
           rs_sv_arret_p: 1,
         };
 
-        const scheduledRoutes: dbTBM_ScheduledRoutes[] = new Array(routes.length);
+        const scheduledRoutes = new Array<dbTBM_ScheduledRoutes>(routes.length);
         for (const [i, route] of routes.entries()) {
           const relevantTrips = await TBM_tripsEndpointInstantiated.model
             .find<
@@ -144,7 +145,7 @@ export function TBMScheduledRoutesEndpointHook(app: Application) {
     if (!success && refreshAvoided < (ScheduledRoutesEndpoint?.lastFetch ?? Infinity)) return;
     if (endpointsForScheduledRoutes.find((e) => e.name != fetchedEndpoint.name && e.fetching))
       return (refreshAvoided = Date.now());
-    ScheduledRoutesEndpoint?.fetch(true, app.get("debug"));
+    void ScheduledRoutesEndpoint?.fetch(true, app.get("debug"));
   };
   endpointsForScheduledRoutes.forEach((e) => e.on("fetched", listener(e)));
 }

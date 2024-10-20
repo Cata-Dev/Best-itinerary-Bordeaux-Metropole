@@ -15,8 +15,17 @@ export interface RefreshDataParams extends Params<RefreshDataQuery> {}
 
 import { Forbidden, GeneralError, NotFound } from "@feathersjs/errors";
 
+export function hasLastActualization(obj: unknown): obj is { lastActualization: number } {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "lastActualization" in obj &&
+    typeof obj.lastActualization == "number"
+  );
+}
+
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class RefreshDataService<ServiceParams extends Params = RefreshDataParams>
+export class RefreshDataService<ServiceParams extends RefreshDataParams = RefreshDataParams>
   implements ServiceInterface<RefreshData, RefreshDataData, ServiceParams, RefreshDataPatch>
 {
   private readonly app: Application;
@@ -29,79 +38,89 @@ export class RefreshDataService<ServiceParams extends Params = RefreshDataParams
     const endpoints = this.app.externalAPIs.endpoints;
     const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
     const force = (_params && _params.query?.force) ?? false;
-    const matchingEndpoint = endpoints.find((endpoint) => endpoint.name === id);
 
-    if (id === "all") {
+    if (id === "all")
       return new Promise((res) => {
-        let sucess = 0;
+        let success = 0;
         let count = 0;
         let lastActualization = 0;
+
         for (const endpoint of endpoints) {
           this.get(endpoint.name, _params)
             .then((r) => {
-              if (r.actualized) sucess++, (lastActualization = Date.now());
+              if (r.actualized) {
+                success++;
+                lastActualization = Date.now();
+              }
               lastActualization = Date.now();
             })
             .catch((r) => {
-              if (r.lastActualization > lastActualization) lastActualization = r.lastActualization;
+              if (hasLastActualization(r) && r.lastActualization > lastActualization)
+                lastActualization = r.lastActualization;
             })
             .finally(() => {
               if (waitForUpdate) {
                 count++;
                 if (count === endpoints.length)
-                  //every update ended
+                  // Every update ended
                   res({
-                    actualized: sucess,
+                    actualized: success,
                     lastActualization: lastActualization,
                   });
               }
             });
         }
+
         if (!waitForUpdate)
           res({
-            //we don't know anything
+            // We don't know anything
             actualized: null,
             lastActualization: 0,
           });
       });
-    } else if (matchingEndpoint) {
-      if (matchingEndpoint.fetching) {
-        if (waitForUpdate) await matchingEndpoint.fetchPromise;
-        throw new Forbidden({
-          actualized: false,
-          lastActualization: matchingEndpoint.lastFetch,
-          Reason: `Actualization of ${matchingEndpoint.name} ${waitForUpdate ? "was" : "is"} ongoing.`,
-        });
-      }
-      if (_params && _params.query?.force !== true && matchingEndpoint.onCooldown)
-        throw new Forbidden({
-          actualized: false,
-          lastActualization: matchingEndpoint.lastFetch,
-          Reason: `Actualization of ${matchingEndpoint.name} is on cooldown.`,
-        });
 
-      if (waitForUpdate) {
-        let r = false;
-        try {
-          r = await matchingEndpoint.fetch(force, this.app.get("debug"));
-          return {
-            actualized: r,
-            lastActualization: matchingEndpoint.lastFetch,
-          };
-        } catch (e) {
-          throw new GeneralError(JSON.stringify(e), {
-            actualized: false,
-            lastActualization: matchingEndpoint.lastFetch,
-          });
-        }
-      } else {
-        matchingEndpoint.fetch(force, this.app.get("debug"));
+    const matchingEndpoint = endpoints.find((endpoint) => endpoint.name === id);
+    if (!matchingEndpoint) throw new NotFound(`Unknown endpoint.`);
+
+    if (matchingEndpoint.fetching) {
+      if (waitForUpdate) await matchingEndpoint.fetchPromise;
+      throw new Forbidden({
+        actualized: false,
+        lastActualization: matchingEndpoint.lastFetch,
+        Reason: `Actualization of ${matchingEndpoint.name} ${waitForUpdate ? "was" : "is"} ongoing.`,
+      });
+    }
+
+    if (_params && _params.query?.force !== true && matchingEndpoint.onCooldown)
+      throw new Forbidden({
+        actualized: false,
+        lastActualization: matchingEndpoint.lastFetch,
+        Reason: `Actualization of ${matchingEndpoint.name} is on cooldown.`,
+      });
+
+    if (waitForUpdate) {
+      let r = false;
+
+      try {
+        r = await matchingEndpoint.fetch(force, this.app.get("debug"));
         return {
-          actualized: null, //we don't know anything
+          actualized: r,
           lastActualization: matchingEndpoint.lastFetch,
         };
+      } catch (e) {
+        throw new GeneralError(JSON.stringify(e), {
+          actualized: false,
+          lastActualization: matchingEndpoint.lastFetch,
+        });
       }
-    } else throw new NotFound(`Unknown endpoint.`);
+    }
+
+    void matchingEndpoint.fetch(force, this.app.get("debug"));
+    return {
+      // We don't know anything
+      actualized: null,
+      lastActualization: matchingEndpoint.lastFetch,
+    };
   }
 }
 

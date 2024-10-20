@@ -19,7 +19,7 @@ export type Addresse = BaseTBM<{
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
-  const Address = TBM_Addresses(app.get("mongooseClient"));
+  const Address = TBM_Addresses(app.get("sourceDBConn"));
 
   return [
     new Endpoint(

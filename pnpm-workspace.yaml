@@ -2,3 +2,5 @@ packages:
   - Data
   - Server
   - Client
+  - Compute
+  - Common

@@ -1,0 +1,40 @@
+{
+  "name": "common",
+  "version": "1.0.0",
+  "description": "Common files for BIBM",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "require": "./lib/cjs/index.js",
+      "import": "./lib/esm/index.js",
+      "default": "./lib/esm/index.js"
+    },
+    "./*": {
+      "types": "./lib/types/*.d.ts",
+      "require": "./lib/cjs/*.js",
+      "import": "./lib/esm/*.js",
+      "default": "./lib/esm/*.js"
+    }
+  },
+  "files": [
+    "lib/"
+  ],
+  "scripts": {
+    "build": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json && node ./scripts/prepare-package-json.js",
+    "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
+    "type-check": "tsc -noEmit",
+    "lint": "eslint ./src/ --fix",
+    "full-lint": "pnpm run lint && pnpm run type-check",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "pnpm run build"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.19.54",
+    "eslint": "^9.12.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.8.1"
+  }
+}

@@ -2,9 +2,11 @@ import { SNCFEndpoints } from "data/lib/models/SNCF/names";
 export { SNCFEndpoints };
 
 import axios from "axios";
+import { unique } from "common/filters";
+import { WGSToLambert93 } from "common/geographics";
 import { Application } from "../../declarations";
 import { Endpoint } from "../endpoint";
-import { bulkOps, unique, WGSToLambert93 } from "../../utils";
+import { bulkOps } from "../../utils";
 import SNCF_Schedules, {
   dbSNCF_Schedules,
   dbSNCF_SchedulesModel,
@@ -129,8 +131,8 @@ interface SNCF_Stop {
 export default (app: Application) => {
   logger.log(`Initializing SNCF models...`);
 
-  const Schedule = SNCF_Schedules(app.get("mongooseClient"));
-  const Stop = SNCF_Stops(app.get("mongooseClient"));
+  const Schedule = SNCF_Schedules(app.get("sourceDBConn"));
+  const Stop = SNCF_Stops(app.get("sourceDBConn"));
 
   logger.info(`Models initialized.`);
 
@@ -144,18 +146,18 @@ export default (app: Application) => {
    * @param {Array} feature
    * @param {Array} queries
    */
-  async function getData(
-    paths: { [k: string]: string },
+  async function getData<T>(
+    paths: Record<string, string>,
     feature: string,
-    queries: { [k: string]: string | number } = {},
-  ) {
+    queries: Record<string, string | number> = {},
+  ): Promise<T> {
     const bURL = "https://api.sncf.com/v1";
     const url = `/${Object.keys(paths)
       .map((k) => `${k}/${paths[k]}`)
-      .join("/")}/${feature}?key=${app.get("SNCFkey")}&${Object.keys(queries)
+      .join("/")}/${feature}?key=${app.get("server").SNCFkey}&${Object.keys(queries)
       .map((k) => `${k}=${queries[k]}`)
       .join("&")}`;
-    const { data } = await axios.get(`${bURL}${url}`);
+    const { data }: { data: T } = await axios.get(`${bURL}${url}`);
     return data;
   }
 
@@ -165,8 +167,8 @@ export default (app: Application) => {
       20,
       async () => {
         const date = formatSNCFdate(new Date());
-        const route_schedules: SNCF_Schedule[] = (
-          await getData(
+        const route_schedules = (
+          await getData<{ route_schedules: SNCF_Schedule[] }>(
             {
               coverage: "sncf",
               coord: "-0.61439;44.82321", //middle of BM
@@ -184,14 +186,12 @@ export default (app: Application) => {
 
         const schedules: dbSNCF_Schedules[] = [];
         for (const route_schedule of route_schedules) {
-          for (const i in route_schedule.table.rows) {
+          route_schedule.table.rows.forEach((row) => {
             //iterate through rows of schedules table
-            const row = route_schedule.table.rows[i];
             const stop_point = parseInt(row.stop_point.id.substring(16, 24));
-            for (const j in row.date_times) {
+            row.date_times.forEach((schedule, j) => {
               //now iterate through columns
-              const schedule = row.date_times[j];
-              if (!schedule.data_freshness) continue; //empty cell in schedules table
+              if (!schedule.data_freshness) return; //empty cell in schedules table
               const header = route_schedule.table.headers[j]; //header of the actual column
               const route = `${route_schedule.display_informations.name}:${header.display_informations.direction}`;
               const trip = parseInt(header.display_informations.trip_short_name);
@@ -202,8 +202,8 @@ export default (app: Application) => {
                 stop_point,
                 route,
               });
-            }
-          }
+            });
+          });
         }
 
         await Schedule.deleteMany({
@@ -222,8 +222,8 @@ export default (app: Application) => {
       SNCFEndpoints.Stops,
       24 * 3600,
       async () => {
-        const rawStops: SNCF_Stop[] = (
-          await getData(
+        const rawStops = (
+          await getData<{ stop_points: SNCF_Stop[] }>(
             {
               coverage: "sncf",
               coord: "-0.61439;44.82321", //middle of BM
@@ -240,7 +240,7 @@ export default (app: Application) => {
         const Stops: dbSNCF_Stops[] = rawStops
           .map((stop) => {
             return {
-              _id: parseInt(stop["id"].substring(16, 24)),
+              _id: parseInt(stop.id.substring(16, 24)),
               coords: WGSToLambert93(parseFloat(stop.coord.lat), parseFloat(stop.coord.lon)),
               name: stop.name,
               name_lowercase: stop.name.toLowerCase(),

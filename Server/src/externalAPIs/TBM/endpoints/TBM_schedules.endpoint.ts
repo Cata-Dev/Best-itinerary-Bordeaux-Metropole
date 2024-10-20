@@ -25,15 +25,15 @@ export type TBM_Schedule_rt = TBM_Schedule &
   }>;
 
 export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
-  const [Schedule, ScheduleRt] = TBM_Schedules(app.get("mongooseClient"));
+  const [Schedule, ScheduleRt] = TBM_Schedules(app.get("sourceDBConn"));
 
   // Data needed
   return [
     new Endpoint(
       TBMEndpoints.Schedules,
       24 * 3600,
-      async () => {
-        return true;
+      () => {
+        return new Promise<true>((res) => res(true));
       },
       Schedule,
     ),

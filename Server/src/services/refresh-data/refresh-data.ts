@@ -1,7 +1,7 @@
 // For more information about this file see https://dove.feathersjs.com/guides/cli/service.html
 
 import { hooks as schemaHooks } from "@feathersjs/schema";
-import { disallow } from "feathers-hooks-common";
+import { disallow, iff } from "feathers-hooks-common";
 
 import {
   refreshDataQueryValidator,
@@ -36,11 +36,10 @@ export function refreshData(app: Application) {
     },
     before: {
       all: [
-        disallow("external"),
         schemaHooks.validateQuery(refreshDataQueryValidator),
         schemaHooks.resolveQuery(refreshDataQueryResolver),
       ],
-      get: [],
+      get: [iff((context) => context.params.query?.force ?? false, disallow("external"))],
     },
     after: {
       all: [],
