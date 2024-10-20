@@ -1,20 +1,12 @@
 import { feathers } from "@feathersjs/feathers";
 
-import { join, delimiter } from "path";
-process.env.NODE_CONFIG_DIR = [
-  join(__dirname, "../../../Data/config/"),
-  join(__dirname, "../../config/"),
-  // In ts-node
-  join(__dirname, "../../Data/config/"),
-  join(__dirname, "../config/"),
-].join(delimiter);
-
-import configuration from "@feathersjs/configuration";
 import { koa, rest, bodyParser, errorHandler, parseAuthentication, cors } from "@feathersjs/koa";
 import socketio from "@feathersjs/socketio";
 
 import type { Application, HookContext, NextFunction } from "./declarations";
 import { configurationValidator } from "./configuration";
+// Import after ../configuration which defines configuration path
+import configuration from "@feathersjs/configuration";
 import { errorHandler as errorHandlerHook, log } from "./hooks";
 
 // Needed to solve Reflect import for typegoose

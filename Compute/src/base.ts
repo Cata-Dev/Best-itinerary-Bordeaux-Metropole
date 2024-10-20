@@ -1,7 +1,7 @@
 import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
 import { makeLogger } from "common/logger";
 import { ItineraryQuery } from "server";
-import config from "data/config/default.json";
+import { config } from "data/lib/config";
 import { mapAsync } from "./utils/asyncs";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
 import { RAPTORRunSettings } from "raptor";
