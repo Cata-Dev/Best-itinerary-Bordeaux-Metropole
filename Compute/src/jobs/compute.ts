@@ -243,7 +243,9 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
             : pt.type === TBMEndpoints.Stops
               ? ({ type: LocationType.TBM, id: pt.id } satisfies LocationTBM)
               : ({ type: LocationType.SNCF, id: pt.id } satisfies LocationSNCF),
-        journeys: [fastestJourney, shortestJourney].map((j) => journeyDBFormatter(j)),
+        journeys: [fastestJourney, ...(shortestJourney === fastestJourney ? [] : [shortestJourney])].map(
+          (j) => journeyDBFormatter(j),
+        ),
         settings,
       });
 
