@@ -26,13 +26,20 @@ const colors = {
   reverse: "\x1b[7m",
   hidden: "\x1b[8m",
 };
+
 type Colors = keyof typeof colors;
+
 type colorFunctions = Record<Colors, (s: string | number) => string>;
-export const colorFunctions: colorFunctions = (Object.keys(colors) as Colors[]).reduce((acc: Partial<colorFunctions>, k: Colors) => {
-  return {
-    ...acc,
-    [k]: (s: string | number) =>
-      // eslint-disable-next-line no-control-regex
-      `${colors[k]}${s.toString().replace(/(\\x1b|)\[0m/g, "")}\x1b[0m`,
-  };
-}, {}) as colorFunctions;
+const colorFunctions: colorFunctions = (Object.keys(colors) as Colors[]).reduce(
+  (acc: Partial<colorFunctions>, k: Colors) => {
+    return {
+      ...acc,
+      [k]: (s: string | number) =>
+        // eslint-disable-next-line no-control-regex
+        `${colors[k]}${s.toString().replace(/(\\x1b|)\[0m/g, "")}\x1b[0m`,
+    };
+  },
+  {},
+) as colorFunctions;
+
+export { colorFunctions };

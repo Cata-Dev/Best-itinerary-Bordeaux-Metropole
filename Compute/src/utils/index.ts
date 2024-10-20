@@ -1,7 +1,7 @@
 import type { Ref } from "@typegoose/typegoose";
 import type { RefType } from "@typegoose/typegoose/lib/types";
 
-export type unpackRefType<T> =
+type UnpackRefType<T> =
   T extends Ref<infer D>
     ? D extends {
         _id?: RefType;
@@ -16,7 +16,7 @@ export type unpackRefType<T> =
         : never
       : never;
 
-export type populateRef<T> = T extends Ref<infer D> ? D : T extends Ref<infer D>[] ? D[] : never;
+type PopulateRef<T> = T extends Ref<infer D> ? D : T extends Ref<infer D>[] ? D[] : never;
 
 /**
  * @description Search for a value in a **sorted** array, in O(log2(n)).
@@ -29,7 +29,7 @@ export type populateRef<T> = T extends Ref<infer D> ? D : T extends Ref<infer D>
  *    - a positive number of `a` is after `b`.
  * @returns The index of el if positive ; index of insertion if negative
  */
-export function binarySearch<T, C>(arr: T[], el: C, compare: (a: C, b: T) => number) {
+function binarySearch<T, C>(arr: T[], el: C, compare: (a: C, b: T) => number) {
   let low = 0;
   let high = arr.length - 1;
   while (low <= high) {
@@ -52,10 +52,12 @@ export function binarySearch<T, C>(arr: T[], el: C, compare: (a: C, b: T) => num
  * @param defaults Default properties
  * @returns New object based from {@link obj} with initialized properties
  */
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
-export function withDefaults<O extends object>(obj: Partial<O>, defaults: O): O {
+function withDefaults<O extends object>(obj: Partial<O>, defaults: O): O {
   return (Object.keys(defaults) as (keyof O)[]).reduce(
     (acc, k) => (k in acc ? acc : ((acc[k] = defaults[k]), acc)),
     structuredClone(obj),
   ) as O;
 }
+
+export { binarySearch, withDefaults };
+export type { UnpackRefType, PopulateRef };

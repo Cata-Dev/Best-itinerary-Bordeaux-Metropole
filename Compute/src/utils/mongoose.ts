@@ -1,7 +1,7 @@
 import { createConnection } from "mongoose";
-import type { Application } from "../base";
+import type { Application, BaseApplication } from "../base";
 
-export async function initDB(app: Application, db: Application["config"]["sourceDataDB" | "mainDB"]) {
+export async function initDB(app: BaseApplication, db: Application["config"]["sourceDB" | "computeDB"]) {
   const connection = createConnection(
     app.config.dbAddress + db,
     //{ useNewUrlParser: true }
@@ -9,7 +9,7 @@ export async function initDB(app: Application, db: Application["config"]["source
 
   await connection.asPromise();
 
-  console.info(`Database ${connection.db.databaseName} connected.`);
+  app.logger.log(`Database ${connection.db?.databaseName ?? "UNKNOWN"} connected.`);
 
   return connection;
 }

@@ -3,213 +3,295 @@ import { initDB } from "../utils/mongoose";
 // Needed to solve "Reflect.getMetadata is not a function" error of typegoose
 import "core-js/features/reflect";
 
-import stopsModelInit, { dbTBM_Stops } from "data/lib/models/TBM/TBM_stops.model";
-import type { dbTBM_ScheduledRoutes } from "data/lib/models/TBM/TBMScheduledRoutes.model";
-import TBMScheduledRoutesModelInit from "data/lib/models/TBM/TBMScheduledRoutes.model";
-import type { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";
-import NonScheduledRoutesModelInit from "data/lib/models/TBM/NonScheduledRoutes.model";
+import type { RAPTORRunSettings } from "raptor";
+import SharedRAPTOR from "raptor/lib/shared";
+import { Stop } from "raptor/lib/Structures";
+import { SharedRAPTORData } from "raptor/lib/SharedStructures";
+import { defaultRAPTORRunSettings } from "data/lib/values/RAPTOR";
 import ResultModelInit, {
   JourneyLabelType,
   LabelBase,
+  LabelFoot,
+  LabelVehicle,
+  LocationAddress,
+  LocationSNCF,
+  LocationTBM,
+  LocationType,
   dbComputeResult,
-  routeId,
-  stopId,
 } from "data/lib/models/Compute/result.model";
-import type { FilterQuery } from "mongoose";
-import type { DocumentType } from "@typegoose/typegoose";
-import { withDefaults, type populateRef, type unpackRefType } from "../utils";
-import type { Journey, RAPTORRunSettings } from "raptor";
-import RAPTOR from "raptor";
-import type { Stop as RAPTORStop } from "raptor/lib/Structures";
-import { defaultRAPTORRunSettings } from "data/lib/values/RAPTOR";
-import { MAX_SAFE_TIMESTAMP } from "raptor/lib/Structures";
-import { mapAsync } from "../utils/asyncs";
+import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
+import { ItineraryQuery } from "server";
+import type { BaseApplication } from "../base";
+import { withDefaults } from "../utils";
+import type { JobFn, JobResult } from ".";
+import { DocumentType } from "@typegoose/typegoose";
+import { TBMEndpoints } from "server/externalAPIs/TBM/index";
 
 declare module "." {
   interface Jobs {
-    compute: (ps: stopId, pt: stopId, date: Date, settings: Partial<RAPTORRunSettings>) => number;
+    compute: (
+      ps: Extract<ItineraryQuery, { from: unknown }>["from"],
+      pt: Extract<ItineraryQuery, { to: unknown }>["to"],
+      date: Date,
+      settings: Partial<RAPTORRunSettings>,
+    ) => DocumentType<dbComputeResult>["_id"];
   }
 }
 
-import type { Application } from "../base";
-import type { jobFn } from ".";
+type DBJourney = (LabelBase | LabelFoot | LabelVehicle)[];
+function journeyDBFormatter(j: NonNullable<ReturnType<SharedRAPTOR["getBestJourneys"]>[number]>): DBJourney {
+  return j.map((label) => {
+    if ("transfer" in label) {
+      return {
+        ...label,
+        type: JourneyLabelType.Foot,
+      } satisfies LabelFoot;
+    }
 
-/** DB Types */
+    if ("route" in label) {
+      if (typeof label.route.id === "string") throw new Error("Invalid route to retrieve.");
 
-type dbTBM_Schedules_rt = populateRef<dbScheduledRoute["trips"][number]["schedules"]>[number];
-// Schedules
-const dbSchedulesProjection = { hor_app: 1, hor_estime: 1 } satisfies Partial<
-  Record<keyof dbTBM_Schedules_rt, 1>
->;
-type dbScheduleRt = Pick<dbTBM_Schedules_rt, keyof typeof dbSchedulesProjection>;
+      return {
+        ...label,
+        route: label.route.id,
+        type: JourneyLabelType.Vehicle,
+      } satisfies LabelVehicle;
+    }
 
-// Scheduled Routes
-const dbScheduledRoutesProjection = { _id: 1, stops: 1, trips: 1 } satisfies Partial<
-  Record<keyof dbTBM_ScheduledRoutes, 1>
->;
-type dbScheduledRoute = Pick<dbTBM_ScheduledRoutes, keyof typeof dbScheduledRoutesProjection>;
-interface ScheduledRoutesOverwritten /* extends dbTBM_ScheduledRoutes */ {
-  stops: unpackRefType<dbScheduledRoute["stops"]>;
-  trips: {
-    tripId: dbScheduledRoute["trips"][number]["tripId"];
-    // Not a Document because of lean
-    schedules: dbScheduleRt[];
-  }[];
-}
-type ScheduledRoute = Omit<dbScheduledRoute, keyof ScheduledRoutesOverwritten> & ScheduledRoutesOverwritten;
-
-// Stops
-const dbStopProjection = { _id: 1, coords: 1 };
-type Stop = Pick<dbTBM_Stops, keyof typeof dbStopProjection>;
-
-// Non Schedules Routes
-const dbNonScheduledRoutesProjection = { from: 1, to: 1, distance: 1 } satisfies Partial<
-  Record<keyof dbFootPaths, 1>
->;
-type dbNonScheduledRoute = Pick<dbFootPaths, keyof typeof dbNonScheduledRoutesProjection>;
-interface NonScheduledRoutesOverwritten extends dbNonScheduledRoute {
-  from: unpackRefType<dbNonScheduledRoute["from"]>;
-  to: unpackRefType<dbNonScheduledRoute["to"]>;
-}
-type NonScheduledRoute = Omit<dbNonScheduledRoute, keyof NonScheduledRoutesOverwritten> &
-  NonScheduledRoutesOverwritten;
-
-async function queryData(
-  stopsModel: ReturnType<typeof stopsModelInit>,
-  TBMScheduledRoutesModel: ReturnType<typeof TBMScheduledRoutesModelInit>,
-  NonScheduledRoutesModel: ReturnType<typeof NonScheduledRoutesModelInit>,
-) {
-  const dbScheduledRoutes = (await TBMScheduledRoutesModel.find<DocumentType<ScheduledRoute>>(
-    {},
-    dbScheduledRoutesProjection,
-  )
-    // Add ability to use binary search
-    .sort({ _id: 1 })
-    .populate("trips.schedules", { ...dbSchedulesProjection, _id: 0, __t: 0 })
-    .lean()
-    .exec()) as ScheduledRoute[];
-
-  const dbStops = (await stopsModel
-    .find<DocumentType<Stop>>({ coords: { $not: { $elemMatch: { $eq: Infinity } } } }, dbStopProjection)
-    .lean()
-    .exec()) as Stop[];
-
-  //Query must associate (s, from) AND (from, s) forall s in stops !
-  const dbNonScheduledRoutes = async (
-    stopId: NonScheduledRoutesOverwritten["from"],
-    additionalQuery: FilterQuery<dbNonScheduledRoute> = {},
-  ) =>
-    (
-      (await NonScheduledRoutesModel.find<DocumentType<NonScheduledRoute>>(
-        { $and: [{ $or: [{ from: stopId }, { to: stopId }] }, additionalQuery] },
-        { ...dbNonScheduledRoutesProjection, _id: 0 },
-      )
-        .lean()
-        .exec()) as NonScheduledRoute[]
-    ).map(({ from, to, distance }) => ({ distance, to: to === stopId ? from : to }));
-
-  return { dbScheduledRoutes, dbStops, dbNonScheduledRoutes };
+    return {
+      ...label,
+      type: JourneyLabelType.Base,
+    } satisfies LabelBase;
+  });
 }
 
-async function createRAPTOR({
-  dbScheduledRoutes,
-  dbStops,
-  dbNonScheduledRoutes,
-}: Pick<Awaited<ReturnType<typeof queryData>>, "dbNonScheduledRoutes" | "dbScheduledRoutes" | "dbStops">) {
-  const RAPTORInstance = new RAPTOR<stopId, routeId>(
-    await mapAsync<(typeof dbStops)[number], RAPTORStop<stopId, routeId>>(
-      dbStops,
-      async ({ _id, coords }) => ({
-        id: _id,
-        lat: coords[0],
-        long: coords[1],
-        connectedRoutes: dbScheduledRoutes
-          .filter((ScheduledRoute) => ScheduledRoute.stops.find((stopId) => stopId === _id))
-          .map(({ _id }) => _id),
-        transfers: (await dbNonScheduledRoutes(_id, { distance: { $lte: 1_000 } })).map(
-          ({ to, distance }) => ({
-            to,
-            length: distance,
+// Acts as a factory
+export default function (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) {
+  let RAPTORData = SharedRAPTORData.makeFromInternalData(data);
+  let RAPTORInstance = new SharedRAPTOR(RAPTORData);
+
+  const updateData = (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) => {
+    RAPTORData = SharedRAPTORData.makeFromInternalData(data);
+    RAPTORInstance = new SharedRAPTOR(RAPTORData);
+  };
+
+  const init = (async (app: BaseApplication) => {
+    const dataDB = await initDB(app, app.config.computeDB);
+    const resultModel = ResultModelInit(dataDB);
+
+    const sourceDataDB = await initDB(app, app.config.sourceDB);
+    const stops = stopsModelInit(sourceDataDB);
+
+    // https://www.mongodb.com/docs/manual/core/aggregation-pipeline-optimization/#-sort----limit-coalescence
+    const maxStopId = (await stops.find({}, { _id: 1 }).sort({ _id: -1 }).limit(1))[0]?._id ?? 0;
+
+    return async (job) => {
+      const {
+        data: [ps, pt, departureDateStr, reqSettings],
+      } = job;
+      let childrenResults:
+        | Awaited<ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>>[string][]
+        | null = null;
+
+      const attachStops = new Map<
+        keyof Awaited<
+          ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>
+        >[string]["distances"],
+        Stop<
+          keyof Awaited<
+            ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>
+          >[string]["distances"],
+          number
+        >
+      >();
+
+      let psId: Parameters<typeof RAPTORData.stops.get>[0] = -1;
+      // Need to insert point to be used as starting point in RAPTOR
+      if (ps.type === TBMEndpoints.Addresses) {
+        childrenResults = Object.values(await job.getChildrenValues<JobResult<"computeFpOTA">>());
+
+        // Must have been computing inside children jobs
+        const childrenResultPs = childrenResults.find((cr) => cr.alias === "ps")?.distances;
+        if (!childrenResultPs) throw new Error("Missing pre-computation for ps");
+
+        const psIdNumber = maxStopId + 1;
+
+        attachStops.set(psIdNumber, {
+          id: psIdNumber,
+          connectedRoutes: [],
+          transfers: Object.keys(childrenResultPs).map((k) => {
+            const sId = parseInt(k);
+
+            return { to: sId, length: childrenResultPs[sId] };
           }),
-        ),
-      }),
-    ),
-    dbScheduledRoutes.map(({ _id, stops, trips }) => [
-      _id,
-      stops,
-      trips.map(({ tripId, schedules }) => ({
-        id: tripId,
-        times: schedules.map((schedule) =>
-          // Take scheduled time by default
-          "hor_app" in schedule
-            ? [
-                schedule.hor_app.getTime() || MAX_SAFE_TIMESTAMP,
-                schedule.hor_app.getTime() || MAX_SAFE_TIMESTAMP,
-              ]
-            : [Infinity, Infinity],
-        ),
-      })),
-    ]),
-  );
+        });
 
-  return { RAPTORInstance };
-}
+        Object.keys(childrenResultPs).forEach((k) => {
+          const sId = parseInt(k);
 
-type DBJourney = LabelBase[];
-function journeyDBFormatter(j: Journey<stopId, routeId>): DBJourney {
-  return j.map<LabelBase>((label) => ({
-    ...label,
-    type: "transfer" in label ? JourneyLabelType.Foot : JourneyLabelType.Vehicle,
-  }));
-}
+          attachStops.set(sId, {
+            id: sId,
+            connectedRoutes: [],
+            transfers: [{ to: psIdNumber, length: childrenResultPs[sId] }],
+          });
+        });
 
-export default (async function (app: Application) {
-  // Init DB & models
-  const sourceDataDB = await initDB(app, app.config.sourceDataDB);
-  const stopsModel = stopsModelInit(sourceDataDB);
-  // TBMSchedulesModelInit(sourceDataDB);
-  const TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(sourceDataDB);
-  const NonScheduledRoutesModel = NonScheduledRoutesModelInit(sourceDataDB);
+        psId = SharedRAPTORData.serializeId(psIdNumber);
+      } else psId = (await stops.findOne({ coords: ps.coords }))?._id ?? -1;
 
-  const dataDB = await initDB(app, app.config.mainDB);
-  const resultModel = ResultModelInit(dataDB);
+      if (psId === -1) throw new Error("Cannot find ps");
 
-  const { RAPTORInstance } = await createRAPTOR(
-    await queryData(stopsModel, TBMScheduledRoutesModel, NonScheduledRoutesModel),
-  );
+      let ptId: Parameters<typeof RAPTORData.stops.get>[0] = -1;
+      // Need to insert point to be used as target point in RAPTOR
+      if (pt.type === TBMEndpoints.Addresses) {
+        childrenResults ??= Object.values(await job.getChildrenValues<JobResult<"computeFpOTA">>());
 
-  app.agenda.define(
-    "compute",
-    async ({
-      attrs: {
-        data: [ps, pt, departureDate, reqSettings],
-      },
-    }) => {
+        // Must have been computing inside children jobs
+        const childrenResultPt = childrenResults.find((cr) => cr.alias === "pt")?.distances;
+        if (!childrenResultPt) throw new Error("Missing pre-computation for pt");
+
+        const ptIdNumber = maxStopId + 2;
+
+        attachStops.set(ptIdNumber, {
+          id: ptIdNumber,
+          connectedRoutes: [],
+          transfers: Object.keys(childrenResultPt).map((k) => {
+            const sId = parseInt(k);
+
+            return { to: sId, length: childrenResultPt[sId] };
+          }),
+        });
+
+        Object.keys(childrenResultPt).forEach((k) => {
+          const sId = parseInt(k);
+
+          const alreadyAdded = attachStops.get(sId);
+
+          attachStops.set(sId, {
+            id: sId,
+            connectedRoutes: [],
+            transfers:
+              // Merge transfers
+              [...(alreadyAdded?.transfers ?? []), { to: ptIdNumber, length: childrenResultPt[sId] }],
+          });
+        });
+
+        ptId = SharedRAPTORData.serializeId(ptIdNumber);
+      } else ptId = (await stops.findOne({ coords: pt.coords }))?._id ?? -1;
+      if (ptId === -1) throw new Error("Cannot find pt");
+
+      RAPTORData.attachData(Array.from(attachStops.values()), []);
+
+      // Convert to para-specific data (pointers)
+      const convertedPs = typeof psId === "string" ? psId : RAPTORData.stopPointerFromId(psId);
+      if (!convertedPs) throw new Error(`Invalid ps ${psId}`);
+
+      const convertedPt = typeof ptId === "string" ? ptId : RAPTORData.stopPointerFromId(ptId);
+      if (!convertedPt) throw new Error(`Invalid pt ${ptId}`);
+
       const settings = withDefaults(reqSettings, defaultRAPTORRunSettings);
+      // String because stringified by Redis
+      const departureDate = new Date(departureDateStr);
 
-      RAPTORInstance.run(ps, pt, departureDate.getTime(), settings);
-      const bestJourneys = RAPTORInstance.getBestJourneys(pt).filter(
-        (j): j is Journey<stopId, routeId> => !!j,
+      RAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
+
+      const bestJourneys = RAPTORInstance.getBestJourneys(convertedPt).filter(
+        (j): j is NonNullable<ReturnType<typeof RAPTORInstance.getBestJourneys>[number]> => !!j,
+      );
+      bestJourneys.forEach((j) =>
+        // Optimize journey : delay foot transfers at beginning of journey
+        (
+          j.slice(
+            0,
+            (() => {
+              // Start at second label, count first
+              let count = 1;
+              for (let i = count; i < j.length && "transfer" in j[i]; i++) count++;
+
+              return count;
+            })(),
+          ) as Extract<(typeof j)[number], { transfer: unknown }>[]
+        ).reduceRight((_, l, i) => {
+          // With side effect on l
+
+          const nextLabel = j[i + 1];
+          if (!nextLabel) return null;
+
+          const computedTime =
+            "transfer" in nextLabel
+              ? nextLabel.time -
+                // m / (m/s) * 1e3 => ms
+                (nextLabel.transfer.length / settings.walkSpeed) * 1e3
+              : "route" in nextLabel
+                ? nextLabel.route.departureTime(
+                    nextLabel.tripIndex,
+                    nextLabel.route.stops.indexOf(nextLabel.boardedAt),
+                  )
+                : // Should never reach here
+                  0;
+
+          if (computedTime > l.time) j[i] = { ...l, time: computedTime };
+
+          return null;
+        }, null),
       );
 
-      if (!bestJourneys.length) throw "No journey found";
+      // Need to do this in a 2nd time to prevent resolving ids earlier than expected
+      const bestJourneysResolved = bestJourneys.map((j) =>
+        j.map(
+          (l) =>
+            ({
+              ...l,
+              ...("boardedAt" in l ? { boardedAt: RAPTORData.stops.get(l.boardedAt)!.id } : {}),
+              ...("transfer" in l
+                ? {
+                    transfer: {
+                      to: RAPTORData.stops.get(l.transfer.to)!.id,
+                      length: l.transfer.length,
+                    },
+                  }
+                : {}),
+            }) as (typeof bestJourneys)[number][number],
+        ),
+      );
+
+      if (!bestJourneysResolved.length) throw new Error("No journey found");
 
       // Keep only fastest journey & shortest journey
-      const fastestJourney = bestJourneys.at(-1)!;
-      const shortestJourney = bestJourneys.reduce(
+      const fastestJourney = bestJourneysResolved.at(-1)!;
+      const shortestJourney = bestJourneysResolved.reduce(
         (acc, v) => (acc.length < v.length ? acc : v),
-        bestJourneys[0],
+        bestJourneysResolved[0],
       );
 
       const { _id } = await resultModel.create({
-        from: ps,
-        to: pt,
-        journeys: [fastestJourney, shortestJourney].map((j) => journeyDBFormatter(j)),
+        from:
+          ps.type === TBMEndpoints.Addresses
+            ? ({
+                type: LocationType.Address,
+                id: ps.id,
+              } satisfies LocationAddress)
+            : ps.type === TBMEndpoints.Stops
+              ? ({ type: LocationType.TBM, id: ps.id } satisfies LocationTBM)
+              : ({ type: LocationType.SNCF, id: ps.id } satisfies LocationSNCF),
+        to:
+          pt.type === TBMEndpoints.Addresses
+            ? ({
+                type: LocationType.Address,
+                id: pt.id,
+              } satisfies LocationAddress)
+            : pt.type === TBMEndpoints.Stops
+              ? ({ type: LocationType.TBM, id: pt.id } satisfies LocationTBM)
+              : ({ type: LocationType.SNCF, id: pt.id } satisfies LocationSNCF),
+        journeys: [fastestJourney, ...(shortestJourney === fastestJourney ? [] : [shortestJourney])].map(
+          (j) => journeyDBFormatter(j),
+        ),
         settings,
-      } satisfies dbComputeResult);
+      });
 
       return _id;
-    },
-    { concurrency: 1, priority: "high" },
-  );
-} satisfies jobFn);
+    };
+  }) satisfies JobFn<"compute">;
+
+  return { init, updateData };
+}

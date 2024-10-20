@@ -31,21 +31,34 @@
     "lib": "src",
     "test": "test"
   },
+  "exports": {
+    ".": {
+      "types": "./lib/types/client.d.ts",
+      "require": "./lib/cjs/client.js",
+      "import": "./lib/esm/client.js",
+      "default": "./lib/esm/client.js"
+    },
+    "./*": {
+      "types": "./lib/types/*.d.ts",
+      "require": "./lib/cjs/*.js",
+      "import": "./lib/esm/*.js",
+      "default": "./lib/esm/*.js"
+    }
+  },
   "files": [
-    "lib/client.js",
-    "lib/**/*.d.ts",
-    "lib/**/*.shared.js"
+    "lib/"
   ],
-  "main": "lib/client",
   "scripts": {
     "dev": "nodemon -x ts-node src/index.ts",
-    "compile": "shx rm -rf lib/ && tsc",
-    "start": "node lib/",
+    "compile": "shx rm -rf lib/ && tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json && node ./scripts/prepare-package-json.js",
+    "start": "node lib/cjs/",
     "prettier": "npx prettier \"**/*.ts\" --write --config ../.prettierrc",
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
     "test": "pnpm run mocha",
+    "type-check": "tsc -noEmit",
     "lint": "eslint ./src/",
-    "bundle:client": "pnpm run compile && pnpm pack --pack-destination ./public"
+    "full-lint": "npm run lint && npm run type-check",
+    "prepare": "pnpm run compile"
   },
   "dependencies": {
     "@feathersjs/adapter-commons": "^5.0.30",
@@ -62,9 +75,10 @@
     "@feathersjs/typebox": "^5.0.30",
     "@typegoose/typegoose": "^12.8.0",
     "axios": "^1.7.7",
-    "common": "link:../Common",
+    "common": "workspace:*",
+    "compute": "workspace:*",
     "core-js": "^3.38.1",
-    "data": "file:../Data",
+    "data": "workspace:*",
     "feathers-hooks-common": "^8.2.1",
     "mongoose": "^8.7.0",
     "node-fetch": "^3.3.2"

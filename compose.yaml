@@ -1,0 +1,57 @@
+name: bibm
+
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: client
+      args:
+        EXTERNAL_API_URL: ${EXTERNAL_API_URL}
+        EXTERNAL_API_PATH: ${EXTERNAL_API_PATH}
+    ports:
+      # Forward to busybox httpd server
+      - ${CLIENT_PORT}:8080
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: server
+    env_file:
+      - .env
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    networks:
+      - mongodb
+      - redis
+    depends_on:
+      - mongodb
+      - redis
+
+  mongodb:
+    image: mongo:latest
+    networks:
+      - mongodb
+    volumes:
+      - mongodb-data:/data/db
+    command: --quiet
+
+  redis:
+    image: redis:alpine
+    networks:
+      - redis
+    volumes:
+      - redis-data:/data
+    environment:
+      REDIS_ARGS: "--save 60 1 --loglevel warning"
+
+networks:
+  # Private network for mongodb
+  mongodb:
+  # Private network for redis
+  redis:
+
+volumes:
+  mongodb-data:
+  redis-data:

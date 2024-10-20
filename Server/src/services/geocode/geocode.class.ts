@@ -30,7 +30,7 @@ export interface GeocodeParams extends Params<GeocodeQuery> {}
 
 import { NotFound, BadRequest } from "@feathersjs/errors";
 import { FilterQuery } from "mongoose";
-import { unique } from "common/lib/filters";
+import { unique } from "common/filters";
 import { EndpointName, ProviderClass } from "../../externalAPIs";
 import { Endpoint } from "../../externalAPIs/endpoint";
 import { TBMEndpoints } from "../../externalAPIs/TBM";
@@ -62,7 +62,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
         .replace(/\p{Diacritic}/gu, ""),
     );
     this.types_voies = await Addresses.model.distinct("type_voie");
-    this.reps = (await Addresses.model.distinct("rep", { rep: { $ne: null } })) as string[];
+    this.reps = await Addresses.model.distinct("rep", { rep: { $ne: null } });
   }
 
   async parseId(id: string): Promise<parsedId<GEOCODE_type>[]> {
@@ -95,7 +95,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
       .join("|")})?(?<nom_voie_lowercase>([a-zà-ÿ-']+ ?(?<commune>${this.communesNormalized
       .map((c) => c + " ?")
       .join("|")})?)+)(?<code_postal>\\d{5})?`;
-    const groups = id.match(new RegExp(regexpStr))?.groups as
+    const groups = new RegExp(regexpStr).exec(id)?.groups as
       | Partial<{ [k in groups]: string | undefined }>
       | undefined;
 
@@ -186,9 +186,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
       updatedAt: doc.updatedAt!.valueOf(),
       dedicated: (Object.keys(doc) as (keyof typeof doc)[]).reduce<object>(
         (acc, v) =>
-          !(v in ["_id", "coords", "GEOCODE_type", "createdAt", "updatedAt"])
-            ? { ...acc, [v]: doc![v] }
-            : acc,
+          !(v in ["_id", "coords", "GEOCODE_type", "createdAt", "updatedAt"]) ? { ...acc, [v]: doc[v] } : acc,
         {},
       ) as typeof GEOCODE_type extends TBMEndpoints.Addresses
         ? Omit<ProviderClass<TBMEndpoints.Addresses>, "_id" | "coords" | "GEOCODE_type">

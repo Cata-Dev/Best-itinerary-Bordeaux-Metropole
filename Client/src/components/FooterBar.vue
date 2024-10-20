@@ -6,7 +6,7 @@ import DynamicBadge from "@/components/DynamicBadge.vue";
 const text = ref("Realtime");
 const APIStatus = ref();
 
-APIRefresh.result
+APIRefresh.promise
   .then((r) => {
     APIStatus.value = "ready";
     text.value = `Realtime (${new Date(r.lastActualization).toLocaleTimeString()})`;

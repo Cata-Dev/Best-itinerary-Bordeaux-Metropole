@@ -2,19 +2,34 @@
 //
 // See http://mongoosejs.com/docs/models.html
 export enum JourneyLabelType {
+  Base = "B",
   Foot = "F",
   Vehicle = "V",
 }
 
+export enum LocationType {
+  SNCF = "S",
+  TBM = "T",
+  Address = "A",
+}
+
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, type Ref, type ReturnModelType } from "@typegoose/typegoose";
+import {
+  addModelToTypegoose,
+  buildSchema,
+  deleteModelWithClass,
+  getModelForClass,
+  prop,
+  type Ref,
+} from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
-import { dbFootPaths } from "../TBM/NonScheduledRoutes.model";
 import { dbTBM_ScheduledRoutes } from "../TBM/TBMScheduledRoutes.model";
 import { RAPTORRunSettings } from "raptor";
 import { dbTBM_Stops } from "../TBM/TBM_stops.model";
+import { dbSNCF_Stops } from "../SNCF/SNCF_stops.model";
+import { dbAddresses } from "../TBM/addresses.model";
 
 export type stopId = dbTBM_Stops["_id"];
 export type routeId = dbTBM_ScheduledRoutes["_id"];
@@ -44,17 +59,29 @@ export class LabelBase {
   public time!: number;
 }
 
-class LabelFoot extends LabelBase {
+class transfer {
   @prop({ required: true })
-  public boardedAt!: stopId;
+  public to: stopId | string;
 
-  @prop({ required: true, ref: () => dbFootPaths })
-  public transfer!: Ref<dbFootPaths>;
+  @prop({ required: true })
+  public length: number;
 }
 
-class LabelVehicle extends LabelBase {
+export class LabelFoot extends LabelBase {
   @prop({ required: true })
-  public boardedAt!: stopId;
+  public boardedAt!: stopId | string;
+
+  @prop({ required: true })
+  public transfer!: transfer;
+}
+
+export function isLabelFoot(label: LabelBase): label is LabelFoot {
+  return label.type === JourneyLabelType.Foot;
+}
+
+export class LabelVehicle extends LabelBase {
+  @prop({ required: true })
+  public boardedAt!: stopId | string;
 
   @prop({ required: true, ref: () => dbTBM_ScheduledRoutes, type: () => Number })
   public route!: Ref<dbTBM_ScheduledRoutes>;
@@ -63,13 +90,69 @@ class LabelVehicle extends LabelBase {
   public tripIndex!: number;
 }
 
+export function isLabelVehicle(label: LabelBase): label is LabelVehicle {
+  return label.type === JourneyLabelType.Vehicle;
+}
+
+@modelOptions({
+  schemaOptions: {
+    discriminatorKey: "type",
+    _id: false,
+  },
+})
+class LocationBase {
+  @prop({ required: true })
+  public type!: LocationType;
+}
+
+export class LocationSNCF extends LocationBase {
+  @prop({ required: true, ref: () => dbSNCF_Stops, type: () => Number })
+  public id!: Ref<dbSNCF_Stops>;
+}
+export function isLocationSNCF(loc: LocationBase): loc is LocationSNCF {
+  return loc.type === LocationType.SNCF;
+}
+
+export class LocationTBM extends LocationBase {
+  @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
+  public id!: Ref<dbTBM_Stops>;
+}
+export function isLocationTBM(loc: LocationBase): loc is LocationTBM {
+  return loc.type === LocationType.TBM;
+}
+
+export class LocationAddress extends LocationBase {
+  @prop({ required: true, ref: () => dbAddresses, type: () => Number })
+  public id!: Ref<dbAddresses>;
+}
+
+export function isLocationAddress(loc: LocationBase): loc is LocationAddress {
+  return loc.type === LocationType.Address;
+}
+
 @modelOptions({ options: { customName: "results" } })
 export class dbComputeResult extends TimeStamps {
-  @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public from!: Ref<dbTBM_Stops>;
+  @prop({
+    required: true,
+    type: LocationBase,
+    discriminators: () => [
+      { type: LocationSNCF, value: LocationType.SNCF },
+      { type: LocationTBM, value: LocationType.TBM },
+      { type: LocationAddress, value: LocationType.Address },
+    ],
+  })
+  public from!: LocationBase;
 
-  @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public to!: Ref<dbTBM_Stops>;
+  @prop({
+    required: true,
+    type: LocationBase,
+    discriminators: () => [
+      { type: LocationSNCF, value: LocationType.SNCF },
+      { type: LocationTBM, value: LocationType.TBM },
+      { type: LocationAddress, value: LocationType.Address },
+    ],
+  })
+  public to!: LocationBase;
 
   @prop({ required: true, type: () => RunSettings })
   settings!: RunSettings;
@@ -78,6 +161,7 @@ export class dbComputeResult extends TimeStamps {
     required: true,
     type: [[LabelBase]],
     discriminators: () => [
+      { type: LabelBase, value: JourneyLabelType.Base },
       { type: LabelFoot, value: JourneyLabelType.Foot },
       { type: LabelVehicle, value: JourneyLabelType.Vehicle },
     ],
@@ -85,7 +169,7 @@ export class dbComputeResult extends TimeStamps {
   journeys!: LabelBase[][];
 }
 
-export default function init(db: Connection): ReturnModelType<typeof dbComputeResult> {
+export default function init(db: Connection) {
   if (getModelForClass(dbComputeResult, { existingConnection: db })) deleteModelWithClass(dbComputeResult);
 
   const dbComputeResultSchema = buildSchema(dbComputeResult, { existingConnection: db });

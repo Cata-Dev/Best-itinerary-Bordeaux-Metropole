@@ -13,7 +13,7 @@ export type TBM_Line = BaseTBM<{
 }>;
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
-  const Line = TBM_Lines(app.get("mongooseClient"));
+  const Line = TBM_Lines(app.get("sourceDBConn"));
 
   return [
     new Endpoint(

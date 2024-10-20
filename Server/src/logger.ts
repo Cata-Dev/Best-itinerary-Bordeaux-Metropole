@@ -1,5 +1,4 @@
-/* eslint-disable prefer-rest-params */
-import { makeLogger } from "common/lib/logger";
+import { makeLogger } from "common/logger";
 import type { HookContext, NextFunction } from "./declarations";
 
 export const logger = makeLogger();

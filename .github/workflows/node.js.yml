@@ -6,65 +6,74 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
     paths:
-      - 'Client/*'
-      - 'Server/*'
-      - 'Data/*'
-      - '.github/workflows/*'
+      - "Client/*"
+      - "Server/*"
+      - "Data/*"
+      - ".github/workflows/*"
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
     paths:
-      - 'Client/*'
-      - 'Server/*'
-      - 'Data/*'
-      - '.github/workflows/*'
+      - "Client/*"
+      - "Server/*"
+      - "Data/*"
+      - ".github/workflows/*"
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [ 18.x ]
+        node-version: [18.x]
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
-          run_install: false
+          version: 9
 
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-              
-      # Build Data to build Server to build Client
-      - run: pnpm -F "data" --config.dedupe-peer-dependents=false install
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+          cache-dependency-path: "./pnpm-lock.yaml"
 
-      - run: pnpm -F "compute" --config.dedupe-peer-dependents=false install
-      - run: cd Compute/ && pnpm run --if-present build
+      - name: Install Common
+        run: pnpm -F "common" install
 
-      - run: pnpm -F "server" --config.dedupe-peer-dependents=false install
-      - run: cd Server/ && pnpm run --if-present bundle:client
+      - name: Build Common
+        run: cd Common/ && pnpm run --if-present build
 
-      - run: pnpm -F "client" --config.dedupe-peer-dependents=false add file:../Server/public/server-1.0.0.tgz
-      - run: cd Client/ && pnpm run --if-present build
-    
+      - name: Install Data
+        run: pnpm -F "data" install
+
+      - name: Build Data
+        run: cd Data/ && pnpm run --if-present build
+
+      # Will fail for the 1st time, but still emit required files to continue building
+
+      - name: Install Compute
+        run: pnpm -F "compute" install || true
+
+      - name: Build Compute
+        run: cd Compute/ && pnpm run --if-present build || true
+
+      - name: Install Server
+        run: pnpm -F "server" install
+
+      - name: Build Server
+        run: cd Server/ && pnpm run --if-present compile
+
+      - name: Build Compute (2)
+        run: cd Compute/ && pnpm run --if-present build
+
+      - name: Install Client
+        run: pnpm -F "client" install
+
+      - name: Build Client
+        run: cd Client/ && pnpm run --if-present build

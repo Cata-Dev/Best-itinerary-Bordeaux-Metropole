@@ -1,6 +1,6 @@
-import errors from "@feathersjs/errors";
+import { GeneralError } from "@feathersjs/errors";
 import { performance } from "perf_hooks";
-import { colorFunctions } from "common/lib/colors";
+import { colorFunctions } from "common/colors";
 import { HookContext, NextFunction } from "../declarations";
 import { logger } from "../logger";
 import { compactDate } from "../utils";
@@ -44,10 +44,11 @@ function isError(e: unknown): e is { code?: number; stack?: unknown } {
 const errorHandler = (context: HookContext) => {
   if (isError(context.error)) {
     const error = context.error;
+
     if (!error.code) {
-      const newError = new errors.GeneralError("server error");
-      context.error = newError;
+      context.error = new GeneralError("Server error");
     }
+
     if (error.code === 404 || process.env.NODE_ENV === "production") {
       error.stack = null;
     }

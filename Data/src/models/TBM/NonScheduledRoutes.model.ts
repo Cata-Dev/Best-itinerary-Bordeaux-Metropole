@@ -2,12 +2,24 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { addModelToTypegoose, buildSchema, deleteModelWithClass, getModelForClass, prop, type Ref, type ReturnModelType } from "@typegoose/typegoose";
+export function approachedStopName(_id: number) {
+  return `as=${_id}` as const;
+}
+
+import {
+  addModelToTypegoose,
+  buildSchema,
+  deleteModelWithClass,
+  getModelForClass,
+  prop,
+  type Ref,
+  type ReturnModelType,
+} from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
 import { dbTBM_Stops } from "./TBM_stops.model";
-import { dbFootGraphNodes } from "./FootGraph.model";
+import { dbSections } from "./sections.model";
 
 @modelOptions({ options: { customName: "NonScheduledRoutes" } })
 export class dbFootPaths {
@@ -20,8 +32,8 @@ export class dbFootPaths {
   @prop({ required: true })
   public distance!: number;
 
-  @prop({ ref: () => dbFootGraphNodes, type: () => String })
-  public path?: Ref<dbFootGraphNodes, dbFootGraphNodes["_id"]>[]; // Ref[] to intersections | stops
+  @prop()
+  public path?: (dbSections["_id"] | ReturnType<typeof approachedStopName>)[]; // Ref[] to intersections | stops
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbFootPaths> {

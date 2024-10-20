@@ -11,12 +11,4 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
-  optimizeDeps: {
-    include: ["server", "common"],
-  },
-  build: {
-    commonjsOptions: {
-      include: [/server/, /node_modules/],
-    },
-  },
 });

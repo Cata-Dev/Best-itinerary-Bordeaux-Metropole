@@ -1,10 +1,12 @@
 import { feathers } from "@feathersjs/feathers";
-import configuration from "@feathersjs/configuration";
+
 import { koa, rest, bodyParser, errorHandler, parseAuthentication, cors } from "@feathersjs/koa";
 import socketio from "@feathersjs/socketio";
 
 import type { Application, HookContext, NextFunction } from "./declarations";
 import { configurationValidator } from "./configuration";
+// Import after ../configuration which defines configuration path
+import configuration from "@feathersjs/configuration";
 import { errorHandler as errorHandlerHook, log } from "./hooks";
 
 // Needed to solve Reflect import for typegoose
@@ -15,6 +17,7 @@ import { channels } from "./channels";
 import { setupExternalAPIs } from "./externalAPIs/index";
 import { logErrorHook } from "./logger";
 import { setupMongoose, teardownMongoose } from "./mongoose";
+import { setupCompute, teardownCompute } from "./compute";
 
 const app: Application = koa(feathers()) as Application;
 
@@ -27,17 +30,15 @@ app.use(errorHandler());
 app.use(parseAuthentication());
 app.use(bodyParser());
 
-// Configure services and transports
+// Configure transports
 app.configure(rest());
 app.configure(
   socketio({
     cors: {
-      origin: app.get("origins"),
+      origin: app.get("server").origins,
     },
   }),
 );
-app.configure(services);
-app.configure(channels);
 
 // Register hooks that run on all service methods
 app.hooks({
@@ -50,16 +51,24 @@ app.hooks({
     all: [errorHandlerHook],
   },
 });
+
 // Register application setup and teardown hooks here
 app.hooks({
   setup: [
     setupMongoose,
+    setupCompute,
     async (context: HookContext, next: NextFunction) => {
       setupExternalAPIs(context.app);
       await next();
     },
+    async (_: HookContext, next: NextFunction) => {
+      // Configure services
+      app.configure(services);
+      app.configure(channels);
+      await next();
+    },
   ],
-  teardown: [teardownMongoose],
+  teardown: [teardownMongoose, teardownCompute],
 });
 
 export { app };

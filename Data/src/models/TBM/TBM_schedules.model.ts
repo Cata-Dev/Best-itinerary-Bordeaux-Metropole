@@ -68,9 +68,12 @@ export class dbTBM_Schedules_rt extends dbTBM_Schedules {
   public type!: RtScheduleType;
 }
 
-export default function init(db: Connection): readonly [ReturnModelType<typeof dbTBM_Schedules>, ReturnModelType<typeof dbTBM_Schedules_rt>] {
+export default function init(
+  db: Connection,
+): readonly [ReturnModelType<typeof dbTBM_Schedules>, ReturnModelType<typeof dbTBM_Schedules_rt>] {
   if (getModelForClass(dbTBM_Schedules, { existingConnection: db })) deleteModelWithClass(dbTBM_Schedules);
-  if (getModelForClass(dbTBM_Schedules_rt, { existingConnection: db })) deleteModelWithClass(dbTBM_Schedules_rt);
+  if (getModelForClass(dbTBM_Schedules_rt, { existingConnection: db }))
+    deleteModelWithClass(dbTBM_Schedules_rt);
 
   const dbTBM_SchedulesSchema = buildSchema(dbTBM_Schedules, { existingConnection: db });
   const dbTBM_SchedulesModelRaw = db.model(getName(dbTBM_Schedules), dbTBM_SchedulesSchema);
@@ -79,7 +82,10 @@ export default function init(db: Connection): readonly [ReturnModelType<typeof d
     existingConnection: db,
   });
 
-  return [dbTBM_SchedulesModel, getDiscriminatorModelForClass(dbTBM_SchedulesModel, dbTBM_Schedules_rt)] as const;
+  return [
+    dbTBM_SchedulesModel,
+    getDiscriminatorModelForClass(dbTBM_SchedulesModel, dbTBM_Schedules_rt),
+  ] as const;
 }
 
 export type dbTBM_SchedulesModel = ReturnType<typeof init>[0];

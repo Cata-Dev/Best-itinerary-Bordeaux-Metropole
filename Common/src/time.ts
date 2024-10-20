@@ -4,7 +4,7 @@
  * @param includeSec Whether to include seconds or not, default to true
  * @returns Formatted duration (YY?, MoMo?, DD?, HH?, MiMi?, SS?)
  */
-export function duration(ms: number, includeSec = true, short = false) {
+function duration(ms: number, includeSec = true, short = false) {
   ms = Math.sqrt(ms ** 2);
 
   const y = Math.floor(ms / 31556952000);
@@ -38,3 +38,5 @@ export function duration(ms: number, includeSec = true, short = false) {
     "",
   );
 }
+
+export { duration };

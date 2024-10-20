@@ -1,6 +1,6 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getValidator } from "@feathersjs/typebox";
+import { ObjectIdSchema, Type, getValidator } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
 
 import type { HookContext } from "../../declarations";
@@ -8,6 +8,7 @@ import { dataValidator, queryValidator } from "../../validators";
 import type { ItineraryService } from "./itinerary.class";
 
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
+import { coords, GEOCODE_type, geocodeSchema, TBMVehicles } from "../geocode/geocode.schema";
 
 const FOOTStageDetails = Type.Object(
   {
@@ -15,8 +16,6 @@ const FOOTStageDetails = Type.Object(
   },
   { $id: "FOOTStageDetails", additionalProperties: false },
 );
-
-export const TBMVehicles = Type.Union([Type.Literal("BUS"), Type.Literal("TRAM"), Type.Literal("BATEAU")]);
 
 const TBMStageDetails = Type.Object(
   {
@@ -91,12 +90,10 @@ export const itinerarySchema = Type.Object(
     code: Type.Integer({ minimum: 200, maximum: 599 }),
     message: Type.String(),
     lastActualization: Type.Integer(),
+    id: ObjectIdSchema(),
     paths: Type.Array(
       Type.Object(
         {
-          id: Type.String(),
-          totalDuration: Type.Integer(),
-          totalDistance: Type.Integer(),
           departure: Type.Integer(),
           from: Type.String(),
           stages: Type.Array(Stage, { uniqueItems: true }),
@@ -136,26 +133,46 @@ export const itineraryPatchResolver = resolve<Itinerary, HookContext<ItinerarySe
 // Schema for allowed query properties
 // Unused here, custom service without storage
 export const itineraryQueryProperties = Type.Object({});
-export const itineraryQuerySchema = Type.Intersect(
-  [
-    Type.Object(
-      {
-        from: Type.String(),
-        to: Type.String(),
-        transports: Type.Optional(
-          Type.Partial(
-            Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
-          ),
-        ),
-        departureTime: Type.Optional(Type.String()),
-        maxWalkDistance: Type.Optional(Type.Integer()),
-        walkSpeed: Type.Optional(Type.Number()),
-      },
-      { additionalProperties: false },
-    ),
-    refreshDataQuerySchema,
-  ],
+const locationQuery = Type.Object(
+  {
+    type: GEOCODE_type,
+    coords,
+    // Would be a mapped type https://github.com/sinclairzx81/typebox?tab=readme-ov-file#types-mapped but not yet in @feathersjs/typebox
+    id: Type.Union([
+      geocodeSchema.anyOf[0].properties._id,
+      geocodeSchema.anyOf[1].properties._id,
+      geocodeSchema.anyOf[2].properties._id,
+    ]),
+    alias: Type.String(),
+  },
   { additionalProperties: false },
+);
+export const itineraryQuerySchema = Type.Union(
+  [
+    Type.Intersect([
+      Type.Object(
+        {
+          from: locationQuery,
+          to: locationQuery,
+          transports: Type.Optional(
+            Type.Partial(
+              Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+            ),
+          ),
+          departureTime: Type.Optional(Type.String()),
+          maxWalkDistance: Type.Optional(Type.Integer()),
+          walkSpeed: Type.Optional(Type.Number()),
+        },
+        { additionalProperties: false },
+      ),
+      refreshDataQuerySchema,
+    ]),
+    // Retrieve old result
+    Type.Object({
+      id: Type.String(),
+    }),
+  ],
+  { additionalProperties: true },
 );
 export type ItineraryQuery = Static<typeof itineraryQuerySchema>;
 export const itineraryQueryValidator = getValidator(itineraryQuerySchema, queryValidator);

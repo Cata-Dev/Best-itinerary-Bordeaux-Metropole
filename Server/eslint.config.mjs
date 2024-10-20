@@ -31,5 +31,11 @@ export default tseslint.config({
         allowEmptyCatch: true,
       },
     ],
+    "@typescript-eslint/no-empty-object-type": [
+      "error",
+      {
+        allowInterfaces: "always",
+      },
+    ],
   },
 });

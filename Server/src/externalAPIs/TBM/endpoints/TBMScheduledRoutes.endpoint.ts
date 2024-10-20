@@ -1,6 +1,6 @@
 import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { HydratedDocument } from "mongoose";
-import { mapAsync } from "common/lib/async";
+import { mapAsync } from "common/async";
 import { TBMEndpoints } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
@@ -16,7 +16,7 @@ export default (
   TBM_schedulesRtEndpointInstantiated: Endpoint<TBMEndpoints.Schedules_rt>,
   TBM_tripsEndpointInstantiated: Endpoint<TBMEndpoints.Trips>,
 ) => {
-  const ScheduledRoute = TBM_Scheduled_routes(app.get("mongooseClient"));
+  const ScheduledRoute = TBM_Scheduled_routes(app.get("sourceDBConn"));
 
   return [
     new Endpoint(
