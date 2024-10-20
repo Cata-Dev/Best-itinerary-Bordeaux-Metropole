@@ -27,8 +27,6 @@ import type { JobFn, JobResult } from ".";
 import { DocumentType } from "@typegoose/typegoose";
 import { TBMEndpoints } from "server/externalAPIs/TBM/index";
 
-// type IdType<M> = M extends { _id: infer I } ? I : never;
-
 declare module "." {
   interface Jobs {
     compute: (
@@ -197,31 +195,73 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
 
       RAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
 
-      const bestJourneys = RAPTORInstance.getBestJourneys(convertedPt)
-        .filter((j): j is NonNullable<ReturnType<typeof RAPTORInstance.getBestJourneys>[number]> => !!j)
-        .map((j) =>
-          j.map((l) => ({
-            ...l,
-            // Convert back pointers to stop ids
-            ...("boardedAt" in l ? { boardedAt: RAPTORData.stops.get(l.boardedAt)!.id } : {}),
-            ...("transfer" in l
-              ? {
-                  transfer: {
-                    ...l.transfer,
-                    to: RAPTORData.stops.get(l.transfer.to)!.id,
-                  },
-                }
-              : {}),
-          })),
-        );
+      const bestJourneys = RAPTORInstance.getBestJourneys(convertedPt).filter(
+        (j): j is NonNullable<ReturnType<typeof RAPTORInstance.getBestJourneys>[number]> => !!j,
+      );
+      bestJourneys.forEach((j) =>
+        // Optimize journey : delay foot transfers at beginning of journey
+        (
+          j.slice(
+            0,
+            (() => {
+              // Start at second label, count first
+              let count = 1;
+              for (let i = count; i < j.length && "transfer" in j[i]; i++) count++;
 
-      if (!bestJourneys.length) throw new Error("No journey found");
+              return count;
+            })(),
+          ) as Extract<(typeof j)[number], { transfer: unknown }>[]
+        ).reduceRight((_, l, i) => {
+          // With side effect on l
+
+          const nextLabel = j[i + 1];
+          if (!nextLabel) return null;
+
+          const computedTime =
+            "transfer" in nextLabel
+              ? nextLabel.time -
+                // m / (m/s) * 1e3 => ms
+                (nextLabel.transfer.length / settings.walkSpeed) * 1e3
+              : "route" in nextLabel
+                ? nextLabel.route.departureTime(
+                    nextLabel.tripIndex,
+                    nextLabel.route.stops.indexOf(nextLabel.boardedAt),
+                  )
+                : // Should never reach here
+                  0;
+
+          if (computedTime > l.time) j[i] = { ...l, time: computedTime };
+
+          return null;
+        }, null),
+      );
+
+      // Need to do this in a 2nd time to prevent resolving ids earlier than expected
+      const bestJourneysResolved = bestJourneys.map((j) =>
+        j.map(
+          (l) =>
+            ({
+              ...l,
+              ...("boardedAt" in l ? { boardedAt: RAPTORData.stops.get(l.boardedAt)!.id } : {}),
+              ...("transfer" in l
+                ? {
+                    transfer: {
+                      to: RAPTORData.stops.get(l.transfer.to)!.id,
+                      length: l.transfer.length,
+                    },
+                  }
+                : {}),
+            }) as (typeof bestJourneys)[number][number],
+        ),
+      );
+
+      if (!bestJourneysResolved.length) throw new Error("No journey found");
 
       // Keep only fastest journey & shortest journey
-      const fastestJourney = bestJourneys.at(-1)!;
-      const shortestJourney = bestJourneys.reduce(
+      const fastestJourney = bestJourneysResolved.at(-1)!;
+      const shortestJourney = bestJourneysResolved.reduce(
         (acc, v) => (acc.length < v.length ? acc : v),
-        bestJourneys[0],
+        bestJourneysResolved[0],
       );
 
       const { _id } = await resultModel.create({
