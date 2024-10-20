@@ -1,5 +1,4 @@
-import { HydratedDocument, ProjectionType } from "mongoose";
-import { DocumentType } from "@typegoose/typegoose";
+import { ProjectionType } from "mongoose";
 import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { approachedStopName } from "data/lib/models/TBM/NonScheduledRoutes.model";
 import { dbSections as dbSectionsRaw, dbSectionsModel } from "data/lib/models/TBM/sections.model";
@@ -17,26 +16,31 @@ const sectionsProjection = {
 } satisfies ProjectionType<dbSectionsRaw>;
 type dbSections = Pick<dbSectionsRaw, keyof typeof sectionsProjection>;
 interface SectionOverwritten {
+  // Remove it
+  _id?: never;
+  // Rename them
+  rg_fv_graph_nd?: never;
+  rg_fv_graph_na?: never;
   // Will never be populated
-  rg_fv_graph_nd: dbSectionsRaw["rg_fv_graph_nd"];
-  rg_fv_graph_na: dbSectionsRaw["rg_fv_graph_na"];
+  s: dbSectionsRaw["rg_fv_graph_nd"];
+  t: dbSectionsRaw["rg_fv_graph_na"];
 }
 // Equivalent to an Edge
 type Section = Omit<dbSections, keyof SectionOverwritten> & SectionOverwritten;
 
 interface Data {
-  edges: Map<dbSections["rg_fv_graph_nd"], Section>;
-  mappedSegments: Map<dbSections["rg_fv_graph_nd"], Segment[]>;
+  edges: Map<Section["s"], Section>;
+  mappedSegments: Map<Section["s"], Segment[]>;
 }
 
-type FootGraphNode<N extends node> = Section["rg_fv_graph_nd"] | N;
+type FootGraphNode<N extends node> = Section["s"] | N;
 
 function initData(sectionsModel: dbSectionsModel): () => Promise<Data & { updated: boolean }> {
   const dataCache = {
     date: -1,
     updated: false as boolean,
-    edges: new Map<dbSections["rg_fv_graph_nd"], Section>(),
-    mappedSegments: new Map<dbSections["rg_fv_graph_nd"], Segment[]>(),
+    edges: new Map() as Data["edges"],
+    mappedSegments: new Map() as Data["mappedSegments"],
   } satisfies Data & { date: number; updated: boolean };
 
   // Might be a shallow copy!
@@ -54,7 +58,12 @@ function initData(sectionsModel: dbSectionsModel): () => Promise<Data & { update
 
     // Query graph data
     dataCache.edges = new Map<dbSections["_id"], Section>(
-      (await sectionsModel.find({}, sectionsProjection).lean()).map((s) => [s._id, s as Section]),
+      (await sectionsModel.find({}, sectionsProjection).lean()).map<[number, Section]>(
+        ({ _id, coords, distance, rg_fv_graph_nd: s, rg_fv_graph_na: t }) => [
+          _id,
+          { coords, distance, s, t } satisfies Section,
+        ],
+      ),
     );
 
     // Pre-generate mapped segments to fasten the process (and not redundant computing)
@@ -85,7 +94,7 @@ function initData(sectionsModel: dbSectionsModel): () => Promise<Data & { update
 function makeGraph<N extends node>(edges: Data["edges"]) {
   const footGraph = new WeightedGraph<FootGraphNode<N>>();
 
-  for (const { rg_fv_graph_nd: s, rg_fv_graph_na: t, distance } of edges.values()) {
+  for (const { s, t, distance } of edges.values()) {
     footGraph.addEdge(s, t, distance);
   }
 
@@ -100,11 +109,11 @@ function makeGraph<N extends node>(edges: Data["edges"]) {
 function approachPoint(
   mappedSegments: Data["mappedSegments"],
   coords: [number, number],
-): [Point, Section["rg_fv_graph_nd"], number] | null {
+): [Point, Section["s"], number] | null {
   const point = new Point(...coords);
 
   /**@description [distance to closest point, closest point, edge containing this point, indice of segment composing the edge (i;i+1 in Section coords)] */
-  const closestPoint: [number, Point | null, Section["rg_fv_graph_nd"] | null, number | null] = [
+  const closestPoint: [number, Point | null, Section["s"] | null, number | null] = [
     Infinity,
     null,
     null,
@@ -143,7 +152,7 @@ function refreshWithApproachedPoint<N extends node>(
   name: N,
   [closestPoint, edgeId, n]: Exclude<ReturnType<typeof approachPoint>, null>,
 ) {
-  const { coords, rg_fv_graph_nd: s, rg_fv_graph_na: t } = edges.get(edgeId)!;
+  const { coords, s, t } = edges.get(edgeId)!;
 
   // Compute distance from start edge to approachedStop
   const toApproachedStop: number =
@@ -174,15 +183,21 @@ function revertFromApproachedPoint<N extends node>(
   insertedNode: N,
   edgeId: dbSections["_id"],
 ) {
-  const { distance, rg_fv_graph_nd: s, rg_fv_graph_na: t } = edges.get(edgeId)!;
+  const { distance, s, t } = edges.get(edgeId)!;
 
   footGraph.removeEdge(insertedNode, t);
   footGraph.removeEdge(s, insertedNode);
   footGraph.addEdge(s, t, distance);
 }
 
-const stopProjection = { _id: 1, coords: 1, libelle: 1 };
-type Stop = Pick<dbTBM_Stops, keyof typeof stopProjection>;
+const stopProjection = { _id: 1, coords: 1 };
+type dbStops = Pick<dbTBM_Stops, keyof typeof stopProjection>;
+interface StopOverwritten {
+  // Remove it
+  _id?: never;
+}
+// Equivalent to an Edge
+type Stop = Omit<dbStops, keyof StopOverwritten> & StopOverwritten;
 
 async function makeFootStopsGraph(sectionsModel: dbSectionsModel, stopsModel: dbTBM_StopsModel) {
   // Query data
@@ -190,10 +205,10 @@ async function makeFootStopsGraph(sectionsModel: dbSectionsModel, stopsModel: db
   const { edges, mappedSegments } = await queryData();
 
   // Query stops
-  const stops = new Map(
+  const stops = new Map<dbStops["_id"], Stop>(
     (
-      (await stopsModel
-        .find<HydratedDocument<DocumentType<Stop>>>(
+      await stopsModel
+        .find(
           {
             $and: [{ coords: { $not: { $elemMatch: { $eq: Infinity } } } }],
           },
@@ -201,8 +216,8 @@ async function makeFootStopsGraph(sectionsModel: dbSectionsModel, stopsModel: db
         )
         .lean()
         // Coords field type lost...
-        .exec()) as Stop[]
-    ).map((s) => [s._id, s]),
+        .exec()
+    ).map((s) => [s._id, { coords: s.coords }]),
   );
 
   type FootStopsGraphNode = FootGraphNode<ReturnType<typeof approachedStopName>>;
@@ -211,7 +226,7 @@ async function makeFootStopsGraph(sectionsModel: dbSectionsModel, stopsModel: db
   const graph = makeGraph<FootStopsGraphNode>(edges);
 
   // Approach stops & insert
-  const approachedStops = new Map<Stop["_id"], NonNullable<ReturnType<typeof approachPoint>>>();
+  const approachedStops = new Map<dbStops["_id"], NonNullable<ReturnType<typeof approachPoint>>>();
 
   for (const [stopId, { coords }] of stops) {
     const ap = approachPoint(mappedSegments, coords);
