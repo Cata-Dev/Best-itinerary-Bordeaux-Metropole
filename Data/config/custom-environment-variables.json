@@ -1,7 +1,10 @@
 {
   "server": {
     "host": "SERVER_HOST",
-    "port": "SERVER_PORT",
+    "port": {
+      "__name": "SERVER_PORT",
+      "__format": "number"
+    },
     "TBMkey": "TBM_KEY",
     "SNCFkey": "SNCF_KEY",
     "origins": "ALLOWED_ORIGINS"
@@ -9,7 +12,10 @@
   "compute": {
     "redis": {
       "host": "REDIS_HOST",
-      "port": "REDIS_PORT"
+      "port": {
+        "__name": "REDIS_PORT",
+        "__format": "number"
+      }
     }
   },
   "dbAddress": "MONGODB_URL",
