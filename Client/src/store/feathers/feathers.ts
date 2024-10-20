@@ -5,8 +5,8 @@ import type { RefreshData } from "server";
 import { Deferred } from "common/async";
 
 const connection = socketio(
-  io("https://bibm.catadev.org", {
-    path: "/api/socket.io/",
+  io(import.meta.env.VITE_API_URL, {
+    path: import.meta.env.VITE_API_PATH,
     transports: ["websocket"],
     reconnectionAttempts: 2,
   }),
