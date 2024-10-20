@@ -1,7 +1,7 @@
-export type resolveCb<T = void> = (value: T) => void;
+type resolveCb<T = void> = (value: T) => void;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type rejectCb = (reason?: any) => void;
-export class Deferred<T = unknown> {
+type rejectCb = (reason?: any) => void;
+class Deferred<T = unknown> {
   public promise: Promise<T>;
   public resolve!: resolveCb<T>;
   public reject!: rejectCb;
@@ -17,7 +17,7 @@ export class Deferred<T = unknown> {
 /**
  * @description Wrap a map of promises into one promise
  */
-export async function mapAsync<I, O>(
+async function mapAsync<I, O>(
   array: I[],
   callback: (value: I, index: number, array: I[]) => Promise<O>,
 ): Promise<O[]> {
@@ -30,7 +30,7 @@ export async function mapAsync<I, O>(
  * @returns Promise to await
  * @example await wait(1_000) // Pause code execution for 1s
  */
-export function wait(ms = 1000): Promise<void> {
+function wait(ms = 1000): Promise<void> {
   const defP = new Deferred<void>();
 
   setTimeout(() => {
@@ -39,3 +39,6 @@ export function wait(ms = 1000): Promise<void> {
 
   return defP.promise;
 }
+
+export { Deferred, mapAsync, wait };
+export type { resolveCb, rejectCb };

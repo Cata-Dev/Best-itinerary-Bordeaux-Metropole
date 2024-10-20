@@ -27,7 +27,7 @@ const c = ((gN1 * Math.cos(phi1)) / n) * Math.exp(n * gl1);
 /**
  * @description Converts WGS coordinates into Lambert 93 coordinates
  */
-export const WGSToLambert93 = (lat: number, long: number): [number, number] => {
+const WGSToLambert93 = (lat: number, long: number): [number, number] => {
   const phi = (Math.PI / 180) * lat;
   const l = (Math.PI / 180) * long;
 
@@ -42,7 +42,7 @@ export const WGSToLambert93 = (lat: number, long: number): [number, number] => {
     ys - c * Math.exp(-1 * n * gl) * Math.cos(n * (l - lc)),
   ];
 };
-export const degToRad = (deg: number) => {
+const degToRad = (deg: number) => {
   return (deg * Math.PI) / 180;
 };
 
@@ -54,7 +54,7 @@ export const degToRad = (deg: number) => {
  * @param {Number} lat2
  * @returns {Number} The distance in meters.
  */
-export const geographicDistance = (lon1: number, lat1: number, lon2: number, lat2: number): number => {
+const geographicDistance = (lon1: number, lat1: number, lon2: number, lat2: number): number => {
   const earthRadiusKm = 6371;
 
   const dLat = degToRad(lat2 - lat1);
@@ -72,6 +72,8 @@ export const geographicDistance = (lon1: number, lat1: number, lon2: number, lat
  * @description Get the distance between two cartographic coordinates.
  * @returns {Number} The distance in meters.
  */
-export const euclideanDistance = (x1: number, y1: number, x2: number, y2: number): number => {
+const euclideanDistance = (x1: number, y1: number, x2: number, y2: number): number => {
   return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 };
+
+export { WGSToLambert93, geographicDistance, euclideanDistance };

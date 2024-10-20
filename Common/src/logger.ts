@@ -5,7 +5,9 @@ import { colorFunctions } from "./colors";
 const prefix = (prefixes: string[]) => [`[${new Date().toLocaleString("fr-FR")}]`].concat(prefixes).join(" ");
 const formatArgs = (args: IArguments) => format.apply(format, Array.prototype.slice.call(args));
 
-export const makeLogger = (...prefixes: string[]): Record<"log" | "info" | "warn" | "error" | "debug", typeof console.log> => ({
+const makeLogger = (
+  ...prefixes: string[]
+): Record<"log" | "info" | "warn" | "error" | "debug", typeof console.log> => ({
   log: function () {
     const args = formatArgs(arguments);
     const str = `${[prefix(prefixes)].concat(args).join(" ")}`;
@@ -36,3 +38,5 @@ export const makeLogger = (...prefixes: string[]): Record<"log" | "info" | "warn
     console.log(colorFunctions.bBlack(colorFunctions.bright(colorFunctions.fY(str))));
   },
 });
+
+export { makeLogger };
