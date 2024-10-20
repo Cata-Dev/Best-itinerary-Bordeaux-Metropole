@@ -11,7 +11,7 @@ import TBMScheduledRoutesModelInit, {
   dbTBM_ScheduledRoutes,
 } from "data/lib/models/TBM/TBMScheduledRoutes.model";
 import NonScheduledRoutesModelInit, { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";
-import { populateRef, UnpackRefType } from "./utils";
+import { PopulateRef, UnpackRefType } from "./utils";
 import { mapAsync } from "./utils/asyncs";
 import { Application } from "./base";
 
@@ -27,7 +27,7 @@ async function makeData(
 
   /** DB Types */
 
-  type dbTBM_Schedules_rt = populateRef<dbScheduledRoute["trips"][number]["schedules"]>[number];
+  type dbTBM_Schedules_rt = PopulateRef<dbScheduledRoute["trips"][number]["schedules"]>[number];
   // Schedules
   const dbSchedulesProjection = { hor_app: 1, hor_estime: 1 } satisfies Partial<
     Record<keyof dbTBM_Schedules_rt, 1>
