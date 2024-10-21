@@ -21,5 +21,8 @@
   "dbAddress": "MONGODB_URL",
   "sourceDB": "DB_SOURCE_NAME",
   "computeDB": "DB_COMPUTE_NAME",
-  "debug": "DEBUG"
+  "debug": {
+    "__name": "DEBUG",
+    "__format": "boolean"
+  }
 }
