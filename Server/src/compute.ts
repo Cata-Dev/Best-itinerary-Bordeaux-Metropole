@@ -10,7 +10,7 @@ declare module "./declarations" {
 }
 
 export async function setupCompute(context: HookContext, next: NextFunction) {
-  const compute = await main(cpus().length);
+  const compute = await main(context.app.get("compute").nbWorkers ?? cpus().length);
   logger.info("Compute manager ready.");
 
   context.app.set("computeInstance", compute);

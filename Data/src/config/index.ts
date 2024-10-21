@@ -22,6 +22,7 @@ const configurationSchema = Type.Object({
       host: Type.String(),
       port: Type.Number(),
     }),
+    nbWorkers: Type.Optional(Type.Number()),
   }),
   dbAddress: Type.String(),
   sourceDB: Type.String(),
