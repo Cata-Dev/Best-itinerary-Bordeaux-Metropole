@@ -237,7 +237,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
 
     if (!docs.length) return [];
 
-    if (_params.query.max) docs = docs.slice(0, Number(_params.query.max));
+    if (_params.query.max) docs = docs.slice(0, parseInt(`${_params.query.max}`) || undefined);
 
     const results: Geocode[] = [];
     for (const doc of docs) {
