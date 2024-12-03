@@ -22,7 +22,7 @@
     "@feathersjs/typebox": "^5.0.30",
     "@typegoose/typegoose": "^12.8.0",
     "config": "^3.3.12",
-    "mongoose": "^8.7.0",
+    "mongoose": "^8.8.3",
     "raptor": "github:cata-dev/raptor#no-local-pruning"
   },
   "devDependencies": {

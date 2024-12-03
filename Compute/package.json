@@ -28,7 +28,7 @@
     "common": "workspace:*",
     "core-js": "^3.38.1",
     "data": "workspace:*",
-    "mongoose": "^8.2.0",
+    "mongoose": "^8.8.3",
     "raptor": "github:cata-dev/raptor#no-local-pruning",
     "server": "workspace:*",
     "shx": "^0.3.4"

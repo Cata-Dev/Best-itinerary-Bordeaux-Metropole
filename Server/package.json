@@ -80,7 +80,7 @@
     "core-js": "^3.38.1",
     "data": "workspace:*",
     "feathers-hooks-common": "^8.2.1",
-    "mongoose": "^8.7.0",
+    "mongoose": "^8.8.3",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
