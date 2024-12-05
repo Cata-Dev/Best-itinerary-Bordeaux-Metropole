@@ -133,7 +133,10 @@ export default async function (app: BaseApplication) {
       const nonScheduledRoutesModel = nonScheduledRoutesModelInit(sourceDataDB);
       const stopsModel = stopsModelInit(sourceDataDB);
 
-      return async ({ data: [maxDist, getFullPaths = false] }) => {
+      return async (job) => {
+        const {
+          data: [maxDist, getFullPaths = false],
+        } = job;
         const { stops, graph } = await makeFootStopsGraph(sectionsModel, stopsModel);
 
         // Compute all paths
@@ -182,9 +185,11 @@ export default async function (app: BaseApplication) {
               NSRInsertedCount += inserted.insertedCount;
               if (stopsTreatedCount % Math.round((stops.size / 100) * LOG_EVERY) === 0) {
                 const newTime = Date.now();
+                const progress = Math.round((stopsTreatedCount / stops.size) * 1000) / 10;
+                job.updateProgress(progress).catch(app.logger.error);
                 app.logger.debug(
                   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                  `Inserting to NSR done at ${Math.round((stopsTreatedCount / stops.size) * 1000) / 10}%, inserted NSR : ${NSRInsertedCount}. Time since last ${LOG_EVERY}% compute & insert : ${new Duration(newTime - lastChunkInsertLogTime)}`,
+                  `Inserting to NSR done at ${progress}%, inserted NSR : ${NSRInsertedCount}. Time since last ${LOG_EVERY}% compute & insert : ${new Duration(newTime - lastChunkInsertLogTime)}`,
                 );
                 lastChunkInsertLogTime = newTime;
               }
