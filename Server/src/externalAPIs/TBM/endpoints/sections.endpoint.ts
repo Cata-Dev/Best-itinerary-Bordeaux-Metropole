@@ -19,7 +19,10 @@ export type Section = BaseTBM<{
   rg_fv_graph_nd: number;
   rg_fv_graph_na: number;
 }> & {
-  geometry: { coordinates: [number, number][] };
+  geometry:
+    | { coordinates: [number, number][] }
+    // Wtf ? Happened on 05-12-2024
+    | null;
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
@@ -32,29 +35,38 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
       async () => {
         const rawSections: Section[] = await getData("fv_tronc_l", ["crs=epsg:2154"]);
 
-        const Sections: dbSections[] = rawSections.map((section) => {
-          if ((section.geometry.coordinates?.[0]?.[0] as never)?.[0] !== undefined)
-            // Depth 3 => MultiLineString
-            section.geometry.coordinates =
-              section.geometry.coordinates.flat() as unknown as Section["geometry"]["coordinates"];
+        const Sections: dbSections[] = rawSections
+          .filter(
+            (
+              section,
+            ): section is Omit<Section, "geometry"> & { geometry: { coordinates: [number, number][] } } =>
+              !!section.geometry,
+          )
+          .map((section) => {
+            if ((section.geometry.coordinates?.[0]?.[0] as never)?.[0])
+              // Depth 3 => MultiLineString
+              section.geometry.coordinates = section.geometry.coordinates.flat() as Extract<
+                Section,
+                { geometry: { coordinates: unknown } }
+              >["geometry"]["coordinates"];
 
-          return {
-            coords: section.geometry.coordinates,
-            distance: section.geometry.coordinates.reduce((acc: number, v, i, arr) => {
-              if (i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
+            return {
+              coords: section.geometry.coordinates,
+              distance: section.geometry.coordinates.reduce((acc: number, v, i, arr) => {
+                if (i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
 
-              return acc;
-            }, 0),
-            _id: parseInt(section.properties.gid),
-            domanial: parseInt(section.properties.domanial ?? 7),
-            cat_dig: parseInt(section.properties.cat_dig ?? 10),
-            groupe: section.properties.groupe ?? 0,
-            nom_voie: section.properties.nom_voie,
-            rg_fv_graph_dbl: !!section.properties.rg_fv_graph_dbl,
-            rg_fv_graph_nd: section.properties.rg_fv_graph_nd,
-            rg_fv_graph_na: section.properties.rg_fv_graph_na,
-          };
-        });
+                return acc;
+              }, 0),
+              _id: parseInt(section.properties.gid),
+              domanial: parseInt(section.properties.domanial ?? 7),
+              cat_dig: parseInt(section.properties.cat_dig ?? 10),
+              groupe: section.properties.groupe ?? 0,
+              nom_voie: section.properties.nom_voie,
+              rg_fv_graph_dbl: !!section.properties.rg_fv_graph_dbl,
+              rg_fv_graph_nd: section.properties.rg_fv_graph_nd,
+              rg_fv_graph_na: section.properties.rg_fv_graph_na,
+            };
+          });
 
         await Section.deleteMany({
           _id: { $nin: Sections.map((s) => s._id) },
