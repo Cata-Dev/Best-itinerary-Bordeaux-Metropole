@@ -19,7 +19,7 @@ declare module "./utils/para" {
 const logger = makeLogger(`[MAIN]`);
 
 export async function main(workersCount: number, data?: Message<"data">["data"]) {
-  const app = makeQueue();
+  const app = await makeQueue();
   app.logger = logger;
 
   data ??= await makeData(app);
