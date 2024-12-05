@@ -137,6 +137,10 @@ export function makeQueue() {
   } as Application<"queue">;
 }
 
+// TODO: add to config ?
+// 30 minutes
+const MAX_STALL_TIME = 30 * 60 * 1_000;
+
 export function makeWorker(
   /**
    *  Should be `Instances<typeof jobNames, "processor">`
@@ -147,6 +151,8 @@ export function makeWorker(
     (n, i) =>
       new Worker(n, (processors as Processor<JobName>[])[i], {
         connection,
+        stalledInterval: MAX_STALL_TIME,
+        lockDuration: MAX_STALL_TIME,
       }),
   ) as Instances<typeof jobNames, "worker">;
 
