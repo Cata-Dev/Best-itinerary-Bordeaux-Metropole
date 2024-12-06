@@ -14,7 +14,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
 > {
   private deferredFetch: Deferred<boolean>;
   private _fetching = false;
-  /** Timestamp of last fetch (succeed or failed) */
+  /** Timestamp of last succeeded fetch */
   private _lastFetch = 0;
 
   /**
