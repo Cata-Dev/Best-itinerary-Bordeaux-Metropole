@@ -102,7 +102,15 @@ async function makeData(
       connectedRoutes: dbScheduledRoutes
         .filter((ScheduledRoute) => ScheduledRoute.stops.find((stopId) => stopId === _id))
         .map(({ _id }) => _id),
-      transfers: (await dbNonScheduledRoutes(_id, { distance: { $lte: 1_000 } })).map(({ to, distance }) => ({
+      transfers: (
+        await dbNonScheduledRoutes(_id, {
+          distance: {
+            $lte:
+              // TODO: do no hardcode ?
+              1_000,
+          },
+        })
+      ).map(({ to, distance }) => ({
         to,
         length: distance,
       })),
