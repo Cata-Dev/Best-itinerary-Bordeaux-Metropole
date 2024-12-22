@@ -56,4 +56,4 @@ FROM busybox:latest AS client
 COPY --from=build_client /prod/client/dist /prod/client
 # From https://dev.to/code42cate/how-to-dockerize-vite-44d3
 WORKDIR /prod/client
-CMD ["busybox", "httpd", "-f", "-p", "8080"]
+CMD ["busybox", "httpd", "-f", "-p", "${CLIENT_PORT}"]
