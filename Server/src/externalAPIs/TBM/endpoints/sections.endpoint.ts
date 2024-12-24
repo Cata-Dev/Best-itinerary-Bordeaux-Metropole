@@ -66,7 +66,9 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
               rg_fv_graph_nd: section.properties.rg_fv_graph_nd,
               rg_fv_graph_na: section.properties.rg_fv_graph_na,
             };
-          });
+          })
+          // Got null ends once...
+          .filter((s) => s.rg_fv_graph_nd !== null && s.rg_fv_graph_na !== null);
 
         await Section.deleteMany({
           _id: { $nin: Sections.map((s) => s._id) },
