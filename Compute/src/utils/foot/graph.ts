@@ -159,14 +159,14 @@ function refreshWithApproachedPoint<N extends node>(
     coords.reduce((acc, v, i, arr) => {
       if (i < n && i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
       return acc;
-    }, 0) + Point.distance(closestPoint, new Point(...coords[n]));
+    }, 0) + Point.distance(new Point(...coords[n]), closestPoint);
 
-  // Compute distance form approachedStop to end edge
+  // Compute distance from approachedStop to end edge
   const fromApproachedStop: number =
     coords.reduce((acc, v, i, arr) => {
       if (i > n && i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
       return acc;
-    }, 0) + Point.distance(closestPoint, new Point(...coords[n]));
+    }, 0) + Point.distance(closestPoint, new Point(...coords[n + 1]));
 
   // Remove edge from p1 to p2
   footGraph.removeEdge(s, t);
