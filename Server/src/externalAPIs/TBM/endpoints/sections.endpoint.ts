@@ -82,6 +82,9 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
       Section,
     ).on("fetched", (success) => {
       if (!success) return;
+      // Let it handle starting computing - wait for most fresh data
+      if (app.externalAPIs.endpoints.find((e) => e.name === TBMEndpoints.Stops)?.fetching === true) return;
+
       app
         .get("computeInstance")
         .app.queues[3].add("computeNSR", [5e3])
