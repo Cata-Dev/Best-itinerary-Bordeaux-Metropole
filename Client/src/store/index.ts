@@ -15,7 +15,7 @@ interface QuerySettings {
 const defaultQuerySettings: QuerySettings = {
   departureTime: formatDateToInput(new Date()),
   maxWalkDistance: 1000,
-  walkSpeed: 5.0,
+  walkSpeed: 3.6,
   transports: {
     TBM: true,
     SNCF: true,
