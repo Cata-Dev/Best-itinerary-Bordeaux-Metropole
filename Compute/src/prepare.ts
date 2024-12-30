@@ -10,18 +10,17 @@ import stopsModelInit, { dbTBM_Stops } from "data/lib/models/TBM/TBM_stops.model
 import TBMScheduledRoutesModelInit, {
   dbTBM_ScheduledRoutes,
 } from "data/lib/models/TBM/TBMScheduledRoutes.model";
+import TBMSchedulesInit from "data/lib/models/TBM/TBM_schedules.model";
 import NonScheduledRoutesModelInit, { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";
 import { PopulateRef, UnpackRefType } from "./utils";
 import { mapAsync } from "./utils/asyncs";
-import { Application } from "./base";
+import { BaseApplication } from "./base";
 
-async function makeData(
-  app: Application,
-): Promise<Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]> {
-  app.logger.info("Preparing data....");
-
+const prepareMakingData = async (app: BaseApplication) => {
+  // DB-related stuff
   const sourceDataDB = await initDB(app, app.config.sourceDB);
   const stopsModel = stopsModelInit(sourceDataDB);
+  TBMSchedulesInit(sourceDataDB);
   const TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(sourceDataDB);
   const NonScheduledRoutesModel = NonScheduledRoutesModelInit(sourceDataDB);
 
@@ -65,79 +64,83 @@ async function makeData(
   type NonScheduledRoute = Omit<dbNonScheduledRoute, keyof NonScheduledRoutesOverwritten> &
     NonScheduledRoutesOverwritten;
 
-  const dbScheduledRoutes = (await TBMScheduledRoutesModel.find<DocumentType<ScheduledRoute>>(
-    {},
-    dbScheduledRoutesProjection,
-  )
-    // Add ability to use binary search
-    .sort({ _id: 1 })
-    .populate("trips.schedules", { ...dbSchedulesProjection, _id: 0, __t: 0 })
-    .lean()
-    .exec()) as ScheduledRoute[];
+  return async (): Promise<Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]> => {
+    app.logger.info("Making data....");
 
-  const dbStops = (await stopsModel
-    .find<DocumentType<Stop>>({ coords: { $not: { $elemMatch: { $eq: Infinity } } } }, dbStopProjection)
-    .lean()
-    .exec()) as Stop[];
+    const dbScheduledRoutes = (await TBMScheduledRoutesModel.find<DocumentType<ScheduledRoute>>(
+      {},
+      dbScheduledRoutesProjection,
+    )
+      // Add ability to use binary search
+      .sort({ _id: 1 })
+      .populate("trips.schedules", { ...dbSchedulesProjection, _id: 0, __t: 0 })
+      .lean()
+      .exec()) as ScheduledRoute[];
 
-  //Query must associate (s, from) AND (from, s) forall s in stops !
-  const dbNonScheduledRoutes = async (
-    stopId: NonScheduledRoutesOverwritten["from"],
-    additionalQuery: FilterQuery<dbNonScheduledRoute> = {},
-  ) =>
-    (
-      (await NonScheduledRoutesModel.find<DocumentType<NonScheduledRoute>>(
-        { $and: [{ $or: [{ from: stopId }, { to: stopId }] }, additionalQuery] },
-        { ...dbNonScheduledRoutesProjection, _id: 0 },
-      )
-        .lean()
-        .exec()) as NonScheduledRoute[]
-    ).map(({ from, to, distance }) => ({ distance, to: to === stopId ? from : to }));
+    const dbStops = (await stopsModel
+      .find<DocumentType<Stop>>({ coords: { $not: { $elemMatch: { $eq: Infinity } } } }, dbStopProjection)
+      .lean()
+      .exec()) as Stop[];
 
-  const RAPTORData = SharedRAPTORData.makeFromRawData(
-    await mapAsync(dbStops, async ({ _id, coords }) => ({
-      id: _id,
-      lat: coords[0],
-      long: coords[1],
-      connectedRoutes: dbScheduledRoutes
-        .filter((ScheduledRoute) => ScheduledRoute.stops.find((stopId) => stopId === _id))
-        .map(({ _id }) => _id),
-      transfers: (
-        await dbNonScheduledRoutes(_id, {
-          distance: {
-            $lte:
-              // TODO: do no hardcode ?
-              1_000,
-          },
-        })
-      ).map(({ to, distance }) => ({
-        to,
-        length: distance,
+    // Query must associate (s, from) AND (from, s) forall s in stops !
+    const dbNonScheduledRoutes = async (
+      stopId: NonScheduledRoutesOverwritten["from"],
+      additionalQuery: FilterQuery<dbNonScheduledRoute> = {},
+    ) =>
+      (
+        (await NonScheduledRoutesModel.find<DocumentType<NonScheduledRoute>>(
+          { $and: [{ $or: [{ from: stopId }, { to: stopId }] }, additionalQuery] },
+          { ...dbNonScheduledRoutesProjection, _id: 0 },
+        )
+          .lean()
+          .exec()) as NonScheduledRoute[]
+      ).map(({ from, to, distance }) => ({ distance, to: to === stopId ? from : to }));
+
+    const RAPTORData = SharedRAPTORData.makeFromRawData(
+      await mapAsync(dbStops, async ({ _id, coords }) => ({
+        id: _id,
+        lat: coords[0],
+        long: coords[1],
+        connectedRoutes: dbScheduledRoutes
+          .filter((ScheduledRoute) => ScheduledRoute.stops.find((stopId) => stopId === _id))
+          .map(({ _id }) => _id),
+        transfers: (
+          await dbNonScheduledRoutes(_id, {
+            distance: {
+              $lte:
+                // TODO: do no hardcode ?
+                1_000,
+            },
+          })
+        ).map(({ to, distance }) => ({
+          to,
+          length: distance,
+        })),
       })),
-    })),
-    dbScheduledRoutes.map(
-      ({ _id, stops, trips }) =>
-        [
-          _id,
-          stops,
-          trips.map(({ tripId, schedules }) => ({
-            id: tripId,
-            times: schedules.map((schedule) =>
-              "hor_estime" in schedule
-                ? ([
-                    schedule.hor_estime.getTime() || SharedRAPTORData.MAX_SAFE_TIMESTAMP,
-                    schedule.hor_estime.getTime() || SharedRAPTORData.MAX_SAFE_TIMESTAMP,
-                  ] satisfies [unknown, unknown])
-                : ([Infinity, Infinity] satisfies [unknown, unknown]),
-            ),
-          })),
-        ] satisfies [unknown, unknown, unknown],
-    ),
-  );
+      dbScheduledRoutes.map(
+        ({ _id, stops, trips }) =>
+          [
+            _id,
+            stops,
+            trips.map(({ tripId, schedules }) => ({
+              id: tripId,
+              times: schedules.map((schedule) =>
+                "hor_estime" in schedule
+                  ? ([
+                      schedule.hor_estime.getTime() || SharedRAPTORData.MAX_SAFE_TIMESTAMP,
+                      schedule.hor_estime.getTime() || SharedRAPTORData.MAX_SAFE_TIMESTAMP,
+                    ] satisfies [unknown, unknown])
+                  : ([Infinity, Infinity] satisfies [unknown, unknown]),
+              ),
+            })),
+          ] satisfies [unknown, unknown, unknown],
+      ),
+    );
 
-  app.logger.info("Data prepared.");
+    app.logger.info("Data made.");
 
-  return RAPTORData.internalData;
-}
+    return RAPTORData.internalData;
+  };
+};
 
-export { makeData };
+export { prepareMakingData };

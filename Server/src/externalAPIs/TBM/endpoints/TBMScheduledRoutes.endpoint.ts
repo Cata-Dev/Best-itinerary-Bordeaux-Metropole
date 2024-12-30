@@ -10,7 +10,6 @@ import { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
 import { dbTBM_Trips } from "data/lib/models/TBM/TBM_trips.model";
 import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "data/lib/models/TBM/TBMScheduledRoutes.model";
 import { logger } from "../../../logger";
-import { makeData } from "compute/lib/prepare";
 
 export default (
   app: Application,
@@ -148,10 +147,7 @@ export function TBMScheduledRoutesEndpointHook(app: Application) {
     if (endpointsForScheduledRoutes.find((e) => e.name != fetchedEndpoint.name && e.fetching))
       return (refreshAvoided = Date.now());
     ScheduledRoutesEndpoint?.fetch(true, app.get("debug"))
-      .then(async () => {
-        const computeInstance = app.get("computeInstance");
-        computeInstance.updateData(await makeData(computeInstance.app));
-      })
+      .then(() => app.get("computeInstance").refreshData())
       .catch(logger.warn);
   };
   endpointsForScheduledRoutes.forEach((e) => e.on("fetched", listener(e)));
