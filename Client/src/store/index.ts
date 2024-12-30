@@ -1,9 +1,9 @@
-import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
 import type { ItineraryQuery } from "server";
-import { theme, toggleDarkMode } from "./theme/theme";
-import { client, APIRefresh } from "./feathers/feathers";
-import { formatDateToInput, type TransportMode, type TransportProvider } from "./utils";
 import type { SNCFEndpoints } from "server/externalAPIs/SNCF/index";
+import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
+import { APIRefresh, client } from "./feathers/feathers";
+import { theme, toggleDarkMode } from "./theme/theme";
+import { formatDateToInput, type TransportMode, type TransportProvider } from "./utils";
 
 interface QuerySettings {
   departureTime: string;
@@ -56,31 +56,31 @@ type colorType = "bg" | "t";
 type colorPalette<Base extends string> = `${Base}-${colorType}`;
 
 export {
-  toggleDarkMode,
-  theme,
-  client,
   APIRefresh,
-  defaultQuerySettings,
+  client,
   defaultLocation,
+  defaultQuerySettings,
   normalizeLocationForQuery,
+  theme,
+  toggleDarkMode,
 };
-export type { QuerySettings, colorTransports, colorComm, colorPalette, Location };
+export type { colorComm, colorPalette, colorTransports, Location, QuerySettings };
 
 export {
+  compareObjectForEach,
+  equalObjects,
   formatDate,
+  getNewTopZIndex,
+  parseJSON,
+  rebaseObject,
   transportToIcon,
   transportToType,
-  equalObjects,
-  rebaseObject,
-  compareObjectForEach,
-  parseJSON,
-  getNewTopZIndex,
 } from "./utils";
 export type {
+  Obj,
   TransportIcon,
   TransportMode,
   TransportProvider,
   UnknownIcon,
   UnknownLiteral,
-  Obj,
 } from "./utils";
