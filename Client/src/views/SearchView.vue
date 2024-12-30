@@ -4,7 +4,7 @@ import { onBeforeRouteUpdate } from "vue-router";
 import type { Itinerary } from "server";
 import LocationSearch from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
-import BadeModal from "@/components/BaseModal.vue";
+import BaseModal from "@/components/BaseModal.vue";
 import ResultItem from "@/components/ResultItem.vue";
 import { client, APIRefresh, type colorPalette, type colorComm } from "@/store";
 import {
@@ -24,7 +24,7 @@ import {
 const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const settingsCompo = ref<InstanceType<typeof ExtraSettings> | null>(null);
-const modalCompo = ref<InstanceType<typeof BadeModal> | null>(null);
+const modalCompo = ref<InstanceType<typeof BaseModal> | null>(null);
 
 const searchElem = ref<HTMLButtonElement | null>(null);
 const showSettingsButton = ref<HTMLButtonElement | null>(null);
@@ -198,7 +198,7 @@ async function selectResult(idx: number) {
       </div>
       <div v-else class="grid gap-2 row-start-3" />
     </div>
-    <BadeModal ref="modalCompo" :main-classes="modal.colors">
+    <BaseModal ref="modalCompo" :main-classes="modal.colors">
       <template #title>
         <h1 class="text-2xl text-center">
           <font-awesome-icon :icon="modal.icon || 'spinner'" class="mr-1" />
@@ -208,7 +208,7 @@ async function selectResult(idx: number) {
       <template #content>
         {{ modal.content }}
       </template>
-    </BadeModal>
+    </BaseModal>
   </div>
 </template>
 
