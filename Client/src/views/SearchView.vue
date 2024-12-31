@@ -119,7 +119,7 @@ async function selectResult(idx: number) {
                 ref="showSettingsButton"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
                 :class="{ 'rotate-180': settingsCompo?.shown }"
-                @click="settingsCompo?.show(), showSettingsButton?.blur()"
+                @click="(settingsCompo?.show(), showSettingsButton?.blur())"
               >
                 <font-awesome-icon
                   icon="sliders-h"
@@ -129,7 +129,7 @@ async function selectResult(idx: number) {
               <button
                 ref="searchElem"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
-                @click="fetchResult(), searchElem?.blur()"
+                @click="(fetchResult(), searchElem?.blur())"
               >
                 <font-awesome-icon
                   icon="search-location"
