@@ -201,21 +201,20 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
   }
 
   async find(_params?: ServiceParams): Promise<Geocode[]> {
-    if (!_params || typeof _params.query?.id !== "string")
-      throw new BadRequest("missing id parameter in query");
+    if (!_params || !_params.query) throw new BadRequest("Missing required query.");
 
     type doc = DistributedProdiverClass<GEOCODE_type> & { GEOCODE_type: GEOCODE_type };
 
-    let docs: doc[] = [];
+    const docs: doc[] = [];
     for (const [endpoint, query] of await this.parseId(_params.query.id)) {
       try {
         const r: DistributedProdiverClass<GEOCODE_type>[] = await (endpoint.model as unknown as Model<object>)
           .find(query)
           .collation({ locale: "fr", strength: 1 })
-          .limit(500)
+          .limit(_params.query.max)
           .lean<DistributedProdiverClass<GEOCODE_type>[]>();
         if (r) {
-          if (endpoint.name == TBMEndpoints.Addresses && _params.query?.uniqueVoies)
+          if (endpoint.name == TBMEndpoints.Addresses && _params.query.uniqueVoies)
             docs.push(
               ...filterUniqueVoies(
                 (r as ProviderClass<TBMEndpoints.Addresses>[]).map((r) => ({
@@ -237,7 +236,8 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
 
     if (!docs.length) return [];
 
-    if (_params.query.max) docs = docs.slice(0, parseInt(`${_params.query.max}`) || undefined);
+    // Keep only wanted number of results
+    docs.splice(_params.query.max);
 
     const results: Geocode[] = [];
     for (const doc of docs) {

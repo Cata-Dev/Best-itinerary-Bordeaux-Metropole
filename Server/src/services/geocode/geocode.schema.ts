@@ -8,6 +8,7 @@ import { dataValidator, queryValidator } from "../../validators";
 import { TBMEndpoints } from "../../externalAPIs/TBM/index";
 import { SNCFEndpoints } from "../../externalAPIs/SNCF/index";
 import type { GeocodeService } from "./geocode.class";
+import { defaultOptional } from "../../utils/schemas";
 
 const AddressesObject = Type.Object(
   {
@@ -133,13 +134,15 @@ export const geocodePatchResolver = resolve<Geocode, HookContext<GeocodeService>
 // Schema for allowed query properties
 // Unused here, custom service without storage
 export const geocodeQueryProperties = Type.Object({});
-export const geocodeQuerySchema = Type.Object(
-  {
-    id: Type.String(),
-    uniqueVoies: Type.Boolean(),
-    max: Type.Integer(),
-  },
-  { additionalProperties: false },
+export const geocodeQuerySchema = Type.Optional(
+  Type.Object(
+    {
+      id: Type.String(),
+      uniqueVoies: defaultOptional(Type.Boolean({ default: false })),
+      max: defaultOptional(Type.Integer({ default: 10 })),
+    },
+    { additionalProperties: false },
+  ),
 );
 export type GeocodeQuery = Static<typeof geocodeQuerySchema>;
 export const geocodeQueryValidator = getValidator(geocodeQuerySchema, queryValidator);
