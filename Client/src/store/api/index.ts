@@ -72,7 +72,7 @@ async function fetchResult() {
 
   status.value.previousSearch = query;
   try {
-    const r = await client.service("journey").get("paths", { query });
+    const r = await client.service("journey").find({ query });
     if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
 
     result.value = r;
