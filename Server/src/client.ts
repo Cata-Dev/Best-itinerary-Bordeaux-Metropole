@@ -6,13 +6,8 @@ import type { AuthenticationClientOptions } from "@feathersjs/authentication-cli
 import { geocodeClient } from "./services/geocode/geocode.shared";
 export type { Geocode, GeocodeData, GeocodeQuery, GeocodePatch } from "./services/geocode/geocode.shared";
 
-import { itineraryClient } from "./services/itinerary/itinerary.shared";
-export type {
-  Itinerary,
-  ItineraryData,
-  ItineraryQuery,
-  ItineraryPatch,
-} from "./services/itinerary/itinerary.shared";
+import { journeyClient } from "./services/journey/journey.shared";
+export type { Journey, JourneyData, JourneyQuery, JourneyPatch } from "./services/journey/journey.shared";
 
 import { refreshDataClient } from "./services/refresh-data/refresh-data.shared";
 export type {
@@ -52,6 +47,6 @@ export const createClient = <Configuration = unknown>(
 
   client.configure(geocodeClient);
   client.configure(refreshDataClient);
-  client.configure(itineraryClient);
+  client.configure(journeyClient);
   return client;
 };

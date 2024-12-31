@@ -1,36 +1,30 @@
 // For more information about this file see https://dove.feathersjs.com/guides/cli/service.shared.html
 import type { Params } from "@feathersjs/feathers";
 import type { ClientApplication } from "../../client";
-import type {
-  Itinerary,
-  ItineraryData,
-  ItineraryPatch,
-  ItineraryQuery,
-  ItineraryService,
-} from "./itinerary.class";
+import type { Journey, JourneyData, JourneyPatch, JourneyQuery, JourneyService } from "./journey.class";
 
-export type { Itinerary, ItineraryData, ItineraryPatch, ItineraryQuery };
+export type { Journey, JourneyData, JourneyPatch, JourneyQuery };
 
-export type ItineraryClientService = Pick<
-  ItineraryService<Params<ItineraryQuery>>,
-  (typeof itineraryMethods)[number]
+export type JourneyClientService = Pick<
+  JourneyService<Params<JourneyQuery>>,
+  (typeof journeyMethods)[number]
 >;
 
-export const itineraryPath = "itinerary";
+export const journeyPath = "journey";
 
-export const itineraryMethods = ["find", "get"] as const;
+export const journeyMethods = ["find", "get"] as const;
 
-export const itineraryClient = (client: ClientApplication) => {
+export const journeyClient = (client: ClientApplication) => {
   const connection = client.get("connection");
 
-  client.use(itineraryPath, connection.service(itineraryPath), {
-    methods: itineraryMethods,
+  client.use(journeyPath, connection.service(journeyPath), {
+    methods: journeyMethods,
   });
 };
 
 // Add this service to the client service type index
 declare module "../../client" {
   interface ServiceTypes {
-    [itineraryPath]: ItineraryClientService;
+    [journeyPath]: JourneyClientService;
   }
 }

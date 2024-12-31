@@ -2,16 +2,16 @@
 import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import type { Application } from "../../declarations";
-import type { Itinerary, ItineraryData, ItineraryPatch, ItineraryQuery } from "./itinerary.schema";
+import type { Journey, JourneyData, JourneyPatch, JourneyQuery } from "./journey.schema";
 
-export type { Itinerary, ItineraryData, ItineraryPatch, ItineraryQuery };
+export type { Journey, JourneyData, JourneyPatch, JourneyQuery };
 
-export interface ItineraryServiceOptions {
+export interface JourneyServiceOptions {
   app: Application;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ItineraryParams extends Params<ItineraryQuery> {}
+export interface JourneyParams extends Params<JourneyQuery> {}
 
 import { BadRequest, NotFound, GeneralError } from "@feathersjs/errors";
 import { hasLastActualization } from "../refresh-data/refresh-data.class";
@@ -49,8 +49,8 @@ function formatAddress(addressDoc: dbAddresses) {
 }
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryParams>
-  implements ServiceInterface<Itinerary, ItineraryData, ServiceParams, ItineraryPatch>
+export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
+  implements ServiceInterface<Journey, JourneyData, ServiceParams, JourneyPatch>
 {
   private readonly app: Application;
   private readonly resultModel: ReturnType<typeof resultModelInit>;
@@ -63,7 +63,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
   private readonly NonScheduledRoutesModel: ReturnType<typeof NonScheduledRoutesModelInit>;
   private readonly TBMScheduledRoutesModel: ReturnType<typeof TBMScheduledRoutesModelInit>;
 
-  constructor(public options: ItineraryServiceOptions) {
+  constructor(public options: JourneyServiceOptions) {
     this.app = options.app;
     this.resultModel = resultModelInit(this.app.get("computeDBConn"));
     this.AddressesModel = AddressesModelInit(this.app.get("sourceDBConn"));
@@ -76,7 +76,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
     this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("sourceDBConn"));
   }
 
-  private populateResult(result: dbComputeResult): Promise<Itinerary["paths"]> {
+  private populateResult(result: dbComputeResult): Promise<Journey["paths"]> {
     return mapAsync(result.journeys, async (j) => {
       const from = isLocationAddress(result.from)
         ? formatAddress((await this.AddressesModel.findById(result.from.id).lean())!)
@@ -91,7 +91,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
       return {
         departure: j[0].time,
         from,
-        stages: await mapAsync<LabelFoot | LabelVehicle, Itinerary["paths"][number]["stages"][number]>(
+        stages: await mapAsync<LabelFoot | LabelVehicle, Journey["paths"][number]["stages"][number]>(
           j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {
             if (!isLabelFoot(l) && !isLabelVehicle(l)) throw new Error("Unexpected journey.");
             return true;
@@ -125,7 +125,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
                 details: {
                   distance: l.transfer.length,
                 },
-              } satisfies Itinerary["paths"][number]["stages"][number];
+              } satisfies Journey["paths"][number]["stages"][number];
             }
 
             // Only remaining possibility
@@ -157,14 +157,14 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
                 line: lineRoute.rs_sv_ligne_a.libelle,
                 type: lineRoute.vehicule,
               },
-            } satisfies Itinerary["paths"][number]["stages"][number];
+            } satisfies Journey["paths"][number]["stages"][number];
           },
         ),
       };
     });
   }
 
-  async find(_params?: ServiceParams): Promise<Itinerary> {
+  async find(_params?: ServiceParams): Promise<Journey> {
     if (!_params || !_params.query) throw new BadRequest(`Missing required parameter(s).`);
 
     const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
@@ -231,7 +231,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
     };
   }
 
-  async get(id: Id, _?: ServiceParams): Promise<Itinerary> {
+  async get(id: Id, _?: ServiceParams): Promise<Journey> {
     const result = await this.resultModel.findById(id);
     if (!result) throw new NotFound("Unknown result.");
 

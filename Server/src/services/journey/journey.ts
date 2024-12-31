@@ -1,41 +1,35 @@
 import { hooks as schemaHooks } from "@feathersjs/schema";
 
 import {
-  itineraryQueryValidator,
-  itineraryResolver,
-  itineraryExternalResolver,
-  itineraryQueryResolver,
-} from "./itinerary.schema";
+  journeyQueryValidator,
+  journeyResolver,
+  journeyExternalResolver,
+  journeyQueryResolver,
+} from "./journey.schema";
 
 import type { Application } from "../../declarations";
-import { ItineraryService, getOptions } from "./itinerary.class";
-import { itineraryPath, itineraryMethods } from "./itinerary.shared";
+import { JourneyService, getOptions } from "./journey.class";
+import { journeyPath, journeyMethods } from "./journey.shared";
 
-export * from "./itinerary.class";
-export * from "./itinerary.schema";
+export * from "./journey.class";
+export * from "./journey.schema";
 
 // A configure function that registers the service and its hooks via `app.configure`
-export const itinerary = (app: Application) => {
+export const journey = (app: Application) => {
   // Register our service on the Feathers application
-  app.use(itineraryPath, new ItineraryService(getOptions(app)), {
+  app.use(journeyPath, new JourneyService(getOptions(app)), {
     // A list of all methods this service exposes externally
-    methods: itineraryMethods,
+    methods: journeyMethods,
     // You can add additional custom events to be sent to clients here
     events: [],
   });
   // Initialize hooks
-  app.service(itineraryPath).hooks({
+  app.service(journeyPath).hooks({
     around: {
-      all: [
-        schemaHooks.resolveExternal(itineraryExternalResolver),
-        schemaHooks.resolveResult(itineraryResolver),
-      ],
+      all: [schemaHooks.resolveExternal(journeyExternalResolver), schemaHooks.resolveResult(journeyResolver)],
     },
     before: {
-      all: [
-        schemaHooks.validateQuery(itineraryQueryValidator),
-        schemaHooks.resolveQuery(itineraryQueryResolver),
-      ],
+      all: [schemaHooks.validateQuery(journeyQueryValidator), schemaHooks.resolveQuery(journeyQueryResolver)],
       get: [],
       find: [],
     },
@@ -51,6 +45,6 @@ export const itinerary = (app: Application) => {
 // Add this service to the service type index
 declare module "../../declarations" {
   interface ServiceTypes {
-    [itineraryPath]: ItineraryService;
+    [journeyPath]: JourneyService;
   }
 }
