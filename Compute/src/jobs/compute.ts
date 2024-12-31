@@ -20,7 +20,7 @@ import ResultModelInit, {
   dbComputeResult,
 } from "data/lib/models/Compute/result.model";
 import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
-import { ItineraryQuery } from "server";
+import { JourneyQuery } from "server";
 import type { BaseApplication } from "../base";
 import { withDefaults } from "../utils";
 import type { JobFn, JobResult } from ".";
@@ -30,8 +30,8 @@ import { TBMEndpoints } from "server/externalAPIs/TBM/index";
 declare module "." {
   interface Jobs {
     compute: (
-      ps: Extract<ItineraryQuery, { from: unknown }>["from"],
-      pt: Extract<ItineraryQuery, { to: unknown }>["to"],
+      ps: Extract<JourneyQuery, { from: unknown }>["from"],
+      pt: Extract<JourneyQuery, { to: unknown }>["to"],
       date: Date,
       settings: Partial<RAPTORRunSettings>,
     ) => DocumentType<dbComputeResult>["_id"];

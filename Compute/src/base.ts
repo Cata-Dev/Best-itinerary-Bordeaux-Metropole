@@ -1,6 +1,6 @@
 import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
 import { makeLogger } from "common/logger";
-import { ItineraryQuery } from "server";
+import { JourneyQuery } from "server";
 import { config } from "data/lib/config";
 import { mapAsync } from "./utils/asyncs";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
@@ -49,8 +49,8 @@ export type Application<T extends SchedulerInstanceType = SchedulerInstanceType>
         queues: Instances<typeof jobNames, "queue">;
         queuesEvents: Instances<typeof jobNames, "queuesEvents">;
         computeFullJourney: (
-          from: Extract<ItineraryQuery, { from: unknown }>["from"],
-          to: Extract<ItineraryQuery, { to: unknown }>["to"],
+          from: Extract<JourneyQuery, { from: unknown }>["from"],
+          to: Extract<JourneyQuery, { to: unknown }>["to"],
           departureTime: Date,
           settings: Partial<RAPTORRunSettings>,
         ) => Promise<
