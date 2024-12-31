@@ -18,7 +18,7 @@ export type ItineraryClientService = Pick<
 
 export const itineraryPath = "itinerary";
 
-export const itineraryMethods = ["get"] as const;
+export const itineraryMethods = ["find", "get"] as const;
 
 export const itineraryClient = (client: ClientApplication) => {
   const connection = client.get("connection");

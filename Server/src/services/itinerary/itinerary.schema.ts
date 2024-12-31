@@ -147,33 +147,27 @@ const locationQuery = Type.Object(
   },
   { additionalProperties: false },
 );
-export const itineraryQuerySchema = Type.Union(
-  [
-    Type.Intersect([
-      Type.Object(
-        {
-          from: locationQuery,
-          to: locationQuery,
-          transports: Type.Optional(
-            Type.Partial(
-              Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
-            ),
+export const itineraryQuerySchema = Type.Intersect([
+  // Must be optional for old result query (=> no query, only id)
+  Type.Optional(
+    Type.Object(
+      {
+        from: locationQuery,
+        to: locationQuery,
+        transports: Type.Optional(
+          Type.Partial(
+            Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
           ),
-          departureTime: Type.Optional(Type.String()),
-          maxWalkDistance: Type.Optional(Type.Integer()),
-          walkSpeed: Type.Optional(Type.Number()),
-        },
-        { additionalProperties: false },
-      ),
-      refreshDataQuerySchema,
-    ]),
-    // Retrieve old result
-    Type.Object({
-      id: Type.String(),
-    }),
-  ],
-  { additionalProperties: true },
-);
+        ),
+        departureTime: Type.Optional(Type.String()),
+        maxWalkDistance: Type.Optional(Type.Integer()),
+        walkSpeed: Type.Optional(Type.Number()),
+      },
+      { additionalProperties: false },
+    ),
+  ),
+  Type.Optional(refreshDataQuerySchema),
+]);
 export type ItineraryQuery = Static<typeof itineraryQuerySchema>;
 export const itineraryQueryValidator = getValidator(itineraryQuerySchema, queryValidator);
 export const itineraryQueryResolver = resolve<ItineraryQuery, HookContext<ItineraryService>>({});

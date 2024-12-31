@@ -164,95 +164,84 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
     });
   }
 
-  async get(id: Id, _params?: ServiceParams): Promise<Itinerary> {
-    switch (id) {
-      case "paths": {
-        if (!_params || !_params.query || !("from" in _params.query && "to" in _params.query))
-          throw new BadRequest(`Missing parameter(s).`);
+  async find(_params?: ServiceParams): Promise<Itinerary> {
+    if (!_params || !_params.query) throw new BadRequest(`Missing required parameter(s).`);
 
-        const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
-        const force = (_params && _params.query?.force) ?? false;
+    const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
+    const force = (_params && _params.query?.force) ?? false;
 
-        const RAPTORSettings: JobData<"compute">[3] = {};
-        if (_params.query.walkSpeed) RAPTORSettings.walkSpeed = _params.query.walkSpeed;
+    const RAPTORSettings: JobData<"compute">[3] = {};
+    if (_params.query.walkSpeed) RAPTORSettings.walkSpeed = _params.query.walkSpeed;
 
-        const params: Parameters<
-          ReturnType<typeof this.app.get<"computeInstance">>["app"]["computeFullJourney"]
-        > = [
-          _params.query.from,
-          _params.query.to,
-          new Date(_params.query.departureTime ?? Date.now()),
-          RAPTORSettings,
-        ];
+    const params: Parameters<
+      ReturnType<typeof this.app.get<"computeInstance">>["app"]["computeFullJourney"]
+    > = [
+      _params.query.from,
+      _params.query.to,
+      new Date(_params.query.departureTime ?? Date.now()),
+      RAPTORSettings,
+    ];
 
-        const endpoints = this.app.externalAPIs.endpoints.filter((endpoint) => endpoint.rate < 24 * 3600);
-        let lastActualization = 0;
-        const actualization = mapAsync(endpoints, (e) =>
-          this.app
-            .service("refresh-data")
-            .get(e.name, {
-              query: {
-                waitForUpdate,
-                force,
-              },
-            })
-            .catch((r) => {
-              if (
-                waitForUpdate &&
-                hasData(r) &&
-                hasLastActualization(r.data) &&
-                r.data.lastActualization > lastActualization
-              )
-                lastActualization = r.data.lastActualization;
-            }),
-        );
+    const endpoints = this.app.externalAPIs.endpoints.filter((endpoint) => endpoint.rate < 24 * 3600);
+    let lastActualization = 0;
+    const actualization = mapAsync(endpoints, (e) =>
+      this.app
+        .service("refresh-data")
+        .get(e.name, {
+          query: {
+            waitForUpdate,
+            force,
+          },
+        })
+        .catch((r) => {
+          if (
+            waitForUpdate &&
+            hasData(r) &&
+            hasLastActualization(r.data) &&
+            r.data.lastActualization > lastActualization
+          )
+            lastActualization = r.data.lastActualization;
+        }),
+    );
 
-        if (waitForUpdate) {
-          // Ask for a possible non-daily data actualization
-          await actualization;
-          lastActualization = Date.now();
-        }
-
-        const job = (await this.app.get("computeInstance").app.computeFullJourney(...params)).job;
-        let resultId: (typeof job)["returnvalue"];
-
-        try {
-          resultId = await job.waitUntilFinished(this.app.get("computeInstance").app.queuesEvents[0]);
-        } catch (e) {
-          throw new GeneralError("Error while computing paths", e);
-        }
-
-        const result = await this.resultModel.findById(resultId);
-        if (!result) throw new GeneralError("Internal error while retrieving results");
-
-        return {
-          code: 200,
-          message: "OK",
-          lastActualization,
-          id: resultId,
-          paths: await this.populateResult(result),
-        };
-      }
-
-      case "oldResult": {
-        if (!_params || !_params.query || !("id" in _params.query))
-          throw new BadRequest(`Missing "id" parameter.`);
-
-        const result = await this.resultModel.findById(_params.query.id);
-        if (!result) throw new NotFound("Unknown result.");
-
-        return {
-          code: 200,
-          message: "OK",
-          lastActualization: 0,
-          id: _params.query.id,
-          paths: await this.populateResult(result),
-        };
-      }
-
-      default:
-        throw new NotFound("Unknown command.");
+    if (waitForUpdate) {
+      // Ask for a possible non-daily data actualization
+      await actualization;
+      lastActualization = Date.now();
     }
+
+    const job = (await this.app.get("computeInstance").app.computeFullJourney(...params)).job;
+    let resultId: (typeof job)["returnvalue"];
+
+    try {
+      resultId = await job.waitUntilFinished(this.app.get("computeInstance").app.queuesEvents[0]);
+    } catch (e) {
+      throw new GeneralError("Error while computing paths", e);
+    }
+
+    const result = await this.resultModel.findById(resultId);
+    if (!result) throw new GeneralError("Internal error while retrieving results");
+
+    return {
+      code: 200,
+      message: "OK",
+      lastActualization,
+      id: resultId,
+      paths: await this.populateResult(result),
+    };
+  }
+
+  async get(id: Id, _?: ServiceParams): Promise<Itinerary> {
+    const result = await this.resultModel.findById(id);
+    if (!result) throw new NotFound("Unknown result.");
+
+    return {
+      code: 200,
+      message: "OK",
+      lastActualization: 0,
+      id,
+      paths: await this.populateResult(result),
+    };
   }
 }
 

@@ -37,6 +37,7 @@ export const itinerary = (app: Application) => {
         schemaHooks.resolveQuery(itineraryQueryResolver),
       ],
       get: [],
+      find: [],
     },
     after: {
       all: [],
