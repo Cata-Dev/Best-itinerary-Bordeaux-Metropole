@@ -165,7 +165,8 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
   }
 
   async find(_params?: ServiceParams): Promise<Journey> {
-    if (!_params || !_params.query) throw new BadRequest(`Missing required parameter(s).`);
+    if (!_params || !_params.query || !("from" in _params.query))
+      throw new BadRequest(`Missing required parameter(s).`);
 
     const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
     const force = (_params && _params.query?.force) ?? false;

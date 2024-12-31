@@ -147,9 +147,8 @@ const locationQuery = Type.Object(
   },
   { additionalProperties: false },
 );
-export const journeyQuerySchema = Type.Intersect([
-  // Must be optional for old result query (=> no query, only id)
-  Type.Optional(
+export const journeyQuerySchema = Type.Union([
+  Type.Intersect([
     Type.Object(
       {
         from: locationQuery,
@@ -165,8 +164,11 @@ export const journeyQuerySchema = Type.Intersect([
       },
       { additionalProperties: false },
     ),
-  ),
-  Type.Optional(refreshDataQuerySchema),
+
+    Type.Optional(refreshDataQuerySchema),
+  ]),
+  // Must allow empty query for old result query (=> no query, only id)
+  Type.Object({}, { additionalProperties: false }),
 ]);
 export type JourneyQuery = Static<typeof journeyQuerySchema>;
 export const journeyQueryValidator = getValidator(journeyQuerySchema, queryValidator);
