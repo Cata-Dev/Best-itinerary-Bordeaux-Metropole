@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
-import type { Itinerary } from "server";
+import type { Journey } from "server";
 import LocationSearch from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
 import BaseModal from "@/components/BaseModal.vue";
@@ -155,7 +155,7 @@ async function selectResult(idx: number) {
       </div>
       <div v-if="currentJourney" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
-          :title="`Alternative #${(result as Itinerary).paths.indexOf(currentJourney) + 1}`"
+          :title="`Alternative #${(result as Journey).paths.indexOf(currentJourney) + 1}`"
           :total-duration="currentJourney.stages.reduce((acc, v) => acc + v.duration, 0)"
           :total-distance="
             currentJourney.stages.reduce(

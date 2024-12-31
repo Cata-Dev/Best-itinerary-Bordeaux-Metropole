@@ -2,7 +2,7 @@
 import TransportBadge from "@/components/TransportBadge.vue";
 import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
 import { duration } from "common/time";
-import type { Itinerary } from "server";
+import type { Journey } from "server";
 
 interface Props {
   title: string;
@@ -10,7 +10,7 @@ interface Props {
   totalDistance: number;
   departure: number;
   from: string;
-  path: Itinerary["paths"][number]["stages"];
+  path: Journey["paths"][number]["stages"];
   expanded?: boolean;
 }
 

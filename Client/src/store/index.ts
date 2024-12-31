@@ -1,4 +1,4 @@
-import type { ItineraryQuery } from "server";
+import type { JourneyQuery } from "server";
 import type { SNCFEndpoints } from "server/externalAPIs/SNCF/index";
 import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
 import { APIRefresh, client } from "./feathers/feathers";
@@ -22,14 +22,13 @@ const defaultQuerySettings: QuerySettings = {
   },
 };
 
-interface ItineraryQueryLocationOverride {
+interface JourneyQueryLocationOverride {
   type: Exclude<TransportMode, "FOOT"> | TBMEndpoints.Addresses;
 }
 
-type ItineraryQueryLocation = Extract<ItineraryQuery, { from: unknown; to: unknown }>["from"];
+type JourneyQueryLocation = Extract<JourneyQuery, { from: unknown; to: unknown }>["from"];
 
-type Location = Omit<ItineraryQueryLocation, keyof ItineraryQueryLocationOverride> &
-  ItineraryQueryLocationOverride;
+type Location = Omit<JourneyQueryLocation, keyof JourneyQueryLocationOverride> & JourneyQueryLocationOverride;
 
 const defaultLocation = {
   id: -1 as const,
@@ -38,7 +37,7 @@ const defaultLocation = {
   alias: "" as const,
 } satisfies Location;
 
-function normalizeLocationForQuery(loc: Location): ItineraryQueryLocation {
+function normalizeLocationForQuery(loc: Location): JourneyQueryLocation {
   return {
     ...loc,
     type:
