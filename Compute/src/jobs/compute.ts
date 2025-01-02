@@ -3,11 +3,7 @@ import { initDB } from "../utils/mongoose";
 // Needed to solve "Reflect.getMetadata is not a function" error of typegoose
 import "core-js/features/reflect";
 
-import type { RAPTORRunSettings } from "raptor";
-import SharedRAPTOR from "raptor/lib/shared";
-import { Stop } from "raptor/lib/Structures";
-import { SharedRAPTORData } from "raptor/lib/SharedStructures";
-import { defaultRAPTORRunSettings } from "data/lib/values/RAPTOR";
+import { DocumentType } from "@typegoose/typegoose";
 import ResultModelInit, {
   JourneyLabelType,
   LabelBase,
@@ -19,13 +15,17 @@ import ResultModelInit, {
   LocationType,
   dbComputeResult,
 } from "data/lib/models/Compute/result.model";
+import { TBMEndpoints } from "data/lib/models/TBM";
 import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
+import { defaultRAPTORRunSettings } from "data/lib/values/RAPTOR";
+import type { RAPTORRunSettings } from "raptor";
+import SharedRAPTOR from "raptor/lib/shared";
+import { SharedRAPTORData } from "raptor/lib/SharedStructures";
+import { Stop } from "raptor/lib/Structures";
 import { JourneyQuery } from "server";
+import type { JobFn, JobResult } from ".";
 import type { BaseApplication } from "../base";
 import { withDefaults } from "../utils";
-import type { JobFn, JobResult } from ".";
-import { DocumentType } from "@typegoose/typegoose";
-import { TBMEndpoints } from "server/externalAPIs/TBM/index";
 
 declare module "." {
   interface Jobs {

@@ -1,11 +1,15 @@
 import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
-import { approachedStopName } from "data/lib/models/TBM/NonScheduledRoutes.model";
+import { unpackGraphNode } from "@catatomik/dijkstra/lib/utils/Graph";
+import { Duration } from "common/benchmark";
+import nonScheduledRoutesModelInit, {
+  approachedStopName,
+  dbFootPaths,
+} from "data/lib/models/TBM/NonScheduledRoutes.model";
 import sectionsModelInit from "data/lib/models/TBM/sections.model";
 import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
-import nonScheduledRoutesModelInit, { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";
 import { JobFn, JobResult } from ".";
 import { BaseApplication } from "../base";
-import { initDB } from "../utils/mongoose";
+import { limiter } from "../utils/asyncs";
 import {
   approachPoint,
   FootGraphNode,
@@ -15,9 +19,7 @@ import {
   refreshWithApproachedPoint,
   revertFromApproachedPoint,
 } from "../utils/foot/graph";
-import { unpackGraphNode } from "@catatomik/dijkstra/lib/utils/Graph";
-import { limiter } from "../utils/asyncs";
-import { Duration } from "common/benchmark";
+import { initDB } from "../utils/mongoose";
 
 /**
  * Geographical point, WGS coordinates
