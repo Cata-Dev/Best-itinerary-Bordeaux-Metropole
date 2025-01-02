@@ -45,7 +45,7 @@ export class RefreshDataService<ServiceParams extends RefreshDataParams = Refres
         let count = 0;
         let lastActualization = 0;
 
-        for (const endpoint of endpoints) {
+        for (const endpoint of Object.values(endpoints)) {
           this.get(endpoint.name, _params)
             .then((r) => {
               if (r.actualized) {
@@ -61,7 +61,7 @@ export class RefreshDataService<ServiceParams extends RefreshDataParams = Refres
             .finally(() => {
               if (waitForUpdate) {
                 count++;
-                if (count === endpoints.length)
+                if (count === Object.values(endpoints).length)
                   // Every update ended
                   res({
                     actualized: success,
@@ -79,8 +79,8 @@ export class RefreshDataService<ServiceParams extends RefreshDataParams = Refres
           });
       });
 
-    const matchingEndpoint = endpoints.find((endpoint) => endpoint.name === id);
-    if (!matchingEndpoint) throw new NotFound(`Unknown endpoint.`);
+    if (!(id in endpoints)) throw new NotFound(`Unknown endpoint.`);
+    const matchingEndpoint = endpoints[id as keyof typeof endpoints];
 
     if (matchingEndpoint.fetching) {
       if (waitForUpdate) await matchingEndpoint.fetchPromise;

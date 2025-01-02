@@ -183,7 +183,9 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
       RAPTORSettings,
     ];
 
-    const endpoints = this.app.externalAPIs.endpoints.filter((endpoint) => endpoint.rate < 24 * 3600);
+    const endpoints = Object.values(this.app.externalAPIs.endpoints).filter(
+      (endpoint) => endpoint.rate < 24 * 3600,
+    );
     let lastActualization = 0;
     const actualization = mapAsync(endpoints, (e) =>
       this.app

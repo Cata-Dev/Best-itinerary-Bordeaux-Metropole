@@ -47,7 +47,7 @@ import TBMScheduledRoutesEndpoint, {
 
 declare module "../../declarations" {
   interface ExternalAPIs {
-    TBM: { endpoints: Endpoint<TBMEndpoints>[] };
+    TBM: { endpoints: { [EN in Exclude<TBMEndpoints, TBMEndpoints.Intersections>]: Endpoint<EN> } };
   }
 }
 
@@ -134,26 +134,26 @@ export default (app: Application) => {
   const TBM_tripsEndpointInstantiated = TBM_tripsEndpoint(app, getData)[0];
 
   app.externalAPIs.TBM = {
-    endpoints: [
-      addressesEndpoint(app, getData)[0],
-      sectionsEndpoint(app, getData)[0],
-      TBM_linesEndpoint(app, getData)[0],
-      TBM_lines_routesEndpointInstantiated,
-      TBM_schedulesEndpointInstantiated,
-      TBM_schedulesRtEndpointInstantiated,
-      TBM_stopsEndpoint(app, getData)[0],
-      TBM_tripsEndpointInstantiated,
-      TBMScheduledRoutesEndpoint(
+    endpoints: {
+      [TBMEndpoints.Addresses]: addressesEndpoint(app, getData)[0],
+      [TBMEndpoints.Sections]: sectionsEndpoint(app, getData)[0],
+      [TBMEndpoints.Lines]: TBM_linesEndpoint(app, getData)[0],
+      [TBMEndpoints.Lines_routes]: TBM_lines_routesEndpointInstantiated,
+      [TBMEndpoints.Schedules]: TBM_schedulesEndpointInstantiated,
+      [TBMEndpoints.Schedules_rt]: TBM_schedulesRtEndpointInstantiated,
+      [TBMEndpoints.Stops]: TBM_stopsEndpoint(app, getData)[0],
+      [TBMEndpoints.Trips]: TBM_tripsEndpointInstantiated,
+      [TBMEndpoints.ScheduledRoutes]: TBMScheduledRoutesEndpoint(
         app,
         TBM_lines_routesEndpointInstantiated,
         TBM_schedulesRtEndpointInstantiated,
         TBM_tripsEndpointInstantiated,
       )[0],
-    ],
+    },
   };
   logger.info(`TBM models & endpoints initialized.`);
 
-  app.externalAPIs.endpoints.push(...app.externalAPIs.TBM.endpoints);
+  app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.TBM };
 
   TBMScheduledRoutesEndpointHook(app);
 };

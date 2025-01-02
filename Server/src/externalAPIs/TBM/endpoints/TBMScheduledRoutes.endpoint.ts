@@ -130,16 +130,14 @@ export default (
 };
 
 export function TBMScheduledRoutesEndpointHook(app: Application) {
-  const endpointsForScheduledRoutes = app.externalAPIs.TBM.endpoints.filter(
+  const endpointsForScheduledRoutes = Object.values(app.externalAPIs.TBM.endpoints).filter(
     (e) =>
       e.name === TBMEndpoints.Schedules_rt ||
       e.name === TBMEndpoints.Trips ||
       e.name === TBMEndpoints.Lines_routes ||
       e.name === TBMEndpoints.Stops,
   );
-  const ScheduledRoutesEndpoint = app.externalAPIs.TBM.endpoints.find(
-    (e) => e.name === TBMEndpoints.ScheduledRoutes,
-  );
+  const ScheduledRoutesEndpoint = app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes];
   let refreshAvoided = 0;
   const listener = (fetchedEndpoint: (typeof endpointsForScheduledRoutes)[number]) => (success: boolean) => {
     // If we should pass but we avoided a refresh, continue

@@ -46,7 +46,7 @@ export default (app: Application, getData: <T>(id: string, queries: string[]) =>
     ).on("fetched", (success) => {
       if (!success) return;
       // Let it handle starting computing - wait for most fresh data
-      if (app.externalAPIs.endpoints.find((e) => e.name === TBMEndpoints.Sections)?.fetching === true) return;
+      if (app.externalAPIs.TBM.endpoints[TBMEndpoints.Sections].fetching === true) return;
 
       app
         .get("computeInstance")

@@ -51,9 +51,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
   }
 
   async refreshInternalData() {
-    const Addresses = this.app.externalAPIs.endpoints.find(
-      (e) => e.name === TBMEndpoints.Addresses,
-    ) as Endpoint<TBMEndpoints.Addresses>;
+    const Addresses = this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Addresses];
     this.communes = await Addresses.model.distinct("commune");
     this.communesNormalized = this.communes.map((c) =>
       c
@@ -66,24 +64,15 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
   }
 
   async parseId(id: string): Promise<parsedId<GEOCODE_type>[]> {
-    const TBM_Stops = this.app.externalAPIs.endpoints.find(
-      (e) => e.name === TBMEndpoints.Stops,
-    ) as Endpoint<TBMEndpoints.Stops>;
-    const SNCF_Stops = this.app.externalAPIs.endpoints.find(
-      (e) => e.name == SNCFEndpoints.Stops,
-    ) as Endpoint<SNCFEndpoints.Stops>;
+    const TBM_Stops = this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Stops];
+    const SNCF_Stops = this.app.externalAPIs.SNCF.endpoints[SNCFEndpoints.Stops];
 
     id = id
       .toLowerCase()
       .normalize("NFD")
       .replace(/\p{Diacritic}/gu, "");
     if (
-      this.dataRefreshed <
-        (
-          this.app.externalAPIs.endpoints.find(
-            (e) => e.name === TBMEndpoints.Addresses,
-          ) as Endpoint<TBMEndpoints.Addresses>
-        ).lastFetch ||
+      this.dataRefreshed < this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Addresses].lastFetch ||
       !this.communes.length
     )
       await this.refreshInternalData();
@@ -96,7 +85,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
       .map((c) => c + " ?")
       .join("|")})?)+)(?<code_postal>\\d{5})?`;
     const groups = new RegExp(regexpStr).exec(id)?.groups as
-      | Partial<{ [k in groups]: string | undefined }>
+      | Partial<Record<groups, string | undefined>>
       | undefined;
 
     interface FullAddressQuery {
@@ -113,7 +102,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
       const filteredGroups = (Object.keys(groups) as groups[]).reduce<object>(
         (acc, v) => (groups[v] !== undefined ? { ...acc, [v]: groups[v] } : acc),
         {},
-      ) as Partial<{ [k in groups]: string }>;
+      ) as Partial<Record<groups, string>>;
       let k: keyof typeof filteredGroups;
       for (k in filteredGroups) {
         if (filteredGroups[k] === undefined) delete filteredGroups[k];
@@ -142,12 +131,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
         }; //get back the uppercase type_voie
 
       return [
-        [
-          this.app.externalAPIs.endpoints.find(
-            (e) => e.name === TBMEndpoints.Addresses,
-          ) as Endpoint<TBMEndpoints.Addresses>,
-          addressQuery,
-        ],
+        [this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Addresses], addressQuery],
         [TBM_Stops, { libelle_lowercase: { $regex: id } }],
         [SNCF_Stops, { name_lowercase: { $regex: id } }],
       ];
