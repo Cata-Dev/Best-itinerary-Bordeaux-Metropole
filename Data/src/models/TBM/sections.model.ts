@@ -13,7 +13,7 @@ export enum SectionDomanial {
   Autre = 7,
 }
 
-import { TBMEndpoints } from "./names";
+import { TBMEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
   addModelToTypegoose,

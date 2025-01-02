@@ -1,13 +1,10 @@
-import { SNCFEndpoints } from "data/lib/models/SNCF/names";
+import { SNCFEndpoints } from "data/lib/models/SNCF";
 
 import axios from "axios";
 import { unique } from "common/filters";
 import { WGSToLambert93 } from "common/geographics";
-import SNCF_Schedules, {
-  dbSNCF_Schedules,
-  dbSNCF_SchedulesModel,
-} from "data/lib/models/SNCF/SNCF_schedules.model";
-import SNCF_Stops, { dbSNCF_Stops, dbSNCF_StopsModel } from "data/lib/models/SNCF/SNCF_stops.model";
+import SNCF_Schedules, { dbSNCF_Schedules } from "data/lib/models/SNCF/SNCF_schedules.model";
+import SNCF_Stops, { dbSNCF_Stops } from "data/lib/models/SNCF/SNCF_stops.model";
 import { Application } from "../../declarations";
 import { logger } from "../../logger";
 import { bulkOps } from "../../utils";
@@ -53,18 +50,6 @@ declare module "../../declarations" {
     SNCF: { endpoints: { [EN in SNCFEndpoints]: Endpoint<EN> } };
   }
 }
-
-export type SNCFClass<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
-  ? dbSNCF_Schedules
-  : E extends SNCFEndpoints.Stops
-    ? dbSNCF_Stops
-    : dbSNCF_Schedules | dbSNCF_Stops;
-
-export type SNCFModel<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
-  ? dbSNCF_SchedulesModel
-  : E extends SNCFEndpoints.Stops
-    ? dbSNCF_StopsModel
-    : dbSNCF_SchedulesModel | dbSNCF_StopsModel;
 
 interface SNCF_link {
   id: string;

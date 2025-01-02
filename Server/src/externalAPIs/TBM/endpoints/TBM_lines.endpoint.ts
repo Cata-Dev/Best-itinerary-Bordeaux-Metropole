@@ -1,4 +1,4 @@
-import { TBMEndpoints } from "data/lib/models/TBM/names";
+import { TBMEndpoints } from "data/lib/models/TBM";
 import TBM_Lines from "data/lib/models/TBM/TBM_lines.model";
 import { Active, VehicleType } from "data/lib/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";

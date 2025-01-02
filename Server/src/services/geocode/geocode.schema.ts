@@ -3,8 +3,8 @@ import { resolve } from "@feathersjs/schema";
 import type { Static } from "@feathersjs/typebox";
 import { Type, getValidator } from "@feathersjs/typebox";
 
-import { SNCFEndpoints } from "data/lib/models/SNCF/names";
-import { TBMEndpoints } from "data/lib/models/TBM/names";
+import { SNCFEndpoints } from "data/lib/models/SNCF";
+import { TBMEndpoints } from "data/lib/models/TBM";
 import type { HookContext } from "../../declarations";
 import { defaultOptional } from "../../utils/schemas";
 import { dataValidator, queryValidator } from "../../validators";

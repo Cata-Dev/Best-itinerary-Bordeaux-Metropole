@@ -1,4 +1,4 @@
-import { TBMEndpoints } from "data/lib/models/TBM/names";
+import { TBMEndpoints } from "data/lib/models/TBM";
 import TBM_Schedules, {
   dbTBM_Schedules_rt,
   RtScheduleState,

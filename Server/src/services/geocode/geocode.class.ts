@@ -30,8 +30,8 @@ export interface GeocodeParams extends Params<GeocodeQuery> {}
 
 import { BadRequest, NotFound } from "@feathersjs/errors";
 import { unique } from "common/filters";
-import { SNCFEndpoints } from "data/lib/models/SNCF/names";
-import { TBMEndpoints } from "data/lib/models/TBM/names";
+import { SNCFEndpoints } from "data/lib/models/SNCF";
+import { TBMEndpoints } from "data/lib/models/TBM";
 import { FilterQuery } from "mongoose";
 import { EndpointName, ProviderClass } from "../../externalAPIs";
 import { Endpoint } from "../../externalAPIs/endpoint";

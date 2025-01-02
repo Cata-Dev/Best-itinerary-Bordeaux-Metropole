@@ -1,4 +1,4 @@
-import { TBMEndpoints } from "data/lib/models/TBM/names";
+import { TBMEndpoints } from "data/lib/models/TBM";
 import TBM_Trips, { dbTBM_Trips } from "data/lib/models/TBM/TBM_trips.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";

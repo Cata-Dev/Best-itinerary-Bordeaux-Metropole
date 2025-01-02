@@ -2,7 +2,7 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { SNCFEndpoints } from "./names";
+import { SNCFEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
   addModelToTypegoose,

@@ -1,6 +1,6 @@
 import TBM_Lines_routes, { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
 import { VehicleType } from "data/lib/models/TBM/TBM_stops.model";
-import { TBMEndpoints } from "data/lib/models/TBM/names";
+import { TBMEndpoints } from "data/lib/models/TBM";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";

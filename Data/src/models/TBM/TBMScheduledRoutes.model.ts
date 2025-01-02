@@ -16,7 +16,7 @@ import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Schedules_rt, default as TBMSchedulesRtInit } from "./TBM_schedules.model";
 import { dbTBM_Stops } from "./TBM_stops.model";
-import { TBMEndpoints } from "./names";
+import { TBMEndpoints } from ".";
 import { Connection } from "mongoose";
 
 @modelOptions({ schemaOptions: { _id: false } })

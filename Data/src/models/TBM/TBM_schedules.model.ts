@@ -14,7 +14,7 @@ export enum RtScheduleType {
   Deviation = "DEVIATION",
 }
 
-import { TBMEndpoints } from "./names";
+import { TBMEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
   addModelToTypegoose,
