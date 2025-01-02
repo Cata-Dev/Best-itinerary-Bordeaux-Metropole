@@ -37,7 +37,6 @@ const configurationValidator = getValidator<Configuration>(configurationSchema, 
 
 const configObject = config.util.toObject() as Configuration;
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 configurationValidator(configObject).catch((err) => console.error("Configuration validation failed", err));
 
 export { configurationSchema, configObject as config };
