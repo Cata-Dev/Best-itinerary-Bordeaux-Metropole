@@ -32,7 +32,6 @@ declare module "." {
     computeFpOTA: (
       ps: GeoPoint,
       alias?: string,
-      // TODO : use it
       options?: { maxDist: number },
     ) => { distances: Record<number, number>; alias?: string };
     // NonScheduledRoutes, all done by one processor - process could be parallelized,
@@ -96,7 +95,7 @@ export default async function (app: BaseApplication) {
       // Graph private to One-To-All computations
       let footGraph = makeGraph<"aps" | "apt">(edges);
 
-      return async ({ data: [ps, alias, options = { maxDist: 1e3 }] }) => {
+      return async ({ data: [ps, alias, { maxDist } = { maxDist: 1e3 }] }) => {
         ({ edges, mappedSegments, updated } = await queryData());
         if (updated)
           // Need to re-make foot graph
@@ -109,7 +108,7 @@ export default async function (app: BaseApplication) {
         refreshWithApproachedPoint(edges, footGraph, "aps", aps);
 
         const [dist] = Dijkstra(footGraph, ["aps" as unpackGraphNode<typeof footGraph>], {
-          maxCumulWeight: options.maxDist,
+          maxCumulWeight: maxDist,
         });
 
         revertFromApproachedPoint(edges, footGraph, "aps", aps[1]);
