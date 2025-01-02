@@ -1,14 +1,14 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getValidator } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
+import { Type, getValidator } from "@feathersjs/typebox";
 
+import { SNCFEndpoints } from "data/lib/models/SNCF/names";
+import { TBMEndpoints } from "data/lib/models/TBM/names";
 import type { HookContext } from "../../declarations";
-import { dataValidator, queryValidator } from "../../validators";
-import { TBMEndpoints } from "../../externalAPIs/TBM/index";
-import { SNCFEndpoints } from "../../externalAPIs/SNCF/index";
-import type { GeocodeService } from "./geocode.class";
 import { defaultOptional } from "../../utils/schemas";
+import { dataValidator, queryValidator } from "../../validators";
+import type { GeocodeService } from "./geocode.class";
 
 const AddressesObject = Type.Object(
   {

@@ -1,12 +1,13 @@
-import { BaseTBM, TBMEndpoints } from "..";
-import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
-import { Endpoint } from "../../endpoint";
+import { TBMEndpoints } from "data/lib/models/TBM/names";
 import TBM_Schedules, {
   dbTBM_Schedules_rt,
   RtScheduleState,
   RtScheduleType,
 } from "data/lib/models/TBM/TBM_schedules.model";
+import { BaseTBM } from "..";
+import { Application } from "../../../declarations";
+import { bulkOps } from "../../../utils";
+import { Endpoint } from "../../endpoint";
 
 export type TBM_Schedule = BaseTBM<{
   gid: string;

@@ -1,10 +1,10 @@
 // For more information about this file see https://dove.feathersjs.com/guides/cli/service.class.html#custom-services
 import type { Params, ServiceInterface } from "@feathersjs/feathers";
-import type { Model } from "mongoose";
 import type { DocumentType } from "@typegoose/typegoose";
+import type { Model } from "mongoose";
 
 import type { Application } from "../../declarations";
-import type { Geocode, GeocodeData, GeocodePatch, GeocodeQuery, GEOCODE_type } from "./geocode.schema";
+import type { Geocode, GEOCODE_type, GeocodeData, GeocodePatch, GeocodeQuery } from "./geocode.schema";
 
 export type { Geocode, GeocodeData, GeocodePatch, GeocodeQuery };
 
@@ -28,13 +28,13 @@ type parsedId<N extends EndpointName> = [DistributedEndpoints<N>, DistributedFil
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GeocodeParams extends Params<GeocodeQuery> {}
 
-import { NotFound, BadRequest } from "@feathersjs/errors";
-import { FilterQuery } from "mongoose";
+import { BadRequest, NotFound } from "@feathersjs/errors";
 import { unique } from "common/filters";
+import { SNCFEndpoints } from "data/lib/models/SNCF/names";
+import { TBMEndpoints } from "data/lib/models/TBM/names";
+import { FilterQuery } from "mongoose";
 import { EndpointName, ProviderClass } from "../../externalAPIs";
 import { Endpoint } from "../../externalAPIs/endpoint";
-import { TBMEndpoints } from "../../externalAPIs/TBM";
-import { SNCFEndpoints } from "../../externalAPIs/SNCF";
 
 export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
   implements ServiceInterface<Geocode, GeocodeData, ServiceParams, GeocodePatch>

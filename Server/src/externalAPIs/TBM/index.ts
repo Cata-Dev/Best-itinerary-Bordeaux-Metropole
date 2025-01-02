@@ -1,6 +1,5 @@
 // Top exports to avoid double-importing
 import { TBMEndpoints } from "data/lib/models/TBM/names";
-export { TBMEndpoints };
 
 export interface BaseTBM<T extends object = object> {
   properties: T;
@@ -8,8 +7,8 @@ export interface BaseTBM<T extends object = object> {
 
 import axios from "axios";
 import { Application } from "../../declarations";
-import { Endpoint } from "../endpoint";
 import { logger } from "../../logger";
+import { Endpoint } from "../endpoint";
 
 import { dbAddresses, dbAddressesModel } from "data/lib/models/TBM/addresses.model";
 import addressesEndpoint from "./endpoints/addresses.endpoint";

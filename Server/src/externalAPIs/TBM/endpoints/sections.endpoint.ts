@@ -1,10 +1,11 @@
 import { euclideanDistance } from "common/geographics";
-import { BaseTBM, TBMEndpoints } from "..";
+import { TBMEndpoints } from "data/lib/models/TBM/names";
+import TBM_Sections, { dbSections } from "data/lib/models/TBM/sections.model";
+import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
+import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Sections, { dbSections } from "data/lib/models/TBM/sections.model";
-import { logger } from "../../../logger";
 
 export type Section = BaseTBM<{
   gid: string;

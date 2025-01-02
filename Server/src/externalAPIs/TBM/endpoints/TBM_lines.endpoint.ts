@@ -1,9 +1,10 @@
-import { BaseTBM, TBMEndpoints } from "..";
+import { TBMEndpoints } from "data/lib/models/TBM/names";
+import TBM_Lines from "data/lib/models/TBM/TBM_lines.model";
+import { Active, VehicleType } from "data/lib/models/TBM/TBM_stops.model";
+import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Lines from "data/lib/models/TBM/TBM_lines.model";
-import { VehicleType, Active } from "data/lib/models/TBM/TBM_stops.model";
 
 export type TBM_Line = BaseTBM<{
   gid: string;

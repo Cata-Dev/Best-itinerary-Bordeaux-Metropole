@@ -1,9 +1,10 @@
+import TBM_Lines_routes, { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
 import { VehicleType } from "data/lib/models/TBM/TBM_stops.model";
-import { BaseTBM, TBMEndpoints } from "..";
+import { TBMEndpoints } from "data/lib/models/TBM/names";
+import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Lines_routes, { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
 
 export type TBM_Lines_route = BaseTBM<{
   gid: string;

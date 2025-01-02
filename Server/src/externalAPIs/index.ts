@@ -1,9 +1,11 @@
 import { Application, ExternalAPIs } from "../declarations";
 
-import tbm, { TBMEndpoints, TBMClass, TBMModel } from "./TBM";
-import sncf, { SNCFEndpoints, SNCFClass, SNCFModel } from "./SNCF";
-import { Endpoint } from "./endpoint";
+import { SNCFEndpoints } from "data/lib/models/SNCF/names";
+import { TBMEndpoints } from "data/lib/models/TBM/names";
 import { logger } from "../logger";
+import sncf, { SNCFClass, SNCFModel } from "./SNCF";
+import tbm, { TBMClass, TBMModel } from "./TBM";
+import { Endpoint } from "./endpoint";
 
 export const setupExternalAPIs = (app: Application) => {
   app.externalAPIs = { endpoints: {} } as ExternalAPIs;
