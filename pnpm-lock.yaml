@@ -115,7 +115,7 @@ importers:
     dependencies:
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
-        version: https://codeload.github.com/catatomik/dijkstra/tar.gz/5d7bb84998070e5cc3d0be30f95e24e93025b919
+        version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
       '@typegoose/typegoose':
         specifier: ^12.10.1
         version: 12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
@@ -600,8 +600,8 @@ packages:
     resolution: {integrity: sha512-vN5p+1kl59GVKMvTHt55NzzmYVxprfJD+ql7U9NFIfKCBkYE55LYtS+WtPlaYOyzydrKI8Nezd+aZextrd+FMA==}
     engines: {node: '>=6.9.0'}
 
-  '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/5d7bb84998070e5cc3d0be30f95e24e93025b919':
-    resolution: {tarball: https://codeload.github.com/catatomik/dijkstra/tar.gz/5d7bb84998070e5cc3d0be30f95e24e93025b919}
+  '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
+    resolution: {tarball: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed}
     version: 1.0.0
 
   '@cspotcode/source-map-support@0.8.1':
@@ -4790,7 +4790,7 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
-  '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/5d7bb84998070e5cc3d0be30f95e24e93025b919':
+  '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     dependencies:
       '@tyriar/fibonacci-heap': 2.0.9
 

@@ -71,10 +71,7 @@ export default async function (app: BaseApplication) {
         refreshWithApproachedPoint(edges, footGraph, "aps", aps);
         refreshWithApproachedPoint(edges, footGraph, "apt", apt);
 
-        const path = Dijkstra(footGraph, [
-          "aps" as unpackGraphNode<typeof footGraph>,
-          "apt" as unpackGraphNode<typeof footGraph>,
-        ]);
+        const path = Dijkstra<unpackGraphNode<typeof footGraph>>(footGraph, ["aps", "apt"]);
 
         // In reverted order!
         revertFromApproachedPoint(edges, footGraph, "apt", apt[1]);
