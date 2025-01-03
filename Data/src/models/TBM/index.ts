@@ -1,4 +1,5 @@
 import { dbAddresses, dbAddressesModel } from "./addresses.model";
+import { dbIntersections, dbIntersectionsModel } from "./intersections.model";
 import { dbSections, dbSectionsModel } from "./sections.model";
 import { dbTBM_Lines, dbTBM_LinesModel } from "./TBM_lines.model";
 import { dbTBM_Lines_routes, dbTBM_Lines_routesModel } from "./TBM_lines_routes.model";
@@ -28,61 +29,65 @@ enum TBMEndpoints {
 
 type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
   ? dbAddresses
-  : E extends TBMEndpoints.Sections
-    ? dbSections
-    : E extends TBMEndpoints.Lines
-      ? dbTBM_Lines
-      : E extends TBMEndpoints.Lines_routes
-        ? dbTBM_Lines_routes
-        : E extends TBMEndpoints.Schedules
-          ? dbTBM_Schedules
-          : E extends TBMEndpoints.Schedules_rt
-            ? dbTBM_Schedules_rt
-            : E extends TBMEndpoints.Stops
-              ? dbTBM_Stops
-              : E extends TBMEndpoints.Trips
-                ? dbTBM_Trips
-                : E extends TBMEndpoints.ScheduledRoutes
-                  ? dbTBM_ScheduledRoutes
-                  :
-                      | dbAddresses
-                      | dbSections
-                      | dbTBM_Lines_routes
-                      | dbTBM_Lines
-                      | dbTBM_Schedules
-                      | dbTBM_Schedules_rt
-                      | dbTBM_Stops
-                      | dbTBM_Trips
-                      | dbTBM_ScheduledRoutes;
+  : E extends TBMEndpoints.Intersections
+    ? dbIntersections
+    : E extends TBMEndpoints.Sections
+      ? dbSections
+      : E extends TBMEndpoints.Lines
+        ? dbTBM_Lines
+        : E extends TBMEndpoints.Lines_routes
+          ? dbTBM_Lines_routes
+          : E extends TBMEndpoints.Schedules
+            ? dbTBM_Schedules
+            : E extends TBMEndpoints.Schedules_rt
+              ? dbTBM_Schedules_rt
+              : E extends TBMEndpoints.Stops
+                ? dbTBM_Stops
+                : E extends TBMEndpoints.Trips
+                  ? dbTBM_Trips
+                  : E extends TBMEndpoints.ScheduledRoutes
+                    ? dbTBM_ScheduledRoutes
+                    :
+                        | dbAddresses
+                        | dbSections
+                        | dbTBM_Lines_routes
+                        | dbTBM_Lines
+                        | dbTBM_Schedules
+                        | dbTBM_Schedules_rt
+                        | dbTBM_Stops
+                        | dbTBM_Trips
+                        | dbTBM_ScheduledRoutes;
 
 type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
   ? dbAddressesModel
-  : E extends TBMEndpoints.Sections
-    ? dbSectionsModel
-    : E extends TBMEndpoints.Lines
-      ? dbTBM_LinesModel
-      : E extends TBMEndpoints.Lines_routes
-        ? dbTBM_Lines_routesModel
-        : E extends TBMEndpoints.Schedules
-          ? dbTBM_SchedulesModel
-          : E extends TBMEndpoints.Schedules_rt
-            ? dbTBM_Schedules_rtModel
-            : E extends TBMEndpoints.Stops
-              ? dbTBM_StopsModel
-              : E extends TBMEndpoints.Trips
-                ? dbTBM_TripsModel
-                : E extends TBMEndpoints.ScheduledRoutes
-                  ? dbTBM_ScheduledRoutesModel
-                  :
-                      | dbAddressesModel
-                      | dbSectionsModel
-                      | dbTBM_Lines_routesModel
-                      | dbTBM_LinesModel
-                      | dbTBM_SchedulesModel
-                      | dbTBM_Schedules_rtModel
-                      | dbTBM_StopsModel
-                      | dbTBM_TripsModel
-                      | dbTBM_ScheduledRoutesModel;
+  : E extends TBMEndpoints.Intersections
+    ? dbIntersectionsModel
+    : E extends TBMEndpoints.Sections
+      ? dbSectionsModel
+      : E extends TBMEndpoints.Lines
+        ? dbTBM_LinesModel
+        : E extends TBMEndpoints.Lines_routes
+          ? dbTBM_Lines_routesModel
+          : E extends TBMEndpoints.Schedules
+            ? dbTBM_SchedulesModel
+            : E extends TBMEndpoints.Schedules_rt
+              ? dbTBM_Schedules_rtModel
+              : E extends TBMEndpoints.Stops
+                ? dbTBM_StopsModel
+                : E extends TBMEndpoints.Trips
+                  ? dbTBM_TripsModel
+                  : E extends TBMEndpoints.ScheduledRoutes
+                    ? dbTBM_ScheduledRoutesModel
+                    :
+                        | dbAddressesModel
+                        | dbSectionsModel
+                        | dbTBM_Lines_routesModel
+                        | dbTBM_LinesModel
+                        | dbTBM_SchedulesModel
+                        | dbTBM_Schedules_rtModel
+                        | dbTBM_StopsModel
+                        | dbTBM_TripsModel
+                        | dbTBM_ScheduledRoutesModel;
 
 export { TBMEndpoints };
 export type { TBMClass, TBMModel };

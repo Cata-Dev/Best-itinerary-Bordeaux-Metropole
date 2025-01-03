@@ -70,9 +70,6 @@ Retrieves footpath between 2 geocoded points.
 ```ts
 from: string; // Source of search
 to: string; // Destination of search
-maxWalkDistance: number; // Maximum distance to walk
-walkSpeed: number; // Walk speed
-// + Refresh-data params, optional
 ```
 
 ## Refresh-data

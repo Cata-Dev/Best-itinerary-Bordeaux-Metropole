@@ -3,6 +3,9 @@ import type { TransportConnection, Application } from "@feathersjs/feathers";
 import authenticationClient from "@feathersjs/authentication-client";
 import type { AuthenticationClientOptions } from "@feathersjs/authentication-client";
 
+import { pathClient } from "./services/path/path.shared";
+export type { Path, PathData, PathQuery, PathPatch } from "./services/path/path.shared";
+
 import { geocodeClient } from "./services/geocode/geocode.shared";
 export type { Geocode, GeocodeData, GeocodeQuery, GeocodePatch } from "./services/geocode/geocode.shared";
 
@@ -35,7 +38,7 @@ export type ClientApplication = Application<ServiceTypes, Configuration>;
  * @returns The Feathers client application
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const createClient = <Configuration = unknown>(
+export const createClient = <Configuration = unknown,>(
   connection: TransportConnection<ServiceTypes>,
   authenticationOptions: Partial<AuthenticationClientOptions> = {},
 ) => {
@@ -48,5 +51,6 @@ export const createClient = <Configuration = unknown>(
   client.configure(geocodeClient);
   client.configure(refreshDataClient);
   client.configure(journeyClient);
+  client.configure(pathClient);
   return client;
 };
