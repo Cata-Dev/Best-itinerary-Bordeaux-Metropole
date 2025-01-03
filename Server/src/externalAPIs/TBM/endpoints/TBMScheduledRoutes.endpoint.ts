@@ -1,10 +1,10 @@
 import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { mapAsync } from "common/async";
-import { TBMEndpoints } from "data/lib/models/TBM";
-import { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
-import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/lib/models/TBM/TBM_schedules.model";
-import { dbTBM_Trips } from "data/lib/models/TBM/TBM_trips.model";
-import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "data/lib/models/TBM/TBMScheduledRoutes.model";
+import { TBMEndpoints } from "data/models/TBM/index";
+import { dbTBM_Lines_routes } from "data/models/TBM/TBM_lines_routes.model";
+import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/models/TBM/TBM_schedules.model";
+import { dbTBM_Trips } from "data/models/TBM/TBM_trips.model";
+import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "data/models/TBM/TBMScheduledRoutes.model";
 import { HydratedDocument } from "mongoose";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";

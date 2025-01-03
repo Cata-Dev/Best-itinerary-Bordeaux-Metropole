@@ -1,6 +1,6 @@
 import type { JourneyQuery } from "server";
-import type { SNCFEndpoints } from "server/externalAPIs/SNCF/index";
-import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
+import type { SNCFEndpoints } from "data/models/SNCF/index";
+import type { TBMEndpoints } from "data/models/TBM/index";
 import { APIRefresh, client } from "./feathers/feathers";
 import { theme, toggleDarkMode } from "./theme/theme";
 import { formatDateToInput, type TransportMode, type TransportProvider } from "./utils";

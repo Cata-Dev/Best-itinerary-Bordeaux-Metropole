@@ -54,10 +54,10 @@ export class dbSections extends TimeStamps {
   public rg_fv_graph_dbl!: boolean;
 
   @prop({ required: true })
-  public rg_fv_graph_nd: number;
+  public rg_fv_graph_nd!: number;
 
   @prop({ required: true })
-  public rg_fv_graph_na: number;
+  public rg_fv_graph_na!: number;
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbSections> {

@@ -1,5 +1,5 @@
-import { TBMEndpoints } from "data/lib/models/TBM";
-import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "data/lib/models/TBM/TBM_stops.model";
+import { TBMEndpoints } from "data/models/TBM/index";
+import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "data/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";

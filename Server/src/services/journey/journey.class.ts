@@ -29,15 +29,15 @@ import resultModelInit, {
   isLocationTBM,
   LabelFoot,
   LabelVehicle,
-} from "data/lib/models/Compute/result.model";
-import NonScheduledRoutesModelInit from "data/lib/models/TBM/NonScheduledRoutes.model";
-import TBMScheduledRoutesModelInit from "data/lib/models/TBM/TBMScheduledRoutes.model";
-import AddressesModelInit, { dbAddresses } from "data/lib/models/TBM/addresses.model";
-import TBMStopsModelInit from "data/lib/models/TBM/TBM_stops.model";
-import TBMSchedulesModelInit from "data/lib/models/TBM/TBM_schedules.model";
-import TBMLinesRoutesModelInit from "data/lib/models/TBM/TBM_lines_routes.model";
-import TBMLinesModelInit from "data/lib/models/TBM/TBM_lines.model";
-import SNCFStopsModelInit from "data/lib/models/SNCF/SNCF_stops.model";
+} from "data/models/Compute/result.model";
+import NonScheduledRoutesModelInit from "data/models/TBM/NonScheduledRoutes.model";
+import TBMScheduledRoutesModelInit from "data/models/TBM/TBMScheduledRoutes.model";
+import AddressesModelInit, { dbAddresses } from "data/models/TBM/addresses.model";
+import TBMStopsModelInit from "data/models/TBM/TBM_stops.model";
+import TBMSchedulesModelInit from "data/models/TBM/TBM_schedules.model";
+import TBMLinesRoutesModelInit from "data/models/TBM/TBM_lines_routes.model";
+import TBMLinesModelInit from "data/models/TBM/TBM_lines.model";
+import SNCFStopsModelInit from "data/models/SNCF/SNCF_stops.model";
 // To force TypeScript detect "compute" as a JobName
 import "compute/lib/jobs/compute";
 import { JobData } from "compute/lib/jobs";

@@ -6,12 +6,10 @@ import "core-js/features/reflect";
 import { FilterQuery } from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
 import { SharedRAPTORData } from "raptor/lib/SharedStructures";
-import stopsModelInit, { dbTBM_Stops } from "data/lib/models/TBM/TBM_stops.model";
-import TBMScheduledRoutesModelInit, {
-  dbTBM_ScheduledRoutes,
-} from "data/lib/models/TBM/TBMScheduledRoutes.model";
-import TBMSchedulesInit from "data/lib/models/TBM/TBM_schedules.model";
-import NonScheduledRoutesModelInit, { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";
+import stopsModelInit, { dbTBM_Stops } from "data/models/TBM/TBM_stops.model";
+import TBMScheduledRoutesModelInit, { dbTBM_ScheduledRoutes } from "data/models/TBM/TBMScheduledRoutes.model";
+import TBMSchedulesInit from "data/models/TBM/TBM_schedules.model";
+import NonScheduledRoutesModelInit, { dbFootPaths } from "data/models/TBM/NonScheduledRoutes.model";
 import { PopulateRef, UnpackRefType } from "./utils";
 import { mapAsync } from "./utils/asyncs";
 import { BaseApplication } from "./base";

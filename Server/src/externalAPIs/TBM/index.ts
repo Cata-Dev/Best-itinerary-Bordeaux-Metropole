@@ -1,5 +1,5 @@
 // Top exports to avoid double-importing
-import { TBMEndpoints } from "data/lib/models/TBM";
+import { TBMEndpoints } from "data/models/TBM/index";
 
 export interface BaseTBM<T extends object = object> {
   properties: T;

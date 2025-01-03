@@ -1,5 +1,5 @@
-import TBM_Addresses, { dbAddresses } from "data/lib/models/TBM/addresses.model";
-import { TBMEndpoints } from "data/lib/models/TBM";
+import TBM_Addresses, { dbAddresses } from "data/models/TBM/addresses.model";
+import { TBMEndpoints } from "data/models/TBM/index";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";

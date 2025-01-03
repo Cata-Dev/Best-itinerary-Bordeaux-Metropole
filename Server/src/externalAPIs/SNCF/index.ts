@@ -1,10 +1,10 @@
-import { SNCFEndpoints } from "data/lib/models/SNCF";
+import { SNCFEndpoints } from "data/models/SNCF/index";
 
 import axios from "axios";
 import { unique } from "common/filters";
 import { WGSToLambert93 } from "common/geographics";
-import SNCF_Schedules, { dbSNCF_Schedules } from "data/lib/models/SNCF/SNCF_schedules.model";
-import SNCF_Stops, { dbSNCF_Stops } from "data/lib/models/SNCF/SNCF_stops.model";
+import SNCF_Schedules, { dbSNCF_Schedules } from "data/models/SNCF/SNCF_schedules.model";
+import SNCF_Stops, { dbSNCF_Stops } from "data/models/SNCF/SNCF_stops.model";
 import { Application } from "../../declarations";
 import { logger } from "../../logger";
 import { bulkOps } from "../../utils";

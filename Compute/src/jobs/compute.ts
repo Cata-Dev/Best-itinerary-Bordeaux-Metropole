@@ -14,10 +14,10 @@ import ResultModelInit, {
   LocationTBM,
   LocationType,
   dbComputeResult,
-} from "data/lib/models/Compute/result.model";
-import { TBMEndpoints } from "data/lib/models/TBM";
-import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
-import { defaultRAPTORRunSettings } from "data/lib/values/RAPTOR";
+} from "data/models/Compute/result.model";
+import { TBMEndpoints } from "data/models/TBM/index";
+import stopsModelInit from "data/models/TBM/TBM_stops.model";
+import { defaultRAPTORRunSettings } from "data/values/RAPTOR/index";
 import type { RAPTORRunSettings } from "raptor";
 import SharedRAPTOR from "raptor/lib/shared";
 import { SharedRAPTORData } from "raptor/lib/SharedStructures";

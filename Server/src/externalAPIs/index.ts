@@ -1,7 +1,7 @@
 import { Application, ExternalAPIs } from "../declarations";
 
-import { SNCFClass, SNCFEndpoints, SNCFModel } from "data/lib/models/SNCF";
-import { TBMClass, TBMEndpoints, TBMModel } from "data/lib/models/TBM";
+import { SNCFClass, SNCFEndpoints, SNCFModel } from "data/models/SNCF/index";
+import { TBMClass, TBMEndpoints, TBMModel } from "data/models/TBM/index";
 import { logger } from "../logger";
 import sncf from "./SNCF";
 import tbm from "./TBM";

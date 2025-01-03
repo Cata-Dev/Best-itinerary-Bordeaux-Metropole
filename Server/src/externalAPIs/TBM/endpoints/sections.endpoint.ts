@@ -1,6 +1,6 @@
 import { euclideanDistance } from "common/geographics";
-import { TBMEndpoints } from "data/lib/models/TBM";
-import TBM_Sections, { dbSections } from "data/lib/models/TBM/sections.model";
+import { TBMEndpoints } from "data/models/TBM/index";
+import TBM_Sections, { dbSections } from "data/models/TBM/sections.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";

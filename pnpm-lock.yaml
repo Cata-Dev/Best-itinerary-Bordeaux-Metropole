@@ -31,6 +31,9 @@ importers:
       core-js:
         specifier: ^3.39.0
         version: 3.39.0
+      data:
+        specifier: workspace:*
+        version: link:../Data
       server:
         specifier: workspace:*
         version: link:../Server

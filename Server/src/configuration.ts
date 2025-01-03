@@ -1,4 +1,4 @@
-import { configurationSchema as packageConfig } from "data/lib/config";
+import { configurationSchema as packageConfig } from "data/config/index";
 import { Type, getValidator, defaultAppConfiguration } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
 

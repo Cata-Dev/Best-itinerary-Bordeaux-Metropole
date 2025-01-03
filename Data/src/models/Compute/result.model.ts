@@ -61,10 +61,10 @@ export class LabelBase {
 
 class transfer {
   @prop({ required: true })
-  public to: stopId | string;
+  public to!: stopId | string;
 
   @prop({ required: true })
-  public length: number;
+  public length!: number;
 }
 
 export class LabelFoot extends LabelBase {

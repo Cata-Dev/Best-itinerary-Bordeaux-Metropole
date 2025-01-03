@@ -2,12 +2,26 @@
   "name": "data",
   "version": "1.0.0",
   "description": "Data source for BIBM",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "require": "./lib/cjs/index.js",
+      "import": "./lib/esm/index.js",
+      "default": "./lib/esm/index.js"
+    },
+    "./*": {
+      "types": "./lib/types/*.d.ts",
+      "require": "./lib/cjs/*.js",
+      "import": "./lib/esm/*.js",
+      "default": "./lib/esm/*.js"
+    }
+  },
   "files": [
     "lib/",
     "config/"
   ],
   "scripts": {
-    "build": "tsc -b src",
+    "build": "tsc -b ./src/tsconfig.cjs.json ./src/tsconfig.esm.json ./src/tsconfig.types.json && node ./scripts/prepare-package-json.js",
     "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
     "type-check": "tsc --project src -noEmit",
     "lint": "eslint ./src/ --fix",

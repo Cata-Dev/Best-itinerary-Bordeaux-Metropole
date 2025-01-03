@@ -1,8 +1,8 @@
 import { ProjectionType } from "mongoose";
 import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { approachedStopName } from "data/lib/models/TBM/NonScheduledRoutes.model";
-import { dbSections as dbSectionsRaw, dbSectionsModel } from "data/lib/models/TBM/sections.model";
-import { dbTBM_Stops, dbTBM_StopsModel } from "data/lib/models/TBM/TBM_stops.model";
+import { approachedStopName } from "data/models/TBM/NonScheduledRoutes.model";
+import { dbSections as dbSectionsRaw, dbSectionsModel } from "data/models/TBM/sections.model";
+import { dbTBM_Stops, dbTBM_StopsModel } from "data/models/TBM/TBM_stops.model";
 import { euclideanDistance } from "common/geographics";
 import Point from "../geometry/Point";
 import Segment from "../geometry/Segment";

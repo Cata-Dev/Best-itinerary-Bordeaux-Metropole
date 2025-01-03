@@ -1,9 +1,9 @@
-import { TBMEndpoints } from "data/lib/models/TBM";
+import { TBMEndpoints } from "data/models/TBM/index";
 import TBM_Schedules, {
   dbTBM_Schedules_rt,
   RtScheduleState,
   RtScheduleType,
-} from "data/lib/models/TBM/TBM_schedules.model";
+} from "data/models/TBM/TBM_schedules.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
