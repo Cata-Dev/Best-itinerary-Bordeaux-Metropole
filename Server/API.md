@@ -35,13 +35,22 @@ Retrieves journeys between 2 geocoded points using public transportation network
 ### Params
 
 ```ts
-from: string; // Source of search
-to: string; // Destination of search
+from: LocationQuery; // Source of search
+to: LocationQuery; // Destination of search
 transports?: Record<"FOOT" | "TBM" | "SNCF", boolean>; // Allowed transports
 departureTime?: number; // Departure time
 maxWalkDistance?: number; // Maximum distance to walk
 walkSpeed?: number; // Walk speed
 // + Refresh-data params, optional
+```
+
+With `LocationQuery` :
+
+```ts
+id: number;
+type: TBMEndpoints.Addresses | TBMEndpoints.Stops | SNCFEndpoints.Stops;
+coords: [lat: number, lon: number];
+alias: string;
 ```
 
 ---
