@@ -6,7 +6,7 @@ import nonScheduledRoutesModelInit, {
   dbFootPaths,
 } from "data/models/TBM/NonScheduledRoutes.model";
 import sectionsModelInit from "data/models/TBM/sections.model";
-import stopsModelInit, { dbTBM_Stops } from "data/models/TBM/TBM_stops.model";
+import stopsModelInit from "data/models/TBM/TBM_stops.model";
 import { JobFn, JobResult } from ".";
 import { BaseApplication } from "../base";
 import { limiter } from "../utils/asyncs";
