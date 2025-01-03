@@ -130,9 +130,6 @@ export type JourneyPatch = Static<typeof journeyPatchSchema>;
 export const journeyPatchValidator = getValidator(journeyPatchSchema, dataValidator);
 export const journeyPatchResolver = resolve<Journey, HookContext<JourneyService>>({});
 
-// Schema for allowed query properties
-// Unused here, custom service without storage
-export const journeyQueryProperties = Type.Object({});
 const locationQuery = Type.Object(
   {
     type: GEOCODE_type,
