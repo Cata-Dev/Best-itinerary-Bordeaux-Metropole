@@ -12,7 +12,7 @@ export type JourneyClientService = Pick<
 
 export const journeyPath = "journey";
 
-export const journeyMethods = ["find", "get"] as const;
+export const journeyMethods: (keyof JourneyService)[] = ["find", "get"];
 
 export const journeyClient = (client: ClientApplication) => {
   const connection = client.get("connection");

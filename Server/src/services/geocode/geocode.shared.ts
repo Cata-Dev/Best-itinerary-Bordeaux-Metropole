@@ -12,7 +12,7 @@ export type GeocodeClientService = Pick<
 
 export const geocodePath = "geocode";
 
-export const geocodeMethods = ["find", "get"] as const;
+export const geocodeMethods: (keyof GeocodeService)[] = ["find", "get"];
 
 export const geocodeClient = (client: ClientApplication) => {
   const connection = client.get("connection");

@@ -18,7 +18,7 @@ export type RefreshDataClientService = Pick<
 
 export const refreshDataPath = "refresh-data";
 
-export const refreshDataMethods = ["get"] as const;
+export const refreshDataMethods: (keyof RefreshDataService)[] = ["get"];
 
 export const refreshDataClient = (client: ClientApplication) => {
   const connection = client.get("connection");
