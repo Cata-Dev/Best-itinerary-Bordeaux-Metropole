@@ -1,20 +1,20 @@
-import { ref } from "vue";
+import { router } from "@/router";
 import {
+  client,
+  compareObjectForEach,
+  defaultLocation,
   defaultQuerySettings,
-  type QuerySettings,
-  type Location,
+  normalizeLocationForQuery,
   parseJSON,
   rebaseObject,
+  type Location,
   type Obj,
+  type QuerySettings,
   type TransportProvider,
-  compareObjectForEach,
-  client,
-  normalizeLocationForQuery,
-  defaultLocation,
 } from "@/store";
-import type { Journey, JourneyQuery } from "server";
+import type { Journey, JourneyQuery, PathQuery } from "server";
+import { ref } from "vue";
 import { useRoute, type RouteLocationNormalized, type RouteLocationRaw } from "vue-router";
-import { router } from "@/router";
 
 const actualRoute = ref<RouteLocationNormalized | null>(null);
 
@@ -115,6 +115,17 @@ async function fetchOldResult(id: string) {
   return status.value.state;
 }
 
+async function fetchFootpaths(
+  id: Extract<PathQuery, { id: unknown }>["id"],
+  index: Extract<PathQuery, { id: unknown }>["index"],
+) {
+  try {
+    return (await client.service("path").find({ query: { for: "journey", id, index } })) ?? [];
+  } catch (_) {
+    return [];
+  }
+}
+
 /**
  * @description Apply current route
  */
@@ -204,15 +215,16 @@ async function updateRoute() {
 }
 
 export {
-  source,
-  destination,
-  settings,
-  fetchResult,
-  SearchResultStatus,
-  status,
-  result,
+  actualRoute,
   currentJourney,
+  destination,
+  fetchFootpaths,
+  fetchResult,
+  result,
+  SearchResultStatus,
+  settings,
+  source,
+  status,
   updateQuery,
   updateRoute,
-  actualRoute,
 };
