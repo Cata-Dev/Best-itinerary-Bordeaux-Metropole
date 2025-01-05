@@ -241,5 +241,5 @@ export default (app: Application) => {
     },
   };
 
-  app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.SNCF };
+  app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.SNCF.endpoints };
 };

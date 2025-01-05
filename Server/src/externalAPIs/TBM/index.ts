@@ -81,7 +81,7 @@ export default (app: Application) => {
   };
   logger.info(`TBM models & endpoints initialized.`);
 
-  app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.TBM };
+  app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.TBM.endpoints };
 
   TBMScheduledRoutesEndpointHook(app);
 };
