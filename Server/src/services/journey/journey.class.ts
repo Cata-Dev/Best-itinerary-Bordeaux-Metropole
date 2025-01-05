@@ -112,7 +112,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
                     : l.transfer.to
                   : typeof arr[i + 1].boardedAt === "number"
                     ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
-                    : (arr[i + 1].boardedAt as string);
+                    : arr[i + 1].boardedAt.toString();
 
             if (!to) throw new GeneralError("Could not populate journey.");
 
