@@ -81,6 +81,22 @@ from: string; // Source of search
 to: string; // Destination of search
 ```
 
+---
+
+```
+FIND /path/journey
+```
+
+Retrieves footpaths included in a previously computed journey.
+
+### Params
+
+```ts
+for: "journey";
+id: string; // id of previously computed journey
+index: number; // index of journey in computed journeys
+```
+
 ## Refresh-data
 
 ```
