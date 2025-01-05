@@ -27,6 +27,7 @@ export const path = (app: Application) => {
     },
     before: {
       all: [schemaHooks.validateQuery(pathQueryValidator), schemaHooks.resolveQuery(pathQueryResolver)],
+      find: [],
       get: [],
     },
     after: {

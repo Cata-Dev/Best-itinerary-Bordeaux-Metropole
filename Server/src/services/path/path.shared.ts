@@ -9,7 +9,7 @@ export type PathClientService = Pick<PathService<Params<PathQuery>>, (typeof pat
 
 export const pathPath = "path";
 
-export const pathMethods: (keyof PathService)[] = ["get"];
+export const pathMethods: (keyof PathService)[] = ["find", "get"];
 
 export const pathClient = (client: ClientApplication) => {
   const connection = client.get("connection");

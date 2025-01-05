@@ -1,12 +1,12 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getValidator } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
+import { getValidator, ObjectIdSchema, Type } from "@feathersjs/typebox";
 
 import type { HookContext } from "../../declarations";
 import { dataValidator, queryValidator } from "../../validators";
-import type { PathService } from "./path.class";
 import { coords } from "../geocode/geocode.schema";
+import type { PathService } from "./path.class";
 
 // Main data model schema
 export const pathSchema = Type.Object(
@@ -41,13 +41,22 @@ export type PathPatch = Static<typeof pathPatchSchema>;
 export const pathPatchValidator = getValidator(pathPatchSchema, dataValidator);
 export const pathPatchResolver = resolve<Path, HookContext<PathService>>({});
 
-export const pathQuerySchema = Type.Object(
-  {
-    from: coords,
-    to: coords,
-  },
-  { additionalProperties: false },
-);
+export const pathQuerySchema = Type.Union([
+  // Direct foot path computation
+  Type.Object(
+    {
+      from: coords,
+      to: coords,
+    },
+    { additionalProperties: false },
+  ),
+  // Foot path computation(s) from an already computed journey referenced by "id"
+  Type.Object({
+    for: Type.Literal("journey"),
+    id: ObjectIdSchema(),
+    index: Type.Integer(),
+  }),
+]);
 export type PathQuery = Static<typeof pathQuerySchema>;
 export const pathQueryValidator = getValidator(pathQuerySchema, queryValidator);
 export const pathQueryResolver = resolve<PathQuery, HookContext<PathService>>({});
