@@ -4,7 +4,7 @@ import { getValidator, Static, Type } from "@feathersjs/typebox";
 import { Ajv } from "@feathersjs/schema";
 
 import { join, delimiter } from "path";
-process.env.NODE_CONFIG_DIR = [join(__dirname, "../../config/")].join(delimiter);
+process.env.NODE_CONFIG_DIR = [join(__dirname, "../../../config/")].join(delimiter);
 
 // Wrapper around node-config
 import config from "config";
