@@ -72,6 +72,10 @@ export default async function (app: BaseApplication) {
         refreshWithApproachedPoint(edges, footGraph, "apt", apt);
 
         const path = Dijkstra<unpackGraphNode<typeof footGraph>>(footGraph, ["aps", "apt"]);
+        const distance = path.reduce<number>(
+          (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
+          0,
+        );
 
         // In reverted order!
         revertFromApproachedPoint(edges, footGraph, "apt", apt[1]);
@@ -79,10 +83,7 @@ export default async function (app: BaseApplication) {
 
         return new Promise<JobResult<"computeFp">>((res) =>
           res({
-            distance: path.reduce<number>(
-              (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
-              0,
-            ),
+            distance,
             path,
           }),
         );
