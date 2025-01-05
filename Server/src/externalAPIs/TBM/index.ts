@@ -14,6 +14,8 @@ import addressesEndpoint from "./endpoints/addresses.endpoint";
 
 import sectionsEndpoint from "./endpoints/sections.endpoint";
 
+import intersectionsEndpoint from "./endpoints/intersections.endpoint";
+
 import TBM_linesEndpoint from "./endpoints/TBM_lines.endpoint";
 
 import TBM_lines_routesEndpoint from "./endpoints/TBM_lines_routes.endpoint";
@@ -30,7 +32,7 @@ import TBMScheduledRoutesEndpoint, {
 
 declare module "../../declarations" {
   interface ExternalAPIs {
-    TBM: { endpoints: { [EN in Exclude<TBMEndpoints, TBMEndpoints.Intersections>]: Endpoint<EN> } };
+    TBM: { endpoints: { [EN in TBMEndpoints]: Endpoint<EN> } };
   }
 }
 
@@ -62,6 +64,7 @@ export default (app: Application) => {
     endpoints: {
       [TBMEndpoints.Addresses]: addressesEndpoint(app, getData)[0],
       [TBMEndpoints.Sections]: sectionsEndpoint(app, getData)[0],
+      [TBMEndpoints.Intersections]: intersectionsEndpoint(app, getData)[0],
       [TBMEndpoints.Lines]: TBM_linesEndpoint(app, getData)[0],
       [TBMEndpoints.Lines_routes]: TBM_lines_routesEndpointInstantiated,
       [TBMEndpoints.Schedules]: TBM_schedulesEndpointInstantiated,
