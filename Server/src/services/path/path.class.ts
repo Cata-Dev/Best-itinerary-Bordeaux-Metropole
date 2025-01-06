@@ -109,8 +109,8 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                     ...acc,
                     (async () => {
                       const from =
-                        i === 0
-                          ? // First label, source comes from "from"
+                        i === 1
+                          ? // First effective label (very first is a base label), source comes from "from"
                             await this.getCoords(journey.from)
                           : // Source comes from "boardedAt", must be a stop id by construction
                             // because it's a string <=> it's source or target
