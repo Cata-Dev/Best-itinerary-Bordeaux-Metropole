@@ -37,7 +37,7 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
             coords: address.geometry.coordinates,
             numero: address.properties.numero,
             rep: address.properties.rep?.toLowerCase(),
-            type_voie: voie.match(/[A-zàÀ-ÿ]+/g)?.[0] ?? "",
+            type_voie: voie.match(/[A-zÀ-ÿ]+/g)?.[0] ?? "",
             nom_voie: voie,
             nom_voie_norm: normalize(voie),
             code_postal:
