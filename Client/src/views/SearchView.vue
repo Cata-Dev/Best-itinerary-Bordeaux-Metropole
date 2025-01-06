@@ -86,9 +86,9 @@ async function selectResult(idx: number) {
                 name="source"
                 placeholder="Départ"
                 @update:model-value="
-                  if (source && actualRoute?.query.from !== source.alias) updateRoute();
                   if (source) {
-                    if (!destination) destinationCompo?.focus?.();
+                    if (actualRoute?.query.from !== source.alias) updateRoute();
+                    if (!destination) destinationCompo?.focus();
                     else searchElem?.focus();
                   }
                 "
@@ -102,9 +102,9 @@ async function selectResult(idx: number) {
                 placeholder="Arrivée"
                 class="mt-2"
                 @update:model-value="
-                  if (destination && actualRoute?.query.to !== destination.alias) updateRoute();
                   if (destination) {
-                    if (!source) sourceCompo?.focus?.();
+                    if (actualRoute?.query.to !== destination.alias) updateRoute();
+                    if (!source) sourceCompo?.focus();
                     else searchElem?.focus();
                   }
                 "

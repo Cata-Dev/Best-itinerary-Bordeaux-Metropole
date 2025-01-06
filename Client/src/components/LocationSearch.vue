@@ -103,7 +103,7 @@ async function forceInput(v: string) {
 }
 
 defineExpose({
-  focus: inputCompo.value?.focus,
+  focus: () => inputCompo.value?.focus(),
   forceInput,
 });
 
