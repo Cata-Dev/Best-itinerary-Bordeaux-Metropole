@@ -33,16 +33,20 @@ function makeFootLayer(footpaths: Props["footpaths"]) {
         (fp) =>
           new Feature({
             geometry: new LineString(fp),
+            type: "foot",
           }),
       ),
     }),
-    style: new Style({
-      stroke: new Stroke({
-        width: 5,
-        color: [0, 0, 0],
-        lineDash: [10],
-      }),
-    }),
+    style: (feature) =>
+      feature.getProperties().type === "foot"
+        ? new Style({
+            stroke: new Stroke({
+              width: 5,
+              color: [0, 0, 0],
+              lineDash: [10],
+            }),
+          })
+        : undefined,
   });
 }
 
@@ -51,6 +55,14 @@ let footLayer = makeFootLayer(props.footpaths);
 watch(props.footpaths, (footpaths) => {
   map.removeLayer(footLayer);
   map.addLayer((footLayer = makeFootLayer(footpaths)));
+
+  // Center on the final updated layer
+  const newFootLayerExtent = footLayer.getSource()?.getExtent();
+  if (newFootLayerExtent)
+    map.getView().fit(newFootLayerExtent, {
+      padding: [50, 50, 50, 50],
+      duration: 1,
+    });
 });
 
 const map = new Map({
