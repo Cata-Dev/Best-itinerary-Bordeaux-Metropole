@@ -1,3 +1,4 @@
+import { normalize } from "common/string";
 import TBM_Addresses, { dbAddresses } from "data/models/TBM/addresses.model";
 import { TBMEndpoints } from "data/models/TBM/index";
 import { BaseTBM } from "..";
@@ -38,7 +39,7 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
             rep: address.properties.rep?.toLowerCase(),
             type_voie: voie.match(/[A-zàÀ-ÿ]+/g)?.[0] ?? "",
             nom_voie: voie,
-            nom_voie_lowercase: voie.toLowerCase(),
+            nom_voie_norm: normalize(voie),
             code_postal:
               parseInt(address.properties.cpostal) || parseInt(`33${address.properties.cinsee}`) || 0,
             fantoir: address.properties.fantoir,

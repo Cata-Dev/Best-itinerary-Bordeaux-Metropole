@@ -37,7 +37,7 @@ export class dbAddresses extends TimeStamps {
   public nom_voie!: string;
 
   @prop({ required: true })
-  public nom_voie_lowercase!: string;
+  public nom_voie_norm!: string;
 
   @prop({ required: true })
   public code_postal!: number;
