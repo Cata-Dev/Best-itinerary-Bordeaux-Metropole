@@ -30,6 +30,7 @@ export interface GeocodeParams extends Params<GeocodeQuery> {}
 
 import { BadRequest, NotFound } from "@feathersjs/errors";
 import { unique } from "common/filters";
+import { normalize } from "common/string";
 import { SNCFEndpoints } from "data/models/SNCF/index";
 import { TBMEndpoints } from "data/models/TBM/index";
 import { FilterQuery } from "mongoose";
@@ -67,10 +68,7 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
     const TBM_Stops = this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Stops];
     const SNCF_Stops = this.app.externalAPIs.SNCF.endpoints[SNCFEndpoints.Stops];
 
-    id = id
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "");
+    id = normalize(id);
     if (
       this.dataRefreshed < this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Addresses].lastFetch ||
       !this.communes.length
