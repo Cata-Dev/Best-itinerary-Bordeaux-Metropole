@@ -66,6 +66,8 @@ async function displayMap() {
   if (result.value === null) throw new Error("Unexpected unset result.");
   if (currentJourney.value === null) throw new Error("Unexpected unset current journey.");
 
+  modalMapComp.value?.show(true);
+
   paths.value.splice(
     0,
     paths.value.length,
@@ -73,8 +75,6 @@ async function displayMap() {
       (path) => path.steps,
     ),
   );
-
-  modalMapComp.value?.show(true);
 }
 </script>
 
