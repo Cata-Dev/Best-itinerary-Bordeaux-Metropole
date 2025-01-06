@@ -16,7 +16,7 @@ const AddressesObject = Type.Object(
     commune: Type.String(),
     fantoir: Type.String(),
     nom_voie: Type.String(),
-    nom_voie_lowercase: Type.String(),
+    nom_voie_norm: Type.String(),
     numero: Type.Integer(),
     rep: Type.String(),
     type_voie: Type.String(),
