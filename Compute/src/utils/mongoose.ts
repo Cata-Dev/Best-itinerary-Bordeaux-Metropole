@@ -1,6 +1,6 @@
 import { createConnection } from "mongoose";
 import type { Application, BaseApplication } from "../base";
-import { memoize } from "common/memoize";
+import { memoize } from "common/cache";
 
 const initDB = memoize(async function (
   app: BaseApplication,
