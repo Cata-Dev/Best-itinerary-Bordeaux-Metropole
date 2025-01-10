@@ -142,12 +142,7 @@ export async function makeQueue() {
 // 30 minutes
 const MAX_STALL_TIME = 30 * 60 * 1_000;
 
-export function makeWorker(
-  /**
-   *  Should be `Instances<typeof jobNames, "processor">`
-   */
-  processors: Instances<typeof jobNames, "processor">,
-) {
+export function makeWorker(processors: Instances<typeof jobNames, "processor">) {
   const workers = jobNames.map(
     (n, i) =>
       new Worker(n, (processors as Processor<JobName>[])[i], {
