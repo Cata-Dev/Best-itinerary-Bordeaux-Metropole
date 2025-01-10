@@ -13,9 +13,10 @@ import { limiter } from "../utils/asyncs";
 import {
   approachPoint,
   FootGraphNode,
-  initData,
   makeFootStopsGraph,
   makeGraph,
+  makeInitData,
+  makePTNInitData,
   refreshWithApproachedPoint,
   revertFromApproachedPoint,
 } from "../utils/foot/graph";
@@ -47,20 +48,57 @@ export default async function (app: BaseApplication) {
   const sourceDataDB = await initDB(app, app.config.sourceDB);
 
   const sectionsModel = sectionsModelInit(sourceDataDB);
+  const stopsModel = stopsModelInit(sourceDataDB);
 
-  const queryData = initData(sectionsModel);
+  // Queried cached data will be read-only : can be shared safely
+
+  const graphData = makeInitData(sectionsModel);
+  const graphPTNData = makePTNInitData(stopsModel);
+
+  const graphCaches = [graphData, graphPTNData] as const;
+
+  let edges: Awaited<ReturnType<(typeof graphData)["get"]>>[2]["edges"];
+  let mappedSegments: Awaited<ReturnType<(typeof graphData)["get"]>>[2]["mappedSegments"];
+  let stops: Awaited<ReturnType<(typeof graphPTNData)["get"]>>[2];
+
+  // Query every cache and init
+  for (const graphCache of graphCaches) {
+    const data = (await graphCache.get())[2];
+    if ("edges" in data) ({ edges, mappedSegments } = data);
+    else if (data instanceof Map) stops = data;
+  }
+
+  const refreshData = async <C extends (typeof graphCaches)[number]>(
+    cache: C,
+    localLastUpdate: number,
+  ): Promise<{ updated: boolean; localLastUpdate: number; data: Awaited<ReturnType<C["get"]>>[2] }> => {
+    let updated = false;
+    const [_, lastUpdate, data] = await cache.get();
+
+    if (lastUpdate > localLastUpdate) {
+      // Data is fresher than local (the one from the caller) one
+      localLastUpdate = lastUpdate;
+      updated = true;
+    }
+
+    return { updated, localLastUpdate, data };
+  };
 
   return {
-    fp: async function fpInit() {
-      let { edges, mappedSegments, updated } = await queryData();
+    fp: function fpInit() {
+      let localLastUpdate = graphData.lastUpdate;
       // Graph private to One-To-One computations
       let footGraph = makeGraph<"aps" | "apt">(edges);
 
       return async ({ data: [ps, pt] }) => {
-        ({ edges, mappedSegments, updated } = await queryData());
-        if (updated)
-          // Need to re-make foot graph
+        const refreshed = await refreshData(graphData, localLastUpdate);
+        if (refreshed.updated) {
+          ({
+            localLastUpdate,
+            data: { edges, mappedSegments },
+          } = refreshed);
           footGraph = makeGraph<"aps" | "apt">(edges);
+        }
 
         // Approach points into foot graph
         const aps = approachPoint(mappedSegments, ps);
@@ -95,11 +133,30 @@ export default async function (app: BaseApplication) {
       // Graph private to One-To-All computations
       let footGraph = makeGraph<"aps" | "apt">(edges);
 
-      return async ({ data: [ps, alias, { maxDist } = { maxDist: 1e3 }] }) => {
-        ({ edges, mappedSegments, updated } = await queryData());
-        if (updated)
-          // Need to re-make foot graph
-          footGraph = makeGraph<"aps">(edges);
+      return async ({
+        data: [ps, alias, { maxDist = 1e3, targetPTN = false } = { maxDist: 1e3, targetPTN: false }],
+      }) => {
+        // Data refresh
+        const refreshed = await refreshData(graphData, localLastUpdate.get(graphData)!);
+        if (refreshed.updated) {
+          localLastUpdate.set(graphData, refreshed.localLastUpdate);
+          ({
+            data: { edges, mappedSegments },
+          } = refreshed);
+        }
+
+        let refreshedPTN: Awaited<ReturnType<typeof refreshData<typeof graphPTNData>>> | null = null;
+        if (targetPTN) {
+          refreshedPTN = await refreshData(graphPTNData, localLastUpdate.get(graphPTNData)!);
+          if (refreshedPTN.updated) {
+            localLastUpdate.set(graphPTNData, refreshedPTN.localLastUpdate);
+            ({ data: stops } = refreshedPTN);
+          }
+        }
+
+        if (refreshed.updated || refreshedPTN?.updated)
+          // Need to re-make (foot +/ PTN) graph
+          footPTNGraph = makeFootStopsGraph(edges, mappedSegments, stops);
 
         // Approach points into foot graph
         const aps = approachPoint(mappedSegments, ps);
@@ -130,13 +187,19 @@ export default async function (app: BaseApplication) {
     // Rarely used & can be slow : do not prepare a lot of things but init on-the-go
     computeNSR: function fpNSRInit() {
       const nonScheduledRoutesModel = nonScheduledRoutesModelInit(sourceDataDB);
-      const stopsModel = stopsModelInit(sourceDataDB);
 
       return async (job) => {
+        // Refresh all data
         const {
           data: [maxDist, getFullPaths = false],
         } = job;
-        const { stops, graph } = await makeFootStopsGraph(sectionsModel, stopsModel);
+        ({
+          data: { edges, mappedSegments },
+        } = await refreshData(graphData, 0));
+        ({ data: stops } = await refreshData(graphPTNData, 0));
+
+        // Need to (re)make (foot +/ PTN) graph
+        const footPTNGraph = makeFootStopsGraph(edges, mappedSegments, stops);
 
         // Compute all paths
 
@@ -153,8 +216,8 @@ export default async function (app: BaseApplication) {
 
         for (const stopId of stops.keys()) {
           const [dist, prev] = Dijkstra(
-            graph,
-            [approachedStopName(stopId) as unpackGraphNode<typeof graph>],
+            footPTNGraph,
+            [approachedStopName(stopId) as unpackGraphNode<typeof footPTNGraph>],
             {
               maxCumulWeight: maxDist,
             },

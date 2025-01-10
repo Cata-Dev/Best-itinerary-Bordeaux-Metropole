@@ -1,5 +1,6 @@
 import { ProjectionType } from "mongoose";
 import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
+import { Cache } from "common/cache";
 import { approachedStopName } from "data/models/TBM/NonScheduledRoutes.model";
 import { dbSections as dbSectionsRaw, dbSectionsModel } from "data/models/TBM/sections.model";
 import { dbTBM_Stops, dbTBM_StopsModel } from "data/models/TBM/TBM_stops.model";
@@ -35,57 +36,67 @@ interface Data {
 
 type FootGraphNode<N extends node> = Section["s"] | N;
 
-function initData(sectionsModel: dbSectionsModel): () => Promise<Data & { updated: boolean }> {
-  const dataCache = {
-    date: -1,
-    updated: false as boolean,
-    edges: new Map() as Data["edges"],
-    mappedSegments: new Map() as Data["mappedSegments"],
-  } satisfies Data & { date: number; updated: boolean };
-
-  // Might be a shallow copy!
-  return async () => {
-    const lastUpdate =
+function makeInitData(sectionsModel: dbSectionsModel) {
+  return new Cache(
+    {
+      edges: new Map(),
+      mappedSegments: new Map(),
+    } as Data,
+    sectionsModel,
+    async (sectionsModel) =>
       (
         await sectionsModel.find({}, { updatedAt: 1 }).sort({ updatedAt: -1 }).limit(1)
-      )[0]?.updatedAt?.getTime() ?? -1;
-
-    if (dataCache.date >= lastUpdate) {
-      // Use cache
-      dataCache.updated = false;
-      return dataCache;
-    }
-
-    // Query graph data
-    dataCache.edges = new Map<dbSections["_id"], Section>(
-      (await sectionsModel.find({}, sectionsProjection).lean()).map<[number, Section]>(
-        ({ _id, coords, distance, rg_fv_graph_nd: s, rg_fv_graph_na: t }) => [
-          _id,
-          { coords, distance, s, t } satisfies Section,
-        ],
-      ),
-    );
-
-    // Pre-generate mapped segments to fasten the process (and not redundant computing)
-    // A segment describes a portion of an edge
-    dataCache.mappedSegments = new Map<dbSections["_id"], Segment[]>();
-    for (const [id, edge] of dataCache.edges) {
-      dataCache.mappedSegments.set(
-        id,
-        edge.coords.reduce<Segment[]>(
-          (acc, v, i) =>
-            i >= edge.coords.length - 1
-              ? acc
-              : [...acc, new Segment(new Point(...v), new Point(...edge.coords[i + 1]))],
-          [],
+      )[0]?.updatedAt?.getTime() ?? -1,
+    async (sectionsModel) => {
+      // Query graph data
+      const edges = new Map<dbSections["_id"], Section>(
+        (await sectionsModel.find({}, sectionsProjection).lean()).map<[number, Section]>(
+          ({ _id, coords, distance, rg_fv_graph_nd: s, rg_fv_graph_na: t }) => [
+            _id,
+            { coords, distance, s, t } satisfies Section,
+          ],
         ),
       );
-    }
 
-    dataCache.updated = true;
+      return {
+        edges,
+        mappedSegments:
+          // Pre-generate mapped segments to fasten the process (and not redundant computing)
+          // A segment describes a portion of an edge
+          new Map<dbSections["_id"], Segment[]>(
+            Array.from(edges.entries()).map(([id, edge]) => [
+              id,
+              edge.coords.reduce<Segment[]>(
+                (acc, v, i) =>
+                  i >= edge.coords.length - 1
+                    ? acc
+                    : [...acc, new Segment(new Point(...v), new Point(...edge.coords[i + 1]))],
+                [],
+              ),
+            ]),
+          ),
+      };
+    },
+  );
+}
 
-    return dataCache;
+function makePTNInitData(stopsModel: dbTBM_StopsModel) {
+  const query = {
+    $and: [{ coords: { $not: { $elemMatch: { $eq: Infinity } } } }],
   };
+
+  return new Cache(
+    new Map<dbStops["_id"], Stop>(),
+    stopsModel,
+    async (stopsModel) =>
+      (
+        await stopsModel.find(query, { updatedAt: 1 }).sort({ updatedAt: -1 }).limit(1)
+      )[0]?.updatedAt?.getTime() ?? -1,
+    async (stopsModel) =>
+      new Map<dbStops["_id"], Stop>(
+        (await stopsModel.find(query, stopProjection).lean()).map((s) => [s._id, { coords: s.coords }]),
+      ),
+  );
 }
 
 /**
@@ -144,6 +155,7 @@ function approachPoint(
 
 /**
  * Pushes approached point into graph, just like a proxy on a edge
+ * Only reads all parameters
  * @returns Name of point added to graph
  */
 function refreshWithApproachedPoint<N extends node>(
@@ -199,29 +211,14 @@ interface StopOverwritten {
 // Equivalent to an Edge
 type Stop = Omit<dbStops, keyof StopOverwritten> & StopOverwritten;
 
-async function makeFootStopsGraph(sectionsModel: dbSectionsModel, stopsModel: dbTBM_StopsModel) {
-  // Query data
-  const queryData = initData(sectionsModel);
-  const { edges, mappedSegments } = await queryData();
-
-  // Query stops
-  const stops = new Map<dbStops["_id"], Stop>(
-    (
-      await stopsModel
-        .find(
-          {
-            $and: [{ coords: { $not: { $elemMatch: { $eq: Infinity } } } }],
-          },
-          stopProjection,
-        )
-        .lean()
-        // Coords field type lost...
-        .exec()
-    ).map((s) => [s._id, { coords: s.coords }]),
-  );
-
-  type FootStopsGraphNode = FootGraphNode<ReturnType<typeof approachedStopName>>;
-
+/**
+ * Only reads all parameters
+ */
+function makeFootStopsGraph<N extends node = ReturnType<typeof approachedStopName>>(
+  edges: Data["edges"],
+  mappedSegments: Data["mappedSegments"],
+  stops: Map<dbStops["_id"], Stop>,
+) {
   // Make graph
   const graph = makeGraph<FootStopsGraphNode>(edges);
 
@@ -236,15 +233,16 @@ async function makeFootStopsGraph(sectionsModel: dbSectionsModel, stopsModel: db
     }
   }
 
-  return { stops, graph };
+  return graph;
 }
 
 export {
-  initData,
-  makeGraph,
   approachPoint,
+  makeFootStopsGraph,
+  makeGraph,
+  makeInitData,
+  makePTNInitData,
   refreshWithApproachedPoint,
   revertFromApproachedPoint,
-  makeFootStopsGraph,
 };
 export type { FootGraphNode };
