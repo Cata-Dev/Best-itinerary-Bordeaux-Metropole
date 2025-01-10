@@ -114,7 +114,7 @@ export async function makeQueue() {
                 {
                   name: "computeFpOTA" as const,
                   queueName: "computeFpOTA" as const,
-                  data: [from.coords, "ps"] satisfies [(typeof from)["coords"], unknown],
+                  data: [from.coords, "ps", { targetPTN: true }] satisfies [unknown, unknown, unknown],
                   opts: {
                     failParentOnFailure: true,
                   },
@@ -126,7 +126,7 @@ export async function makeQueue() {
                 {
                   name: "computeFpOTA" as const,
                   queueName: "computeFpOTA" as const,
-                  data: [to.coords, "pt"] satisfies [(typeof from)["coords"], unknown],
+                  data: [to.coords, "pt", { targetPTN: true }] satisfies [unknown, unknown, unknown],
                   opts: {
                     failParentOnFailure: true,
                   },
