@@ -147,8 +147,7 @@ export function makeWorker(processors: Instances<typeof jobNames, "processor">) 
     (n, i) =>
       new Worker(n, (processors as Processor<JobName>[])[i], {
         connection,
-        stalledInterval: MAX_STALL_TIME,
-        lockDuration: MAX_STALL_TIME,
+        ...(n === "computeNSR" ? { stalledInterval: MAX_STALL_TIME, lockDuration: MAX_STALL_TIME } : {}),
       }),
   ) as Instances<typeof jobNames, "worker">;
 
