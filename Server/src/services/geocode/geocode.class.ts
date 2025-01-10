@@ -132,7 +132,6 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
         };
 
       queries.push([this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Addresses], addressQuery]);
-      console.log(queries[2][1]);
     }
 
     return queries;
