@@ -34,7 +34,7 @@ interface Data {
   mappedSegments: Map<Section["s"], Segment[]>;
 }
 
-type FootGraphNode<N extends node> = Section["s"] | N;
+type FootGraphNode<N extends node = Section["s"]> = Section["s"] | N;
 
 function makeInitData(sectionsModel: dbSectionsModel) {
   return new Cache(
