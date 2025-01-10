@@ -185,7 +185,7 @@ export default async function (app: BaseApplication) {
           res({
             distances: Array.from(dist.entries()).reduce<JobResult<"computeFpOTA">["distances"]>(
               (acc, [node, dist]) =>
-                nodeCond(node)
+                dist < Infinity && nodeCond(node)
                   ? { ...acc, [typeof node === "string" ? parseInt(node.substring(3)) : node]: dist }
                   : acc,
               {},
