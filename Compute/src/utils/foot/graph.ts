@@ -120,7 +120,7 @@ function makeGraph<N extends node>(edges: Data["edges"]) {
 function approachPoint(
   mappedSegments: Data["mappedSegments"],
   coords: [number, number],
-): [Point, Section["s"], number] | null {
+): [stopPoint: Point, edge: Section["s"], segIdx: number] | null {
   const point = new Point(...coords);
 
   /**@description [distance to closest point, closest point, edge containing this point, indice of segment composing the edge (i;i+1 in Section coords)] */
@@ -145,11 +145,8 @@ function approachPoint(
   }
 
   // Max distance to closest segment (section)
-  return closestPoint[0] < 10e3 &&
-    closestPoint[1] !== null &&
-    closestPoint[2] !== null &&
-    closestPoint[3] !== null
-    ? [closestPoint[1], closestPoint[2], closestPoint[3]]
+  return closestPoint[0] < 1e3 && closestPoint[2] !== null && closestPoint[3] !== null
+    ? [point, closestPoint[2], closestPoint[3]]
     : null;
 }
 
@@ -162,29 +159,30 @@ function refreshWithApproachedPoint<N extends node>(
   edges: Data["edges"],
   footGraph: WeightedGraph<FootGraphNode<N>>,
   name: N,
-  [closestPoint, edgeId, n]: Exclude<ReturnType<typeof approachPoint>, null>,
+  [point, edgeId, n]: Exclude<ReturnType<typeof approachPoint>, null>,
 ) {
   const { coords, s, t } = edges.get(edgeId)!;
 
   // Compute distance from start edge to approachedStop
-  const toApproachedStop: number =
+  const toStop: number =
     coords.reduce((acc, v, i, arr) => {
       if (i < n && i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
       return acc;
-    }, 0) + Point.distance(new Point(...coords[n]), closestPoint);
+    }, 0) +
+    // From last segment end to real stop
+    Point.distance(new Point(...coords[n]), point);
 
   // Compute distance from approachedStop to end edge
-  const fromApproachedStop: number =
+  const fromStop: number =
+    // From real stop to next segment start
+    Point.distance(point, new Point(...coords[n + 1])) +
     coords.reduce((acc, v, i, arr) => {
       if (i > n && i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
       return acc;
-    }, 0) + Point.distance(closestPoint, new Point(...coords[n + 1]));
+    }, 0);
 
-  // Remove edge from p1 to p2
-  footGraph.removeEdge(s, t);
-
-  footGraph.addEdge(s, name, toApproachedStop);
-  footGraph.addEdge(name, t, fromApproachedStop);
+  footGraph.addEdge(s, name, toStop);
+  footGraph.addEdge(name, t, fromStop);
 
   return;
 }
@@ -195,11 +193,10 @@ function revertFromApproachedPoint<N extends node>(
   insertedNode: N,
   edgeId: dbSections["_id"],
 ) {
-  const { distance, s, t } = edges.get(edgeId)!;
+  const { s, t } = edges.get(edgeId)!;
 
   footGraph.removeEdge(insertedNode, t);
   footGraph.removeEdge(s, insertedNode);
-  footGraph.addEdge(s, t, distance);
 }
 
 const stopProjection = { _id: 1, coords: 1 };
@@ -220,7 +217,7 @@ function makeFootStopsGraph<N extends node = ReturnType<typeof approachedStopNam
   stops: Map<dbStops["_id"], Stop>,
 ) {
   // Make graph
-  const graph = makeGraph<FootStopsGraphNode>(edges);
+  const graph = makeGraph<ReturnType<typeof approachedStopName> | N>(edges);
 
   // Approach stops & insert
   const approachedStops = new Map<dbStops["_id"], NonNullable<ReturnType<typeof approachPoint>>>();
