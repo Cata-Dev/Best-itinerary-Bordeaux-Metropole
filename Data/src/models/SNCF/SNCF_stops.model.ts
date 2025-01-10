@@ -28,7 +28,7 @@ export class dbSNCF_Stops extends TimeStamps {
   public name!: string;
 
   @prop({ required: true })
-  public name_lowercase!: string;
+  public name_norm!: string;
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbSNCF_Stops> {

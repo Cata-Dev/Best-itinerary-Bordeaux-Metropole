@@ -43,7 +43,7 @@ export class dbTBM_Stops extends TimeStamps {
   public libelle!: string;
 
   @prop({ required: true })
-  public libelle_lowercase!: string;
+  public libelle_norm!: string;
 
   @prop({ required: true, enum: VehicleType })
   public vehicule!: VehicleType;

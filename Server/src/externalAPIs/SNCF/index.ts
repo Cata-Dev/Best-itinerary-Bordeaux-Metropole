@@ -3,6 +3,7 @@ import { SNCFEndpoints } from "data/models/SNCF/index";
 import axios from "axios";
 import { unique } from "common/filters";
 import { WGSToLambert93 } from "common/geographics";
+import { normalize } from "common/string";
 import SNCF_Schedules, { dbSNCF_Schedules } from "data/models/SNCF/SNCF_schedules.model";
 import SNCF_Stops, { dbSNCF_Stops } from "data/models/SNCF/SNCF_stops.model";
 import { Application } from "../../declarations";
@@ -224,7 +225,7 @@ export default (app: Application) => {
                 _id: parseInt(stop.id.substring(16, 24)),
                 coords: WGSToLambert93(parseFloat(stop.coord.lat), parseFloat(stop.coord.lon)),
                 name: stop.name,
-                name_lowercase: stop.name.toLowerCase(),
+                name_norm: normalize(stop.name),
               };
             })
             .filter(unique);
