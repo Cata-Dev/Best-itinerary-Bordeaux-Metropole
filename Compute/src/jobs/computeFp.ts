@@ -35,7 +35,7 @@ declare module "." {
     computeFpOTA: (
       ps: GeoPoint,
       alias?: string,
-      options?: { maxDist: number },
+      options?: Partial<{ maxDist: number; targetPTN: boolean }>,
     ) => { distances: Record<number, number>; alias?: string };
     // NonScheduledRoutes, all done by one processor - process could be parallelized,
     // but it would need a parallelized Dijkstra/graph
@@ -128,10 +128,12 @@ export default async function (app: BaseApplication) {
       };
     } satisfies JobFn<"computeFp">,
 
-    fpOTA: async function fpOTAInit() {
-      let { edges, mappedSegments, updated } = await queryData();
+    fpOTA: function fpOTAInit() {
+      const localLastUpdate = new Map<(typeof graphCaches)[number], number>(
+        graphCaches.map((cache) => [cache, cache.lastUpdate]),
+      );
       // Graph private to One-To-All computations
-      let footGraph = makeGraph<"aps" | "apt">(edges);
+      let footPTNGraph = makeFootStopsGraph<"aps">(edges, mappedSegments, stops);
 
       return async ({
         data: [ps, alias, { maxDist = 1e3, targetPTN = false } = { maxDist: 1e3, targetPTN: false }],
@@ -162,23 +164,32 @@ export default async function (app: BaseApplication) {
         const aps = approachPoint(mappedSegments, ps);
         if (!aps) throw new Error("Couldn't approach starting point.");
 
-        refreshWithApproachedPoint(edges, footGraph, "aps", aps);
+        refreshWithApproachedPoint(edges, footPTNGraph, "aps", aps);
 
-        const [dist] = Dijkstra(footGraph, ["aps" as unpackGraphNode<typeof footGraph>], {
+        const [dist] = Dijkstra(footPTNGraph, ["aps" as unpackGraphNode<typeof footPTNGraph>], {
           maxCumulWeight: maxDist,
         });
 
-        revertFromApproachedPoint(edges, footGraph, "aps", aps[1]);
+        revertFromApproachedPoint(edges, footPTNGraph, "aps", aps[1]);
+
+        // Keep only distances right target
+        const nodeCond = targetPTN
+          ? (node: (typeof footPTNGraph)["nodes"][number]): node is ReturnType<typeof approachedStopName> =>
+              // Is approached stop
+              typeof node === "string" && node.startsWith("as=")
+          : (node: (typeof footPTNGraph)["nodes"][number]): node is FootGraphNode =>
+              // Is intersection
+              typeof node === "number";
 
         return new Promise<JobResult<"computeFpOTA">>((res) =>
           res({
-            distances:
-              // Keep only distances to approached stops
-              Array.from(dist.entries()).reduce(
-                (acc, [node, dist]) =>
-                  !isNaN(parseInt(`${dist}`)) && typeof node === "number" ? { ...acc, [node]: dist } : acc,
-                {},
-              ),
+            distances: Array.from(dist.entries()).reduce<JobResult<"computeFpOTA">["distances"]>(
+              (acc, [node, dist]) =>
+                nodeCond(node)
+                  ? { ...acc, [typeof node === "string" ? parseInt(node.substring(3)) : node]: dist }
+                  : acc,
+              {},
+            ),
             alias,
           }),
         );
