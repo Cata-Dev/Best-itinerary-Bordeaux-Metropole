@@ -5,8 +5,6 @@
 import { TBMEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
-  addModelToTypegoose,
-  buildSchema,
   deleteModelWithClass,
   getModelForClass,
   prop,
@@ -14,7 +12,6 @@ import {
   type ReturnModelType,
 } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Lines } from "./TBM_lines.model";
 import { dbTBM_Stops, VehicleType } from "./TBM_stops.model";
 import { Connection } from "mongoose";
@@ -48,10 +45,7 @@ export default function init(db: Connection): ReturnModelType<typeof dbTBM_Lines
   if (getModelForClass(dbTBM_Lines_routes, { existingConnection: db }))
     deleteModelWithClass(dbTBM_Lines_routes);
 
-  const dbTBM_Lines_routesSchema = buildSchema(dbTBM_Lines_routes, { existingConnection: db });
-  const dbTBM_Lines_routesModelRaw = db.model(getName(dbTBM_Lines_routes), dbTBM_Lines_routesSchema);
-
-  return addModelToTypegoose(dbTBM_Lines_routesModelRaw, dbTBM_Lines_routes, {
+  return getModelForClass(dbTBM_Lines_routes, {
     existingConnection: db,
   });
 }

@@ -4,16 +4,8 @@
 
 import { TBMEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import {
-  type ReturnModelType,
-  addModelToTypegoose,
-  buildSchema,
-  deleteModelWithClass,
-  getModelForClass,
-  prop,
-} from "@typegoose/typegoose";
+import { type ReturnModelType, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: TBMEndpoints.Addresses } })
@@ -52,10 +44,7 @@ export class dbAddresses extends TimeStamps {
 export default function init(db: Connection): ReturnModelType<typeof dbAddresses> {
   if (getModelForClass(dbAddresses, { existingConnection: db })) deleteModelWithClass(dbAddresses);
 
-  const dbAddressesSchema = buildSchema(dbAddresses, { existingConnection: db });
-  const dbAddressesModelRaw = db.model(getName(dbAddresses), dbAddressesSchema);
-
-  return addModelToTypegoose(dbAddressesModelRaw, dbAddresses, { existingConnection: db });
+  return getModelForClass(dbAddresses, { existingConnection: db });
 }
 
 export type dbAddressesModel = ReturnType<typeof init>;

@@ -15,16 +15,8 @@ export enum SectionDomanial {
 
 import { TBMEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import {
-  addModelToTypegoose,
-  buildSchema,
-  deleteModelWithClass,
-  getModelForClass,
-  prop,
-  type ReturnModelType,
-} from "@typegoose/typegoose";
+import { deleteModelWithClass, getModelForClass, prop, type ReturnModelType } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: TBMEndpoints.Sections } })
@@ -63,10 +55,7 @@ export class dbSections extends TimeStamps {
 export default function init(db: Connection): ReturnModelType<typeof dbSections> {
   if (getModelForClass(dbSections, { existingConnection: db })) deleteModelWithClass(dbSections);
 
-  const dbSectionsSchema = buildSchema(dbSections, { existingConnection: db });
-  const dbSectionsModelRaw = db.model(getName(dbSections), dbSectionsSchema);
-
-  return addModelToTypegoose(dbSectionsModelRaw, dbSections, { existingConnection: db });
+  return getModelForClass(dbSections, { existingConnection: db });
 }
 
 export type dbSectionsModel = ReturnType<typeof init>;

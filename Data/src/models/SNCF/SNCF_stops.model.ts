@@ -4,16 +4,8 @@
 
 import { SNCFEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import {
-  type ReturnModelType,
-  addModelToTypegoose,
-  buildSchema,
-  deleteModelWithClass,
-  getModelForClass,
-  prop,
-} from "@typegoose/typegoose";
+import { type ReturnModelType, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: SNCFEndpoints.Stops } })
@@ -34,10 +26,7 @@ export class dbSNCF_Stops extends TimeStamps {
 export default function init(db: Connection): ReturnModelType<typeof dbSNCF_Stops> {
   if (getModelForClass(dbSNCF_Stops, { existingConnection: db })) deleteModelWithClass(dbSNCF_Stops);
 
-  const dbSNCF_StopsSchema = buildSchema(dbSNCF_Stops, { existingConnection: db });
-  const dbSNCF_StopsModelRaw = db.model(getName(dbSNCF_Stops), dbSNCF_StopsSchema);
-
-  return addModelToTypegoose(dbSNCF_StopsModelRaw, dbSNCF_Stops, { existingConnection: db });
+  return getModelForClass(dbSNCF_Stops, { existingConnection: db });
 }
 
 export type dbSNCF_StopsModel = ReturnType<typeof init>;

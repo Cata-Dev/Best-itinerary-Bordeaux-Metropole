@@ -7,8 +7,6 @@ export function approachedStopName(_id: number) {
 }
 
 import {
-  addModelToTypegoose,
-  buildSchema,
   deleteModelWithClass,
   getModelForClass,
   prop,
@@ -16,7 +14,6 @@ import {
   type ReturnModelType,
 } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
 import { dbTBM_Stops } from "./TBM_stops.model";
 import { dbSections } from "./sections.model";
@@ -39,10 +36,7 @@ export class dbFootPaths {
 export default function init(db: Connection): ReturnModelType<typeof dbFootPaths> {
   if (getModelForClass(dbFootPaths, { existingConnection: db })) deleteModelWithClass(dbFootPaths);
 
-  const dbFootPathsSchema = buildSchema(dbFootPaths, { existingConnection: db });
-  const dbFootPathsModelRaw = db.model(getName(dbFootPaths), dbFootPathsSchema);
-
-  return addModelToTypegoose(dbFootPathsModelRaw, dbFootPaths, { existingConnection: db });
+  return getModelForClass(dbFootPaths, { existingConnection: db });
 }
 
 export type dbFootPathsModel = ReturnType<typeof init>;

@@ -4,16 +4,8 @@
 
 import { TBMEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import {
-  type ReturnModelType,
-  addModelToTypegoose,
-  buildSchema,
-  deleteModelWithClass,
-  getModelForClass,
-  prop,
-} from "@typegoose/typegoose";
+import { type ReturnModelType, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
 
 export enum VehicleType {
   Bus = "BUS",
@@ -62,10 +54,7 @@ export class dbTBM_Stops extends TimeStamps {
 export default function init(db: Connection): ReturnModelType<typeof dbTBM_Stops> {
   if (getModelForClass(dbTBM_Stops, { existingConnection: db })) deleteModelWithClass(dbTBM_Stops);
 
-  const dbTBM_StopsSchema = buildSchema(dbTBM_Stops, { existingConnection: db });
-  const dbTBM_StopsModelRaw = db.model(getName(dbTBM_Stops), dbTBM_StopsSchema);
-
-  return addModelToTypegoose(dbTBM_StopsModelRaw, dbTBM_Stops, { existingConnection: db });
+  return getModelForClass(dbTBM_Stops, { existingConnection: db });
 }
 
 export type dbTBM_StopsModel = ReturnType<typeof init>;

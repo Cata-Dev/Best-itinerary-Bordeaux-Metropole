@@ -14,16 +14,8 @@ export enum LocationType {
 }
 
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import {
-  addModelToTypegoose,
-  buildSchema,
-  deleteModelWithClass,
-  getModelForClass,
-  prop,
-  type Ref,
-} from "@typegoose/typegoose";
+import { deleteModelWithClass, getModelForClass, prop, type Ref } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { Connection } from "mongoose";
 import { dbTBM_ScheduledRoutes } from "../TBM/TBMScheduledRoutes.model";
 import { RAPTORRunSettings } from "raptor";
@@ -172,10 +164,7 @@ export class dbComputeResult extends TimeStamps {
 export default function init(db: Connection) {
   if (getModelForClass(dbComputeResult, { existingConnection: db })) deleteModelWithClass(dbComputeResult);
 
-  const dbComputeResultSchema = buildSchema(dbComputeResult, { existingConnection: db });
-  const dbComputeResultModelRaw = db.model(getName(dbComputeResult), dbComputeResultSchema);
-
-  return addModelToTypegoose(dbComputeResultModelRaw, dbComputeResult, {
+  return getModelForClass(dbComputeResult, {
     existingConnection: db,
   });
 }
