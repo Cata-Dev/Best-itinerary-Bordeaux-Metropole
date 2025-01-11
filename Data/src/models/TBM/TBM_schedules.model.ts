@@ -17,8 +17,6 @@ export enum RtScheduleType {
 import { TBMEndpoints } from ".";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
-  addModelToTypegoose,
-  buildSchema,
   deleteModelWithClass,
   getDiscriminatorModelForClass,
   getModelForClass,
@@ -28,7 +26,6 @@ import {
   type ReturnModelType,
 } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
 import { dbTBM_Stops } from "./TBM_stops.model";
 import { dbTBM_Trips } from "./TBM_trips.model";
 import { Connection } from "mongoose";
@@ -72,15 +69,7 @@ export default function init(
   db: Connection,
 ): readonly [ReturnModelType<typeof dbTBM_Schedules>, ReturnModelType<typeof dbTBM_Schedules_rt>] {
   if (getModelForClass(dbTBM_Schedules, { existingConnection: db })) deleteModelWithClass(dbTBM_Schedules);
-  if (getModelForClass(dbTBM_Schedules_rt, { existingConnection: db }))
-    deleteModelWithClass(dbTBM_Schedules_rt);
-
-  const dbTBM_SchedulesSchema = buildSchema(dbTBM_Schedules, { existingConnection: db });
-  const dbTBM_SchedulesModelRaw = db.model(getName(dbTBM_Schedules), dbTBM_SchedulesSchema);
-
-  const dbTBM_SchedulesModel = addModelToTypegoose(dbTBM_SchedulesModelRaw, dbTBM_Schedules, {
-    existingConnection: db,
-  });
+  const dbTBM_SchedulesModel = getModelForClass(dbTBM_Schedules, { existingConnection: db });
 
   return [
     dbTBM_SchedulesModel,
