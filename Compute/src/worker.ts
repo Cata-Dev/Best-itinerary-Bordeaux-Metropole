@@ -26,7 +26,7 @@ async function start(data: Message<"data">["data"]) {
     computeNSR: computeNSRInit,
   } = await initComputeFpJob(bApp);
 
-  const app = makeWorker([computeProc, await computeFpInit(), await computeFpOTAInit(), computeNSRInit()]);
+  const app = makeWorker([computeProc, computeFpInit(), computeFpOTAInit(), computeNSRInit()]);
 
   app.workers.forEach((worker) => {
     worker.on("active", (job) => {
