@@ -33,6 +33,9 @@ class Cache<D, I> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CacheData<C extends Cache<any, any>> = C extends Cache<infer D, any> ? D : never;
+
 function memoize<A extends unknown[], R>(f: (...args: A) => R) {
   const cache = new Map<string, R>();
 
@@ -48,3 +51,4 @@ function memoize<A extends unknown[], R>(f: (...args: A) => R) {
 }
 
 export { Cache, memoize };
+export type { CacheData };

@@ -1,5 +1,5 @@
 import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { Cache } from "common/cache";
+import { Cache, CacheData } from "common/cache";
 import { euclideanDistance } from "common/geographics";
 import { approachedStopName } from "data/models/TBM/NonScheduledRoutes.model";
 import { dbSectionsModel, dbSections as dbSectionsRaw } from "data/models/TBM/sections.model";
@@ -29,19 +29,14 @@ interface SectionOverwritten {
 // Equivalent to an Edge
 type Section = Omit<dbSections, keyof SectionOverwritten> & SectionOverwritten;
 
-interface Data {
-  edges: Map<Section["s"], Section>;
-  mappedSegments: Map<Section["s"], Segment[]>;
-}
-
 type FootGraphNode<N extends node = Section["s"]> = Section["s"] | N;
 
 function makeInitData(sectionsModel: dbSectionsModel) {
   return new Cache(
     {
-      edges: new Map(),
-      mappedSegments: new Map(),
-    } as Data,
+      edges: new Map<Section["s"], Section>(),
+      mappedSegments: new Map<Section["s"], Segment[]>(),
+    },
     sectionsModel,
     async (sectionsModel) =>
       (
@@ -102,7 +97,7 @@ function makePTNInitData(stopsModel: dbTBM_StopsModel) {
 /**
  * Makes graph from data, disconnected from data (no relation with shallow/deep copy)
  */
-function makeGraph<N extends node>(edges: Data["edges"]) {
+function makeGraph<N extends node>(edges: CacheData<ReturnType<typeof makeInitData>>["edges"]) {
   const footGraph = new WeightedGraph<FootGraphNode<N>>();
 
   for (const { s, t, distance } of edges.values()) {
@@ -118,7 +113,7 @@ function makeGraph<N extends node>(edges: Data["edges"]) {
  * @returns `[closest point, edge containing this point, indice of segment composing the edge]`
  */
 function approachPoint(
-  mappedSegments: Data["mappedSegments"],
+  mappedSegments: CacheData<ReturnType<typeof makeInitData>>["mappedSegments"],
   coords: [number, number],
 ): [stopPoint: Point, edge: Section["s"], segIdx: number] | null {
   const point = new Point(...coords);
@@ -156,7 +151,7 @@ function approachPoint(
  * @returns Name of point added to graph
  */
 function refreshWithApproachedPoint<N extends node>(
-  edges: Data["edges"],
+  edges: CacheData<ReturnType<typeof makeInitData>>["edges"],
   footGraph: WeightedGraph<FootGraphNode<N>>,
   name: N,
   [point, edgeId, n]: Exclude<ReturnType<typeof approachPoint>, null>,
@@ -188,7 +183,7 @@ function refreshWithApproachedPoint<N extends node>(
 }
 
 function revertFromApproachedPoint<N extends node>(
-  edges: Data["edges"],
+  edges: CacheData<ReturnType<typeof makeInitData>>["edges"],
   footGraph: WeightedGraph<FootGraphNode<N>>,
   insertedNode: N,
   edgeId: dbSections["_id"],

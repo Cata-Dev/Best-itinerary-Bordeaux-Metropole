@@ -1,6 +1,7 @@
 import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
 import { unpackGraphNode } from "@catatomik/dijkstra/lib/utils/Graph";
 import { Duration } from "common/benchmark";
+import { CacheData } from "common/cache";
 import nonScheduledRoutesModelInit, {
   approachedStopName,
   dbFootPaths,
@@ -57,9 +58,9 @@ export default async function (app: BaseApplication) {
 
   const graphCaches = [graphData, graphPTNData] as const;
 
-  let edges: Awaited<ReturnType<(typeof graphData)["get"]>>[2]["edges"];
-  let mappedSegments: Awaited<ReturnType<(typeof graphData)["get"]>>[2]["mappedSegments"];
-  let stops: Awaited<ReturnType<(typeof graphPTNData)["get"]>>[2];
+  let edges: CacheData<typeof graphData>["edges"];
+  let mappedSegments: CacheData<typeof graphData>["mappedSegments"];
+  let stops: CacheData<typeof graphPTNData>;
 
   // Query every cache and init
   for (const graphCache of graphCaches) {
