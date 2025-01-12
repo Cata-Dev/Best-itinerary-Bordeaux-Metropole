@@ -14,14 +14,13 @@ import { limiter } from "../utils/asyncs";
 import {
   approachPoint,
   FootGraphNode,
-  makeFootStopsGraph,
   makeGraph,
   makeInitData,
-  makePTNInitData,
   refreshWithApproachedPoint,
   revertFromApproachedPoint,
 } from "../utils/foot/graph";
 import { initDB } from "../utils/mongoose";
+import { makeFootPTNGraph, makePTNInitData } from "../utils/PTN/graph";
 
 /**
  * Geographical point, WGS coordinates
@@ -134,7 +133,7 @@ export default async function (app: BaseApplication) {
         graphCaches.map((cache) => [cache, cache.lastUpdate]),
       );
       // Graph private to One-To-All computations
-      let footPTNGraph = makeFootStopsGraph<"aps">(edges, mappedSegments, stops);
+      let footPTNGraph = makeFootPTNGraph<"aps">(edges, mappedSegments, stops);
 
       return async ({
         data: [ps, alias, { maxDist = 1e3, targetPTN = false } = { maxDist: 1e3, targetPTN: false }],
@@ -159,7 +158,7 @@ export default async function (app: BaseApplication) {
 
         if (refreshed.updated || refreshedPTN?.updated)
           // Need to re-make (foot +/ PTN) graph
-          footPTNGraph = makeFootStopsGraph(edges, mappedSegments, stops);
+          footPTNGraph = makeFootPTNGraph(edges, mappedSegments, stops);
 
         // Approach points into foot graph
         const aps = approachPoint(mappedSegments, ps);
@@ -211,7 +210,7 @@ export default async function (app: BaseApplication) {
         ({ data: stops } = await refreshData(graphPTNData, 0));
 
         // Need to (re)make (foot +/ PTN) graph
-        const footPTNGraph = makeFootStopsGraph(edges, mappedSegments, stops);
+        const footPTNGraph = makeFootPTNGraph(edges, mappedSegments, stops);
 
         // Compute all paths
 

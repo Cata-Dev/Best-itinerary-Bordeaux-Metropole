@@ -1,9 +1,7 @@
 import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { Cache, CacheData } from "common/cache";
 import { euclideanDistance } from "common/geographics";
-import { approachedStopName } from "data/models/TBM/NonScheduledRoutes.model";
 import { dbSectionsModel, dbSections as dbSectionsRaw } from "data/models/TBM/sections.model";
-import { dbTBM_Stops, dbTBM_StopsModel } from "data/models/TBM/TBM_stops.model";
 import { ProjectionType } from "mongoose";
 import Point from "../geometry/Point";
 import Segment from "../geometry/Segment";
@@ -72,25 +70,6 @@ function makeInitData(sectionsModel: dbSectionsModel) {
           ),
       };
     },
-  );
-}
-
-function makePTNInitData(stopsModel: dbTBM_StopsModel) {
-  const query = {
-    $and: [{ coords: { $not: { $elemMatch: { $eq: Infinity } } } }],
-  };
-
-  return new Cache(
-    new Map<dbStops["_id"], Stop>(),
-    stopsModel,
-    async (stopsModel) =>
-      (
-        await stopsModel.find(query, { updatedAt: 1 }).sort({ updatedAt: -1 }).limit(1)
-      )[0]?.updatedAt?.getTime() ?? -1,
-    async (stopsModel) =>
-      new Map<dbStops["_id"], Stop>(
-        (await stopsModel.find(query, stopProjection).lean()).map((s) => [s._id, { coords: s.coords }]),
-      ),
   );
 }
 
@@ -194,47 +173,5 @@ function revertFromApproachedPoint<N extends node>(
   footGraph.removeEdge(s, insertedNode);
 }
 
-const stopProjection = { _id: 1, coords: 1 };
-type dbStops = Pick<dbTBM_Stops, keyof typeof stopProjection>;
-interface StopOverwritten {
-  // Remove it
-  _id?: never;
-}
-// Equivalent to an Edge
-type Stop = Omit<dbStops, keyof StopOverwritten> & StopOverwritten;
-
-/**
- * Only reads all parameters
- */
-function makeFootStopsGraph<N extends node = ReturnType<typeof approachedStopName>>(
-  edges: Data["edges"],
-  mappedSegments: Data["mappedSegments"],
-  stops: Map<dbStops["_id"], Stop>,
-) {
-  // Make graph
-  const graph = makeGraph<ReturnType<typeof approachedStopName> | N>(edges);
-
-  // Approach stops & insert
-  const approachedStops = new Map<dbStops["_id"], NonNullable<ReturnType<typeof approachPoint>>>();
-
-  for (const [stopId, { coords }] of stops) {
-    const ap = approachPoint(mappedSegments, coords);
-    if (ap) {
-      approachedStops.set(stopId, ap);
-      refreshWithApproachedPoint(edges, graph, approachedStopName(stopId), ap);
-    }
-  }
-
-  return graph;
-}
-
-export {
-  approachPoint,
-  makeFootStopsGraph,
-  makeGraph,
-  makeInitData,
-  makePTNInitData,
-  refreshWithApproachedPoint,
-  revertFromApproachedPoint,
-};
+export { approachPoint, makeGraph, makeInitData, refreshWithApproachedPoint, revertFromApproachedPoint };
 export type { FootGraphNode };
