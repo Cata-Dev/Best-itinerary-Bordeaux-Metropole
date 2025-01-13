@@ -59,7 +59,7 @@ jobs:
       # Will fail for the 1st time, but still emit required files to continue building
 
       - name: Install Compute
-        run: pnpm -F "compute" install
+        run: pnpm -F "compute" install || true
 
       # Not needed since 'prepare' script should build
       # - name: Build Compute
@@ -70,6 +70,9 @@ jobs:
 
       - name: Build Server
         run: cd Server/ && pnpm run --if-present compile
+
+      - name: Build Compute (2)
+        run: cd Compute/ && pnpm run --if-present build
 
       - name: Install Client
         run: pnpm -F "client" install
