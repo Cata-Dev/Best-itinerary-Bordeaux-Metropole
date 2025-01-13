@@ -21,13 +21,17 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "data" install --froze
 
 WORKDIR /usr/src/app/Compute
 # Cannot ignore scripts : Dijkstra build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile || true
 # 'prepare' script should have already built
 # RUN pnpm run build
 
 WORKDIR /usr/src/app/Server
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "server" install --frozen-lockfile --ignore-scripts
 RUN pnpm run compile
+
+# 2nd build try, will work
+WORKDIR /usr/src/app/Compute
+RUN pnpm run build
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server
 
