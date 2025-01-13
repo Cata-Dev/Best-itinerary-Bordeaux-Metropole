@@ -47,11 +47,13 @@ RUN pnpm run build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=client --prod /prod/client
 
 FROM base AS server
+ENV NODE_ENV=production
 COPY --from=build_base /prod/server /prod/server
 WORKDIR /prod/server
 CMD [ "pnpm", "start" ]
 
 FROM busybox:latest AS client
+ENV NODE_ENV=production
 COPY --from=build_client /prod/client/dist /prod/client
 # From https://dev.to/code42cate/how-to-dockerize-vite-44d3
 WORKDIR /prod/client
