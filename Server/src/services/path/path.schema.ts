@@ -3,11 +3,11 @@ import { resolve } from "@feathersjs/schema";
 import type { Static } from "@feathersjs/typebox";
 import { getValidator, ObjectIdSchema, Type } from "@feathersjs/typebox";
 
+import { coords } from "common/geographics";
 import type { HookContext } from "../../declarations";
-import { dataValidator, queryValidator } from "../../validators";
-import { coords } from "../geocode/geocode.schema";
-import type { PathService } from "./path.class";
 import { defaultOptional } from "../../utils/schemas";
+import { dataValidator, queryValidator } from "../../validators";
+import type { PathService } from "./path.class";
 
 // Main data model schema
 export const pathSchema = Type.Object(

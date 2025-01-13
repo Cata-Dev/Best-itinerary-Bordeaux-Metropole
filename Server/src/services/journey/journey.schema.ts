@@ -1,14 +1,15 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { ObjectIdSchema, Type, getValidator } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
+import { getValidator, ObjectIdSchema, Type } from "@feathersjs/typebox";
 
 import type { HookContext } from "../../declarations";
 import { dataValidator, queryValidator } from "../../validators";
 import type { JourneyService } from "./journey.class";
 
+import { coords } from "common/geographics";
+import { GEOCODE_type, geocodeSchema, TBMVehicles } from "../geocode/geocode.schema";
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
-import { coords, GEOCODE_type, geocodeSchema, TBMVehicles } from "../geocode/geocode.schema";
 
 const FOOTStageDetails = Type.Object(
   {

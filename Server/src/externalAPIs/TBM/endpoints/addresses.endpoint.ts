@@ -1,3 +1,4 @@
+import { Coords } from "common/geographics";
 import { normalize } from "common/string";
 import TBM_Addresses, { dbAddresses } from "data/models/TBM/addresses.model";
 import { TBMEndpoints } from "data/models/TBM/index";
@@ -17,7 +18,7 @@ export type Addresse = BaseTBM<{
   commune: string;
   cinsee: `${number}${number}${number}`;
 }> & {
-  geometry: { coordinates: [number, number] };
+  geometry: { coordinates: Coords };
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {

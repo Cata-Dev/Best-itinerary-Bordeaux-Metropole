@@ -1,3 +1,4 @@
+import { Coords } from "common/geographics";
 import { TBMEndpoints } from "data/models/TBM/index";
 import TBM_Intersections, { dbIntersections } from "data/models/TBM/intersections.model";
 import { BaseTBM } from "..";
@@ -9,7 +10,7 @@ export type Intersection = BaseTBM<{
   gid: string;
   nature: string;
 }> & {
-  geometry: { coordinates: [number, number] };
+  geometry: { coordinates: Coords };
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {

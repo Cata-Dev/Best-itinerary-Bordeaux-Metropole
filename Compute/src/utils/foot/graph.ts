@@ -1,6 +1,6 @@
 import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { Cache, CacheData } from "common/cache";
-import { euclideanDistance } from "common/geographics";
+import { Coords, euclideanDistance } from "common/geographics";
 import { dbSectionsModel, dbSections as dbSectionsRaw } from "data/models/TBM/sections.model";
 import { ProjectionType } from "mongoose";
 import Point from "../geometry/Point";
@@ -93,7 +93,7 @@ function makeGraph<N extends node>(edges: CacheData<ReturnType<typeof makeInitDa
  */
 function approachPoint(
   mappedSegments: CacheData<ReturnType<typeof makeInitData>>["mappedSegments"],
-  coords: [number, number],
+  coords: Coords,
 ): [stopPoint: Point, edge: Section["s"], segIdx: number] | null {
   const point = new Point(...coords);
 

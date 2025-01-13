@@ -1,4 +1,4 @@
-import { euclideanDistance } from "common/geographics";
+import { Coords, euclideanDistance } from "common/geographics";
 import { TBMEndpoints } from "data/models/TBM/index";
 import TBM_Sections, { dbSections } from "data/models/TBM/sections.model";
 import { BaseTBM } from "..";
@@ -21,7 +21,7 @@ export type Section = BaseTBM<{
   rg_fv_graph_na: number;
 }> & {
   geometry:
-    | { coordinates: [number, number][] }
+    | { coordinates: Coords[] }
     // Wtf ? Happened on 05-12-2024
     | null;
 };
@@ -38,9 +38,7 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
 
         const Sections: dbSections[] = rawSections
           .filter(
-            (
-              section,
-            ): section is Omit<Section, "geometry"> & { geometry: { coordinates: [number, number][] } } =>
+            (section): section is Omit<Section, "geometry"> & { geometry: { coordinates: Coords[] } } =>
               !!section.geometry,
           )
           .map((section) => {

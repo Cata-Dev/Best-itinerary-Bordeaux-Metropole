@@ -2,11 +2,12 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { TBMEndpoints } from ".";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { type ReturnModelType, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { Coords } from "common/geographics";
 import { Connection } from "mongoose";
+import { TBMEndpoints } from ".";
 
 @modelOptions({ options: { customName: TBMEndpoints.Addresses } })
 export class dbAddresses extends TimeStamps {
@@ -14,7 +15,7 @@ export class dbAddresses extends TimeStamps {
   public _id!: number;
 
   @prop({ type: () => [Number, Number], required: true })
-  public coords!: [number, number];
+  public coords!: Coords;
 
   @prop({ required: true })
   public numero!: number;

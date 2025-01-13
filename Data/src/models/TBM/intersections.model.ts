@@ -5,6 +5,7 @@
 import { deleteModelWithClass, getModelForClass, prop, type ReturnModelType } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { Coords } from "common/geographics";
 import { Connection } from "mongoose";
 import { TBMEndpoints } from ".";
 
@@ -14,7 +15,7 @@ export class dbIntersections extends TimeStamps {
   public _id!: number;
 
   @prop({ type: () => [Number, Number], required: true })
-  public coords!: [number, number];
+  public coords!: Coords;
 
   @prop({ required: true })
   public nature!: string;

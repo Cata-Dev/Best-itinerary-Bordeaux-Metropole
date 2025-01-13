@@ -2,11 +2,12 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { SNCFEndpoints } from ".";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { type ReturnModelType, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { Coords } from "common/geographics";
 import { Connection } from "mongoose";
+import { SNCFEndpoints } from ".";
 
 @modelOptions({ options: { customName: SNCFEndpoints.Stops } })
 export class dbSNCF_Stops extends TimeStamps {
@@ -14,7 +15,7 @@ export class dbSNCF_Stops extends TimeStamps {
   public _id!: number;
 
   @prop({ type: () => [Number, Number], required: true })
-  public coords!: [number, number];
+  public coords!: Coords;
 
   @prop({ required: true })
   public name!: string;

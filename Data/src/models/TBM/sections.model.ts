@@ -13,11 +13,12 @@ export enum SectionDomanial {
   Autre = 7,
 }
 
-import { TBMEndpoints } from ".";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { deleteModelWithClass, getModelForClass, prop, type ReturnModelType } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { Coords } from "common/geographics";
 import { Connection } from "mongoose";
+import { TBMEndpoints } from ".";
 
 @modelOptions({ options: { customName: TBMEndpoints.Sections } })
 export class dbSections extends TimeStamps {
@@ -25,7 +26,7 @@ export class dbSections extends TimeStamps {
   public _id!: number;
 
   @prop({ type: () => [[Number, Number]], required: true })
-  public coords!: [number, number][];
+  public coords!: Coords[];
 
   @prop({ required: true })
   public distance!: number;

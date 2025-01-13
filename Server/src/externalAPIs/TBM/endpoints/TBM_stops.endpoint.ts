@@ -1,3 +1,4 @@
+import { Coords } from "common/geographics";
 import { normalize } from "common/string";
 import { TBMEndpoints } from "data/models/TBM/index";
 import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "data/models/TBM/TBM_stops.model";
@@ -14,7 +15,7 @@ export type TBM_Stop = BaseTBM<{
   type: StopType;
   actif: Active;
 }> & {
-  geometry: { coordinates: [number, number] };
+  geometry: { coordinates: Coords };
 };
 
 export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {

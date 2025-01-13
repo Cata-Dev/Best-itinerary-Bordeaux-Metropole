@@ -2,6 +2,7 @@ import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
 import { unpackGraphNode } from "@catatomik/dijkstra/lib/utils/Graph";
 import { Duration } from "common/benchmark";
 import { CacheData } from "common/cache";
+import { Coords } from "common/geographics";
 import nonScheduledRoutesModelInit, {
   approachedStopName,
   dbFootPaths,
@@ -23,11 +24,6 @@ import { initDB } from "../utils/mongoose";
 import { makeFootPTNGraph, makePTNInitData } from "../utils/PTN/graph";
 
 /**
- * Geographical point, WGS coordinates
- */
-export type GeoPoint = [lat: number, long: number];
-
-/**
  * Approached point details, to make the link without a graph
  */
 export interface APDetails {
@@ -39,8 +35,8 @@ declare module "." {
   interface Jobs {
     // Foot path One-To-One
     computeFp: (
-      ps: GeoPoint,
-      pt: GeoPoint,
+      ps: Coords,
+      pt: Coords,
     ) => {
       distance: number;
       path: path<FootGraphNode<"aps" | "apt">>;
@@ -48,7 +44,7 @@ declare module "." {
     };
     // Foot path One-To-All (all being stops)
     computeFpOTA: (
-      ps: GeoPoint,
+      ps: Coords,
       alias?: string,
       options?: Partial<{ maxDist: number; targetPTN: boolean }>,
     ) => { distances: Record<number, number>; alias?: string };

@@ -2,10 +2,12 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { TBMEndpoints } from ".";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { type ReturnModelType, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { Coords } from "common/geographics";
+import { Connection } from "mongoose";
+import { TBMEndpoints } from ".";
 
 export enum VehicleType {
   Bus = "BUS",
@@ -21,7 +23,6 @@ export enum StopType {
 }
 
 export type Active = 0 | 1;
-import { Connection } from "mongoose";
 
 @modelOptions({ options: { customName: TBMEndpoints.Stops } })
 export class dbTBM_Stops extends TimeStamps {
@@ -29,7 +30,7 @@ export class dbTBM_Stops extends TimeStamps {
   public _id!: number;
 
   @prop({ type: () => [Number], required: true })
-  public coords!: [number, number];
+  public coords!: Coords;
 
   @prop({ required: true })
   public libelle!: string;
@@ -48,7 +49,7 @@ export class dbTBM_Stops extends TimeStamps {
 }
 
 // export type dbTBM_Stops = Omit<InferSchemaType<typeof dbTBM_Stops>, "coords"> & {
-//   coords: [number, number];
+//   coords: Coords;
 // };
 
 export default function init(db: Connection): ReturnModelType<typeof dbTBM_Stops> {
