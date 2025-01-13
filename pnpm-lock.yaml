@@ -190,6 +190,9 @@ importers:
       '@typegoose/typegoose':
         specifier: ^12.10.1
         version: 12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+      common:
+        specifier: workspace:*
+        version: link:../Common
       config:
         specifier: ^3.3.12
         version: 3.3.12
