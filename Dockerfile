@@ -1,8 +1,7 @@
 # From https://pnpm.io/fr/docker#example-2-build-multiple-docker-images-in-a-monorepo
 
-FROM node:18-alpine AS base
+FROM node:22-alpine AS base
 RUN apk add --no-cache git
-# ENV NODE_ENV=production
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable

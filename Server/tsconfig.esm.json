@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./lib/esm",
-    "module": "esnext",
-    "moduleResolution": "Bundler"
+    "moduleResolution": "Bundler",
+    "module": "esnext"
   }
 }
