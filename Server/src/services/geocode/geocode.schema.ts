@@ -1,13 +1,15 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
-import { Type, getValidator } from "@feathersjs/typebox";
 import type { Static } from "@feathersjs/typebox";
+import { Type, getValidator } from "@feathersjs/typebox";
 
+import { SNCFEndpoints } from "data/models/SNCF/index";
+import { TBMEndpoints } from "data/models/TBM/index";
 import type { HookContext } from "../../declarations";
+import { defaultOptional } from "../../utils/schemas";
 import { dataValidator, queryValidator } from "../../validators";
-import { TBMEndpoints } from "../../externalAPIs/TBM/index";
-import { SNCFEndpoints } from "../../externalAPIs/SNCF/index";
 import type { GeocodeService } from "./geocode.class";
+import { coords } from "common/geographics";
 
 const AddressesObject = Type.Object(
   {
@@ -15,7 +17,7 @@ const AddressesObject = Type.Object(
     commune: Type.String(),
     fantoir: Type.String(),
     nom_voie: Type.String(),
-    nom_voie_lowercase: Type.String(),
+    nom_voie_norm: Type.String(),
     numero: Type.Integer(),
     rep: Type.String(),
     type_voie: Type.String(),
@@ -54,8 +56,6 @@ const SNCF_StopsObject = Type.Object(
 );
 
 const SNCF_Stops = Type.Literal(SNCFEndpoints.Stops);
-
-export const coords = Type.Tuple([Type.Number(), Type.Number()]);
 
 export const GEOCODE_type = Type.Union([Addresses, TBM_Stops, SNCF_Stops]);
 export type GEOCODE_type = Static<typeof GEOCODE_type>;
@@ -133,13 +133,15 @@ export const geocodePatchResolver = resolve<Geocode, HookContext<GeocodeService>
 // Schema for allowed query properties
 // Unused here, custom service without storage
 export const geocodeQueryProperties = Type.Object({});
-export const geocodeQuerySchema = Type.Object(
-  {
-    id: Type.String(),
-    uniqueVoies: Type.Boolean(),
-    max: Type.Integer(),
-  },
-  { additionalProperties: false },
+export const geocodeQuerySchema = Type.Optional(
+  Type.Object(
+    {
+      id: Type.String(),
+      uniqueVoies: defaultOptional(Type.Boolean({ default: false })),
+      max: defaultOptional(Type.Integer({ default: 10 })),
+    },
+    { additionalProperties: false },
+  ),
 );
 export type GeocodeQuery = Static<typeof geocodeQuerySchema>;
 export const geocodeQueryValidator = getValidator(geocodeQuerySchema, queryValidator);

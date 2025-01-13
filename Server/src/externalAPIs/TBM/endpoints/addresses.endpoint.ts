@@ -1,8 +1,11 @@
-import { BaseTBM, TBMEndpoints } from "..";
+import { Coords } from "common/geographics";
+import { normalize } from "common/string";
+import TBM_Addresses, { dbAddresses } from "data/models/TBM/addresses.model";
+import { TBMEndpoints } from "data/models/TBM/index";
+import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Addresses, { dbAddresses } from "data/lib/models/TBM/addresses.model";
 
 export type Addresse = BaseTBM<{
   nom_voie: string;
@@ -15,7 +18,7 @@ export type Addresse = BaseTBM<{
   commune: string;
   cinsee: `${number}${number}${number}`;
 }> & {
-  geometry: { coordinates: [number, number] };
+  geometry: { coordinates: Coords };
 };
 
 export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
@@ -35,9 +38,9 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
             coords: address.geometry.coordinates,
             numero: address.properties.numero,
             rep: address.properties.rep?.toLowerCase(),
-            type_voie: voie.match(/[A-zàÀ-ÿ]+/g)?.[0] ?? "",
+            type_voie: voie.match(/[A-zÀ-ÿ]+/g)?.[0] ?? "",
             nom_voie: voie,
-            nom_voie_lowercase: voie.toLowerCase(),
+            nom_voie_norm: normalize(voie),
             code_postal:
               parseInt(address.properties.cpostal) || parseInt(`33${address.properties.cinsee}`) || 0,
             fantoir: address.properties.fantoir,

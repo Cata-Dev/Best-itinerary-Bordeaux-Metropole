@@ -1,7 +1,9 @@
-const colors = require("tailwindcss/colors");
-const defaultTheme = require("tailwindcss/defaultTheme");
+import colors from "tailwindcss/colors";
+import defaultTheme from "tailwindcss/defaultTheme";
 
-module.exports = {
+import type { Config } from "tailwindcss";
+
+export default {
   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   darkMode: "class",
   theme: {
@@ -66,5 +68,5 @@ module.exports = {
   variants: {
     extend: {},
   },
-  plugins: [require("autoprefixer")],
-};
+  plugins: [],
+} satisfies Config;

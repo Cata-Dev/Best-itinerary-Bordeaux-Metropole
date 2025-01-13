@@ -9,7 +9,7 @@
   "compute": {
     "redis": {
       "host": "localhost",
-      "port": 1234
+      "port": 6379
     }
   },
   "dbAddress": "mongodb://0.0.0.0:27017/",

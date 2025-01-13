@@ -16,10 +16,17 @@
         "__name": "REDIS_PORT",
         "__format": "number"
       }
+    },
+    "nbWorkers": {
+      "__name": "NB_WORKERS",
+      "__format": "number"
     }
   },
   "dbAddress": "MONGODB_URL",
   "sourceDB": "DB_SOURCE_NAME",
   "computeDB": "DB_COMPUTE_NAME",
-  "debug": "DEBUG"
+  "debug": {
+    "__name": "DEBUG",
+    "__format": "boolean"
+  }
 }

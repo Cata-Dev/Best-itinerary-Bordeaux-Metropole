@@ -1,9 +1,9 @@
-import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
-import type { ItineraryQuery } from "server";
+import type { JourneyQuery } from "server";
+import type { SNCFEndpoints } from "data/models/SNCF/index";
+import type { TBMEndpoints } from "data/models/TBM/index";
+import { APIRefresh, client } from "./feathers/feathers";
 import { theme, toggleDarkMode } from "./theme/theme";
-import { client, APIRefresh } from "./feathers/feathers";
 import { formatDateToInput, type TransportMode, type TransportProvider } from "./utils";
-import type { SNCFEndpoints } from "server/externalAPIs/SNCF/index";
 
 interface QuerySettings {
   departureTime: string;
@@ -15,21 +15,20 @@ interface QuerySettings {
 const defaultQuerySettings: QuerySettings = {
   departureTime: formatDateToInput(new Date()),
   maxWalkDistance: 1000,
-  walkSpeed: 5.0,
+  walkSpeed: 3.6,
   transports: {
     TBM: true,
     SNCF: true,
   },
 };
 
-interface ItineraryQueryLocationOverride {
+interface JourneyQueryLocationOverride {
   type: Exclude<TransportMode, "FOOT"> | TBMEndpoints.Addresses;
 }
 
-type ItineraryQueryLocation = Extract<ItineraryQuery, { from: unknown; to: unknown }>["from"];
+type JourneyQueryLocation = Extract<JourneyQuery, { from: unknown; to: unknown }>["from"];
 
-type Location = Omit<ItineraryQueryLocation, keyof ItineraryQueryLocationOverride> &
-  ItineraryQueryLocationOverride;
+type Location = Omit<JourneyQueryLocation, keyof JourneyQueryLocationOverride> & JourneyQueryLocationOverride;
 
 const defaultLocation = {
   id: -1 as const,
@@ -38,7 +37,7 @@ const defaultLocation = {
   alias: "" as const,
 } satisfies Location;
 
-function normalizeLocationForQuery(loc: Location): ItineraryQueryLocation {
+function normalizeLocationForQuery(loc: Location): JourneyQueryLocation {
   return {
     ...loc,
     type:
@@ -56,31 +55,31 @@ type colorType = "bg" | "t";
 type colorPalette<Base extends string> = `${Base}-${colorType}`;
 
 export {
-  toggleDarkMode,
-  theme,
-  client,
   APIRefresh,
-  defaultQuerySettings,
+  client,
   defaultLocation,
+  defaultQuerySettings,
   normalizeLocationForQuery,
+  theme,
+  toggleDarkMode,
 };
-export type { QuerySettings, colorTransports, colorComm, colorPalette, Location };
+export type { colorComm, colorPalette, colorTransports, Location, QuerySettings };
 
 export {
+  compareObjectForEach,
+  equalObjects,
   formatDate,
+  getNewTopZIndex,
+  parseJSON,
+  rebaseObject,
   transportToIcon,
   transportToType,
-  equalObjects,
-  rebaseObject,
-  compareObjectForEach,
-  parseJSON,
-  getNewTopZIndex,
 } from "./utils";
 export type {
+  Obj,
   TransportIcon,
   TransportMode,
   TransportProvider,
   UnknownIcon,
   UnknownLiteral,
-  Obj,
 } from "./utils";

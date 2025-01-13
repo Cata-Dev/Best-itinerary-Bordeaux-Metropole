@@ -2,16 +2,16 @@
 import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import type { Application } from "../../declarations";
-import type { Itinerary, ItineraryData, ItineraryPatch, ItineraryQuery } from "./itinerary.schema";
+import type { Journey, JourneyData, JourneyPatch, JourneyQuery } from "./journey.schema";
 
-export type { Itinerary, ItineraryData, ItineraryPatch, ItineraryQuery };
+export type { Journey, JourneyData, JourneyPatch, JourneyQuery };
 
-export interface ItineraryServiceOptions {
+export interface JourneyServiceOptions {
   app: Application;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ItineraryParams extends Params<ItineraryQuery> {}
+export interface JourneyParams extends Params<JourneyQuery> {}
 
 import { BadRequest, NotFound, GeneralError } from "@feathersjs/errors";
 import { hasLastActualization } from "../refresh-data/refresh-data.class";
@@ -29,15 +29,15 @@ import resultModelInit, {
   isLocationTBM,
   LabelFoot,
   LabelVehicle,
-} from "data/lib/models/Compute/result.model";
-import NonScheduledRoutesModelInit from "data/lib/models/TBM/NonScheduledRoutes.model";
-import TBMScheduledRoutesModelInit from "data/lib/models/TBM/TBMScheduledRoutes.model";
-import AddressesModelInit, { dbAddresses } from "data/lib/models/TBM/addresses.model";
-import TBMStopsModelInit from "data/lib/models/TBM/TBM_stops.model";
-import TBMSchedulesModelInit from "data/lib/models/TBM/TBM_schedules.model";
-import TBMLinesRoutesModelInit from "data/lib/models/TBM/TBM_lines_routes.model";
-import TBMLinesModelInit from "data/lib/models/TBM/TBM_lines.model";
-import SNCFStopsModelInit from "data/lib/models/SNCF/SNCF_stops.model";
+} from "data/models/Compute/result.model";
+import NonScheduledRoutesModelInit from "data/models/TBM/NonScheduledRoutes.model";
+import TBMScheduledRoutesModelInit from "data/models/TBM/TBMScheduledRoutes.model";
+import AddressesModelInit, { dbAddresses } from "data/models/TBM/addresses.model";
+import TBMStopsModelInit from "data/models/TBM/TBM_stops.model";
+import TBMSchedulesModelInit from "data/models/TBM/TBM_schedules.model";
+import TBMLinesRoutesModelInit from "data/models/TBM/TBM_lines_routes.model";
+import TBMLinesModelInit from "data/models/TBM/TBM_lines.model";
+import SNCFStopsModelInit from "data/models/SNCF/SNCF_stops.model";
 // To force TypeScript detect "compute" as a JobName
 import "compute/lib/jobs/compute";
 import { JobData } from "compute/lib/jobs";
@@ -49,8 +49,8 @@ function formatAddress(addressDoc: dbAddresses) {
 }
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
-export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryParams>
-  implements ServiceInterface<Itinerary, ItineraryData, ServiceParams, ItineraryPatch>
+export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
+  implements ServiceInterface<Journey, JourneyData, ServiceParams, JourneyPatch>
 {
   private readonly app: Application;
   private readonly resultModel: ReturnType<typeof resultModelInit>;
@@ -63,7 +63,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
   private readonly NonScheduledRoutesModel: ReturnType<typeof NonScheduledRoutesModelInit>;
   private readonly TBMScheduledRoutesModel: ReturnType<typeof TBMScheduledRoutesModelInit>;
 
-  constructor(public options: ItineraryServiceOptions) {
+  constructor(public options: JourneyServiceOptions) {
     this.app = options.app;
     this.resultModel = resultModelInit(this.app.get("computeDBConn"));
     this.AddressesModel = AddressesModelInit(this.app.get("sourceDBConn"));
@@ -76,7 +76,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
     this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("sourceDBConn"));
   }
 
-  private populateResult(result: dbComputeResult): Promise<Itinerary["paths"]> {
+  private populateResult(result: dbComputeResult): Promise<Journey["paths"]> {
     return mapAsync(result.journeys, async (j) => {
       const from = isLocationAddress(result.from)
         ? formatAddress((await this.AddressesModel.findById(result.from.id).lean())!)
@@ -91,7 +91,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
       return {
         departure: j[0].time,
         from,
-        stages: await mapAsync<LabelFoot | LabelVehicle, Itinerary["paths"][number]["stages"][number]>(
+        stages: await mapAsync<LabelFoot | LabelVehicle, Journey["paths"][number]["stages"][number]>(
           j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {
             if (!isLabelFoot(l) && !isLabelVehicle(l)) throw new Error("Unexpected journey.");
             return true;
@@ -112,7 +112,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
                     : l.transfer.to
                   : typeof arr[i + 1].boardedAt === "number"
                     ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
-                    : (arr[i + 1].boardedAt as string);
+                    : arr[i + 1].boardedAt.toString();
 
             if (!to) throw new GeneralError("Could not populate journey.");
 
@@ -125,7 +125,7 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
                 details: {
                   distance: l.transfer.length,
                 },
-              } satisfies Itinerary["paths"][number]["stages"][number];
+              } satisfies Journey["paths"][number]["stages"][number];
             }
 
             // Only remaining possibility
@@ -157,102 +157,94 @@ export class ItineraryService<ServiceParams extends ItineraryParams = ItineraryP
                 line: lineRoute.rs_sv_ligne_a.libelle,
                 type: lineRoute.vehicule,
               },
-            } satisfies Itinerary["paths"][number]["stages"][number];
+            } satisfies Journey["paths"][number]["stages"][number];
           },
         ),
       };
     });
   }
 
-  async get(id: Id, _params?: ServiceParams): Promise<Itinerary> {
-    switch (id) {
-      case "paths": {
-        if (!_params || !_params.query || !("from" in _params.query && "to" in _params.query))
-          throw new BadRequest(`Missing parameter(s).`);
+  async find(_params?: ServiceParams): Promise<Journey> {
+    if (!_params || !_params.query || !("from" in _params.query))
+      throw new BadRequest(`Missing required parameter(s).`);
 
-        const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
-        const force = (_params && _params.query?.force) ?? false;
+    const waitForUpdate = (_params && _params.query?.waitForUpdate) ?? false;
+    const force = (_params && _params.query?.force) ?? false;
 
-        const RAPTORSettings: JobData<"compute">[3] = {};
-        if (_params.query.walkSpeed) RAPTORSettings.walkSpeed = _params.query.walkSpeed;
+    const RAPTORSettings: JobData<"compute">[3] = {};
+    if (_params.query.walkSpeed) RAPTORSettings.walkSpeed = _params.query.walkSpeed;
 
-        const params: Parameters<
-          ReturnType<typeof this.app.get<"computeInstance">>["app"]["computeFullJourney"]
-        > = [
-          _params.query.from,
-          _params.query.to,
-          new Date(_params.query.departureTime ?? Date.now()),
-          RAPTORSettings,
-        ];
+    const params: Parameters<
+      ReturnType<typeof this.app.get<"computeInstance">>["app"]["computeFullJourney"]
+    > = [
+      _params.query.from,
+      _params.query.to,
+      new Date(_params.query.departureTime ?? Date.now()),
+      RAPTORSettings,
+    ];
 
-        const endpoints = this.app.externalAPIs.endpoints.filter((endpoint) => endpoint.rate < 24 * 3600);
-        let lastActualization = 0;
-        const actualization = mapAsync(endpoints, (e) =>
-          this.app
-            .service("refresh-data")
-            .get(e.name, {
-              query: {
-                waitForUpdate,
-                force,
-              },
-            })
-            .catch((r) => {
-              if (
-                waitForUpdate &&
-                hasData(r) &&
-                hasLastActualization(r.data) &&
-                r.data.lastActualization > lastActualization
-              )
-                lastActualization = r.data.lastActualization;
-            }),
-        );
+    const endpoints = Object.values(this.app.externalAPIs.endpoints).filter(
+      (endpoint) => endpoint.rate < 24 * 3600,
+    );
+    let lastActualization = 0;
+    const actualization = mapAsync(endpoints, (e) =>
+      this.app
+        .service("refresh-data")
+        .get(e.name, {
+          query: {
+            waitForUpdate,
+            force,
+          },
+        })
+        .catch((r) => {
+          if (
+            waitForUpdate &&
+            hasData(r) &&
+            hasLastActualization(r.data) &&
+            r.data.lastActualization > lastActualization
+          )
+            lastActualization = r.data.lastActualization;
+        }),
+    );
 
-        if (waitForUpdate) {
-          // Ask for a possible non-daily data actualization
-          await actualization;
-          lastActualization = Date.now();
-        }
-
-        const job = (await this.app.get("computeInstance").app.computeFullJourney(...params)).job;
-        let resultId: (typeof job)["returnvalue"];
-
-        try {
-          resultId = await job.waitUntilFinished(this.app.get("computeInstance").app.queuesEvents[0]);
-        } catch (e) {
-          throw new GeneralError("Error while computing paths", e);
-        }
-
-        const result = await this.resultModel.findById(resultId);
-        if (!result) throw new GeneralError("Internal error while retrieving results");
-
-        return {
-          code: 200,
-          message: "OK",
-          lastActualization,
-          id: resultId,
-          paths: await this.populateResult(result),
-        };
-      }
-
-      case "oldResult": {
-        if (!_params || !_params.query || !("id" in _params.query))
-          throw new BadRequest(`Missing "id" parameter.`);
-
-        const result = await this.resultModel.findById(_params.query.id);
-        if (!result) throw new NotFound("Unknown result.");
-
-        return {
-          code: 200,
-          message: "OK",
-          lastActualization: 0,
-          id: _params.query.id,
-          paths: await this.populateResult(result),
-        };
-      }
-
-      default:
-        throw new NotFound("Unknown command.");
+    if (waitForUpdate) {
+      // Ask for a possible non-daily data actualization
+      await actualization;
+      lastActualization = Date.now();
     }
+
+    const job = (await this.app.get("computeInstance").app.computeFullJourney(...params)).job;
+    let resultId: (typeof job)["returnvalue"];
+
+    try {
+      resultId = await job.waitUntilFinished(this.app.get("computeInstance").app.queuesEvents[0]);
+    } catch (e) {
+      throw new GeneralError("Error while computing paths", e);
+    }
+
+    const result = await this.resultModel.findById(resultId);
+    if (!result) throw new GeneralError("Internal error while retrieving results");
+
+    return {
+      code: 200,
+      message: "OK",
+      lastActualization,
+      id: resultId,
+      paths: await this.populateResult(result),
+    };
+  }
+
+  async get(id: Id, _?: ServiceParams): Promise<Journey> {
+    const result = await this.resultModel.findById(id);
+    if (!result) throw new NotFound("Unknown result.");
+
+    return {
+      code: 200,
+      message: "OK",
+      lastActualization: 0,
+      id,
+      paths: await this.populateResult(result),
+    };
   }
 }
 

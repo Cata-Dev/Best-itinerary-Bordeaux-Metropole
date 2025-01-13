@@ -1,29 +1,11 @@
-// @ts-check
-import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
 import pluginVue from "eslint-plugin-vue";
 import vueTsEslintConfig from "@vue/eslint-config-typescript";
-import eslintConfigPrettier from "eslint-config-prettier";
+import skipFormatting from "@vue/eslint-config-prettier/skip-formatting";
 
-export default tseslint.config(
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  // @ts-ignore
-  ...pluginVue.configs["flat/recommended"],
-  ...vueTsEslintConfig(),
-  eslintConfigPrettier,
+export default [
   {
-    plugins: {
-      "typescript-eslint": tseslint.plugin,
-    },
-    languageOptions: {
-      parserOptions: {
-        parser: tseslint.parser,
-        project: "./tsconfig.json",
-        extraFileExtensions: [".vue"],
-        sourceType: "module",
-      },
-    },
+    name: "app/files-to-lint",
+    files: ["**/*.{ts,mts,tsx,vue}"],
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -37,4 +19,13 @@ export default tseslint.config(
       ],
     },
   },
-);
+
+  {
+    name: "app/files-to-ignore",
+    ignores: ["**/dist/**", "**/dist-ssr/**", "**/coverage/**"],
+  },
+
+  ...pluginVue.configs["flat/recommended"],
+  ...vueTsEslintConfig(),
+  skipFormatting,
+];

@@ -1,10 +1,10 @@
 // For more information about this file see https://dove.feathersjs.com/guides/cli/service.class.html#custom-services
 import type { Params, ServiceInterface } from "@feathersjs/feathers";
-import type { Model } from "mongoose";
 import type { DocumentType } from "@typegoose/typegoose";
+import type { Model } from "mongoose";
 
 import type { Application } from "../../declarations";
-import type { Geocode, GeocodeData, GeocodePatch, GeocodeQuery, GEOCODE_type } from "./geocode.schema";
+import type { Geocode, GEOCODE_type, GeocodeData, GeocodePatch, GeocodeQuery } from "./geocode.schema";
 
 export type { Geocode, GeocodeData, GeocodePatch, GeocodeQuery };
 
@@ -23,18 +23,30 @@ type DistributedFilterQuery<N extends EndpointName> = N extends unknown
   ? FilterQuery<DistributedDocumentType<N>>
   : never;
 
-type parsedId<N extends EndpointName> = [DistributedEndpoints<N>, DistributedFilterQuery<N>];
+type ParsedId<N extends EndpointName> = [DistributedEndpoints<N>, DistributedFilterQuery<N>];
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GeocodeParams extends Params<GeocodeQuery> {}
 
-import { NotFound, BadRequest } from "@feathersjs/errors";
-import { FilterQuery } from "mongoose";
+import { BadRequest, NotFound } from "@feathersjs/errors";
 import { unique } from "common/filters";
+import { normalize } from "common/string";
+import { SNCFEndpoints } from "data/models/SNCF/index";
+import { TBMEndpoints } from "data/models/TBM/index";
+import { FilterQuery } from "mongoose";
 import { EndpointName, ProviderClass } from "../../externalAPIs";
 import { Endpoint } from "../../externalAPIs/endpoint";
-import { TBMEndpoints } from "../../externalAPIs/TBM";
-import { SNCFEndpoints } from "../../externalAPIs/SNCF";
+
+type AddressRegexpGroups = "numero" | "commune" | "type_voie" | "nom_voie_norm" | "rep" | "code_postal";
+interface FullAddressQuery {
+  numero: number;
+  nom_voie_norm: { $regex: string };
+  commune: { $regex: string };
+  type_voie: { $regex: string };
+  rep: string;
+  code_postal: number;
+}
+type AddressQuery = Partial<FullAddressQuery>;
 
 export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
   implements ServiceInterface<Geocode, GeocodeData, ServiceParams, GeocodePatch>
@@ -44,119 +56,85 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
   private communesNormalized: string[] = [];
   private types_voies: string[] = [];
   private reps: string[] = [];
+  private addressRegexp = this.makeAddressRegexp();
   private dataRefreshed = 0;
 
   constructor(public options: GeocodeServiceOptions) {
     this.app = options.app;
   }
 
-  async refreshInternalData() {
-    const Addresses = this.app.externalAPIs.endpoints.find(
-      (e) => e.name === TBMEndpoints.Addresses,
-    ) as Endpoint<TBMEndpoints.Addresses>;
-    this.communes = await Addresses.model.distinct("commune");
-    this.communesNormalized = this.communes.map((c) =>
-      c
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, ""),
+  private makeAddressRegexp() {
+    return new RegExp(
+      `(?<numero>\\d+ )?(?<rep>${this.reps
+        .map((r) => r.toLowerCase() + " ")
+        .join("|")})?((?<type_voie>${this.types_voies
+        .map((tv) => tv.toLowerCase())
+        .join("|")}) )?(?<nom_voie_norm>([a-z-']+ ?(?<commune>${this.communesNormalized.join(
+        "|",
+      )})?)+)( (?<code_postal>\\d{5}))?`,
     );
-    this.types_voies = await Addresses.model.distinct("type_voie");
-    this.reps = await Addresses.model.distinct("rep", { rep: { $ne: null } });
   }
 
-  async parseId(id: string): Promise<parsedId<GEOCODE_type>[]> {
-    const TBM_Stops = this.app.externalAPIs.endpoints.find(
-      (e) => e.name === TBMEndpoints.Stops,
-    ) as Endpoint<TBMEndpoints.Stops>;
-    const SNCF_Stops = this.app.externalAPIs.endpoints.find(
-      (e) => e.name == SNCFEndpoints.Stops,
-    ) as Endpoint<SNCFEndpoints.Stops>;
+  private async refreshInternalData() {
+    const Addresses = this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Addresses];
+    this.communes = await Addresses.model.distinct("commune");
+    this.communesNormalized = this.communes.map((c) => normalize(c));
+    this.types_voies = await Addresses.model.distinct("type_voie");
+    this.reps = await Addresses.model.distinct("rep", { rep: { $ne: null } });
 
-    id = id
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "");
+    this.addressRegexp = this.makeAddressRegexp();
+  }
+
+  async parseId(id: string): Promise<ParsedId<GEOCODE_type>[]> {
+    const TBM_Stops = this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Stops];
+    const SNCF_Stops = this.app.externalAPIs.SNCF.endpoints[SNCFEndpoints.Stops];
+
+    id = normalize(id);
+
+    const queries: ParsedId<GEOCODE_type>[] = [
+      [TBM_Stops, { libelle_lowercase: { $regex: id } }],
+      [SNCF_Stops, { name_lowercase: { $regex: id } }],
+    ];
+
     if (
-      this.dataRefreshed <
-        (
-          this.app.externalAPIs.endpoints.find(
-            (e) => e.name === TBMEndpoints.Addresses,
-          ) as Endpoint<TBMEndpoints.Addresses>
-        ).lastFetch ||
+      this.dataRefreshed < this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Addresses].lastFetch ||
       !this.communes.length
     )
       await this.refreshInternalData();
-    type groups = "numero" | "commune" | "type_voie" | "nom_voie_lowercase" | "rep" | "code_postal";
-    const regexpStr = `(?<numero>\\d+ )?(?<rep>${this.reps
-      .map((r) => r.toLowerCase() + " ")
-      .join("|")})?(?<type_voie>${this.types_voies
-      .map((tv) => tv.toLowerCase() + " ?")
-      .join("|")})?(?<nom_voie_lowercase>([a-zà-ÿ-']+ ?(?<commune>${this.communesNormalized
-      .map((c) => c + " ?")
-      .join("|")})?)+)(?<code_postal>\\d{5})?`;
-    const groups = new RegExp(regexpStr).exec(id)?.groups as
-      | Partial<{ [k in groups]: string | undefined }>
+
+    const groups = this.addressRegexp.exec(id)?.groups as
+      | Partial<Record<AddressRegexpGroups, string | undefined>>
       | undefined;
 
-    interface FullAddressQuery {
-      numero: number;
-      nom_voie_lowercase: { $regex: string };
-      commune: { $regex: string };
-      type_voie: { $regex: string };
-      rep: string;
-      code_postal: number;
-    }
-    type AddressQuery = Partial<FullAddressQuery>;
-
     if (groups) {
-      const filteredGroups = (Object.keys(groups) as groups[]).reduce<object>(
-        (acc, v) => (groups[v] !== undefined ? { ...acc, [v]: groups[v] } : acc),
-        {},
-      ) as Partial<{ [k in groups]: string }>;
-      let k: keyof typeof filteredGroups;
-      for (k in filteredGroups) {
-        if (filteredGroups[k] === undefined) delete filteredGroups[k];
-        else filteredGroups[k] = filteredGroups[k]!.trim();
-      }
       const addressQuery: AddressQuery = {};
-      if (filteredGroups.rep !== undefined) addressQuery.rep = filteredGroups.rep;
-      if (filteredGroups.numero !== undefined) addressQuery.numero = parseInt(filteredGroups.numero);
-      if (filteredGroups.code_postal !== undefined)
-        addressQuery.code_postal = parseInt(filteredGroups.code_postal);
-      if (filteredGroups.type_voie !== undefined || filteredGroups.nom_voie_lowercase !== undefined)
-        addressQuery.nom_voie_lowercase = {
-          $regex: `${filteredGroups.type_voie ?? ""} ${
-            (filteredGroups.commune
-              ? filteredGroups.nom_voie_lowercase?.replace(new RegExp(`${filteredGroups.commune}$`), "")
-              : filteredGroups.nom_voie_lowercase) ?? ""
+
+      if (groups.rep !== undefined) addressQuery.rep = groups.rep;
+      if (groups.numero !== undefined) addressQuery.numero = parseInt(groups.numero);
+      if (groups.code_postal !== undefined) addressQuery.code_postal = parseInt(groups.code_postal);
+      if (groups.type_voie !== undefined || groups.nom_voie_norm !== undefined)
+        addressQuery.nom_voie_norm = {
+          $regex: `${groups.type_voie ?? ""} ${
+            (groups.commune
+              ? groups.nom_voie_norm?.replace(new RegExp(`${groups.commune}$`), "")
+              : groups.nom_voie_norm) ?? ""
           }`.trim(),
         };
-      if (filteredGroups.commune)
+      if (groups.commune)
         addressQuery.commune = {
-          $regex: this.communes[this.communesNormalized.indexOf(filteredGroups.commune)],
-        }; //get back the uppercase commune
-      if (filteredGroups.type_voie)
+          // Get back the uppercase commune
+          $regex: this.communes[this.communesNormalized.indexOf(groups.commune)],
+        };
+      if (groups.type_voie)
         addressQuery.type_voie = {
-          $regex: this.types_voies.find((v) => v.toLowerCase() == filteredGroups.type_voie)!,
-        }; //get back the uppercase type_voie
+          // Get back the uppercase type_voie
+          $regex: this.types_voies.find((v) => v.toLowerCase() == groups.type_voie)!,
+        };
 
-      return [
-        [
-          this.app.externalAPIs.endpoints.find(
-            (e) => e.name === TBMEndpoints.Addresses,
-          ) as Endpoint<TBMEndpoints.Addresses>,
-          addressQuery,
-        ],
-        [TBM_Stops, { libelle_lowercase: { $regex: id } }],
-        [SNCF_Stops, { name_lowercase: { $regex: id } }],
-      ];
-    } else {
-      return [
-        [TBM_Stops, { libelle_lowercase: { $regex: id } }],
-        [SNCF_Stops, { name_lowercase: { $regex: id } }],
-      ];
+      queries.push([this.app.externalAPIs.TBM.endpoints[TBMEndpoints.Addresses], addressQuery]);
     }
+
+    return queries;
   }
 
   async get(id: string /* _params?: ServiceParams */): Promise<Geocode> {
@@ -201,21 +179,20 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
   }
 
   async find(_params?: ServiceParams): Promise<Geocode[]> {
-    if (!_params || typeof _params.query?.id !== "string")
-      throw new BadRequest("missing id parameter in query");
+    if (!_params || !_params.query) throw new BadRequest("Missing required query.");
 
     type doc = DistributedProdiverClass<GEOCODE_type> & { GEOCODE_type: GEOCODE_type };
 
-    let docs: doc[] = [];
+    const docs: doc[] = [];
     for (const [endpoint, query] of await this.parseId(_params.query.id)) {
       try {
         const r: DistributedProdiverClass<GEOCODE_type>[] = await (endpoint.model as unknown as Model<object>)
           .find(query)
           .collation({ locale: "fr", strength: 1 })
-          .limit(500)
+          .limit(_params.query.max)
           .lean<DistributedProdiverClass<GEOCODE_type>[]>();
         if (r) {
-          if (endpoint.name == TBMEndpoints.Addresses && _params.query?.uniqueVoies)
+          if (endpoint.name == TBMEndpoints.Addresses && _params.query.uniqueVoies)
             docs.push(
               ...filterUniqueVoies(
                 (r as ProviderClass<TBMEndpoints.Addresses>[]).map((r) => ({
@@ -237,7 +214,8 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
 
     if (!docs.length) return [];
 
-    if (_params.query.max) docs = docs.slice(0, Number(_params.query.max));
+    // Keep only wanted number of results
+    docs.splice(_params.query.max);
 
     const results: Geocode[] = [];
     for (const doc of docs) {
@@ -268,11 +246,11 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
 }
 
 function filterUniqueVoies<T extends ProviderClass<TBMEndpoints.Addresses>>(results: T[]) {
-  const voies = results.map((r) => r.nom_voie_lowercase);
+  const voies = results.map((r) => r.nom_voie_norm);
   const uniquesVoies = voies.filter(unique);
   return uniquesVoies.map((uv) => {
-    const min = Math.min(...results.filter((r) => r.nom_voie_lowercase === uv).map((r) => r.numero));
-    return results.find((r) => r.nom_voie_lowercase === uv && r.numero === min)!;
+    const min = Math.min(...results.filter((r) => r.nom_voie_norm === uv).map((r) => r.numero));
+    return results.find((r) => r.nom_voie_norm === uv && r.numero === min)!;
   });
 }
 

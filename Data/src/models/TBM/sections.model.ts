@@ -13,19 +13,12 @@ export enum SectionDomanial {
   Autre = 7,
 }
 
-import { TBMEndpoints } from "./names";
+import { deleteModelWithClass, getModelForClass, prop, type ReturnModelType } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import {
-  addModelToTypegoose,
-  buildSchema,
-  deleteModelWithClass,
-  getModelForClass,
-  prop,
-  type ReturnModelType,
-} from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
+import { Coords } from "common/geographics";
 import { Connection } from "mongoose";
+import { TBMEndpoints } from ".";
 
 @modelOptions({ options: { customName: TBMEndpoints.Sections } })
 export class dbSections extends TimeStamps {
@@ -33,7 +26,7 @@ export class dbSections extends TimeStamps {
   public _id!: number;
 
   @prop({ type: () => [[Number, Number]], required: true })
-  public coords!: [number, number][];
+  public coords!: Coords[];
 
   @prop({ required: true })
   public distance!: number;
@@ -54,19 +47,16 @@ export class dbSections extends TimeStamps {
   public rg_fv_graph_dbl!: boolean;
 
   @prop({ required: true })
-  public rg_fv_graph_nd: number;
+  public rg_fv_graph_nd!: number;
 
   @prop({ required: true })
-  public rg_fv_graph_na: number;
+  public rg_fv_graph_na!: number;
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbSections> {
   if (getModelForClass(dbSections, { existingConnection: db })) deleteModelWithClass(dbSections);
 
-  const dbSectionsSchema = buildSchema(dbSections, { existingConnection: db });
-  const dbSectionsModelRaw = db.model(getName(dbSections), dbSectionsSchema);
-
-  return addModelToTypegoose(dbSectionsModelRaw, dbSections, { existingConnection: db });
+  return getModelForClass(dbSections, { existingConnection: db });
 }
 
 export type dbSectionsModel = ReturnType<typeof init>;

@@ -26,7 +26,7 @@ async function start(data: Message<"data">["data"]) {
     computeNSR: computeNSRInit,
   } = await initComputeFpJob(bApp);
 
-  const app = makeWorker([computeProc, await computeFpInit(), await computeFpOTAInit(), computeNSRInit()]);
+  const app = makeWorker([computeProc, computeFpInit(), computeFpOTAInit(), computeNSRInit()]);
 
   app.workers.forEach((worker) => {
     worker.on("active", (job) => {
@@ -34,6 +34,9 @@ async function start(data: Message<"data">["data"]) {
     });
     worker.on("completed", (job) => {
       bApp.logger.info(`Job ${job.name} finished`);
+    });
+    worker.on("stalled", (jobId) => {
+      bApp.logger.warn(`Job ${jobId} stalled`);
     });
     worker.on("failed", (job, err) => {
       bApp.logger.error(`Job ${job?.name ?? "UNKNOWN"} failed`, err);

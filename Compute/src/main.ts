@@ -5,13 +5,13 @@ import { cpus } from "os";
 import { join } from "path";
 import { askShutdown, makeQueue } from "./base";
 import { isMessage, makeMessage, Message } from "./utils/para";
-import { makeData } from "./prepare";
+import { prepareMakingData } from "./prepare";
 import { Deferred } from "common/async";
 import { makeLogger } from "common/logger";
 
 declare module "./utils/para" {
   interface Messages {
-    data: Awaited<ReturnType<typeof makeData>>;
+    data: Awaited<ReturnType<Awaited<ReturnType<typeof prepareMakingData>>>>;
     stop: undefined;
   }
 }
@@ -19,10 +19,11 @@ declare module "./utils/para" {
 const logger = makeLogger(`[MAIN]`);
 
 export async function main(workersCount: number, data?: Message<"data">["data"]) {
-  const app = makeQueue();
+  const app = await makeQueue();
   app.logger = logger;
 
-  data ??= await makeData(app);
+  const makeData = await prepareMakingData(app);
+  data ??= await makeData();
 
   // Init main instance
   const workers = Array.from(
@@ -50,8 +51,10 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
 
   return {
     app,
-    updateData: (data: Message<"data">["data"]) =>
-      workers.forEach((w) => w.postMessage(makeMessage("data", data))),
+    refreshData: async (data?: Message<"data">["data"]) => {
+      data ??= await makeData();
+      workers.forEach((w) => w.postMessage(makeMessage("data", data)));
+    },
 
     gracefulStop: () => {
       app.logger.info("Gracefully stopping...");

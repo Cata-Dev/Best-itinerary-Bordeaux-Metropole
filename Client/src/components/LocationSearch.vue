@@ -103,11 +103,11 @@ async function forceInput(v: string) {
 }
 
 defineExpose({
-  focus: inputCompo.value?.focus,
+  focus: () => inputCompo.value?.focus(),
   forceInput,
 });
 
-const popUp = alert;
+const popUp = (msg: string) => alert(msg);
 </script>
 
 <template>

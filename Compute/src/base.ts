@@ -1,11 +1,11 @@
 import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
 import { makeLogger } from "common/logger";
-import { ItineraryQuery } from "server";
-import { config } from "data/lib/config";
-import { mapAsync } from "./utils/asyncs";
-import { JobData, JobName, JobResult, Processor } from "./jobs";
+import { config } from "data/config/index";
+import { TBMEndpoints } from "data/models/TBM/index";
 import { RAPTORRunSettings } from "raptor";
-import { TBMEndpoints } from "server/externalAPIs/TBM/index";
+import { JourneyQuery } from "server";
+import { JobData, JobName, JobResult, Processor } from "./jobs";
+import { mapAsync } from "./utils/asyncs";
 
 export interface Config {
   redis: {
@@ -49,8 +49,8 @@ export type Application<T extends SchedulerInstanceType = SchedulerInstanceType>
         queues: Instances<typeof jobNames, "queue">;
         queuesEvents: Instances<typeof jobNames, "queuesEvents">;
         computeFullJourney: (
-          from: Extract<ItineraryQuery, { from: unknown }>["from"],
-          to: Extract<ItineraryQuery, { to: unknown }>["to"],
+          from: Extract<JourneyQuery, { from: unknown }>["from"],
+          to: Extract<JourneyQuery, { to: unknown }>["to"],
           departureTime: Date,
           settings: Partial<RAPTORRunSettings>,
         ) => Promise<
@@ -86,12 +86,13 @@ interface FlowJobBase<N extends JobName> extends FlowJob {
   children?: DistributedFlowJobBase<JobName>[];
 }
 
-export function makeQueue() {
+export async function makeQueue() {
   const queues = jobNames.map((j) => new Queue(j, { connection })) as Instances<typeof jobNames, "queue">;
+  // Enforce NSR to be done at most 1 by 1
+  await queues[3].setGlobalConcurrency(1).catch(logger.error);
 
-  mapAsync(queues, (q) => q.waitUntilReady())
-    .then(() => app.logger.log("Queue ready"))
-    .catch(logger.error);
+  await mapAsync(queues, (q) => q.waitUntilReady()).catch(logger.error);
+  app.logger.log("Queue ready");
 
   const flowProducer = new FlowProducer({ connection });
 
@@ -113,7 +114,7 @@ export function makeQueue() {
                 {
                   name: "computeFpOTA" as const,
                   queueName: "computeFpOTA" as const,
-                  data: [from.coords, "ps"] satisfies [(typeof from)["coords"], unknown],
+                  data: [from.coords, "ps", { targetPTN: true }] satisfies [unknown, unknown, unknown],
                   opts: {
                     failParentOnFailure: true,
                   },
@@ -125,7 +126,7 @@ export function makeQueue() {
                 {
                   name: "computeFpOTA" as const,
                   queueName: "computeFpOTA" as const,
-                  data: [to.coords, "pt"] satisfies [(typeof from)["coords"], unknown],
+                  data: [to.coords, "pt", { targetPTN: true }] satisfies [unknown, unknown, unknown],
                   opts: {
                     failParentOnFailure: true,
                   },
@@ -137,16 +138,16 @@ export function makeQueue() {
   } as Application<"queue">;
 }
 
-export function makeWorker(
-  /**
-   *  Should be `Instances<typeof jobNames, "processor">`
-   */
-  processors: Instances<typeof jobNames, "processor">,
-) {
+// TODO: add to config ?
+// 30 minutes
+const MAX_STALL_TIME = 30 * 60 * 1_000;
+
+export function makeWorker(processors: Instances<typeof jobNames, "processor">) {
   const workers = jobNames.map(
     (n, i) =>
       new Worker(n, (processors as Processor<JobName>[])[i], {
         connection,
+        ...(n === "computeNSR" ? { stalledInterval: MAX_STALL_TIME, lockDuration: MAX_STALL_TIME } : {}),
       }),
   ) as Instances<typeof jobNames, "worker">;
 

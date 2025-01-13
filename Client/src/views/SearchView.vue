@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
-import type { Itinerary } from "server";
+import type { Journey } from "server";
 import LocationSearch from "@/components/LocationSearch.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
-import BadeModal from "@/components/BaseModal.vue";
+import BaseModal from "@/components/BaseModal.vue";
 import ResultItem from "@/components/ResultItem.vue";
 import { client, APIRefresh, type colorPalette, type colorComm } from "@/store";
 import {
@@ -24,7 +24,7 @@ import {
 const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const settingsCompo = ref<InstanceType<typeof ExtraSettings> | null>(null);
-const modalCompo = ref<InstanceType<typeof BadeModal> | null>(null);
+const modalCompo = ref<InstanceType<typeof BaseModal> | null>(null);
 
 const searchElem = ref<HTMLButtonElement | null>(null);
 const showSettingsButton = ref<HTMLButtonElement | null>(null);
@@ -86,9 +86,9 @@ async function selectResult(idx: number) {
                 name="source"
                 placeholder="Départ"
                 @update:model-value="
-                  if (source && actualRoute?.query.from !== source.alias) updateRoute();
                   if (source) {
-                    if (!destination) destinationCompo?.focus?.();
+                    if (actualRoute?.query.from !== source.alias) updateRoute();
+                    if (!destination) destinationCompo?.focus();
                     else searchElem?.focus();
                   }
                 "
@@ -102,9 +102,9 @@ async function selectResult(idx: number) {
                 placeholder="Arrivée"
                 class="mt-2"
                 @update:model-value="
-                  if (destination && actualRoute?.query.to !== destination.alias) updateRoute();
                   if (destination) {
-                    if (!source) sourceCompo?.focus?.();
+                    if (actualRoute?.query.to !== destination.alias) updateRoute();
+                    if (!source) sourceCompo?.focus();
                     else searchElem?.focus();
                   }
                 "
@@ -119,7 +119,7 @@ async function selectResult(idx: number) {
                 ref="showSettingsButton"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
                 :class="{ 'rotate-180': settingsCompo?.shown }"
-                @click="settingsCompo?.show(), showSettingsButton?.blur()"
+                @click="(settingsCompo?.show(), showSettingsButton?.blur())"
               >
                 <font-awesome-icon
                   icon="sliders-h"
@@ -129,7 +129,7 @@ async function selectResult(idx: number) {
               <button
                 ref="searchElem"
                 class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
-                @click="fetchResult(), searchElem?.blur()"
+                @click="(fetchResult(), searchElem?.blur())"
               >
                 <font-awesome-icon
                   icon="search-location"
@@ -155,7 +155,7 @@ async function selectResult(idx: number) {
       </div>
       <div v-if="currentJourney" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
-          :title="`Alternative #${(result as Itinerary).paths.indexOf(currentJourney) + 1}`"
+          :title="`Alternative #${(result as Journey).paths.indexOf(currentJourney) + 1}`"
           :total-duration="currentJourney.stages.reduce((acc, v) => acc + v.duration, 0)"
           :total-distance="
             currentJourney.stages.reduce(
@@ -198,7 +198,7 @@ async function selectResult(idx: number) {
       </div>
       <div v-else class="grid gap-2 row-start-3" />
     </div>
-    <BadeModal ref="modalCompo" :main-classes="modal.colors">
+    <BaseModal ref="modalCompo" :main-classes="modal.colors">
       <template #title>
         <h1 class="text-2xl text-center">
           <font-awesome-icon :icon="modal.icon || 'spinner'" class="mr-1" />
@@ -208,7 +208,7 @@ async function selectResult(idx: number) {
       <template #content>
         {{ modal.content }}
       </template>
-    </BadeModal>
+    </BaseModal>
   </div>
 </template>
 

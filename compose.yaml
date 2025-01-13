@@ -35,7 +35,7 @@ services:
       - mongodb
     volumes:
       - mongodb-data:/data/db
-    command: --quiet
+    command: --quiet --logpath /dev/null
 
   redis:
     image: redis:alpine

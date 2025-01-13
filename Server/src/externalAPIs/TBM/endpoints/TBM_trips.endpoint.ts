@@ -1,8 +1,9 @@
-import { BaseTBM, TBMEndpoints } from "..";
+import { TBMEndpoints } from "data/models/TBM/index";
+import TBM_Trips, { dbTBM_Trips } from "data/models/TBM/TBM_trips.model";
+import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import TBM_Trips, { dbTBM_Trips } from "data/lib/models/TBM/TBM_trips.model";
 
 export type TBM_Vehicle = BaseTBM<{
   gid: string;

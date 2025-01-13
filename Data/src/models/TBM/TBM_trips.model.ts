@@ -2,11 +2,7 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { TBMEndpoints } from "./names";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
-  addModelToTypegoose,
-  buildSchema,
   deleteModelWithClass,
   getModelForClass,
   index,
@@ -14,12 +10,13 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { getName } from "@typegoose/typegoose/lib/internal/utils";
-import { dbTBM_Lines } from "./TBM_lines.model";
-import { dbTBM_Stops } from "./TBM_stops.model";
-import { dbTBM_Lines_routes } from "./TBM_lines_routes.model";
 import { Connection } from "mongoose";
+import { TBMEndpoints } from ".";
+import { dbTBM_Lines } from "./TBM_lines.model";
+import { dbTBM_Lines_routes } from "./TBM_lines_routes.model";
+import { dbTBM_Stops } from "./TBM_stops.model";
 
 @index({ rs_sv_chem_l: 1 })
 @modelOptions({ options: { customName: TBMEndpoints.Trips } })
@@ -46,10 +43,7 @@ export class dbTBM_Trips extends TimeStamps {
 export default function init(db: Connection): ReturnModelType<typeof dbTBM_Trips> {
   if (getModelForClass(dbTBM_Trips, { existingConnection: db })) deleteModelWithClass(dbTBM_Trips);
 
-  const dbTBM_TripsSchema = buildSchema(dbTBM_Trips, { existingConnection: db });
-  const dbTBM_TripsModelRaw = db.model(getName(dbTBM_Trips), dbTBM_TripsSchema);
-
-  return addModelToTypegoose(dbTBM_TripsModelRaw, dbTBM_Trips, { existingConnection: db });
+  return getModelForClass(dbTBM_Trips, { existingConnection: db });
 }
 
 export type dbTBM_TripsModel = ReturnType<typeof init>;

@@ -3,7 +3,7 @@ import { ref, watch } from "vue";
 import { equalObjects, transportToType } from "@/store/";
 import TransportBadge from "@/components/TransportBadge.vue";
 import type { Location } from "@/store";
-import type { TBMEndpoints } from "server/externalAPIs/TBM/index";
+import type { TBMEndpoints } from "data/models/TBM/index";
 
 type ModelValue = Location;
 

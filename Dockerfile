@@ -1,8 +1,7 @@
 # From https://pnpm.io/fr/docker#example-2-build-multiple-docker-images-in-a-monorepo
 
-FROM node:18-alpine AS base
+FROM node:22-alpine AS base
 RUN apk add --no-cache git
-# ENV NODE_ENV=production
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -48,11 +47,13 @@ RUN pnpm run build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=client --prod /prod/client
 
 FROM base AS server
+ENV NODE_ENV=production
 COPY --from=build_base /prod/server /prod/server
 WORKDIR /prod/server
 CMD [ "pnpm", "start" ]
 
 FROM busybox:latest AS client
+ENV NODE_ENV=production
 COPY --from=build_client /prod/client/dist /prod/client
 # From https://dev.to/code42cate/how-to-dockerize-vite-44d3
 WORKDIR /prod/client

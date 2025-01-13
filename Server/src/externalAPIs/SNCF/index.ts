@@ -1,18 +1,15 @@
-import { SNCFEndpoints } from "data/lib/models/SNCF/names";
-export { SNCFEndpoints };
+import { SNCFEndpoints } from "data/models/SNCF/index";
 
 import axios from "axios";
 import { unique } from "common/filters";
 import { WGSToLambert93 } from "common/geographics";
+import { normalize } from "common/string";
+import SNCF_Schedules, { dbSNCF_Schedules } from "data/models/SNCF/SNCF_schedules.model";
+import SNCF_Stops, { dbSNCF_Stops } from "data/models/SNCF/SNCF_stops.model";
 import { Application } from "../../declarations";
-import { Endpoint } from "../endpoint";
-import { bulkOps } from "../../utils";
-import SNCF_Schedules, {
-  dbSNCF_Schedules,
-  dbSNCF_SchedulesModel,
-} from "data/lib/models/SNCF/SNCF_schedules.model";
-import SNCF_Stops, { dbSNCF_Stops, dbSNCF_StopsModel } from "data/lib/models/SNCF/SNCF_stops.model";
 import { logger } from "../../logger";
+import { bulkOps } from "../../utils";
+import { Endpoint } from "../endpoint";
 
 /**
  * Parse SNCF API date
@@ -51,21 +48,9 @@ function formatSNCFdate(date: Date): string {
 
 declare module "../../declarations" {
   interface ExternalAPIs {
-    SNCF: { endpoints: Endpoint<SNCFEndpoints>[] };
+    SNCF: { endpoints: { [EN in SNCFEndpoints]: Endpoint<EN> } };
   }
 }
-
-export type SNCFClass<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
-  ? dbSNCF_Schedules
-  : E extends SNCFEndpoints.Stops
-    ? dbSNCF_Stops
-    : dbSNCF_Schedules | dbSNCF_Stops;
-
-export type SNCFModel<E extends SNCFEndpoints | undefined = undefined> = E extends SNCFEndpoints.Schedules
-  ? dbSNCF_SchedulesModel
-  : E extends SNCFEndpoints.Stops
-    ? dbSNCF_StopsModel
-    : dbSNCF_SchedulesModel | dbSNCF_StopsModel;
 
 interface SNCF_link {
   id: string;
@@ -136,10 +121,6 @@ export default (app: Application) => {
 
   logger.info(`Models initialized.`);
 
-  app.externalAPIs.SNCF = {
-    endpoints: [],
-  };
-
   /**
    * Fetch data from SNCF API
    * @param {Array} paths
@@ -161,101 +142,105 @@ export default (app: Application) => {
     return data;
   }
 
-  app.externalAPIs.SNCF.endpoints = [
-    new Endpoint(
-      SNCFEndpoints.Schedules,
-      20,
-      async () => {
-        const date = formatSNCFdate(new Date());
-        const route_schedules = (
-          await getData<{ route_schedules: SNCF_Schedule[] }>(
-            {
-              coverage: "sncf",
-              coord: "-0.61439;44.82321", //middle of BM
-            },
-            "route_schedules",
-            {
-              distance: 15000, //15km
-              count: 500,
-              depth: 0,
-              data_freshness: "realtime",
-              since: date,
-            },
-          )
-        ).route_schedules;
+  app.externalAPIs.SNCF = {
+    endpoints: {
+      [SNCFEndpoints.Schedules]: new Endpoint(
+        SNCFEndpoints.Schedules,
+        20,
+        async () => {
+          const date = formatSNCFdate(new Date());
+          const route_schedules = (
+            await getData<{ route_schedules: SNCF_Schedule[] }>(
+              {
+                coverage: "sncf",
+                coord: "-0.61439;44.82321", //middle of BM
+              },
+              "route_schedules",
+              {
+                distance: 15000, //15km
+                count: 500,
+                depth: 0,
+                data_freshness: "realtime",
+                since: date,
+              },
+            )
+          ).route_schedules;
 
-        const schedules: dbSNCF_Schedules[] = [];
-        for (const route_schedule of route_schedules) {
-          route_schedule.table.rows.forEach((row) => {
-            //iterate through rows of schedules table
-            const stop_point = parseInt(row.stop_point.id.substring(16, 24));
-            row.date_times.forEach((schedule, j) => {
-              //now iterate through columns
-              if (!schedule.data_freshness) return; //empty cell in schedules table
-              const header = route_schedule.table.headers[j]; //header of the actual column
-              const route = `${route_schedule.display_informations.name}:${header.display_informations.direction}`;
-              const trip = parseInt(header.display_informations.trip_short_name);
-              schedules.push({
-                _id: `${trip}:${stop_point}`, //equals to 'j:i', 'column:row'
-                realtime: parseSNCFdate(schedule.date_time),
-                trip,
-                stop_point,
-                route,
+          const schedules: dbSNCF_Schedules[] = [];
+          for (const route_schedule of route_schedules) {
+            route_schedule.table.rows.forEach((row) => {
+              //iterate through rows of schedules table
+              const stop_point = parseInt(row.stop_point.id.substring(16, 24));
+              row.date_times.forEach((schedule, j) => {
+                //now iterate through columns
+                if (!schedule.data_freshness) return; //empty cell in schedules table
+                const header = route_schedule.table.headers[j]; //header of the actual column
+                const route = `${route_schedule.display_informations.name}:${header.display_informations.direction}`;
+                const trip = parseInt(header.display_informations.trip_short_name);
+                schedules.push({
+                  _id: `${trip}:${stop_point}`, //equals to 'j:i', 'column:row'
+                  realtime: parseSNCFdate(schedule.date_time),
+                  trip,
+                  stop_point,
+                  route,
+                });
               });
             });
+          }
+
+          await Schedule.deleteMany({
+            _id: { $nin: schedules.map((s) => s._id) },
           });
-        }
+          await Schedule.bulkWrite(
+            bulkOps("updateOne", schedules as unknown as Record<keyof dbSNCF_Schedules, unknown>[]),
+          );
 
-        await Schedule.deleteMany({
-          _id: { $nin: schedules.map((s) => s._id) },
-        });
-        await Schedule.bulkWrite(
-          bulkOps("updateOne", schedules as unknown as Record<keyof dbSNCF_Schedules, unknown>[]),
-        );
+          return true;
+        },
+        Schedule,
+      ),
 
-        return true;
-      },
-      Schedule,
-    ),
+      [SNCFEndpoints.Stops]: new Endpoint(
+        SNCFEndpoints.Stops,
+        24 * 3600,
+        async () => {
+          const rawStops = (
+            await getData<{ stop_points: SNCF_Stop[] }>(
+              {
+                coverage: "sncf",
+                coord: "-0.61439;44.82321", //middle of BM
+              },
+              "stop_points",
+              {
+                distance: 15000, //15km
+                count: 500,
+                depth: 0,
+              },
+            )
+          ).stop_points;
 
-    new Endpoint(
-      SNCFEndpoints.Stops,
-      24 * 3600,
-      async () => {
-        const rawStops = (
-          await getData<{ stop_points: SNCF_Stop[] }>(
-            {
-              coverage: "sncf",
-              coord: "-0.61439;44.82321", //middle of BM
-            },
-            "stop_points",
-            {
-              distance: 15000, //15km
-              count: 500,
-              depth: 0,
-            },
-          )
-        ).stop_points;
+          const Stops: dbSNCF_Stops[] = rawStops
+            .map((stop) => {
+              return {
+                _id: parseInt(stop.id.substring(16, 24)),
+                coords: WGSToLambert93(parseFloat(stop.coord.lat), parseFloat(stop.coord.lon)),
+                name: stop.name,
+                name_norm: normalize(stop.name),
+              };
+            })
+            .filter(unique);
 
-        const Stops: dbSNCF_Stops[] = rawStops
-          .map((stop) => {
-            return {
-              _id: parseInt(stop.id.substring(16, 24)),
-              coords: WGSToLambert93(parseFloat(stop.coord.lat), parseFloat(stop.coord.lon)),
-              name: stop.name,
-              name_lowercase: stop.name.toLowerCase(),
-            };
-          })
-          .filter(unique);
+          await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
+          await Stop.bulkWrite(
+            bulkOps("updateOne", Stops as unknown as Record<keyof dbSNCF_Stops, unknown>[]),
+          );
 
-        await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-        await Stop.bulkWrite(bulkOps("updateOne", Stops as unknown as Record<keyof dbSNCF_Stops, unknown>[]));
+          return true;
+        },
+        Stop,
+      ),
+    },
+  };
 
-        return true;
-      },
-      Stop,
-    ),
-  ];
-
-  app.externalAPIs.endpoints.push(...app.externalAPIs.SNCF.endpoints);
+  app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.SNCF.endpoints };
 };

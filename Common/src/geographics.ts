@@ -1,3 +1,5 @@
+import { Static, Type } from "@feathersjs/typebox";
+
 const X0 = 700000;
 const Y0 = 6600000;
 const a = 6378137;
@@ -76,4 +78,16 @@ const euclideanDistance = (x1: number, y1: number, x2: number, y2: number): numb
   return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 };
 
-export { WGSToLambert93, geographicDistance, euclideanDistance };
+/**
+ * [lat (x), lon (y)]
+ */
+const coords = Type.Tuple([
+  // lat (or x)
+  Type.Number(),
+  // lon (or y)
+  Type.Number(),
+]);
+type Coords = Static<typeof coords>;
+
+export { WGSToLambert93, geographicDistance, euclideanDistance, coords };
+export type { Coords };

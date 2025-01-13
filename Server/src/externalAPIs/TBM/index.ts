@@ -1,6 +1,5 @@
 // Top exports to avoid double-importing
-import { TBMEndpoints } from "data/lib/models/TBM/names";
-export { TBMEndpoints };
+import { TBMEndpoints } from "data/models/TBM/index";
 
 export interface BaseTBM<T extends object = object> {
   properties: T;
@@ -8,106 +7,34 @@ export interface BaseTBM<T extends object = object> {
 
 import axios from "axios";
 import { Application } from "../../declarations";
-import { Endpoint } from "../endpoint";
 import { logger } from "../../logger";
+import { Endpoint } from "../endpoint";
 
-import { dbAddresses, dbAddressesModel } from "data/lib/models/TBM/addresses.model";
 import addressesEndpoint from "./endpoints/addresses.endpoint";
 
-import { dbSections, dbSectionsModel } from "data/lib/models/TBM/sections.model";
 import sectionsEndpoint from "./endpoints/sections.endpoint";
 
-import { dbTBM_Lines, dbTBM_LinesModel } from "data/lib/models/TBM/TBM_lines.model";
+import intersectionsEndpoint from "./endpoints/intersections.endpoint";
+
 import TBM_linesEndpoint from "./endpoints/TBM_lines.endpoint";
 
-import { dbTBM_Lines_routes, dbTBM_Lines_routesModel } from "data/lib/models/TBM/TBM_lines_routes.model";
 import TBM_lines_routesEndpoint from "./endpoints/TBM_lines_routes.endpoint";
 
-import {
-  dbTBM_Schedules,
-  dbTBM_SchedulesModel,
-  dbTBM_Schedules_rt,
-  dbTBM_Schedules_rtModel,
-} from "data/lib/models/TBM/TBM_schedules.model";
 import TBM_schedulesEndpoints from "./endpoints/TBM_schedules.endpoint";
 
-import { dbTBM_Stops, dbTBM_StopsModel } from "data/lib/models/TBM/TBM_stops.model";
 import TBM_stopsEndpoint from "./endpoints/TBM_stops.endpoint";
 
-import { dbTBM_Trips, dbTBM_TripsModel } from "data/lib/models/TBM/TBM_trips.model";
 import TBM_tripsEndpoint from "./endpoints/TBM_trips.endpoint";
 
-import {
-  dbTBM_ScheduledRoutes,
-  dbTBM_ScheduledRoutesModel,
-} from "data/lib/models/TBM/TBMScheduledRoutes.model";
 import TBMScheduledRoutesEndpoint, {
   TBMScheduledRoutesEndpointHook,
 } from "./endpoints/TBMScheduledRoutes.endpoint";
 
 declare module "../../declarations" {
   interface ExternalAPIs {
-    TBM: { endpoints: Endpoint<TBMEndpoints>[] };
+    TBM: { endpoints: { [EN in TBMEndpoints]: Endpoint<EN> } };
   }
 }
-
-export type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
-  ? dbAddresses
-  : E extends TBMEndpoints.Sections
-    ? dbSections
-    : E extends TBMEndpoints.Lines
-      ? dbTBM_Lines
-      : E extends TBMEndpoints.Lines_routes
-        ? dbTBM_Lines_routes
-        : E extends TBMEndpoints.Schedules
-          ? dbTBM_Schedules
-          : E extends TBMEndpoints.Schedules_rt
-            ? dbTBM_Schedules_rt
-            : E extends TBMEndpoints.Stops
-              ? dbTBM_Stops
-              : E extends TBMEndpoints.Trips
-                ? dbTBM_Trips
-                : E extends TBMEndpoints.ScheduledRoutes
-                  ? dbTBM_ScheduledRoutes
-                  :
-                      | dbAddresses
-                      | dbSections
-                      | dbTBM_Lines_routes
-                      | dbTBM_Lines
-                      | dbTBM_Schedules
-                      | dbTBM_Schedules_rt
-                      | dbTBM_Stops
-                      | dbTBM_Trips
-                      | dbTBM_ScheduledRoutes;
-
-export type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
-  ? dbAddressesModel
-  : E extends TBMEndpoints.Sections
-    ? dbSectionsModel
-    : E extends TBMEndpoints.Lines
-      ? dbTBM_LinesModel
-      : E extends TBMEndpoints.Lines_routes
-        ? dbTBM_Lines_routesModel
-        : E extends TBMEndpoints.Schedules
-          ? dbTBM_SchedulesModel
-          : E extends TBMEndpoints.Schedules_rt
-            ? dbTBM_Schedules_rtModel
-            : E extends TBMEndpoints.Stops
-              ? dbTBM_StopsModel
-              : E extends TBMEndpoints.Trips
-                ? dbTBM_TripsModel
-                : E extends TBMEndpoints.ScheduledRoutes
-                  ? dbTBM_ScheduledRoutesModel
-                  :
-                      | dbAddressesModel
-                      | dbSectionsModel
-                      | dbTBM_Lines_routesModel
-                      | dbTBM_LinesModel
-                      | dbTBM_SchedulesModel
-                      | dbTBM_Schedules_rtModel
-                      | dbTBM_StopsModel
-                      | dbTBM_TripsModel
-                      | dbTBM_ScheduledRoutesModel;
 
 export default (app: Application) => {
   /**
@@ -134,26 +61,27 @@ export default (app: Application) => {
   const TBM_tripsEndpointInstantiated = TBM_tripsEndpoint(app, getData)[0];
 
   app.externalAPIs.TBM = {
-    endpoints: [
-      addressesEndpoint(app, getData)[0],
-      sectionsEndpoint(app, getData)[0],
-      TBM_linesEndpoint(app, getData)[0],
-      TBM_lines_routesEndpointInstantiated,
-      TBM_schedulesEndpointInstantiated,
-      TBM_schedulesRtEndpointInstantiated,
-      TBM_stopsEndpoint(app, getData)[0],
-      TBM_tripsEndpointInstantiated,
-      TBMScheduledRoutesEndpoint(
+    endpoints: {
+      [TBMEndpoints.Addresses]: addressesEndpoint(app, getData)[0],
+      [TBMEndpoints.Sections]: sectionsEndpoint(app, getData)[0],
+      [TBMEndpoints.Intersections]: intersectionsEndpoint(app, getData)[0],
+      [TBMEndpoints.Lines]: TBM_linesEndpoint(app, getData)[0],
+      [TBMEndpoints.Lines_routes]: TBM_lines_routesEndpointInstantiated,
+      [TBMEndpoints.Schedules]: TBM_schedulesEndpointInstantiated,
+      [TBMEndpoints.Schedules_rt]: TBM_schedulesRtEndpointInstantiated,
+      [TBMEndpoints.Stops]: TBM_stopsEndpoint(app, getData)[0],
+      [TBMEndpoints.Trips]: TBM_tripsEndpointInstantiated,
+      [TBMEndpoints.ScheduledRoutes]: TBMScheduledRoutesEndpoint(
         app,
         TBM_lines_routesEndpointInstantiated,
         TBM_schedulesRtEndpointInstantiated,
         TBM_tripsEndpointInstantiated,
       )[0],
-    ],
+    },
   };
   logger.info(`TBM models & endpoints initialized.`);
 
-  app.externalAPIs.endpoints.push(...app.externalAPIs.TBM.endpoints);
+  app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.TBM.endpoints };
 
   TBMScheduledRoutesEndpointHook(app);
 };

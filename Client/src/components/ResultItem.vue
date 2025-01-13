@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import BaseModal from "@/components/BaseModal.vue";
 import TransportBadge from "@/components/TransportBadge.vue";
+import VecMap from "@/components/VecMap.vue";
 import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
+import { currentJourney, fetchFootpaths, result } from "@/store/api";
 import { duration } from "common/time";
-import type { Itinerary } from "server";
+import type { Journey } from "server";
+import { ref } from "vue";
 
 interface Props {
   title: string;
@@ -10,7 +14,7 @@ interface Props {
   totalDistance: number;
   departure: number;
   from: string;
-  path: Itinerary["paths"][number]["stages"];
+  path: Journey["paths"][number]["stages"];
   expanded?: boolean;
 }
 
@@ -53,6 +57,25 @@ function computeDuration(index: number): number {
 
   return duration;
 }
+
+const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
+
+const paths = ref<[number, number][][][]>([]);
+
+async function displayMap() {
+  if (result.value === null) throw new Error("Unexpected unset result.");
+  if (currentJourney.value === null) throw new Error("Unexpected unset current journey.");
+
+  modalMapComp.value?.show(true);
+
+  paths.value.splice(
+    0,
+    paths.value.length,
+    ...(await fetchFootpaths(result.value.id, result.value.paths.indexOf(currentJourney.value))).map(
+      (path) => path.steps,
+    ),
+  );
+}
 </script>
 
 <template>
@@ -60,9 +83,14 @@ function computeDuration(index: number): number {
     v-if="expanded"
     class="bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-4 rounded-lg shadow-xl min-w-[40%]"
   >
-    <h3 class="text-center font-bold text-xl">
-      {{ title }}
-    </h3>
+    <div class="flex place-content-center">
+      <h3 class="mx-auto text-center font-bold text-xl">
+        {{ title }}
+      </h3>
+      <button @click="displayMap()">
+        <font-awesome-icon icon="map" class="text-text-light-primary dark:text-text-dark-primary text-2xl" />
+      </button>
+    </div>
     <div class="h-[2px] w-full my-3 bg-text-light-primary dark:bg-text-dark-primary" />
     <div class="flex w-full mt-2">
       <font-awesome-icon
@@ -149,6 +177,22 @@ function computeDuration(index: number): number {
         </div>
       </template>
     </div>
+    <BaseModal
+      ref="modalMapComp"
+      :main-classes="[
+        'bg-bg-light',
+        'dark:bg-bg-dark',
+        'text-text-light-primary',
+        'dark:text-text-dark-primary',
+      ]"
+    >
+      <template #title>
+        <h1 class="text-2xl text-center">Trajets à pied</h1>
+      </template>
+      <template #content>
+        <VecMap :footpaths="paths"> </VecMap>
+      </template>
+    </BaseModal>
   </div>
   <div
     v-else

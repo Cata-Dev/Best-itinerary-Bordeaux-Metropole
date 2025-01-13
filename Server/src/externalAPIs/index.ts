@@ -1,18 +1,20 @@
-import { Application } from "../declarations";
+import { Application, ExternalAPIs } from "../declarations";
 
-import tbm, { TBMEndpoints, TBMClass, TBMModel } from "./TBM";
-import sncf, { SNCFEndpoints, SNCFClass, SNCFModel } from "./SNCF";
-import { Endpoint } from "./endpoint";
+import { SNCFClass, SNCFEndpoints, SNCFModel } from "data/models/SNCF/index";
+import { TBMClass, TBMEndpoints, TBMModel } from "data/models/TBM/index";
 import { logger } from "../logger";
+import sncf from "./SNCF";
+import tbm from "./TBM";
+import { Endpoint } from "./endpoint";
 
 export const setupExternalAPIs = (app: Application) => {
-  app.externalAPIs = { endpoints: [] } as never;
+  app.externalAPIs = { endpoints: {} } as ExternalAPIs;
 
   tbm(app);
   sncf(app);
 
   function refresh() {
-    for (const endpoint of app.externalAPIs.endpoints.filter(
+    for (const endpoint of Object.values(app.externalAPIs.endpoints).filter(
       (endpoint) => endpoint.rate >= 24 * 3600 && endpoint.rate < Infinity,
     )) {
       endpoint.fetch(undefined, app.get("debug")).catch((e) => logger.error(e));
@@ -23,12 +25,12 @@ export const setupExternalAPIs = (app: Application) => {
   setInterval(
     refresh,
     Math.max(
-      ...app.externalAPIs.endpoints.map((endpoint) => (endpoint.rate < Infinity ? endpoint.rate : 0)),
+      ...Object.values(app.externalAPIs.endpoints).map((endpoint) =>
+        endpoint.rate < Infinity ? endpoint.rate : 0,
+      ),
     ) * 1000,
   );
 };
-
-export type EndpointName = TBMEndpoints | SNCFEndpoints;
 
 export type ProviderClass<E extends EndpointName | undefined = undefined> = E extends TBMEndpoints
   ? TBMClass<E>
@@ -42,8 +44,12 @@ export type ProviderModel<E extends EndpointName | undefined = undefined> = E ex
     ? SNCFModel<E>
     : TBMModel<TBMEndpoints> | SNCFModel<SNCFEndpoints>;
 
+type getKey<O> = O extends Record<infer K, unknown> ? K : never;
+// Retrieve keys of endpoints providers
+export type EndpointName = getKey<ExternalAPIs[Exclude<keyof ExternalAPIs, "endpoints">]["endpoints"]>;
+
 declare module "../declarations" {
   interface ExternalAPIs {
-    endpoints: Endpoint<EndpointName>[];
+    endpoints: { [EN in EndpointName]: Endpoint<EN> };
   }
 }

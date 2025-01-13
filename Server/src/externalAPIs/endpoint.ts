@@ -2,10 +2,18 @@ import { EndpointName, ProviderModel } from ".";
 import { logger } from "../logger";
 import { Deferred } from "common/async";
 import { TypedEventEmitter } from "../utils/TypedEmitter";
+import { ReturnModelType } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 
 interface EndpointEvents {
   fetch: () => void;
   fetched: (success: boolean) => void;
+}
+
+declare class _ extends TimeStamps {}
+
+function hasUpdatedAt(doc: unknown): doc is { updatedAt: Date } {
+  return typeof doc === "object" && doc !== null && "updatedAt" in doc && doc.updatedAt instanceof Date;
 }
 
 export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
@@ -14,7 +22,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
 > {
   private deferredFetch: Deferred<boolean>;
   private _fetching = false;
-  /** Timestamp of last fetch (succeed or failed) */
+  /** Timestamp of last succeeded fetch */
   private _lastFetch = 0;
 
   /**
@@ -32,7 +40,20 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
   ) {
     super();
     this.deferredFetch = new Deferred<boolean>();
-    this.deferredFetch.resolve(false); // Initialization
+    // Retrieve last update time
+    // Unsafe...
+    (this.model as unknown as ReturnModelType<typeof _>)
+      .findOne({}, { updatedAt: 1 })
+      .sort({ updatedAt: -1 })
+      .exec()
+      .then((lastUpdatedDoc) => {
+        if (lastUpdatedDoc && hasUpdatedAt(lastUpdatedDoc))
+          this._lastFetch = lastUpdatedDoc.updatedAt.getTime();
+      })
+      .catch(logger.error)
+      .finally(() => {
+        this.deferredFetch.resolve(false); // Initialization
+      });
   }
 
   public get onCooldown(): boolean {

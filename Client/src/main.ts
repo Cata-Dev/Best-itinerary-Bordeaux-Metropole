@@ -1,52 +1,55 @@
-import { createApp } from "vue";
-import { router } from "./router";
 import "./index.css";
+
+import { createApp } from "vue";
+import App from "./App.vue";
+import { router } from "./router";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
-  faCrosshairs,
-  faSearchLocation,
-  faMoon,
-  faSun,
-  faMapPin,
-  faFlag,
-  faSlidersH,
-  faCheckCircle,
-  faExclamationTriangle,
-  faTimes,
-  faSpinner,
-  faClock,
-  faWalking,
   faBus,
-  faTrain,
-  faSubway,
-  faShip,
+  faCheckCircle,
+  faClock,
+  faCrosshairs,
+  faExclamationTriangle,
+  faFlag,
+  faMap,
+  faMapPin,
+  faMoon,
   faQuestionCircle,
   faRoad,
+  faSearchLocation,
+  faShip,
+  faSlidersH,
+  faSpinner,
+  faSubway,
+  faSun,
+  faTimes,
+  faTrain,
+  faWalking,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
-  faCrosshairs,
-  faSearchLocation,
-  faMoon,
-  faSun,
-  faMapPin,
-  faFlag,
-  faSlidersH,
-  faCheckCircle,
-  faExclamationTriangle,
-  faTimes,
-  faSpinner,
-  faClock,
-  faWalking,
   faBus,
-  faTrain,
-  faSubway,
-  faShip,
+  faCheckCircle,
+  faClock,
+  faCrosshairs,
+  faExclamationTriangle,
+  faFlag,
+  faMap,
+  faMapPin,
+  faMoon,
   faQuestionCircle,
   faRoad,
+  faSearchLocation,
+  faShip,
+  faSlidersH,
+  faSpinner,
+  faSubway,
+  faSun,
+  faTimes,
+  faTrain,
+  faWalking,
 );
-import App from "./App.vue";
 
 const app = createApp(App);
 app.component("FontAwesomeIcon", FontAwesomeIcon);

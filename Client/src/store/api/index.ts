@@ -1,20 +1,20 @@
-import { ref } from "vue";
+import { router } from "@/router";
 import {
+  client,
+  compareObjectForEach,
+  defaultLocation,
   defaultQuerySettings,
-  type QuerySettings,
-  type Location,
+  normalizeLocationForQuery,
   parseJSON,
   rebaseObject,
+  type Location,
   type Obj,
+  type QuerySettings,
   type TransportProvider,
-  compareObjectForEach,
-  client,
-  normalizeLocationForQuery,
-  defaultLocation,
 } from "@/store";
-import type { Itinerary, ItineraryQuery } from "server";
+import type { Journey, JourneyQuery, Path, PathQuery } from "server";
+import { ref } from "vue";
 import { useRoute, type RouteLocationNormalized, type RouteLocationRaw } from "vue-router";
-import { router } from "@/router";
 
 const actualRoute = ref<RouteLocationNormalized | null>(null);
 
@@ -33,15 +33,15 @@ enum SearchResultStatus {
   ERROR,
 }
 
-const status = ref<{ state: SearchResultStatus; previousSearch: ItineraryQuery | null }>({
+const status = ref<{ state: SearchResultStatus; previousSearch: JourneyQuery | string | null }>({
   state: SearchResultStatus.NONE,
   previousSearch: null,
 });
 
-const result = ref<Itinerary | null>(null);
-const currentJourney = ref<Itinerary["paths"][number] | null>(null);
+const result = ref<Journey | null>(null);
+const currentJourney = ref<Journey["paths"][number] | null>(null);
 
-function normalizeSearchQuery(): ItineraryQuery | null {
+function normalizeSearchQuery(): JourneyQuery | null {
   if (!source.value) return null;
   const from = normalizeLocationForQuery(source.value);
 
@@ -55,7 +55,7 @@ function normalizeSearchQuery(): ItineraryQuery | null {
     departureTime: new Date(settings.value.departureTime ?? Date.now()).toISOString(),
     // From km/h to m/s
     walkSpeed: settings.value.walkSpeed / 3.6,
-  } satisfies ItineraryQuery;
+  } satisfies JourneyQuery;
 }
 
 /**
@@ -72,7 +72,7 @@ async function fetchResult() {
 
   status.value.previousSearch = query;
   try {
-    const r = await client.service("itinerary").get("paths", { query });
+    const r = await client.service("journey").find({ query });
     if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
 
     result.value = r;
@@ -96,9 +96,9 @@ async function fetchResult() {
 async function fetchOldResult(id: string) {
   status.value.state = SearchResultStatus.LOADING;
 
-  status.value.previousSearch = { id };
+  status.value.previousSearch = id;
   try {
-    const r = await client.service("itinerary").get("oldResult", { query: { id } });
+    const r = await client.service("journey").get(id);
     if (r.code != 200) throw new Error(`Unable to retrieve old result, ${r}.`);
 
     result.value = r;
@@ -113,6 +113,23 @@ async function fetchOldResult(id: string) {
   }
 
   return status.value.state;
+}
+
+async function fetchFootpaths(
+  id: Extract<PathQuery, { id: unknown }>["id"],
+  index: Extract<PathQuery, { id: unknown }>["index"],
+): Promise<(Omit<Path, "steps"> & { steps: [number, number][][] })[]> {
+  try {
+    return (
+      ((await client
+        .service("path")
+        .find({ query: { for: "journey", id, index, realShape: true } })) as (Omit<Path, "steps"> & {
+        steps: [number, number][][];
+      })[]) ?? []
+    );
+  } catch (_) {
+    return [];
+  }
 }
 
 /**
@@ -204,15 +221,16 @@ async function updateRoute() {
 }
 
 export {
-  source,
-  destination,
-  settings,
-  fetchResult,
-  SearchResultStatus,
-  status,
-  result,
+  actualRoute,
   currentJourney,
+  destination,
+  fetchFootpaths,
+  fetchResult,
+  result,
+  SearchResultStatus,
+  settings,
+  source,
+  status,
   updateQuery,
   updateRoute,
-  actualRoute,
 };

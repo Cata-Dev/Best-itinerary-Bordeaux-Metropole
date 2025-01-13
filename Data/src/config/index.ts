@@ -4,7 +4,7 @@ import { getValidator, Static, Type } from "@feathersjs/typebox";
 import { Ajv } from "@feathersjs/schema";
 
 import { join, delimiter } from "path";
-process.env.NODE_CONFIG_DIR = [join(__dirname, "../../config/")].join(delimiter);
+process.env.NODE_CONFIG_DIR = [join(__dirname, "../../../config/")].join(delimiter);
 
 // Wrapper around node-config
 import config from "config";
@@ -22,6 +22,7 @@ const configurationSchema = Type.Object({
       host: Type.String(),
       port: Type.Number(),
     }),
+    nbWorkers: Type.Optional(Type.Number()),
   }),
   dbAddress: Type.String(),
   sourceDB: Type.String(),
@@ -36,7 +37,6 @@ const configurationValidator = getValidator<Configuration>(configurationSchema, 
 
 const configObject = config.util.toObject() as Configuration;
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 configurationValidator(configObject).catch((err) => console.error("Configuration validation failed", err));
 
 export { configurationSchema, configObject as config };

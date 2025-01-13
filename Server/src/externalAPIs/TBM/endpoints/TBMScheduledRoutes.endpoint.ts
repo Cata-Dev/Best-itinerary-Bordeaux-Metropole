@@ -1,14 +1,15 @@
 import { DocumentType, mongoose } from "@typegoose/typegoose";
-import { HydratedDocument } from "mongoose";
 import { mapAsync } from "common/async";
-import { TBMEndpoints } from "..";
+import { TBMEndpoints } from "data/models/TBM/index";
+import { dbTBM_Lines_routes } from "data/models/TBM/TBM_lines_routes.model";
+import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/models/TBM/TBM_schedules.model";
+import { dbTBM_Trips } from "data/models/TBM/TBM_trips.model";
+import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "data/models/TBM/TBMScheduledRoutes.model";
+import { HydratedDocument } from "mongoose";
 import { Application } from "../../../declarations";
+import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/lib/models/TBM/TBM_schedules.model";
-import { dbTBM_Lines_routes } from "data/lib/models/TBM/TBM_lines_routes.model";
-import { dbTBM_Trips } from "data/lib/models/TBM/TBM_trips.model";
-import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "data/lib/models/TBM/TBMScheduledRoutes.model";
 
 export default (
   app: Application,
@@ -129,23 +130,23 @@ export default (
 };
 
 export function TBMScheduledRoutesEndpointHook(app: Application) {
-  const endpointsForScheduledRoutes = app.externalAPIs.TBM.endpoints.filter(
+  const endpointsForScheduledRoutes = Object.values(app.externalAPIs.TBM.endpoints).filter(
     (e) =>
       e.name === TBMEndpoints.Schedules_rt ||
       e.name === TBMEndpoints.Trips ||
       e.name === TBMEndpoints.Lines_routes ||
       e.name === TBMEndpoints.Stops,
   );
-  const ScheduledRoutesEndpoint = app.externalAPIs.TBM.endpoints.find(
-    (e) => e.name === TBMEndpoints.ScheduledRoutes,
-  );
+  const ScheduledRoutesEndpoint = app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes];
   let refreshAvoided = 0;
   const listener = (fetchedEndpoint: (typeof endpointsForScheduledRoutes)[number]) => (success: boolean) => {
     // If we should pass but we avoided a refresh, continue
     if (!success && refreshAvoided < (ScheduledRoutesEndpoint?.lastFetch ?? Infinity)) return;
     if (endpointsForScheduledRoutes.find((e) => e.name != fetchedEndpoint.name && e.fetching))
       return (refreshAvoided = Date.now());
-    void ScheduledRoutesEndpoint?.fetch(true, app.get("debug"));
+    ScheduledRoutesEndpoint?.fetch(true, app.get("debug"))
+      .then(() => app.get("computeInstance").refreshData())
+      .catch(logger.warn);
   };
   endpointsForScheduledRoutes.forEach((e) => e.on("fetched", listener(e)));
 }

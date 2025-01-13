@@ -5,43 +5,49 @@
   "files": [
     "dist/"
   ],
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --noEmit",
-    "lint": "eslint ./src/ --fix",
+    "type-check": "vue-tsc --build",
+    "lint": "eslint . --fix",
     "full-lint": "npm run lint && npm run type-check",
-    "prettier": "npx prettier \"**/*.{js,ts,vue,html}\" --write --config ../.prettierrc"
+    "prettier": "prettier --config ../.prettierrc --write src/"
   },
   "dependencies": {
-    "@feathersjs/socketio-client": "^5.0.30",
-    "@fortawesome/fontawesome-svg-core": "^6.6.0",
-    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@feathersjs/socketio-client": "^5.0.31",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "autoprefixer": "^10.4.20",
     "common": "workspace:*",
-    "core-js": "^3.38.1",
-    "postcss": "^8.4.47",
+    "core-js": "^3.39.0",
+    "data": "workspace:*",
+    "ol": "^10.3.1",
+    "proj4": "^2.15.0",
     "server": "workspace:*",
-    "socket.io-client": "^4.8.0",
-    "tailwindcss": "^3.4.13",
-    "vue": "^3.5.11",
-    "vue-router": "^4.4.5"
+    "socket.io-client": "^4.8.1",
+    "tailwindcss": "^3.4.17",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@types/node": "^18.19.54",
-    "@vitejs/plugin-vue": "^5.1.4",
-    "@vue/eslint-config-prettier": "^10.0.0",
-    "@vue/eslint-config-typescript": "^14.0.0",
-    "@vue/tsconfig": "^0.5.1",
-    "eslint": "^9.12.0",
-    "eslint-plugin-vue": "^9.28.0",
+    "@tsconfig/node22": "^22.0.0",
+    "@types/node": "22",
+    "@types/proj4": "^2.5.5",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/eslint-config-prettier": "^10.1.0",
+    "@vue/eslint-config-typescript": "^14.2.0",
+    "@vue/tsconfig": "^0.7.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-vue": "^9.32.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.3.3",
-    "typescript": "^5.6.2",
-    "vite": "^5.4.8",
-    "vue-tsc": "^2.1.6"
+    "prettier": "^3.4.2",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.6",
+    "vite-plugin-vue-devtools": "^7.6.8",
+    "vue-tsc": "^2.2.0"
   }
 }

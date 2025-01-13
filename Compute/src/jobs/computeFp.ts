@@ -1,39 +1,52 @@
 import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
-import { approachedStopName } from "data/lib/models/TBM/NonScheduledRoutes.model";
-import sectionsModelInit from "data/lib/models/TBM/sections.model";
-import stopsModelInit from "data/lib/models/TBM/TBM_stops.model";
-import nonScheduledRoutesModelInit, { dbFootPaths } from "data/lib/models/TBM/NonScheduledRoutes.model";
+import { unpackGraphNode } from "@catatomik/dijkstra/lib/utils/Graph";
+import { Duration } from "common/benchmark";
+import { CacheData } from "common/cache";
+import { Coords } from "common/geographics";
+import nonScheduledRoutesModelInit, {
+  approachedStopName,
+  dbFootPaths,
+} from "data/models/TBM/NonScheduledRoutes.model";
+import sectionsModelInit, { dbSections } from "data/models/TBM/sections.model";
+import stopsModelInit from "data/models/TBM/TBM_stops.model";
 import { JobFn, JobResult } from ".";
 import { BaseApplication } from "../base";
-import { initDB } from "../utils/mongoose";
+import { limiter } from "../utils/asyncs";
 import {
   approachPoint,
   FootGraphNode,
-  initData,
-  makeFootStopsGraph,
   makeGraph,
+  makeInitData,
   refreshWithApproachedPoint,
   revertFromApproachedPoint,
 } from "../utils/foot/graph";
-import { unpackGraphNode } from "@catatomik/dijkstra/lib/utils/Graph";
-import { limiter } from "../utils/asyncs";
-import { Duration } from "common/benchmark";
+import { initDB } from "../utils/mongoose";
+import { makeFootPTNGraph, makePTNInitData } from "../utils/PTN/graph";
 
 /**
- * Geographical point, WGS coordinates
+ * Approached point details, to make the link without a graph
  */
-export type GeoPoint = [lat: number, long: number];
+export interface APDetails {
+  sectionId: dbSections["_id"];
+  idx: number;
+}
 
 declare module "." {
   interface Jobs {
     // Foot path One-To-One
-    computeFp: (ps: GeoPoint, pt: GeoPoint) => { distance: number; path: path<FootGraphNode<"aps" | "apt">> };
+    computeFp: (
+      ps: Coords,
+      pt: Coords,
+    ) => {
+      distance: number;
+      path: path<FootGraphNode<"aps" | "apt">>;
+      apDetails: [aps: APDetails, apt: APDetails];
+    };
     // Foot path One-To-All (all being stops)
     computeFpOTA: (
-      ps: GeoPoint,
+      ps: Coords,
       alias?: string,
-      // TODO : use it
-      options?: { maxDist: number },
+      options?: Partial<{ maxDist: number; targetPTN: boolean }>,
     ) => { distances: Record<number, number>; alias?: string };
     // NonScheduledRoutes, all done by one processor - process could be parallelized,
     // but it would need a parallelized Dijkstra/graph
@@ -46,20 +59,57 @@ export default async function (app: BaseApplication) {
   const sourceDataDB = await initDB(app, app.config.sourceDB);
 
   const sectionsModel = sectionsModelInit(sourceDataDB);
+  const stopsModel = stopsModelInit(sourceDataDB);
 
-  const queryData = initData(sectionsModel);
+  // Queried cached data will be read-only : can be shared safely
+
+  const graphData = makeInitData(sectionsModel);
+  const graphPTNData = makePTNInitData(stopsModel);
+
+  const graphCaches = [graphData, graphPTNData] as const;
+
+  let edges: CacheData<typeof graphData>["edges"];
+  let mappedSegments: CacheData<typeof graphData>["mappedSegments"];
+  let stops: CacheData<typeof graphPTNData>;
+
+  // Query every cache and init
+  for (const graphCache of graphCaches) {
+    const data = (await graphCache.get())[2];
+    if ("edges" in data) ({ edges, mappedSegments } = data);
+    else if (data instanceof Map) stops = data;
+  }
+
+  const refreshData = async <C extends (typeof graphCaches)[number]>(
+    cache: C,
+    localLastUpdate: number,
+  ): Promise<{ updated: boolean; localLastUpdate: number; data: Awaited<ReturnType<C["get"]>>[2] }> => {
+    let updated = false;
+    const [_, lastUpdate, data] = await cache.get();
+
+    if (lastUpdate > localLastUpdate) {
+      // Data is fresher than local (the one from the caller) one
+      localLastUpdate = lastUpdate;
+      updated = true;
+    }
+
+    return { updated, localLastUpdate, data };
+  };
 
   return {
-    fp: async function fpInit() {
-      let { edges, mappedSegments, updated } = await queryData();
+    fp: function fpInit() {
+      let localLastUpdate = graphData.lastUpdate;
       // Graph private to One-To-One computations
       let footGraph = makeGraph<"aps" | "apt">(edges);
 
       return async ({ data: [ps, pt] }) => {
-        ({ edges, mappedSegments, updated } = await queryData());
-        if (updated)
-          // Need to re-make foot graph
+        const refreshed = await refreshData(graphData, localLastUpdate);
+        if (refreshed.updated) {
+          ({
+            localLastUpdate,
+            data: { edges, mappedSegments },
+          } = refreshed);
           footGraph = makeGraph<"aps" | "apt">(edges);
+        }
 
         // Approach points into foot graph
         const aps = approachPoint(mappedSegments, ps);
@@ -70,10 +120,11 @@ export default async function (app: BaseApplication) {
         refreshWithApproachedPoint(edges, footGraph, "aps", aps);
         refreshWithApproachedPoint(edges, footGraph, "apt", apt);
 
-        const path = Dijkstra(footGraph, [
-          "aps" as unpackGraphNode<typeof footGraph>,
-          "apt" as unpackGraphNode<typeof footGraph>,
-        ]);
+        const path = Dijkstra<unpackGraphNode<typeof footGraph>>(footGraph, ["aps", "apt"]);
+        const distance = path.reduce<number>(
+          (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
+          0,
+        );
 
         // In reverted order!
         revertFromApproachedPoint(edges, footGraph, "apt", apt[1]);
@@ -81,48 +132,86 @@ export default async function (app: BaseApplication) {
 
         return new Promise<JobResult<"computeFp">>((res) =>
           res({
-            distance: path.reduce<number>(
-              (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
-              0,
-            ),
+            distance,
             path,
+            apDetails: [
+              {
+                sectionId: aps[1],
+                idx: aps[2],
+              },
+
+              {
+                sectionId: apt[1],
+                idx: apt[2],
+              },
+            ],
           }),
         );
       };
     } satisfies JobFn<"computeFp">,
 
-    fpOTA: async function fpOTAInit() {
-      let { edges, mappedSegments, updated } = await queryData();
+    fpOTA: function fpOTAInit() {
+      const localLastUpdate = new Map<(typeof graphCaches)[number], number>(
+        graphCaches.map((cache) => [cache, cache.lastUpdate]),
+      );
       // Graph private to One-To-All computations
-      let footGraph = makeGraph<"aps" | "apt">(edges);
+      let footPTNGraph = makeFootPTNGraph<"aps">(edges, mappedSegments, stops);
 
-      return async ({ data: [ps, alias, options = { maxDist: 1e3 }] }) => {
-        ({ edges, mappedSegments, updated } = await queryData());
-        if (updated)
-          // Need to re-make foot graph
-          footGraph = makeGraph<"aps">(edges);
+      return async ({
+        data: [ps, alias, { maxDist = 1e3, targetPTN = false } = { maxDist: 1e3, targetPTN: false }],
+      }) => {
+        // Data refresh
+        const refreshed = await refreshData(graphData, localLastUpdate.get(graphData)!);
+        if (refreshed.updated) {
+          localLastUpdate.set(graphData, refreshed.localLastUpdate);
+          ({
+            data: { edges, mappedSegments },
+          } = refreshed);
+        }
+
+        let refreshedPTN: Awaited<ReturnType<typeof refreshData<typeof graphPTNData>>> | null = null;
+        if (targetPTN) {
+          refreshedPTN = await refreshData(graphPTNData, localLastUpdate.get(graphPTNData)!);
+          if (refreshedPTN.updated) {
+            localLastUpdate.set(graphPTNData, refreshedPTN.localLastUpdate);
+            ({ data: stops } = refreshedPTN);
+          }
+        }
+
+        if (refreshed.updated || refreshedPTN?.updated)
+          // Need to re-make (foot +/ PTN) graph
+          footPTNGraph = makeFootPTNGraph(edges, mappedSegments, stops);
 
         // Approach points into foot graph
         const aps = approachPoint(mappedSegments, ps);
         if (!aps) throw new Error("Couldn't approach starting point.");
 
-        refreshWithApproachedPoint(edges, footGraph, "aps", aps);
+        refreshWithApproachedPoint(edges, footPTNGraph, "aps", aps);
 
-        const [dist] = Dijkstra(footGraph, ["aps" as unpackGraphNode<typeof footGraph>], {
-          maxCumulWeight: options.maxDist,
+        const [dist] = Dijkstra(footPTNGraph, ["aps" as unpackGraphNode<typeof footPTNGraph>], {
+          maxCumulWeight: maxDist,
         });
 
-        revertFromApproachedPoint(edges, footGraph, "aps", aps[1]);
+        revertFromApproachedPoint(edges, footPTNGraph, "aps", aps[1]);
+
+        // Keep only distances right target
+        const nodeCond = targetPTN
+          ? (node: (typeof footPTNGraph)["nodes"][number]): node is ReturnType<typeof approachedStopName> =>
+              // Is approached stop
+              typeof node === "string" && node.startsWith("as=")
+          : (node: (typeof footPTNGraph)["nodes"][number]): node is FootGraphNode =>
+              // Is intersection
+              typeof node === "number";
 
         return new Promise<JobResult<"computeFpOTA">>((res) =>
           res({
-            distances:
-              // Keep only distances to approached stops
-              Array.from(dist.entries()).reduce(
-                (acc, [node, dist]) =>
-                  !isNaN(parseInt(`${dist}`)) && typeof node === "number" ? { ...acc, [node]: dist } : acc,
-                {},
-              ),
+            distances: Array.from(dist.entries()).reduce<JobResult<"computeFpOTA">["distances"]>(
+              (acc, [node, dist]) =>
+                dist < Infinity && nodeCond(node)
+                  ? { ...acc, [typeof node === "string" ? parseInt(node.substring(3)) : node]: dist }
+                  : acc,
+              {},
+            ),
             alias,
           }),
         );
@@ -131,10 +220,19 @@ export default async function (app: BaseApplication) {
     // Rarely used & can be slow : do not prepare a lot of things but init on-the-go
     computeNSR: function fpNSRInit() {
       const nonScheduledRoutesModel = nonScheduledRoutesModelInit(sourceDataDB);
-      const stopsModel = stopsModelInit(sourceDataDB);
 
-      return async ({ data: [maxDist, getFullPaths = false] }) => {
-        const { stops, graph } = await makeFootStopsGraph(sectionsModel, stopsModel);
+      return async (job) => {
+        // Refresh all data
+        const {
+          data: [maxDist, getFullPaths = false],
+        } = job;
+        ({
+          data: { edges, mappedSegments },
+        } = await refreshData(graphData, 0));
+        ({ data: stops } = await refreshData(graphPTNData, 0));
+
+        // Need to (re)make (foot +/ PTN) graph
+        const footPTNGraph = makeFootPTNGraph(edges, mappedSegments, stops);
 
         // Compute all paths
 
@@ -151,8 +249,8 @@ export default async function (app: BaseApplication) {
 
         for (const stopId of stops.keys()) {
           const [dist, prev] = Dijkstra(
-            graph,
-            [approachedStopName(stopId) as unpackGraphNode<typeof graph>],
+            footPTNGraph,
+            [approachedStopName(stopId) as unpackGraphNode<typeof footPTNGraph>],
             {
               maxCumulWeight: maxDist,
             },
@@ -182,9 +280,11 @@ export default async function (app: BaseApplication) {
               NSRInsertedCount += inserted.insertedCount;
               if (stopsTreatedCount % Math.round((stops.size / 100) * LOG_EVERY) === 0) {
                 const newTime = Date.now();
+                const progress = Math.round((stopsTreatedCount / stops.size) * 1000) / 10;
+                job.updateProgress(progress).catch(app.logger.error);
                 app.logger.debug(
                   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                  `Inserting to NSR done at ${Math.round((stopsTreatedCount / stops.size) * 1000) / 10}%, inserted NSR : ${NSRInsertedCount}. Time since last ${LOG_EVERY}% compute & insert : ${new Duration(newTime - lastChunkInsertLogTime)}`,
+                  `Inserting to NSR done at ${progress}%, inserted NSR : ${NSRInsertedCount}. Time since last ${LOG_EVERY}% compute & insert : ${new Duration(newTime - lastChunkInsertLogTime)}`,
                 );
                 lastChunkInsertLogTime = newTime;
               }
