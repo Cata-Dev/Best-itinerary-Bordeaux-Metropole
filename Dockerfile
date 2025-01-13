@@ -10,27 +10,25 @@ FROM base AS build_base
 COPY . /usr/src/app
 
 WORKDIR /usr/src/app/Common
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "common" install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "common" install --frozen-lockfile --ignore-scripts
 RUN pnpm run build
 
 WORKDIR /usr/src/app/Data
+# Cannot ignore scripts : RAPTOR build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "data" install --frozen-lockfile
-RUN pnpm run build
+# 'prepare' script should have already built
+# RUN pnpm run build
 
 WORKDIR /usr/src/app/Compute
-# Will fail for the 1st time, but still emit required files to continue building
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile || true
-RUN pnpm run build || true
+# Cannot ignore scripts : Dijkstra build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile
+# 'prepare' script should have already built
+# RUN pnpm run build
 
 WORKDIR /usr/src/app/Server
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "server" install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "server" install --frozen-lockfile --ignore-scripts
 RUN pnpm run compile
 
-# 2nd build try, will work
-WORKDIR /usr/src/app/Compute
-RUN pnpm run build
-
-# RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm add -g typescript
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server
 
 FROM build_base AS build_client

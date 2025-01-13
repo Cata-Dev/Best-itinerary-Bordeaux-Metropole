@@ -44,7 +44,7 @@ jobs:
           cache-dependency-path: "./pnpm-lock.yaml"
 
       - name: Install Common
-        run: pnpm -F "common" install
+        run: pnpm -F "common" install --ignore-scripts
 
       - name: Build Common
         run: cd Common/ && pnpm run --if-present build
@@ -52,25 +52,24 @@ jobs:
       - name: Install Data
         run: pnpm -F "data" install
 
-      - name: Build Data
-        run: cd Data/ && pnpm run --if-present build
+      # Not needed since 'prepare' script should build
+      # - name: Build Data
+      #   run: cd Data/ && pnpm run --if-present build
 
       # Will fail for the 1st time, but still emit required files to continue building
 
       - name: Install Compute
-        run: pnpm -F "compute" install || true
+        run: pnpm -F "compute" install
 
-      - name: Build Compute
-        run: cd Compute/ && pnpm run --if-present build || true
+      # Not needed since 'prepare' script should build
+      # - name: Build Compute
+      #   run: cd Compute/ && pnpm run --if-present build
 
       - name: Install Server
-        run: pnpm -F "server" install
+        run: pnpm -F "server" install --ignore-scripts
 
       - name: Build Server
         run: cd Server/ && pnpm run --if-present compile
-
-      - name: Build Compute (2)
-        run: cd Compute/ && pnpm run --if-present build
 
       - name: Install Client
         run: pnpm -F "client" install
