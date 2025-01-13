@@ -79,6 +79,7 @@ Retrieves footpath between 2 geocoded points.
 ```ts
 from: string; // Source of search
 to: string; // Destination of search
+realShape: boolean; // Get real shape of path (following geographical structure)
 ```
 
 ---

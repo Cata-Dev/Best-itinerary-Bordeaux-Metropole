@@ -6,7 +6,7 @@ import nonScheduledRoutesModelInit, {
   approachedStopName,
   dbFootPaths,
 } from "data/models/TBM/NonScheduledRoutes.model";
-import sectionsModelInit from "data/models/TBM/sections.model";
+import sectionsModelInit, { dbSections } from "data/models/TBM/sections.model";
 import stopsModelInit from "data/models/TBM/TBM_stops.model";
 import { JobFn, JobResult } from ".";
 import { BaseApplication } from "../base";
@@ -27,10 +27,25 @@ import { makeFootPTNGraph, makePTNInitData } from "../utils/PTN/graph";
  */
 export type GeoPoint = [lat: number, long: number];
 
+/**
+ * Approached point details, to make the link without a graph
+ */
+export interface APDetails {
+  sectionId: dbSections["_id"];
+  idx: number;
+}
+
 declare module "." {
   interface Jobs {
     // Foot path One-To-One
-    computeFp: (ps: GeoPoint, pt: GeoPoint) => { distance: number; path: path<FootGraphNode<"aps" | "apt">> };
+    computeFp: (
+      ps: GeoPoint,
+      pt: GeoPoint,
+    ) => {
+      distance: number;
+      path: path<FootGraphNode<"aps" | "apt">>;
+      apDetails: [aps: APDetails, apt: APDetails];
+    };
     // Foot path One-To-All (all being stops)
     computeFpOTA: (
       ps: GeoPoint,
@@ -123,6 +138,17 @@ export default async function (app: BaseApplication) {
           res({
             distance,
             path,
+            apDetails: [
+              {
+                sectionId: aps[1],
+                idx: aps[2],
+              },
+
+              {
+                sectionId: apt[1],
+                idx: apt[2],
+              },
+            ],
           }),
         );
       };

@@ -60,7 +60,7 @@ function computeDuration(index: number): number {
 
 const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
 
-const paths = ref<[number, number][][]>([]);
+const paths = ref<[number, number][][][]>([]);
 
 async function displayMap() {
   if (result.value === null) throw new Error("Unexpected unset result.");

@@ -7,12 +7,17 @@ import type { HookContext } from "../../declarations";
 import { dataValidator, queryValidator } from "../../validators";
 import { coords } from "../geocode/geocode.schema";
 import type { PathService } from "./path.class";
+import { defaultOptional } from "../../utils/schemas";
 
 // Main data model schema
 export const pathSchema = Type.Object(
   {
     length: Type.Number(),
-    steps: Type.Array(coords),
+    steps: Type.Union([
+      Type.Array(coords),
+      // Real shape coords, MultiLine String
+      Type.Array(Type.Array(coords)),
+    ]),
   },
   { $id: "Path", additionalProperties: false },
 );
@@ -41,21 +46,33 @@ export type PathPatch = Static<typeof pathPatchSchema>;
 export const pathPatchValidator = getValidator(pathPatchSchema, dataValidator);
 export const pathPatchResolver = resolve<Path, HookContext<PathService>>({});
 
+const commonQuery = Type.Object(
+  {
+    realShape: defaultOptional(Type.Boolean({ default: true })),
+  },
+  { additionalProperties: false },
+);
 export const pathQuerySchema = Type.Union([
   // Direct foot path computation
-  Type.Object(
-    {
-      from: coords,
-      to: coords,
-    },
-    { additionalProperties: false },
-  ),
+  Type.Intersect([
+    Type.Object(
+      {
+        from: coords,
+        to: coords,
+      },
+      { additionalProperties: false },
+    ),
+    commonQuery,
+  ]),
   // Foot path computation(s) from an already computed journey referenced by "id"
-  Type.Object({
-    for: Type.Literal("journey"),
-    id: ObjectIdSchema(),
-    index: Type.Integer(),
-  }),
+  Type.Intersect([
+    Type.Object({
+      for: Type.Literal("journey"),
+      id: ObjectIdSchema(),
+      index: Type.Integer(),
+    }),
+    commonQuery,
+  ]),
 ]);
 export type PathQuery = Static<typeof pathQuerySchema>;
 export const pathQueryValidator = getValidator(pathQuerySchema, queryValidator);

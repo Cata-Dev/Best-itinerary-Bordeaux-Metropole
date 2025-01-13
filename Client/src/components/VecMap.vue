@@ -2,7 +2,7 @@
 import Feature from "ol/Feature";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
-import { LineString } from "ol/geom";
+import { MultiLineString } from "ol/geom";
 import TileLayer from "ol/layer/Tile.js";
 import VectorLayer from "ol/layer/Vector.js";
 import { setUserProjection } from "ol/proj";
@@ -15,7 +15,7 @@ import proj4 from "proj4";
 import { onMounted, watch } from "vue";
 
 interface Props {
-  footpaths: [number, number][][];
+  footpaths: [number, number][][][];
 }
 const props = defineProps<Props>();
 
@@ -32,7 +32,7 @@ function makeFootLayer(footpaths: Props["footpaths"]) {
       features: footpaths.map(
         (fp) =>
           new Feature({
-            geometry: new LineString(fp),
+            geometry: new MultiLineString(fp),
             type: "foot",
           }),
       ),
