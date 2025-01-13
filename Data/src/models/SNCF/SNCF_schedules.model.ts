@@ -2,8 +2,6 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { SNCFEndpoints } from ".";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
   deleteModelWithClass,
   getModelForClass,
@@ -11,9 +9,11 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { dbSNCF_Stops } from "./SNCF_stops.model";
 import { Connection } from "mongoose";
+import { SNCFEndpoints } from ".";
+import { dbSNCF_Stops } from "./SNCF_stops.model";
 
 @modelOptions({ options: { customName: SNCFEndpoints.Schedules } })
 export class dbSNCF_Schedules extends TimeStamps {

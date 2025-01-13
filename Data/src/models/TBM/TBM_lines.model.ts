@@ -2,12 +2,12 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { TBMEndpoints } from ".";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { type ReturnModelType, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { type Active, VehicleType } from "./TBM_stops.model";
 import { Connection } from "mongoose";
+import { TBMEndpoints } from ".";
+import { type Active, VehicleType } from "./TBM_stops.model";
 
 @modelOptions({ options: { customName: TBMEndpoints.Lines } })
 export class dbTBM_Lines extends TimeStamps {

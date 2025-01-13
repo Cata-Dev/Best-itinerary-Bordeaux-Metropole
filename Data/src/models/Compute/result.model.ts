@@ -13,15 +13,15 @@ export enum LocationType {
   Address = "A",
 }
 
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { deleteModelWithClass, getModelForClass, prop, type Ref } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
-import { dbTBM_ScheduledRoutes } from "../TBM/TBMScheduledRoutes.model";
 import { RAPTORRunSettings } from "raptor";
-import { dbTBM_Stops } from "../TBM/TBM_stops.model";
 import { dbSNCF_Stops } from "../SNCF/SNCF_stops.model";
 import { dbAddresses } from "../TBM/addresses.model";
+import { dbTBM_Stops } from "../TBM/TBM_stops.model";
+import { dbTBM_ScheduledRoutes } from "../TBM/TBMScheduledRoutes.model";
 
 export type stopId = dbTBM_Stops["_id"];
 export type routeId = dbTBM_ScheduledRoutes["_id"];

@@ -14,8 +14,6 @@ export enum RtScheduleType {
   Deviation = "DEVIATION",
 }
 
-import { TBMEndpoints } from ".";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
   deleteModelWithClass,
   getDiscriminatorModelForClass,
@@ -25,10 +23,12 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { Connection } from "mongoose";
+import { TBMEndpoints } from ".";
 import { dbTBM_Stops } from "./TBM_stops.model";
 import { dbTBM_Trips } from "./TBM_trips.model";
-import { Connection } from "mongoose";
 
 @index({ gid: 1, realtime: 1 }, { unique: true })
 @index({ rs_sv_cours_a: 1 })

@@ -2,7 +2,6 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import {
   deleteModelWithClass,
   getModelForClass,
@@ -10,11 +9,12 @@ import {
   type Ref,
   type ReturnModelType,
 } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
+import { Connection } from "mongoose";
+import { TBMEndpoints } from ".";
 import { dbTBM_Schedules_rt, default as TBMSchedulesRtInit } from "./TBM_schedules.model";
 import { dbTBM_Stops, default as TBMStopsInit } from "./TBM_stops.model";
-import { TBMEndpoints } from ".";
-import { Connection } from "mongoose";
 
 @modelOptions({ schemaOptions: { _id: false } })
 export class TripOfScheduledRoute {
