@@ -54,7 +54,7 @@ export default (app: Application, getData: <T>(id: string, queries: string[]) =>
       app
         .get("computeInstance")
         .app.queues[3].add("computeNSR", [5e3])
-        .catch((err) => logger.error("Failed to start computing Non Schedules Routes", err));
+        .catch((err) => logger.error("Failed to start computing Non Scheduled Routes", err));
     }),
   ] as const;
 };
