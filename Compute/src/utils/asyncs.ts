@@ -1,10 +1,3 @@
-async function mapAsync<I, O>(
-  array: I[],
-  callback: (value: I, index: number, array: I[]) => Promise<O>,
-): Promise<O[]> {
-  return await Promise.all(array.map(callback));
-}
-
 function limiter(max: number) {
   let n = 0;
   const promises: Promise<unknown>[] = [];
@@ -23,4 +16,4 @@ function limiter(max: number) {
   };
 }
 
-export { mapAsync, limiter };
+export { limiter };

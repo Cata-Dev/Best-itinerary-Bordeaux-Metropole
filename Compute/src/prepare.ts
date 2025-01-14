@@ -3,16 +3,16 @@ import { initDB } from "./utils/mongoose";
 // Needed to solve "Reflect.getMetadata is not a function" error of typegoose
 import "core-js/features/reflect";
 
-import { FilterQuery } from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
-import { SharedRAPTORData } from "raptor/lib/SharedStructures";
+import { mapAsync } from "common/async";
+import NonScheduledRoutesModelInit, { dbFootPaths } from "data/models/TBM/NonScheduledRoutes.model";
+import TBMSchedulesInit from "data/models/TBM/TBM_schedules.model";
 import stopsModelInit, { dbTBM_Stops } from "data/models/TBM/TBM_stops.model";
 import TBMScheduledRoutesModelInit, { dbTBM_ScheduledRoutes } from "data/models/TBM/TBMScheduledRoutes.model";
-import TBMSchedulesInit from "data/models/TBM/TBM_schedules.model";
-import NonScheduledRoutesModelInit, { dbFootPaths } from "data/models/TBM/NonScheduledRoutes.model";
-import { PopulateRef, UnpackRefType } from "./utils";
-import { mapAsync } from "./utils/asyncs";
+import { FilterQuery } from "mongoose";
+import { SharedRAPTORData } from "raptor/lib/SharedStructures";
 import { BaseApplication } from "./base";
+import { PopulateRef, UnpackRefType } from "./utils";
 
 const prepareMakingData = async (app: BaseApplication) => {
   // DB-related stuff
