@@ -18,7 +18,7 @@ function hasUpdatedAt(doc: unknown): doc is { updatedAt: Date } {
 
 export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
   EndpointEvents,
-  keyof EndpointEvents
+export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
   private readonly deferredInit = new Deferred<this>();
   private deferredFetch: Deferred<boolean>;
   private _fetching = false;
