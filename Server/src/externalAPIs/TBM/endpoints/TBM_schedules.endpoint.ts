@@ -8,6 +8,7 @@ import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
+import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
 export type TBM_Schedule = BaseTBM<{
   gid: string;
@@ -99,6 +100,7 @@ export default async (app: Application, getData: <T>(id: string, queries: string
       },
       ScheduleRt,
     )
+      .registerHook(makeSRHook(app, TBMEndpoints.Schedules_rt))
       .init(),
   ] as const;
 };

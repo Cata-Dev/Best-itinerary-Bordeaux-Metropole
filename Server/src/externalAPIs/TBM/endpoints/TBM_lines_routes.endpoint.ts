@@ -5,6 +5,7 @@ import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
+import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
 export type TBM_Lines_route = BaseTBM<{
   gid: string;
@@ -59,6 +60,7 @@ export default async (app: Application, getData: <T>(id: string, queries: string
       },
       LinesRoute,
     )
+      .registerHook(makeSRHook(app, TBMEndpoints.Lines_routes))
       .init(),
   ] as const;
 };

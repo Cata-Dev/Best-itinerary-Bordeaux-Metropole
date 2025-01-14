@@ -5,6 +5,7 @@ import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
+import { makeConcurrentHook } from "../../concurrentHook";
 import { Endpoint } from "../../endpoint";
 
 export type Section = BaseTBM<{
@@ -80,6 +81,15 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       },
       Section,
     )
+      .registerHook(makeNSRHook(app, TBMEndpoints.Sections))
       .init(),
   ] as const;
 };
+
+export const makeNSRHook = makeConcurrentHook((app) =>
+  // Could be effectively awaited (through job.waitUntilFinished(queue))
+  app
+    .get("computeInstance")
+    .app.queues[3].add("computeNSR", [5e3])
+    .catch((err) => logger.error("Failed to start computing Non Schedules Routes", err)),
+);

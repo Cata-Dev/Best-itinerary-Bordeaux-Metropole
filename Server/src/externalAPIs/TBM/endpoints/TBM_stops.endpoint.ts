@@ -4,9 +4,10 @@ import { TBMEndpoints } from "data/models/TBM/index";
 import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "data/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
+import { makeNSRHook } from "./sections.endpoint";
+import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
 export type TBM_Stop = BaseTBM<{
   gid: string;
@@ -47,6 +48,7 @@ export default async (app: Application, getData: <T>(id: string, queries: string
       },
       Stop,
     )
+      .registerHook(makeNSRHook(app, TBMEndpoints.Stops), makeSRHook(app, TBMEndpoints.Stops))
       .init(),
   ] as const;
 };

@@ -26,9 +26,7 @@ import TBM_stopsEndpoint from "./endpoints/TBM_stops.endpoint";
 
 import TBM_tripsEndpoint from "./endpoints/TBM_trips.endpoint";
 
-import TBMScheduledRoutesEndpoint, {
-  TBMScheduledRoutesEndpointHook,
-} from "./endpoints/TBMScheduledRoutes.endpoint";
+import TBMScheduledRoutesEndpoint from "./endpoints/TBMScheduledRoutes.endpoint";
 
 declare module "../../declarations" {
   interface ExternalAPIs {
@@ -82,6 +80,4 @@ export default async (app: Application) => {
   logger.info(`TBM models & endpoints initialized.`);
 
   app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.TBM.endpoints };
-
-  TBMScheduledRoutesEndpointHook(app);
 };
