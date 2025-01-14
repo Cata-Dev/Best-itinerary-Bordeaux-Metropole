@@ -51,9 +51,32 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
 
   return {
     app,
+    /**
+     * Should NOT be called multiple times in parallel, i.e., wait for the previous refresh to resolve
+     */
     refreshData: async (data?: Message<"data">["data"]) => {
       data ??= await makeData();
+
+      // Wait for all workers to have ack data before resolving
+      const def = new Deferred<void>();
+      let cnt = 0;
+      workers.forEach((w) =>
+        w.on("message", function dataAck(message) {
+          if (!isMessage(message)) throw new Error("Unexpected message");
+          if (message.code !== "dataAck") return;
+
+          w.removeListener("message", dataAck);
+          cnt++;
+          if (cnt === workers.length) {
+            app.logger.info("All workers got their data refreshed.");
+            def.resolve();
+          }
+        }),
+      );
+
       workers.forEach((w) => w.postMessage(makeMessage("data", data)));
+
+      return def.promise;
     },
 
     gracefulStop: () => {

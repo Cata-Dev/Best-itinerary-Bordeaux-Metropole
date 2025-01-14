@@ -11,6 +11,7 @@ declare module "./utils/para" {
   interface Messages {
     started: undefined;
     stopped: undefined;
+    dataAck: undefined;
   }
 }
 
@@ -80,8 +81,11 @@ if (parentPort) {
 
     switch (message.code) {
       case "data":
-        void init.then(({ updateData }) => updateData(message.data));
-        bApp.logger.info("Refreshed data.");
+        void init.then(({ updateData }) => {
+          updateData(message.data);
+          bApp.logger.info("Refreshed data.");
+          parentPort?.postMessage(makeMessage("dataAck", undefined));
+        });
 
         break;
 
