@@ -1,14 +1,15 @@
 import { EndpointName, ProviderModel } from ".";
 import { logger } from "../logger";
-import { Deferred } from "common/async";
+import { Deferred, mapAsync } from "common/async";
 import { TypedEventEmitter } from "../utils/TypedEmitter";
 import { ReturnModelType } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 
-interface EndpointEvents {
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type EndpointEvents = {
   fetch: () => void;
   fetched: (success: boolean) => void;
-}
+};
 
 declare class _ extends TimeStamps {}
 
@@ -16,14 +17,15 @@ function hasUpdatedAt(doc: unknown): doc is { updatedAt: Date } {
   return typeof doc === "object" && doc !== null && "updatedAt" in doc && doc.updatedAt instanceof Date;
 }
 
-export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
-  EndpointEvents,
+type Hook<N extends EndpointName> = (endpoint: Endpoint<N>) => Promise<void> | void;
+
 export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
   private readonly deferredInit = new Deferred<this>();
-  private deferredFetch: Deferred<boolean>;
+  private deferredFetch = new Deferred<boolean>();
   private _fetching = false;
   /** Timestamp of last succeeded fetch */
   private _lastFetch = 0;
+  private readonly hooks: Hook<N>[] = [];
 
   /**
    * Create a new Endpoint
@@ -39,7 +41,6 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     public readonly model: ProviderModel<N>,
   ) {
     super();
-    this.deferredFetch = new Deferred<boolean>();
     // Retrieve last update time
     // Unsafe...
     (this.model as unknown as ReturnModelType<typeof _>)
@@ -77,6 +78,17 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     return this._lastFetch;
   }
 
+  /**
+   * Register hooks to run **after** having fetched.
+   * They are run in parallel.
+   * Those hooks will be awaited before resolving fetching, but doesn't block for further fetches.
+   * Therefore, if a hook execution lasts longer than the current Endpoint cooldown, their executions might overlap.
+   */
+  public registerHook(...hooks: Hook<N>[]) {
+    this.hooks.push(...hooks);
+    return this;
+  }
+
   public async fetch(force = false, debug = false): Promise<boolean> {
     // Should be done by user, but just in case...
     await this.init();
@@ -102,7 +114,18 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
 
       result = false;
     } finally {
+      // Free the fetching lock, allowing to fetch again if possible
       this._fetching = false;
+
+      if (result)
+        // Run hooks
+        await mapAsync(this.hooks, async (hook) => {
+          try {
+            await hook(this);
+          } catch (err) {
+            logger.warn(`Error during fetched hook execution "${hook.name || "anonymous"}"`, err);
+          }
+        });
 
       if (result) this.deferredFetch.resolve(true);
       else this.deferredFetch.reject(false);
