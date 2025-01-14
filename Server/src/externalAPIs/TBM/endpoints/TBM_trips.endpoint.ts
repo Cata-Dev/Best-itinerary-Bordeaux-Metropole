@@ -14,11 +14,11 @@ export type TBM_Vehicle = BaseTBM<{
   rs_sv_chem_l: number;
 }>;
 
-export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
   const Trip = TBM_Trips(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.Trips,
       10 * 60,
       async () => {
@@ -50,6 +50,7 @@ export default (app: Application, getData: <T>(id: string, queries: string[]) =>
         return true;
       },
       Trip,
-    ),
+    )
+      .init(),
   ] as const;
 };

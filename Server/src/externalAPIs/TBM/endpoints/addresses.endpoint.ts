@@ -21,11 +21,11 @@ export type Addresse = BaseTBM<{
   geometry: { coordinates: Coords };
 };
 
-export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const Address = TBM_Addresses(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.Addresses,
       24 * 3600,
       async () => {
@@ -58,6 +58,6 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
         return true;
       },
       Address,
-    ),
+    ).init(),
   ] as const;
 };

@@ -26,11 +26,11 @@ export type Section = BaseTBM<{
     | null;
 };
 
-export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const Section = TBM_Sections(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.Sections,
       24 * 3600,
       async () => {
@@ -79,15 +79,7 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
         return true;
       },
       Section,
-    ).on("fetched", (success) => {
-      if (!success) return;
-      // Let it handle starting computing - wait for most fresh data
-      if (app.externalAPIs.TBM.endpoints[TBMEndpoints.Stops].fetching === true) return;
-
-      app
-        .get("computeInstance")
-        .app.queues[3].add("computeNSR", [5e3])
-        .catch((err) => logger.error("Failed to start computing Non Schedules Routes", err));
-    }),
+    )
+      .init(),
   ] as const;
 };

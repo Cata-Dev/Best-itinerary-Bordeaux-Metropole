@@ -11,7 +11,7 @@ import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 
-export default (
+export default async (
   app: Application,
   TBM_lines_routesEndpointInstantiated: Endpoint<TBMEndpoints.Lines_routes>,
   TBM_schedulesRtEndpointInstantiated: Endpoint<TBMEndpoints.Schedules_rt>,
@@ -20,7 +20,7 @@ export default (
   const ScheduledRoute = TBM_Scheduled_routes(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.ScheduledRoutes,
       Infinity,
       async () => {
@@ -125,7 +125,8 @@ export default (
         return true;
       },
       ScheduledRoute,
-    ),
+    )
+      .init(),
   ] as const;
 };
 

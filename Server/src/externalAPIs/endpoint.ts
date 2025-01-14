@@ -19,7 +19,7 @@ function hasUpdatedAt(doc: unknown): doc is { updatedAt: Date } {
 export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
   EndpointEvents,
   keyof EndpointEvents
-> {
+  private readonly deferredInit = new Deferred<this>();
   private deferredFetch: Deferred<boolean>;
   private _fetching = false;
   /** Timestamp of last succeeded fetch */
@@ -53,7 +53,12 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
       .catch(logger.error)
       .finally(() => {
         this.deferredFetch.resolve(false); // Initialization
+        this.deferredInit.resolve(this);
       });
+  }
+
+  public init() {
+    return this.deferredInit.promise;
   }
 
   public get onCooldown(): boolean {
@@ -73,6 +78,9 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<
   }
 
   public async fetch(force = false, debug = false): Promise<boolean> {
+    // Should be done by user, but just in case...
+    await this.init();
+
     if (this.fetching) throw new Error(`Fetch is ongoing`);
     if (!force && this.onCooldown) throw new Error(`Fetch is on cooldown`);
 

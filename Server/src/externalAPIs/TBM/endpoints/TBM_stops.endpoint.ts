@@ -18,11 +18,11 @@ export type TBM_Stop = BaseTBM<{
   geometry: { coordinates: Coords };
 };
 
-export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
   const Stop = TBM_Stops(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.Stops,
       24 * 3600,
       async () => {
@@ -46,15 +46,7 @@ export default (app: Application, getData: <T>(id: string, queries: string[]) =>
         return true;
       },
       Stop,
-    ).on("fetched", (success) => {
-      if (!success) return;
-      // Let it handle starting computing - wait for most fresh data
-      if (app.externalAPIs.TBM.endpoints[TBMEndpoints.Sections].fetching === true) return;
-
-      app
-        .get("computeInstance")
-        .app.queues[3].add("computeNSR", [5e3])
-        .catch((err) => logger.error("Failed to start computing Non Scheduled Routes", err));
-    }),
+    )
+      .init(),
   ] as const;
 };
