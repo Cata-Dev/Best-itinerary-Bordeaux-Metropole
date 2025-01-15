@@ -30,7 +30,7 @@ if (parentPort) {
     const stopsModel = stopsModelInit(sourceDataDB);
 
     // Retrieve already computed data
-    const { edges, mappedSegments, footGraphData } = workerData as Parameters<makeComputePTNData>[0];
+    const [{ edges, mappedSegments, footGraphData }] = workerData as Parameters<makeComputePTNData>;
 
     // Make required data
     const stops = new Map<dbStops["_id"], Stop>(
