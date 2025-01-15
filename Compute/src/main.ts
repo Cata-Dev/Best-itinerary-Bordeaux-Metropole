@@ -31,7 +31,7 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
   app.logger = logger;
 
   // Cache
-  let fpData = singleUseWorker<makeComputeFpData>(join(__dirname, "jobs/", "preCompute/", "computeFp.js"));
+  let fpData: ReturnType<typeof singleUseWorker<makeComputeFpData>> | null = null;
   const preComputeDataFor = async <T extends keyof Message<"dataUpdate">["data"]>(
     which: T[],
   ): Promise<Required<Pick<Message<"dataUpdate">["data"], T>>> => {
@@ -50,7 +50,9 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
       data.computePTN = singleUseWorker<makeComputePTNData>(
         join(__dirname, "jobs/", "preCompute/", "computePTN.js"),
         // Use cache
-        await fpData,
+        await (fpData ??= singleUseWorker<makeComputeFpData>(
+          join(__dirname, "jobs/", "preCompute/", "computeFp.js"),
+        )),
       );
 
     return reduceAsync(
