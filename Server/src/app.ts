@@ -1,10 +1,10 @@
 import { feathers } from "@feathersjs/feathers";
 
-import { koa, rest, bodyParser, errorHandler, parseAuthentication, cors } from "@feathersjs/koa";
+import { bodyParser, cors, errorHandler, koa, parseAuthentication, rest } from "@feathersjs/koa";
 import socketio from "@feathersjs/socketio";
 
-import type { Application, HookContext, NextFunction } from "./declarations";
 import { configurationValidator } from "./configuration";
+import type { Application, HookContext, NextFunction } from "./declarations";
 // Import after ../configuration which defines configuration path
 import configuration from "@feathersjs/configuration";
 import { errorHandler as errorHandlerHook, log } from "./hooks";
@@ -14,10 +14,11 @@ import "core-js/features/reflect";
 
 import setupActions from "./actions";
 import { channels } from "./channels";
+import { setupCompute, teardownCompute } from "./compute";
 import { setupExternalAPIs } from "./externalAPIs/index";
 import { logErrorHook } from "./logger";
 import { setupMongoose, teardownMongoose } from "./mongoose";
-import { setupCompute, teardownCompute } from "./compute";
+import { services } from "./services";
 
 const app: Application = koa(feathers()) as Application;
 
@@ -59,6 +60,7 @@ app.hooks({
     setupCompute,
     async (context: HookContext, next: NextFunction) => {
       const refresh = await setupExternalAPIs(context.app);
+
       await next();
       // Start refreshing after having registered everything
       void refresh();
