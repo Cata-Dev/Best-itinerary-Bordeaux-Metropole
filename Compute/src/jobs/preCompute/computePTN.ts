@@ -61,7 +61,7 @@ if (parentPort) {
       stops,
       footPTNGraphData: exportWGraph(graph),
     } satisfies ReturnType<makeComputePTNData>);
-  })().catch((err) => app.logger.warn("During compute job data pre-computation", err));
+  })().catch((err) => app.logger.warn("During computePTN job data pre-computation", err));
 }
 
 export type makeComputePTNData = (computeFpData: ReturnType<makeComputeFpData>) => {
