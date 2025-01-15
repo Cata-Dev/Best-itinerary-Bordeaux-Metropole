@@ -15,9 +15,9 @@ if (parentPort) {
 
     const { deletedCount } = await resultModel.deleteMany({
       createdAt: {
-        $le:
+        $lte:
           // 2 days from now
-          Date.now() - 2 * 24 * 3_600 * 1_000,
+          new Date(Date.now() - 2 * 24 * 3_600 * 1_000),
       },
     });
 
