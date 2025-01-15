@@ -34,7 +34,7 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
   let fpData = singleUseWorker<makeComputeFpData>(join(__dirname, "jobs/", "preCompute/", "computeFp.js"));
   const preComputeDataFor = async <T extends keyof Message<"dataUpdate">["data"]>(
     which: T[],
-  ): Promise<Extract<Message<"dataUpdate">["data"], T>> => {
+  ): Promise<Required<Pick<Message<"dataUpdate">["data"], T>>> => {
     const data: AwaitableProps<Message<"dataUpdate">["data"]> = {};
 
     if (which.find((w) => w === "compute"))
@@ -57,10 +57,10 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
       Object.keys(data) as (keyof typeof data)[],
       async (acc, key) => ({ ...acc, [key]: await data[key] }),
       {} as Message<"dataUpdate">["data"],
-    ) as Promise<Extract<Message<"dataUpdate">["data"], T>>;
+    ) as Promise<Required<Pick<Message<"dataUpdate">["data"], T>>>;
   };
 
-  data ??= await preComputeDataFor(["compute"]);
+  data ??= await preComputeDataFor(["compute", "computeFp", "computePTN"]);
 
   // Init main instance
   const workers = Array.from(
