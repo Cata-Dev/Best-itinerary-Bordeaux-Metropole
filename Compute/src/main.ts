@@ -2,6 +2,7 @@ import "core-js/features/reflect";
 
 import { AwaitableProps, Deferred, reduceAsync } from "common/async";
 import { makeLogger } from "common/logger";
+import { singleUseWorker } from "common/workers";
 import { isMainThread, Worker } from "node:worker_threads";
 import { cpus } from "os";
 import { join } from "path";
@@ -10,7 +11,6 @@ import { makeComputeData } from "./jobs/preCompute/compute";
 import { makeComputeFpData } from "./jobs/preCompute/computeFp";
 import { makeComputePTNData } from "./jobs/preCompute/computePTN";
 import { isMessage, makeMessage, Message } from "./utils/para";
-import { singleUseWorker } from "./utils/SingleUseWorker";
 
 declare module "./utils/para" {
   interface Messages {

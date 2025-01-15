@@ -1,5 +1,5 @@
-import { Deferred } from "common/async";
 import { Worker } from "node:worker_threads";
+import { Deferred } from "./async";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function singleUseWorker<C extends (...args: any[]) => any>(path: string, ...data: Parameters<C>) {
