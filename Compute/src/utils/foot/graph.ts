@@ -1,9 +1,10 @@
-import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
+import { KeyOfMap, node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { Coords, euclideanDistance } from "common/geographics";
 import { dbSections as dbSectionsRaw } from "data/models/TBM/sections.model";
 import { ProjectionType } from "mongoose";
 import type { makeComputeFpData } from "../../jobs/preCompute/computeFp";
 import Point from "../geometry/Point";
+import Segment from "../geometry/Segment";
 
 const sectionsProjection = {
   _id: 1,
@@ -41,13 +42,24 @@ function makeGraph<N extends node = FootGraphNode>(edges: ReturnType<makeCompute
   return footGraph;
 }
 
+type MappedSegments = Map<KeyOfMap<ReturnType<makeComputeFpData>["mappedSegmentsData"]>, Segment[]>;
+
+function importMappedSegments(mappedSegmentsData: ReturnType<makeComputeFpData>["mappedSegmentsData"]) {
+  return new Map(
+    Array.from(mappedSegmentsData.entries()).map(([key, value]) => [
+      key,
+      value.map((val) => Segment.import(val)),
+    ]),
+  );
+}
+
 /**
  *
  * @param coords
  * @returns `[closest point, edge containing this point, indice of segment composing the edge]`
  */
 function approachPoint(
-  mappedSegments: ReturnType<makeComputeFpData>["mappedSegments"],
+  mappedSegments: MappedSegments,
   coords: Coords,
 ): [stopPoint: Point, edge: Section["s"], segIdx: number] | null {
   const point = new Point(...coords);
@@ -130,9 +142,10 @@ function revertFromApproachedPoint<N extends node>(
 
 export {
   approachPoint,
+  importMappedSegments,
   makeGraph,
   refreshWithApproachedPoint,
   revertFromApproachedPoint,
   sectionsProjection,
 };
-export type { FootGraphNode, Section };
+export type { FootGraphNode, MappedSegments, Section };

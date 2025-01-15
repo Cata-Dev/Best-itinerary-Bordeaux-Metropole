@@ -6,7 +6,12 @@ import { approachedStopName } from "data/models/TBM/NonScheduledRoutes.model";
 import stopsModelInit, { dbTBM_Stops } from "data/models/TBM/TBM_stops.model";
 import { parentPort, workerData } from "node:worker_threads";
 import { app } from "../../base";
-import { approachPoint, FootGraphNode, refreshWithApproachedPoint } from "../../utils/foot/graph";
+import {
+  approachPoint,
+  FootGraphNode,
+  importMappedSegments,
+  refreshWithApproachedPoint,
+} from "../../utils/foot/graph";
 import { exportWGraph, importWGraph } from "../../utils/graph";
 import { initDB } from "../../utils/mongoose";
 import { makeComputeFpData } from "./computeFp";
@@ -30,7 +35,8 @@ if (parentPort) {
     const stopsModel = stopsModelInit(sourceDataDB);
 
     // Retrieve already computed data
-    const [{ edges, mappedSegments, footGraphData }] = workerData as Parameters<makeComputePTNData>;
+    const [{ edges, mappedSegmentsData, footGraphData }] = workerData as Parameters<makeComputePTNData>;
+    const mappedSegments = importMappedSegments(mappedSegmentsData);
 
     // Make required data
     const stops = new Map<dbStops["_id"], Stop>(

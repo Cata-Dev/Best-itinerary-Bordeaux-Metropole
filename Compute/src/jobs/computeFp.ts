@@ -15,6 +15,8 @@ import { Computer } from "../utils/Computer";
 import {
   approachPoint,
   FootGraphNode,
+  importMappedSegments,
+  MappedSegments,
   refreshWithApproachedPoint,
   revertFromApproachedPoint,
 } from "../utils/foot/graph";
@@ -62,8 +64,15 @@ export default async function (
 ) {
   const sourceDataDB = await initDB(app, app.config.sourceDB);
 
-  const fp = new Computer<"computeFp", typeof graphData, WeightedGraph<FootGraphNode | "aps" | "apt">>(
-    ({ edges, mappedSegments }, footGraph, { data: [ps, pt] }) => {
+  const fp = new Computer<
+    "computeFp",
+    typeof graphData,
+    {
+      mappedSegments: MappedSegments;
+      footGraph: WeightedGraph<FootGraphNode | "aps" | "apt">;
+    }
+  >(
+    ({ edges }, { mappedSegments, footGraph }, { data: [ps, pt] }) => {
       // Approach points into foot graph
       const aps = approachPoint(mappedSegments, ps);
       if (!aps) throw new Error("Couldn't approach starting point.");
@@ -102,17 +111,23 @@ export default async function (
       );
     },
     graphData,
-    ({ footGraphData }) => importWGraph(footGraphData),
+    ({ mappedSegmentsData, footGraphData }) => ({
+      mappedSegments: importMappedSegments(mappedSegmentsData),
+      footGraph: importWGraph(footGraphData),
+    }),
   );
 
   const fpOTA = new Computer<
     "computeFpOTA",
     typeof graphData & typeof graphPTNData,
-    WeightedGraph<PTNGraphNode | "aps">
+    {
+      mappedSegments: MappedSegments;
+      footPTNGraph: WeightedGraph<PTNGraphNode | "aps">;
+    }
   >(
     (
-      { edges, mappedSegments },
-      footPTNGraph,
+      { edges },
+      { mappedSegments, footPTNGraph },
       { data: [ps, alias, { maxDist = 1e3, targetPTN = false } = { maxDist: 1e3, targetPTN: false }] },
     ) => {
       const aps = approachPoint(mappedSegments, ps);
@@ -152,7 +167,10 @@ export default async function (
       ...graphData,
       ...graphPTNData,
     },
-    ({ footPTNGraphData }) => importWGraph(footPTNGraphData),
+    ({ mappedSegmentsData, footPTNGraphData }) => ({
+      mappedSegments: importMappedSegments(mappedSegmentsData),
+      footPTNGraph: importWGraph(footPTNGraphData),
+    }),
   );
 
   const NSR = new Computer<

@@ -31,17 +31,17 @@ if (parentPort) {
 
     parentPort.postMessage({
       edges,
-      mappedSegments:
+      mappedSegmentsData:
         // Pre-generate mapped segments to fasten the process (and not redundant computing)
         // A segment describes a portion of an edge
-        new Map<dbSections["_id"], Segment[]>(
+        new Map(
           Array.from(edges.entries()).map(([id, edge]) => [
             id,
-            edge.coords.reduce<Segment[]>(
+            edge.coords.reduce<ReturnType<InstanceType<typeof Segment>["export"]>[]>(
               (acc, v, i) =>
                 i >= edge.coords.length - 1
                   ? acc
-                  : [...acc, new Segment(new Point(...v), new Point(...edge.coords[i + 1]))],
+                  : [...acc, new Segment(new Point(...v), new Point(...edge.coords[i + 1])).export()],
               [],
             ),
           ]),
@@ -53,6 +53,6 @@ if (parentPort) {
 
 export type makeComputeFpData = () => {
   edges: Map<Section["s"], Section>;
-  mappedSegments: Map<Section["s"], Segment[]>;
+  mappedSegmentsData: Map<Section["s"], ReturnType<InstanceType<typeof Segment>["export"]>[]>;
   footGraphData: ReturnType<typeof exportWGraph<FootGraphNode>>;
 };
