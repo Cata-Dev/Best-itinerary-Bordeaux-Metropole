@@ -25,6 +25,20 @@ async function mapAsync<I, O>(
 }
 
 /**
+ * @description Wrap a set of promises into one promise
+ */
+async function reduceAsync<I, O>(
+  array: I[],
+  callback: (previousValue: O, currentValue: I, currentIndex: number, array: I[]) => Promise<O>,
+  initialValue: O,
+): Promise<O> {
+  let acc = initialValue;
+  for (const [idx, el] of array.entries()) acc = await callback(acc, el, idx, array);
+
+  return acc;
+}
+
+/**
  * Asynchronously pause code
  * @param ms Time to wait, defaults to 1s
  * @returns Promise to await
@@ -40,5 +54,9 @@ function wait(ms = 1000): Promise<void> {
   return defP.promise;
 }
 
-export { Deferred, mapAsync, wait };
-export type { resolveCb, rejectCb };
+type AwaitableProps<T extends Record<string | number | symbol, unknown>> = {
+  [k in keyof T]: T[k] | Promise<T[k]>;
+};
+
+export { Deferred, mapAsync, reduceAsync, wait };
+export type { AwaitableProps, rejectCb, resolveCb };

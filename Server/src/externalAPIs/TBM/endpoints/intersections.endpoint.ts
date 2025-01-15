@@ -13,11 +13,11 @@ export type Intersection = BaseTBM<{
   geometry: { coordinates: Coords };
 };
 
-export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const Intersection = TBM_Intersections(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.Intersections,
       24 * 3600,
       async () => {
@@ -41,6 +41,6 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
         return true;
       },
       Intersection,
-    ),
+    ).init(),
   ] as const;
 };

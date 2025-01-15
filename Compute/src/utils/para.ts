@@ -25,5 +25,5 @@ function isMessage(message: unknown): message is DistributedMessage<MessageCode>
   );
 }
 
-export { makeMessage, isMessage };
+export { isMessage, makeMessage };
 export type { Message, Messages };

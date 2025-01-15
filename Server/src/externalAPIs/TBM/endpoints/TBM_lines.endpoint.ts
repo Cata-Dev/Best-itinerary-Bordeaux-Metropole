@@ -13,11 +13,11 @@ export type TBM_Line = BaseTBM<{
   active: Active;
 }>;
 
-export default (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const Line = TBM_Lines(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.Lines,
       24 * 3600,
       async () => {
@@ -38,6 +38,6 @@ export default (app: Application, getData: <T>(id: string, queries?: string[]) =
         return true;
       },
       Line,
-    ),
+    ).init(),
   ] as const;
 };

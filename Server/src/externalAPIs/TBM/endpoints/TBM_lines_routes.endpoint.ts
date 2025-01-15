@@ -5,6 +5,7 @@ import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
+import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
 export type TBM_Lines_route = BaseTBM<{
   gid: string;
@@ -16,11 +17,11 @@ export type TBM_Lines_route = BaseTBM<{
   rg_sv_arret_p_na: number;
 }>;
 
-export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
   const LinesRoute = TBM_Lines_routes(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.Lines_routes,
       3600,
       async () => {
@@ -58,6 +59,8 @@ export default (app: Application, getData: <T>(id: string, queries: string[]) =>
         return true;
       },
       LinesRoute,
-    ),
+    )
+      .registerHook(makeSRHook(app, TBMEndpoints.Lines_routes))
+      .init(),
   ] as const;
 };

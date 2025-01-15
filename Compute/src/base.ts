@@ -1,11 +1,11 @@
 import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
+import { mapAsync } from "common/async";
 import { makeLogger } from "common/logger";
 import { config } from "data/config/index";
 import { TBMEndpoints } from "data/models/TBM/index";
 import { RAPTORRunSettings } from "raptor";
 import { JourneyQuery } from "server";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
-import { mapAsync } from "./utils/asyncs";
 
 export interface Config {
   redis: {

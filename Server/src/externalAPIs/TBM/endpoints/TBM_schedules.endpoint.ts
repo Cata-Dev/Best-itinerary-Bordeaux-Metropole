@@ -8,6 +8,7 @@ import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
+import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
 export type TBM_Schedule = BaseTBM<{
   gid: string;
@@ -25,20 +26,20 @@ export type TBM_Schedule_rt = TBM_Schedule &
     tempsarret: number;
   }>;
 
-export default (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
   const [Schedule, ScheduleRt] = TBM_Schedules(app.get("sourceDBConn"));
 
   // Data needed
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.Schedules,
       24 * 3600,
       () => {
         return new Promise<true>((res) => res(true));
       },
       Schedule,
-    ),
-    new Endpoint(
+    ).init(),
+    await new Endpoint(
       TBMEndpoints.Schedules_rt,
       10,
       async () => {
@@ -98,6 +99,8 @@ export default (app: Application, getData: <T>(id: string, queries: string[]) =>
         return true;
       },
       ScheduleRt,
-    ),
+    )
+      .registerHook(makeSRHook(app, TBMEndpoints.Schedules_rt))
+      .init(),
   ] as const;
 };

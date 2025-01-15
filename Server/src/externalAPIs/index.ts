@@ -1,5 +1,6 @@
 import { Application, ExternalAPIs } from "../declarations";
 
+import { mapAsync } from "common/async";
 import { SNCFClass, SNCFEndpoints, SNCFModel } from "data/models/SNCF/index";
 import { TBMClass, TBMEndpoints, TBMModel } from "data/models/TBM/index";
 import { logger } from "../logger";
@@ -7,29 +8,30 @@ import sncf from "./SNCF";
 import tbm from "./TBM";
 import { Endpoint } from "./endpoint";
 
-export const setupExternalAPIs = (app: Application) => {
+export const setupExternalAPIs = async (app: Application) => {
   app.externalAPIs = { endpoints: {} } as ExternalAPIs;
 
-  tbm(app);
-  sncf(app);
+  await tbm(app).catch((err) => logger.error("Error during TBM setup", err));
+  await sncf(app).catch((err) => logger.error("Error during SNCF setup", err));
 
-  function refresh() {
-    for (const endpoint of Object.values(app.externalAPIs.endpoints).filter(
-      (endpoint) => endpoint.rate >= 24 * 3600 && endpoint.rate < Infinity,
-    )) {
-      endpoint.fetch(undefined, app.get("debug")).catch((e) => logger.error(e));
-    }
-  }
+  const refresh = () =>
+    mapAsync(
+      Object.values(app.externalAPIs.endpoints).filter(
+        (endpoint) => endpoint.rate >= 24 * 3600 && endpoint.rate < Infinity,
+      ),
+      (endpoint) => endpoint.fetch(undefined, app.get("debug")).catch((e) => logger.warn(e)),
+    );
 
-  refresh();
   setInterval(
-    refresh,
+    () => void refresh(),
     Math.max(
       ...Object.values(app.externalAPIs.endpoints).map((endpoint) =>
         endpoint.rate < Infinity ? endpoint.rate : 0,
       ),
     ) * 1000,
   );
+
+  return refresh;
 };
 
 export type ProviderClass<E extends EndpointName | undefined = undefined> = E extends TBMEndpoints

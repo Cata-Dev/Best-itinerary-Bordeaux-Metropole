@@ -9,9 +9,10 @@ import { HydratedDocument } from "mongoose";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
+import { makeConcurrentHook } from "../../concurrentHook";
 import { Endpoint } from "../../endpoint";
 
-export default (
+export default async (
   app: Application,
   TBM_lines_routesEndpointInstantiated: Endpoint<TBMEndpoints.Lines_routes>,
   TBM_schedulesRtEndpointInstantiated: Endpoint<TBMEndpoints.Schedules_rt>,
@@ -20,7 +21,7 @@ export default (
   const ScheduledRoute = TBM_Scheduled_routes(app.get("sourceDBConn"));
 
   return [
-    new Endpoint(
+    await new Endpoint(
       TBMEndpoints.ScheduledRoutes,
       Infinity,
       async () => {
@@ -125,28 +126,14 @@ export default (
         return true;
       },
       ScheduledRoute,
-    ),
+    )
+      .registerHook(() => app.get("computeInstance").refreshData(["compute"]))
+      .init(),
   ] as const;
 };
 
-export function TBMScheduledRoutesEndpointHook(app: Application) {
-  const endpointsForScheduledRoutes = Object.values(app.externalAPIs.TBM.endpoints).filter(
-    (e) =>
-      e.name === TBMEndpoints.Schedules_rt ||
-      e.name === TBMEndpoints.Trips ||
-      e.name === TBMEndpoints.Lines_routes ||
-      e.name === TBMEndpoints.Stops,
-  );
-  const ScheduledRoutesEndpoint = app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes];
-  let refreshAvoided = 0;
-  const listener = (fetchedEndpoint: (typeof endpointsForScheduledRoutes)[number]) => (success: boolean) => {
-    // If we should pass but we avoided a refresh, continue
-    if (!success && refreshAvoided < (ScheduledRoutesEndpoint?.lastFetch ?? Infinity)) return;
-    if (endpointsForScheduledRoutes.find((e) => e.name != fetchedEndpoint.name && e.fetching))
-      return (refreshAvoided = Date.now());
-    ScheduledRoutesEndpoint?.fetch(true, app.get("debug"))
-      .then(() => app.get("computeInstance").refreshData())
-      .catch(logger.warn);
-  };
-  endpointsForScheduledRoutes.forEach((e) => e.on("fetched", listener(e)));
-}
+export const makeSRHook = makeConcurrentHook((app) =>
+  app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes]
+    .fetch(true, app.get("debug"))
+    .catch(logger.warn),
+);

@@ -58,8 +58,10 @@ app.hooks({
     setupMongoose,
     setupCompute,
     async (context: HookContext, next: NextFunction) => {
-      setupExternalAPIs(context.app);
+      const refresh = await setupExternalAPIs(context.app);
       await next();
+      // Start refreshing after having registered everything
+      void refresh();
     },
     async (_: HookContext, next: NextFunction) => {
       // Configure services

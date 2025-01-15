@@ -113,7 +113,7 @@ interface SNCF_Stop {
   name: string;
 }
 
-export default (app: Application) => {
+export default async (app: Application) => {
   logger.log(`Initializing SNCF models...`);
 
   const Schedule = SNCF_Schedules(app.get("sourceDBConn"));
@@ -144,7 +144,7 @@ export default (app: Application) => {
 
   app.externalAPIs.SNCF = {
     endpoints: {
-      [SNCFEndpoints.Schedules]: new Endpoint(
+      [SNCFEndpoints.Schedules]: await new Endpoint(
         SNCFEndpoints.Schedules,
         20,
         async () => {
@@ -198,9 +198,9 @@ export default (app: Application) => {
           return true;
         },
         Schedule,
-      ),
+      ).init(),
 
-      [SNCFEndpoints.Stops]: new Endpoint(
+      [SNCFEndpoints.Stops]: await new Endpoint(
         SNCFEndpoints.Stops,
         24 * 3600,
         async () => {
@@ -238,7 +238,7 @@ export default (app: Application) => {
           return true;
         },
         Stop,
-      ),
+      ).init(),
     },
   };
 
