@@ -1,4 +1,5 @@
-import { createConnection, Connection } from "mongoose";
+import { connect } from "data/utils/db";
+import { Connection } from "mongoose";
 import { HookContext, NextFunction } from "./declarations";
 import { logger } from "./logger";
 
@@ -10,17 +11,16 @@ declare module "./declarations" {
 }
 
 export async function setupMongoose(context: HookContext, next: NextFunction) {
-  const sourceDBConn = await createConnection(
-    context.app.get("dbAddress") + context.app.get("sourceDB"),
-  ).asPromise();
-  const computeDBConn = await createConnection(
-    context.app.get("dbAddress") + context.app.get("computeDB"),
-  ).asPromise();
+  context.app.set(
+    "sourceDBConn",
+    await connect(logger, context.app.get("dbAddress"), context.app.get("sourceDB")),
+  );
+  context.app.set(
+    "computeDBConn",
+    await connect(logger, context.app.get("dbAddress"), context.app.get("computeDB")),
+  );
 
   logger.info("Database connected.");
-
-  context.app.set("sourceDBConn", sourceDBConn);
-  context.app.set("computeDBConn", computeDBConn);
 
   await next();
 }
