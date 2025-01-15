@@ -1,10 +1,9 @@
 import { node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { Cache, CacheData } from "common/cache";
 import { Coords, euclideanDistance } from "common/geographics";
-import { dbSectionsModel, dbSections as dbSectionsRaw } from "data/models/TBM/sections.model";
+import { dbSections as dbSectionsRaw } from "data/models/TBM/sections.model";
 import { ProjectionType } from "mongoose";
+import type { makeComputeFpData } from "../../jobs/preCompute/computeFp";
 import Point from "../geometry/Point";
-import Segment from "../geometry/Segment";
 
 const sectionsProjection = {
   _id: 1,
@@ -27,57 +26,13 @@ interface SectionOverwritten {
 // Equivalent to an Edge
 type Section = Omit<dbSections, keyof SectionOverwritten> & SectionOverwritten;
 
-type FootGraphNode<N extends node = Section["s"]> = Section["s"] | N;
-
-function makeInitData(sectionsModel: dbSectionsModel) {
-  return new Cache(
-    {
-      edges: new Map<Section["s"], Section>(),
-      mappedSegments: new Map<Section["s"], Segment[]>(),
-    },
-    sectionsModel,
-    async (sectionsModel) =>
-      (
-        await sectionsModel.find({}, { updatedAt: 1 }).sort({ updatedAt: -1 }).limit(1)
-      )[0]?.updatedAt?.getTime() ?? -1,
-    async (sectionsModel) => {
-      // Query graph data
-      const edges = new Map<dbSections["_id"], Section>(
-        (await sectionsModel.find({}, sectionsProjection).lean()).map<[number, Section]>(
-          ({ _id, coords, distance, rg_fv_graph_nd: s, rg_fv_graph_na: t }) => [
-            _id,
-            { coords, distance, s, t } satisfies Section,
-          ],
-        ),
-      );
-
-      return {
-        edges,
-        mappedSegments:
-          // Pre-generate mapped segments to fasten the process (and not redundant computing)
-          // A segment describes a portion of an edge
-          new Map<dbSections["_id"], Segment[]>(
-            Array.from(edges.entries()).map(([id, edge]) => [
-              id,
-              edge.coords.reduce<Segment[]>(
-                (acc, v, i) =>
-                  i >= edge.coords.length - 1
-                    ? acc
-                    : [...acc, new Segment(new Point(...v), new Point(...edge.coords[i + 1]))],
-                [],
-              ),
-            ]),
-          ),
-      };
-    },
-  );
-}
+type FootGraphNode = Section["s"];
 
 /**
  * Makes graph from data, disconnected from data (no relation with shallow/deep copy)
  */
-function makeGraph<N extends node>(edges: CacheData<ReturnType<typeof makeInitData>>["edges"]) {
-  const footGraph = new WeightedGraph<FootGraphNode<N>>();
+function makeGraph<N extends node = FootGraphNode>(edges: ReturnType<makeComputeFpData>["edges"]) {
+  const footGraph = new WeightedGraph<FootGraphNode | N>();
 
   for (const { s, t, distance } of edges.values()) {
     footGraph.addEdge(s, t, distance);
@@ -92,7 +47,7 @@ function makeGraph<N extends node>(edges: CacheData<ReturnType<typeof makeInitDa
  * @returns `[closest point, edge containing this point, indice of segment composing the edge]`
  */
 function approachPoint(
-  mappedSegments: CacheData<ReturnType<typeof makeInitData>>["mappedSegments"],
+  mappedSegments: ReturnType<makeComputeFpData>["mappedSegments"],
   coords: Coords,
 ): [stopPoint: Point, edge: Section["s"], segIdx: number] | null {
   const point = new Point(...coords);
@@ -130,8 +85,8 @@ function approachPoint(
  * @returns Name of point added to graph
  */
 function refreshWithApproachedPoint<N extends node>(
-  edges: CacheData<ReturnType<typeof makeInitData>>["edges"],
-  footGraph: WeightedGraph<FootGraphNode<N>>,
+  edges: ReturnType<makeComputeFpData>["edges"],
+  footGraph: WeightedGraph<FootGraphNode | N>,
   name: N,
   [point, edgeId, n]: Exclude<ReturnType<typeof approachPoint>, null>,
 ) {
@@ -162,8 +117,8 @@ function refreshWithApproachedPoint<N extends node>(
 }
 
 function revertFromApproachedPoint<N extends node>(
-  edges: CacheData<ReturnType<typeof makeInitData>>["edges"],
-  footGraph: WeightedGraph<FootGraphNode<N>>,
+  edges: ReturnType<makeComputeFpData>["edges"],
+  footGraph: WeightedGraph<FootGraphNode | N>,
   insertedNode: N,
   edgeId: dbSections["_id"],
 ) {
@@ -173,5 +128,11 @@ function revertFromApproachedPoint<N extends node>(
   footGraph.removeEdge(s, insertedNode);
 }
 
-export { approachPoint, makeGraph, makeInitData, refreshWithApproachedPoint, revertFromApproachedPoint };
-export type { FootGraphNode };
+export {
+  approachPoint,
+  makeGraph,
+  refreshWithApproachedPoint,
+  revertFromApproachedPoint,
+  sectionsProjection,
+};
+export type { FootGraphNode, Section };

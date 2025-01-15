@@ -1,8 +1,8 @@
 import "core-js/features/reflect";
 
-import { parentPort, threadId, workerData } from "node:worker_threads";
 import { makeLogger } from "common/logger";
-import { app as bApp, askShutdown, makeWorker, Application } from "./base";
+import { parentPort, threadId, workerData } from "node:worker_threads";
+import { Application, askShutdown, app as bApp, makeWorker } from "./base";
 import initComputeJob from "./jobs/compute";
 import initComputeFpJob from "./jobs/computeFp";
 import { Message, isMessage, makeMessage } from "./utils/para";
@@ -16,18 +16,18 @@ declare module "./utils/para" {
 }
 
 async function start(data: Message<"data">["data"]) {
-  const { init, updateData } = initComputeJob(data);
+  const { init, updateData } = initComputeJob(data.compute);
 
   const computeProc = await init(bApp);
   bApp.logger.log("Compute job initialized.");
 
-  const {
-    fp: computeFpInit,
-    fpOTA: computeFpOTAInit,
-    computeNSR: computeNSRInit,
-  } = await initComputeFpJob(bApp);
+  const { fp, fpOTA, computeNSR, updateFpData, updatePTNData } = await initComputeFpJob(
+    bApp,
+    data.computeFp,
+    data.computePTN,
+  );
 
-  const app = makeWorker([computeProc, computeFpInit(), computeFpOTAInit(), computeNSRInit()]);
+  const app = makeWorker([computeProc, fp, fpOTA, computeNSR]);
 
   app.workers.forEach((worker) => {
     worker.on("active", (job) => {
@@ -50,7 +50,7 @@ async function start(data: Message<"data">["data"]) {
     });
   });
 
-  return { app, updateData };
+  return { app, updateData, updateFpData, updatePTNData };
 }
 
 if (parentPort) {
@@ -58,6 +58,8 @@ if (parentPort) {
 
   const init = new Promise<{
     updateData: ReturnType<typeof initComputeJob>["updateData"];
+    updateFpData: Awaited<ReturnType<typeof initComputeFpJob>>["updateFpData"];
+    updatePTNData: Awaited<ReturnType<typeof initComputeFpJob>>["updatePTNData"];
     app: Application<"worker">;
   }>((res, rej) => {
     bApp.logger.info("Starting...");
@@ -81,13 +83,27 @@ if (parentPort) {
 
     switch (message.code) {
       case "data":
-        void init.then(({ updateData }) => {
-          updateData(message.data);
+        void init.then(({ updateData, updateFpData, updatePTNData }) => {
+          updateData(message.data.compute);
+          updateFpData(message.data.computeFp);
+          updatePTNData(message.data.computePTN);
           bApp.logger.info("Refreshed data.");
           parentPort?.postMessage(makeMessage("dataAck", undefined));
         });
 
         break;
+
+      case "dataUpdate": {
+        void init.then(({ updateData, updateFpData, updatePTNData }) => {
+          if (message.data.compute) updateData(message.data.compute);
+          if (message.data.computeFp) updateFpData(message.data.computeFp);
+          if (message.data.computePTN) updatePTNData(message.data.computePTN);
+          bApp.logger.info("Refreshed data.");
+          parentPort?.postMessage(makeMessage("dataAck", undefined));
+        });
+
+        break;
+      }
 
       case "stop":
         void init.then(({ app }) => {

@@ -127,7 +127,7 @@ export default async (
       },
       ScheduledRoute,
     )
-      .registerHook(() => app.get("computeInstance").refreshData())
+      .registerHook(() => app.get("computeInstance").refreshData(["compute"]))
       .init(),
   ] as const;
 };

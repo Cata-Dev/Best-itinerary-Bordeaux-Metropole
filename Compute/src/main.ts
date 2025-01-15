@@ -1,17 +1,25 @@
 import "core-js/features/reflect";
 
+import { AwaitableProps, Deferred } from "common/async";
+import { makeLogger } from "common/logger";
 import { isMainThread, Worker } from "node:worker_threads";
 import { cpus } from "os";
 import { join } from "path";
 import { askShutdown, makeQueue } from "./base";
+import { makeComputeData } from "./jobs/preCompute/compute";
+import { makeComputeFpData } from "./jobs/preCompute/computeFp";
+import { makeComputePTNData } from "./jobs/preCompute/computePTN";
 import { isMessage, makeMessage, Message } from "./utils/para";
-import { prepareMakingData } from "./prepare";
-import { Deferred } from "common/async";
-import { makeLogger } from "common/logger";
+import { singleUseWorker } from "./utils/SingleUseWorker";
 
 declare module "./utils/para" {
   interface Messages {
-    data: Awaited<ReturnType<Awaited<ReturnType<typeof prepareMakingData>>>>;
+    data: {
+      compute: ReturnType<makeComputeData>;
+      computeFp: ReturnType<makeComputeFpData>;
+      computePTN: ReturnType<makeComputePTNData>;
+    };
+    dataUpdate: Partial<Message<"data">["data"]>;
     stop: undefined;
   }
 }
@@ -22,8 +30,36 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
   const app = await makeQueue();
   app.logger = logger;
 
-  const makeData = await prepareMakingData(app);
-  data ??= await makeData();
+  // Cache
+  let fpData = singleUseWorker<makeComputeFpData>(join(__dirname, "jobs/", "preCompute/", "computeFp.js"));
+  const preComputeDataFor = async <T extends keyof Message<"dataUpdate">["data"]>(
+    which: T[],
+  ): Promise<Extract<Message<"dataUpdate">["data"], T>> => {
+    const data: AwaitableProps<Message<"dataUpdate">["data"]> = {};
+
+    if (which.find((w) => w === "compute"))
+      data.compute = singleUseWorker<makeComputeData>(join(__dirname, "jobs/", "preCompute/", "compute.js"));
+
+    if (which.find((w) => w === "computeFp")) {
+      data.computeFp = fpData = singleUseWorker<makeComputeFpData>(
+        join(__dirname, "jobs/", "preCompute/", "computeFp.js"),
+      );
+    }
+
+    if (which.find((w) => w === "computePTN"))
+      data.computePTN = singleUseWorker<makeComputePTNData>(
+        join(__dirname, "jobs/", "preCompute/", "computePTN.js"),
+        // Use cache
+        await fpData,
+      );
+
+    // Await workers to resolve
+    await Promise.all(Object.values(data));
+
+    return data as Extract<Message<"dataUpdate">["data"], T>;
+  };
+
+  data ??= await preComputeDataFor(["compute"]);
 
   // Init main instance
   const workers = Array.from(
@@ -54,8 +90,8 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
     /**
      * Should NOT be called multiple times in parallel, i.e., wait for the previous refresh to resolve
      */
-    refreshData: async (data?: Message<"data">["data"]) => {
-      data ??= await makeData();
+    refreshData: async (which?: (keyof Message<"dataUpdate">["data"])[]) => {
+      const data = await preComputeDataFor(which ?? ["compute", "computeFp", "computePTN"]);
 
       // Wait for all workers to have ack data before resolving
       const def = new Deferred<void>();
@@ -74,7 +110,7 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
         }),
       );
 
-      workers.forEach((w) => w.postMessage(makeMessage("data", data)));
+      workers.forEach((w) => w.postMessage(makeMessage("dataUpdate", data)));
 
       return def.promise;
     },

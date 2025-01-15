@@ -48,7 +48,9 @@ export default async (app: Application, getData: <T>(id: string, queries: string
       },
       Stop,
     )
-      .registerHook(makeNSRHook(app, TBMEndpoints.Stops), makeSRHook(app, TBMEndpoints.Stops))
+      .registerHook(makeNSRHook(app, TBMEndpoints.Stops), makeSRHook(app, TBMEndpoints.Stops), () =>
+        app.get("computeInstance").refreshData(["compute", "computePTN"]),
+      )
       .init(),
   ] as const;
 };
