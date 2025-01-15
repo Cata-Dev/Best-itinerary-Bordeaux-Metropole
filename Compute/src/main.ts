@@ -1,6 +1,6 @@
 import "core-js/features/reflect";
 
-import { AwaitableProps, Deferred } from "common/async";
+import { AwaitableProps, Deferred, reduceAsync } from "common/async";
 import { makeLogger } from "common/logger";
 import { isMainThread, Worker } from "node:worker_threads";
 import { cpus } from "os";
@@ -53,10 +53,11 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
         await fpData,
       );
 
-    // Await workers to resolve
-    await Promise.all(Object.values(data));
-
-    return data as Extract<Message<"dataUpdate">["data"], T>;
+    return reduceAsync(
+      Object.keys(data) as (keyof typeof data)[],
+      async (acc, key) => ({ ...acc, [key]: await data[key] }),
+      {} as Message<"dataUpdate">["data"],
+    ) as Promise<Extract<Message<"dataUpdate">["data"], T>>;
   };
 
   data ??= await preComputeDataFor(["compute"]);
