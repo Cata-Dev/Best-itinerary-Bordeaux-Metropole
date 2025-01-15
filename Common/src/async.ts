@@ -40,5 +40,9 @@ function wait(ms = 1000): Promise<void> {
   return defP.promise;
 }
 
+type AwaitableProps<T extends Record<string | number | symbol, unknown>> = {
+  [k in keyof T]: T[k] | Promise<T[k]>;
+};
+
 export { Deferred, mapAsync, wait };
-export type { resolveCb, rejectCb };
+export type { resolveCb, rejectCb, AwaitableProps };
