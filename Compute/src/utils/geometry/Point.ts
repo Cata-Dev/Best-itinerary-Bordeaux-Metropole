@@ -39,4 +39,12 @@ export default class Point {
     this._y = y;
     return this;
   }
+
+  export() {
+    return [this._x, this._y] as const;
+  }
+
+  static import([x, y]: ReturnType<Point["export"]>) {
+    return new Point(x, y);
+  }
 }

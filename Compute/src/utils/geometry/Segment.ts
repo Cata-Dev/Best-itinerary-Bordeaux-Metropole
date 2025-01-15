@@ -43,4 +43,12 @@ export default class Segment {
       return Point.transform(this.A, Vector2.mult(this.AB, distance));
     }
   }
+
+  export() {
+    return [this.A.export(), this.B.export()] as const;
+  }
+
+  static import([A, B]: ReturnType<Segment["export"]>) {
+    return new Segment(Point.import(A), Point.import(B));
+  }
 }
