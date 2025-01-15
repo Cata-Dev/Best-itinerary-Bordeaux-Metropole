@@ -12,7 +12,7 @@ import { errorHandler as errorHandlerHook, log } from "./hooks";
 // Needed to solve Reflect import for typegoose
 import "core-js/features/reflect";
 
-import { services } from "./services";
+import setupActions from "./actions";
 import { channels } from "./channels";
 import { setupExternalAPIs } from "./externalAPIs/index";
 import { logErrorHook } from "./logger";
@@ -67,6 +67,12 @@ app.hooks({
       // Configure services
       app.configure(services);
       app.configure(channels);
+
+      await next();
+    },
+    async (_: HookContext, next: NextFunction) => {
+      setupActions();
+
       await next();
     },
   ],
