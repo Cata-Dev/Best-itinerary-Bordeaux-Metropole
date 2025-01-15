@@ -136,6 +136,8 @@ if (parentPort) {
       ),
     );
 
+    await sourceDataDB.close();
+
     app.logger.info("Pre-computed compute job data made.");
 
     parentPort.postMessage(RAPTORData.internalData satisfies ReturnType<makeComputeData>);

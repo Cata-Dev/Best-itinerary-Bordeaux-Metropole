@@ -27,6 +27,8 @@ if (parentPort) {
       ),
     );
 
+    await sourceDataDB.close();
+
     app.logger.info("Pre-computed computeFp job data made.");
 
     parentPort.postMessage({

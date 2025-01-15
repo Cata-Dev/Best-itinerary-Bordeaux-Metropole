@@ -61,6 +61,8 @@ if (parentPort) {
       if (ap) refreshWithApproachedPoint(edges, graph, approachedStopName(stopId), ap);
     }
 
+    await sourceDataDB.close();
+
     app.logger.info("Pre-computed computePTN job data made.");
 
     parentPort.postMessage({
