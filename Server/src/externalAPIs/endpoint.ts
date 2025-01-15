@@ -51,7 +51,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
         if (lastUpdatedDoc && hasUpdatedAt(lastUpdatedDoc))
           this._lastFetch = lastUpdatedDoc.updatedAt.getTime();
       })
-      .catch(logger.error)
+      .catch((err) => logger.error(err))
       .finally(() => {
         this.deferredFetch.resolve(false); // Initialization
         this.deferredInit.resolve(this);

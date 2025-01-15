@@ -135,5 +135,5 @@ export default async (
 export const makeSRHook = makeConcurrentHook((app) =>
   app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes]
     .fetch(true, app.get("debug"))
-    .catch(logger.warn),
+    .catch((err) => logger.warn(err)),
 );

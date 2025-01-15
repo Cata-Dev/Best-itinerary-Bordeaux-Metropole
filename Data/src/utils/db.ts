@@ -1,13 +1,8 @@
 import { memoize } from "common/cache";
-import { makeLogger } from "common/logger";
+import type { Logger } from "common/logger";
 import { createConnection } from "mongoose";
 
-const connect = memoize(async function (
-  remove,
-  logger: ReturnType<typeof makeLogger>,
-  dbAddress: string,
-  dbName: string,
-) {
+const connect = memoize(async function (remove, logger: Logger, dbAddress: string, dbName: string) {
   const connection = createConnection(
     dbAddress + dbName,
     //{ useNewUrlParser: true }

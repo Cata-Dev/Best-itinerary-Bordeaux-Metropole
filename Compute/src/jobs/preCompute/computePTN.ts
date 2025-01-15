@@ -2,9 +2,12 @@
 import "core-js/features/reflect";
 
 import { WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
+import { Logger } from "common/logger";
 import { approachedStopName } from "data/models/TBM/NonScheduledRoutes.model";
 import stopsModelInit, { dbTBM_Stops } from "data/models/TBM/TBM_stops.model";
+import { sep } from "node:path";
 import { parentPort, workerData } from "node:worker_threads";
+import { preComputeLogger } from ".";
 import { app } from "../../base";
 import {
   approachPoint,
@@ -28,10 +31,12 @@ type Stop = Omit<dbStops, keyof StopOverwritten> & StopOverwritten;
 export type PTNGraphNode = FootGraphNode | ReturnType<typeof approachedStopName>;
 
 if (parentPort) {
-  (async () => {
-    app.logger.info("Making pre-computed computePTN job data...");
+  const logger = new Logger(preComputeLogger, `[${(__filename.split(sep).pop() ?? "").split(".")[0]}]`);
 
-    const sourceDataDB = await initDB(app, app.config.sourceDB);
+  (async () => {
+    logger.log("Making pre-computed computePTN job data...");
+
+    const sourceDataDB = await initDB({ ...app, logger }, app.config.sourceDB);
     const stopsModel = stopsModelInit(sourceDataDB);
 
     // Retrieve already computed data
@@ -63,13 +68,13 @@ if (parentPort) {
 
     await sourceDataDB.close();
 
-    app.logger.info("Pre-computed computePTN job data made.");
+    logger.info("Pre-computed computePTN job data made.");
 
     parentPort.postMessage({
       stops,
       footPTNGraphData: exportWGraph(graph),
     } satisfies ReturnType<makeComputePTNData>);
-  })().catch((err) => app.logger.warn("During computePTN job data pre-computation", err));
+  })().catch((err) => logger.warn("During computePTN job data pre-computation", err));
 }
 
 export type makeComputePTNData = (computeFpData: ReturnType<makeComputeFpData>) => {

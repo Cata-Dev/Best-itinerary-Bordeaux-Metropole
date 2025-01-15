@@ -1,12 +1,12 @@
 import "core-js/features/reflect";
 
 import { AwaitableProps, Deferred, reduceAsync } from "common/async";
-import { makeLogger } from "common/logger";
+import { Logger } from "common/logger";
 import { singleUseWorker } from "common/workers";
 import { isMainThread, Worker } from "node:worker_threads";
 import { cpus } from "os";
 import { join } from "path";
-import { askShutdown, makeQueue } from "./base";
+import { askShutdown, app as bApp, makeQueue } from "./base";
 import { makeComputeData } from "./jobs/preCompute/compute";
 import { makeComputeFpData } from "./jobs/preCompute/computeFp";
 import { makeComputePTNData } from "./jobs/preCompute/computePTN";
@@ -24,11 +24,10 @@ declare module "./utils/para" {
   }
 }
 
-const logger = makeLogger(`[MAIN]`);
+bApp.logger = new Logger(bApp.logger, "[MAIN]");
 
 export async function main(workersCount: number, data?: Message<"data">["data"]) {
   const app = await makeQueue();
-  app.logger = logger;
 
   // Cache
   let fpData: ReturnType<typeof singleUseWorker<makeComputeFpData>> | null = null;
@@ -141,9 +140,11 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
         }
       });
 
-      workersStopped.catch(app.logger.error).finally(() => {
-        askShutdown(app).then(def.resolve).catch(def.reject);
-      });
+      workersStopped
+        .catch((err) => app.logger.error(err))
+        .finally(() => {
+          askShutdown(app).then(def.resolve).catch(def.reject);
+        });
 
       return def.promise;
     },
@@ -151,19 +152,19 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
 }
 
 if (require.main === module && isMainThread) {
-  logger.log(`Main starting...`);
+  bApp.logger.log(`Main starting...`);
 
   void main(cpus().length)
     .then(({ gracefulStop }) => {
       const askShutdown = () => {
         void gracefulStop;
-        logger.info("Gracefully stopped, exiting.");
+        bApp.logger.info("Gracefully stopped, exiting.");
       };
 
       process.on("SIGTERM", askShutdown);
       process.on("SIGINT", askShutdown);
 
-      logger.log(`Main started.`);
+      bApp.logger.log(`Main started.`);
     })
-    .catch(logger.error);
+    .catch((err) => bApp.logger.error(err));
 }

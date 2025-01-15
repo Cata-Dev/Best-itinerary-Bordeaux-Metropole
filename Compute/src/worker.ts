@@ -1,6 +1,6 @@
 import "core-js/features/reflect";
 
-import { makeLogger } from "common/logger";
+import { Logger } from "common/logger";
 import { parentPort, threadId, workerData } from "node:worker_threads";
 import { Application, askShutdown, app as bApp, makeWorker } from "./base";
 import initComputeJob from "./jobs/compute";
@@ -54,7 +54,7 @@ async function start(data: Message<"data">["data"]) {
 }
 
 if (parentPort) {
-  bApp.logger = makeLogger(`[W-${threadId}]`);
+  bApp.logger = new Logger(bApp.logger, `[W-${threadId}]`);
 
   const init = new Promise<{
     updateData: ReturnType<typeof initComputeJob>["updateData"];

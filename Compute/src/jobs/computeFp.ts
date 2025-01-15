@@ -233,7 +233,7 @@ export default async function (
             if (stopsTreatedCount % Math.round((stops.size / 100) * LOG_EVERY) === 0) {
               const newTime = Date.now();
               const progress = Math.round((stopsTreatedCount / stops.size) * 1000) / 10;
-              job.updateProgress(progress).catch(app.logger.error);
+              job.updateProgress(progress).catch((err) => app.logger.error(err));
               app.logger.debug(
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `Inserting to NSR done at ${progress}%, inserted NSR : ${NSRInsertedCount}. Time since last ${LOG_EVERY}% compute & insert : ${new Duration(newTime - lastChunkInsertLogTime)}`,

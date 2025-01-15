@@ -1,8 +1,11 @@
 // Needed to solve "Reflect.getMetadata is not a function" error of typegoose
 import "core-js/features/reflect";
 
+import { Logger } from "common/logger";
 import sectionsModelInit, { dbSections } from "data/models/TBM/sections.model";
+import { sep } from "node:path";
 import { parentPort } from "node:worker_threads";
+import { preComputeLogger } from ".";
 import { app } from "../../base";
 import { FootGraphNode, makeGraph, Section, sectionsProjection } from "../../utils/foot/graph";
 import Point from "../../utils/geometry/Point";
@@ -11,10 +14,12 @@ import { exportWGraph } from "../../utils/graph";
 import { initDB } from "../../utils/mongoose";
 
 if (parentPort) {
-  (async () => {
-    app.logger.info("Making pre-computed computeFp job data...");
+  const logger = new Logger(preComputeLogger, `[${(__filename.split(sep).pop() ?? "").split(".")[0]}]`);
 
-    const sourceDataDB = await initDB(app, app.config.sourceDB);
+  (async () => {
+    logger.log("Making pre-computed computeFp job data...");
+
+    const sourceDataDB = await initDB({ ...app, logger }, app.config.sourceDB);
     const sectionsModel = sectionsModelInit(sourceDataDB);
 
     // Query graph data
@@ -29,7 +34,7 @@ if (parentPort) {
 
     await sourceDataDB.close();
 
-    app.logger.info("Pre-computed computeFp job data made.");
+    logger.info("Pre-computed computeFp job data made.");
 
     parentPort.postMessage({
       edges,
@@ -50,7 +55,7 @@ if (parentPort) {
         ),
       footGraphData: exportWGraph(makeGraph<FootGraphNode>(edges)),
     } satisfies ReturnType<makeComputeFpData>);
-  })().catch((err) => app.logger.warn("During computeFp job data pre-computation", err));
+  })().catch((err) => logger.warn("During computeFp job data pre-computation", err));
 }
 
 export type makeComputeFpData = () => {

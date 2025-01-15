@@ -1,7 +1,7 @@
-import { makeLogger } from "common/logger";
+import { Logger } from "common/logger";
 import type { HookContext, NextFunction } from "./declarations";
 
-export const logger = makeLogger();
+export const logger = new Logger("[SERVER]");
 
 export const logErrorHook = async (_: HookContext, next: NextFunction) => {
   try {

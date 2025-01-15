@@ -3,23 +3,28 @@ import "core-js/features/reflect";
 
 import { DocumentType } from "@typegoose/typegoose";
 import { mapAsync } from "common/async";
+import { Logger } from "common/logger";
 import NonScheduledRoutesModelInit, { dbFootPaths } from "data/models/TBM/NonScheduledRoutes.model";
 import TBMSchedulesInit from "data/models/TBM/TBM_schedules.model";
 import stopsModelInit, { dbTBM_Stops } from "data/models/TBM/TBM_stops.model";
 import TBMScheduledRoutesModelInit, { dbTBM_ScheduledRoutes } from "data/models/TBM/TBMScheduledRoutes.model";
 import { FilterQuery } from "mongoose";
+import { sep } from "node:path";
 import { parentPort } from "node:worker_threads";
 import { SharedRAPTORData } from "raptor/lib/SharedStructures";
+import { preComputeLogger } from ".";
 import { app } from "../../base";
 import { PopulateRef, UnpackRefType } from "../../utils";
 import { initDB } from "../../utils/mongoose";
 
 if (parentPort) {
+  const logger = new Logger(preComputeLogger, `[${(__filename.split(sep).pop() ?? "").split(".")[0]}]`);
+
   (async () => {
-    app.logger.info("Making pre-computed compute job data...");
+    logger.log("Making pre-computed compute job data...");
 
     // DB-related stuff
-    const sourceDataDB = await initDB(app, app.config.sourceDB);
+    const sourceDataDB = await initDB({ ...app, logger }, app.config.sourceDB);
     const stopsModel = stopsModelInit(sourceDataDB);
     TBMSchedulesInit(sourceDataDB);
     const TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(sourceDataDB);
@@ -138,10 +143,10 @@ if (parentPort) {
 
     await sourceDataDB.close();
 
-    app.logger.info("Pre-computed compute job data made.");
+    logger.info("Pre-computed compute job data made.");
 
     parentPort.postMessage(RAPTORData.internalData satisfies ReturnType<makeComputeData>);
-  })().catch((err) => app.logger.warn("During compute job data pre-computation", err));
+  })().catch((err) => logger.warn("During compute job data pre-computation", err));
 }
 
 export type makeComputeData = () => Parameters<typeof SharedRAPTORData.makeFromInternalData>[0];
