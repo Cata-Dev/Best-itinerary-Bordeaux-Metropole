@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import type { Location } from "@/store";
 import { wait } from "common/async";
 import type { Geocode } from "server";
-import DatalistInput from "./DatalistInput.vue";
+import { ref, watch } from "vue";
 import { client, defaultLocation, equalObjects } from "../store/";
-import type { Location } from "@/store";
+import DatalistInput from "./DatalistInput.vue";
 
 interface Props {
   name: string;
