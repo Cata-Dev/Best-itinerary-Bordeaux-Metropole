@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { wait } from "common/async";
 import type { Geocode } from "server";
 import DatalistInput from "./DatalistInput.vue";
 import { client, defaultLocation, equalObjects } from "../store/";
@@ -60,6 +60,7 @@ async function fetchSuggestions(value: string): Promise<Location[]> {
 }
 
 let lastInput: string | null = "";
+let lastInputDate: number = -1;
 
 /**
  * Updates suggestions according to provided value.
@@ -69,6 +70,8 @@ async function refreshSuggestions(value: string | null) {
   // Could have been the same through `forceInput`
   if (value === lastInput) return;
   lastInput = value;
+  const inputDate = Date.now();
+  lastInputDate = inputDate;
 
   if (!value || value.length < 5) {
     // Will trigger update of model from Datalist
@@ -77,11 +80,16 @@ async function refreshSuggestions(value: string | null) {
     return;
   }
 
+  await wait(1e3 / 3);
+  if (lastInputDate != inputDate)
+    // New input during threshold, cancel
+    return;
+
   const now = Date.now();
 
   const suggestions = await fetchSuggestions(value);
 
-  // If another call was faster, skip this one
+  // If another call was faster (<=> this call has been way much longer), skip this one
   if (now < updated.value) return;
 
   datalist.value = suggestions;
