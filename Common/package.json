@@ -1,5 +1,5 @@
 {
-  "name": "common",
+  "name": "@bibm/common",
   "version": "1.0.0",
   "description": "Common files for BIBM",
   "exports": {
