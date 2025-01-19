@@ -1,6 +1,6 @@
 import "core-js/features/reflect";
 
-import { Logger } from "common/logger";
+import { Logger } from "@bibm/common/logger";
 import { parentPort, threadId, workerData } from "node:worker_threads";
 import { Application, askShutdown, app as bApp, makeWorker } from "./base";
 import initComputeJob from "./jobs/compute";

@@ -4,8 +4,8 @@ import TransportBadge from "@/components/TransportBadge.vue";
 import VecMap from "@/components/VecMap.vue";
 import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
 import { currentJourney, fetchFootpaths, result } from "@/store/api";
-import { duration } from "common/time";
-import type { Journey } from "server";
+import { duration } from "@bibm/common/time";
+import type { Journey } from "@bibm/server";
 import { ref } from "vue";
 
 interface Props {

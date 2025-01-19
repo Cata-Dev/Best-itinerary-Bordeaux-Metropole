@@ -3,13 +3,13 @@ import { resolve } from "@feathersjs/schema";
 import type { Static } from "@feathersjs/typebox";
 import { Type, getValidator } from "@feathersjs/typebox";
 
-import { SNCFEndpoints } from "data/models/SNCF/index";
-import { TBMEndpoints } from "data/models/TBM/index";
+import { coords } from "@bibm/common/geographics";
+import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import type { HookContext } from "../../declarations";
 import { defaultOptional } from "../../utils/schemas";
 import { dataValidator, queryValidator } from "../../validators";
 import type { GeocodeService } from "./geocode.class";
-import { coords } from "common/geographics";
 
 const AddressesObject = Type.Object(
   {

@@ -13,7 +13,7 @@ export interface JourneyServiceOptions {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface JourneyParams extends Params<JourneyQuery> {}
 
-import { BadRequest, NotFound, GeneralError } from "@feathersjs/errors";
+import { BadRequest, GeneralError, NotFound } from "@feathersjs/errors";
 import { hasLastActualization } from "../refresh-data/refresh-data.class";
 
 function hasData(obj: unknown): obj is { data: unknown } {
@@ -29,20 +29,20 @@ import resultModelInit, {
   isLocationTBM,
   LabelFoot,
   LabelVehicle,
-} from "data/models/Compute/result.model";
-import NonScheduledRoutesModelInit from "data/models/TBM/NonScheduledRoutes.model";
-import TBMScheduledRoutesModelInit from "data/models/TBM/TBMScheduledRoutes.model";
-import AddressesModelInit, { dbAddresses } from "data/models/TBM/addresses.model";
-import TBMStopsModelInit from "data/models/TBM/TBM_stops.model";
-import TBMSchedulesModelInit from "data/models/TBM/TBM_schedules.model";
-import TBMLinesRoutesModelInit from "data/models/TBM/TBM_lines_routes.model";
-import TBMLinesModelInit from "data/models/TBM/TBM_lines.model";
-import SNCFStopsModelInit from "data/models/SNCF/SNCF_stops.model";
+} from "@bibm/data/models/Compute/result.model";
+import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
+import AddressesModelInit, { dbAddresses } from "@bibm/data/models/TBM/addresses.model";
+import NonScheduledRoutesModelInit from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+import TBMLinesModelInit from "@bibm/data/models/TBM/TBM_lines.model";
+import TBMLinesRoutesModelInit from "@bibm/data/models/TBM/TBM_lines_routes.model";
+import TBMSchedulesModelInit from "@bibm/data/models/TBM/TBM_schedules.model";
+import TBMStopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
+import TBMScheduledRoutesModelInit from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
 // To force TypeScript detect "compute" as a JobName
-import "compute/lib/jobs/compute";
-import { JobData } from "compute/lib/jobs";
-import { mapAsync } from "common/async";
+import { mapAsync } from "@bibm/common/async";
+import { JobData } from "@bibm/compute/lib/jobs";
 import { isDocument } from "@typegoose/typegoose";
+import "compute/lib/jobs/compute";
 
 function formatAddress(addressDoc: dbAddresses) {
   return `${addressDoc.numero} ${"rep" in addressDoc ? addressDoc.rep + " " : ""}${addressDoc.nom_voie} ${addressDoc.commune}`;

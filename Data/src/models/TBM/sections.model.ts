@@ -13,10 +13,10 @@ export enum SectionDomanial {
   Autre = 7,
 }
 
+import { Coords } from "@bibm/common/geographics";
 import { deleteModelWithClass, getModelForClass, prop, type ReturnModelType } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { Coords } from "common/geographics";
 import { Connection } from "mongoose";
 import { TBMEndpoints } from ".";
 

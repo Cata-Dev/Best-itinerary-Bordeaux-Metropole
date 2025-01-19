@@ -1,8 +1,8 @@
 import "core-js/features/reflect";
 
-import { AwaitableProps, Deferred, reduceAsync } from "common/async";
-import { Logger } from "common/logger";
-import { singleUseWorker } from "common/workers";
+import { AwaitableProps, Deferred, reduceAsync } from "@bibm/common/async";
+import { Logger } from "@bibm/common/logger";
+import { singleUseWorker } from "@bibm/common/workers";
 import { isMainThread, Worker } from "node:worker_threads";
 import { cpus } from "os";
 import { join } from "path";

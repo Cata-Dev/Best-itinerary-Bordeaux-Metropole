@@ -10,6 +10,15 @@ importers:
 
   Client:
     dependencies:
+      '@bibm/common':
+        specifier: workspace:*
+        version: link:../Common
+      '@bibm/data':
+        specifier: workspace:*
+        version: link:../Data
+      '@bibm/server':
+        specifier: workspace:*
+        version: link:../Server
       '@feathersjs/socketio-client':
         specifier: ^5.0.31
         version: 5.0.31
@@ -25,24 +34,15 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
-      common:
-        specifier: workspace:*
-        version: link:../Common
       core-js:
         specifier: ^3.39.0
         version: 3.39.0
-      data:
-        specifier: workspace:*
-        version: link:../Data
       ol:
         specifier: ^10.3.1
         version: 10.3.1
       proj4:
         specifier: ^2.15.0
         version: 2.15.0
-      server:
-        specifier: workspace:*
-        version: link:../Server
       socket.io-client:
         specifier: ^4.8.1
         version: 4.8.1
@@ -129,6 +129,15 @@ importers:
 
   Compute:
     dependencies:
+      '@bibm/common':
+        specifier: workspace:*
+        version: link:../Common
+      '@bibm/data':
+        specifier: workspace:*
+        version: link:../Data
+      '@bibm/server':
+        specifier: workspace:*
+        version: link:../Server
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -138,24 +147,15 @@ importers:
       bullmq:
         specifier: ^5.34.5
         version: 5.34.5
-      common:
-        specifier: workspace:*
-        version: link:../Common
       core-js:
         specifier: ^3.39.0
         version: 3.39.0
-      data:
-        specifier: workspace:*
-        version: link:../Data
       mongoose:
         specifier: ^8.9.3
         version: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor#no-local-pruning
         version: https://codeload.github.com/cata-dev/raptor/tar.gz/76ef5f6d6275440192dcf81228328abb30d44726
-      server:
-        specifier: workspace:*
-        version: link:../Server
       shx:
         specifier: ^0.3.4
         version: 0.3.4
@@ -181,6 +181,9 @@ importers:
 
   Data:
     dependencies:
+      '@bibm/common':
+        specifier: workspace:*
+        version: link:../Common
       '@feathersjs/schema':
         specifier: ^5.0.31
         version: 5.0.31(typescript@5.7.2)
@@ -190,9 +193,6 @@ importers:
       '@typegoose/typegoose':
         specifier: ^12.10.1
         version: 12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
-      common:
-        specifier: workspace:*
-        version: link:../Common
       config:
         specifier: ^3.3.12
         version: 3.3.12
@@ -224,6 +224,15 @@ importers:
 
   Server:
     dependencies:
+      '@bibm/common':
+        specifier: workspace:*
+        version: link:../Common
+      '@bibm/compute':
+        specifier: workspace:*
+        version: link:../Compute
+      '@bibm/data':
+        specifier: workspace:*
+        version: link:../Data
       '@feathersjs/adapter-commons':
         specifier: ^5.0.31
         version: 5.0.31
@@ -266,18 +275,9 @@ importers:
       axios:
         specifier: ^1.7.9
         version: 1.7.9
-      common:
-        specifier: workspace:*
-        version: link:../Common
-      compute:
-        specifier: workspace:*
-        version: link:../Compute
       core-js:
         specifier: ^3.39.0
         version: 3.39.0
-      data:
-        specifier: workspace:*
-        version: link:../Data
       feathers-hooks-common:
         specifier: ^8.2.1
         version: 8.2.1(@feathersjs/feathers@5.0.31)

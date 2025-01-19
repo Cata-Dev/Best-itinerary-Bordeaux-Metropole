@@ -1,4 +1,4 @@
-import { Logger } from "common/logger";
+import { Logger } from "@bibm/common/logger";
 import type { HookContext, NextFunction } from "./declarations";
 
 export const logger = new Logger("[SERVER]");

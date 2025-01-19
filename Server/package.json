@@ -75,10 +75,10 @@
     "@feathersjs/typebox": "^5.0.31",
     "@typegoose/typegoose": "^12.10.1",
     "axios": "^1.7.9",
-    "common": "workspace:*",
-    "compute": "workspace:*",
+    "@bibm/common": "workspace:*",
+    "@bibm/compute": "workspace:*",
     "core-js": "^3.39.0",
-    "data": "workspace:*",
+    "@bibm/data": "workspace:*",
     "feathers-hooks-common": "^8.2.1",
     "mongoose": "^8.9.3"
   },

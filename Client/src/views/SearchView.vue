@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { onBeforeRouteUpdate } from "vue-router";
-import type { Journey } from "server";
-import LocationSearch from "@/components/LocationSearch.vue";
-import ExtraSettings from "@/components/ExtraSettings.vue";
 import BaseModal from "@/components/BaseModal.vue";
+import ExtraSettings from "@/components/ExtraSettings.vue";
+import LocationSearch from "@/components/LocationSearch.vue";
 import ResultItem from "@/components/ResultItem.vue";
-import { client, APIRefresh, type colorPalette, type colorComm } from "@/store";
+import { APIRefresh, client, type colorComm, type colorPalette } from "@/store";
 import {
+  actualRoute,
+  currentJourney,
   destination,
+  fetchResult,
   result,
   SearchResultStatus,
-  status,
   settings,
   source,
+  status,
   updateQuery,
-  currentJourney,
-  actualRoute,
   updateRoute,
-  fetchResult,
 } from "@/store/api";
+import type { Journey } from "@bibm/server";
+import { onMounted, ref } from "vue";
+import { onBeforeRouteUpdate } from "vue-router";
 
 const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);

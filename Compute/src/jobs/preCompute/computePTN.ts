@@ -1,10 +1,10 @@
 // Needed to solve "Reflect.getMetadata is not a function" error of typegoose
 import "core-js/features/reflect";
 
+import { Logger } from "@bibm/common/logger";
+import { approachedStopName } from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+import stopsModelInit, { dbTBM_Stops } from "@bibm/data/models/TBM/TBM_stops.model";
 import { WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { Logger } from "common/logger";
-import { approachedStopName } from "data/models/TBM/NonScheduledRoutes.model";
-import stopsModelInit, { dbTBM_Stops } from "data/models/TBM/TBM_stops.model";
 import { sep } from "node:path";
 import { parentPort, workerData } from "node:worker_threads";
 import { preComputeLogger } from ".";

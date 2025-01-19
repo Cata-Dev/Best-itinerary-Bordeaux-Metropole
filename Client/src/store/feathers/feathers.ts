@@ -1,8 +1,8 @@
-import io from "socket.io-client";
+import { Deferred } from "@bibm/common/async";
+import type { RefreshData } from "@bibm/server";
+import { createClient } from "@bibm/server";
 import socketio from "@feathersjs/socketio-client";
-import { createClient } from "server";
-import type { RefreshData } from "server";
-import { Deferred } from "common/async";
+import io from "socket.io-client";
 
 const connection = socketio(
   io(import.meta.env.VITE_API_URL, {
@@ -23,4 +23,4 @@ client
   .then(APIRefresh.resolve)
   .catch(APIRefresh.reject);
 
-export { client, APIRefresh };
+export { APIRefresh, client };

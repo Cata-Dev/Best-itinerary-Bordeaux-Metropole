@@ -3,7 +3,7 @@ import { resolve } from "@feathersjs/schema";
 import type { Static } from "@feathersjs/typebox";
 import { getValidator, ObjectIdSchema, Type } from "@feathersjs/typebox";
 
-import { coords } from "common/geographics";
+import { coords } from "@bibm/common/geographics";
 import type { HookContext } from "../../declarations";
 import { defaultOptional } from "../../utils/schemas";
 import { dataValidator, queryValidator } from "../../validators";

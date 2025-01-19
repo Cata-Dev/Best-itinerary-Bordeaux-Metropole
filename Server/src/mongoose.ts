@@ -1,4 +1,4 @@
-import { connect } from "data/utils/db";
+import { connect } from "@bibm/data/utils/db";
 import { Connection } from "mongoose";
 import { HookContext, NextFunction } from "./declarations";
 import { logger } from "./logger";

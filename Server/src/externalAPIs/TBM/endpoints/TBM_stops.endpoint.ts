@@ -1,7 +1,7 @@
-import { Coords } from "common/geographics";
-import { normalize } from "common/string";
-import { TBMEndpoints } from "data/models/TBM/index";
-import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "data/models/TBM/TBM_stops.model";
+import { Coords } from "@bibm/common/geographics";
+import { normalize } from "@bibm/common/string";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";

@@ -12,7 +12,7 @@ import {
   type QuerySettings,
   type TransportProvider,
 } from "@/store";
-import type { Journey, JourneyQuery, Path, PathQuery } from "server";
+import type { Journey, JourneyQuery, Path, PathQuery } from "@bibm/server";
 import { ref } from "vue";
 import { useRoute, type RouteLocationNormalized, type RouteLocationRaw } from "vue-router";
 

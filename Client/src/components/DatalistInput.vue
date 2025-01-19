@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { equalObjects, transportToType } from "@/store/";
 import TransportBadge from "@/components/TransportBadge.vue";
 import type { Location } from "@/store";
-import type { TBMEndpoints } from "data/models/TBM/index";
+import { equalObjects, transportToType } from "@/store/";
+import type { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import { ref, watch } from "vue";
 
 type ModelValue = Location;
 

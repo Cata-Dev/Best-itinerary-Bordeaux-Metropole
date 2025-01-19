@@ -1,4 +1,4 @@
-import { WGSToLambert93 } from "common/geographics";
+import { WGSToLambert93 } from "@bibm/common/geographics";
 import Vector2 from "./Vector";
 
 export default class Point {

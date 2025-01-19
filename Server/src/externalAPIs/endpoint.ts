@@ -1,9 +1,9 @@
-import { EndpointName, ProviderModel } from ".";
-import { logger } from "../logger";
-import { Deferred, mapAsync } from "common/async";
-import { TypedEventEmitter } from "../utils/TypedEmitter";
+import { Deferred, mapAsync } from "@bibm/common/async";
 import { ReturnModelType } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { EndpointName, ProviderModel } from ".";
+import { logger } from "../logger";
+import { TypedEventEmitter } from "../utils/TypedEmitter";
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type EndpointEvents = {

@@ -1,6 +1,6 @@
+import { colorFunctions } from "@bibm/common/colors";
 import { GeneralError } from "@feathersjs/errors";
 import { performance } from "perf_hooks";
-import { colorFunctions } from "common/colors";
 import { HookContext, NextFunction } from "../declarations";
 import { logger } from "../logger";
 import { compactDate } from "../utils";
@@ -55,4 +55,4 @@ const errorHandler = (context: HookContext) => {
   }
 };
 
-export { log, errorHandler };
+export { errorHandler, log };

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Location } from "@/store";
-import { wait } from "common/async";
-import type { Geocode } from "server";
+import { wait } from "@bibm/common/async";
+import type { Geocode } from "@bibm/server";
 import { ref, watch } from "vue";
 import { client, defaultLocation, equalObjects } from "../store/";
 import DatalistInput from "./DatalistInput.vue";

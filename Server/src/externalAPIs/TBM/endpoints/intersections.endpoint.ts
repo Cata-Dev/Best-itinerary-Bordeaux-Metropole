@@ -1,6 +1,6 @@
-import { Coords } from "common/geographics";
-import { TBMEndpoints } from "data/models/TBM/index";
-import TBM_Intersections, { dbIntersections } from "data/models/TBM/intersections.model";
+import { Coords } from "@bibm/common/geographics";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import TBM_Intersections, { dbIntersections } from "@bibm/data/models/TBM/intersections.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";

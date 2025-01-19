@@ -1,7 +1,7 @@
-import { Coords } from "common/geographics";
-import { normalize } from "common/string";
-import TBM_Addresses, { dbAddresses } from "data/models/TBM/addresses.model";
-import { TBMEndpoints } from "data/models/TBM/index";
+import { Coords } from "@bibm/common/geographics";
+import { normalize } from "@bibm/common/string";
+import TBM_Addresses, { dbAddresses } from "@bibm/data/models/TBM/addresses.model";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";

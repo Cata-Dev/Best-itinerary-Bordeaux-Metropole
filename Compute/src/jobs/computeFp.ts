@@ -1,13 +1,13 @@
-import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
-import { unpackGraphNode, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { Duration } from "common/benchmark";
-import { Coords } from "common/geographics";
+import { Duration } from "@bibm/common/benchmark";
+import { Coords } from "@bibm/common/geographics";
 import nonScheduledRoutesModelInit, {
   approachedStopName,
   dbFootPaths,
   dbFootPathsModel,
-} from "data/models/TBM/NonScheduledRoutes.model";
-import { dbSections } from "data/models/TBM/sections.model";
+} from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+import { dbSections } from "@bibm/data/models/TBM/sections.model";
+import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
+import { unpackGraphNode, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { JobResult, Processor } from ".";
 import { BaseApplication } from "../base";
 import { limiter } from "../utils/asyncs";

@@ -2,21 +2,21 @@
 import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import { BadRequest, GeneralError } from "@feathersjs/errors";
-import { mapAsync } from "common/async";
-import { Coords } from "common/geographics";
-import { JobResult } from "compute/lib/jobs";
+import { mapAsync } from "@bibm/common/async";
+import { Coords } from "@bibm/common/geographics";
+import { JobResult } from "@bibm/compute/lib/jobs";
 import resultModelInit, {
   dbComputeResult,
   isLabelFoot,
   isLocationAddress,
   isLocationSNCF,
   isLocationTBM,
-} from "data/models/Compute/result.model";
-import SNCFStopsModelInit from "data/models/SNCF/SNCF_stops.model";
-import AddressesModelInit from "data/models/TBM/addresses.model";
-import TBMIntersectionsModelInit from "data/models/TBM/intersections.model";
-import TBMSectionsModelInit, { dbSections } from "data/models/TBM/sections.model";
-import TBMStopsModelInit from "data/models/TBM/TBM_stops.model";
+} from "@bibm/data/models/Compute/result.model";
+import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
+import AddressesModelInit from "@bibm/data/models/TBM/addresses.model";
+import TBMIntersectionsModelInit from "@bibm/data/models/TBM/intersections.model";
+import TBMSectionsModelInit, { dbSections } from "@bibm/data/models/TBM/sections.model";
+import TBMStopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
 import type { Application } from "../../declarations";
 import type { Path, PathData, PathPatch, PathQuery } from "./path.schema";
 

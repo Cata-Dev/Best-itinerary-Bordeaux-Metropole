@@ -1,6 +1,6 @@
-import { TBMEndpoints } from "data/models/TBM/index";
-import TBM_Lines from "data/models/TBM/TBM_lines.model";
-import { Active, VehicleType } from "data/models/TBM/TBM_stops.model";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import TBM_Lines from "@bibm/data/models/TBM/TBM_lines.model";
+import { Active, VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";

@@ -1,10 +1,10 @@
-import { Logger } from "common/logger";
-import { connect } from "data/utils/db";
+import { Logger } from "@bibm/common/logger";
+import { singleUseWorker } from "@bibm/common/workers";
+import { config } from "@bibm/data/config/index";
+import resultModelInit from "@bibm/data/models/Compute/result.model";
+import { connect } from "@bibm/data/utils/db";
 import { parentPort } from "node:worker_threads";
 import { logger as baseLogger } from ".";
-import { config } from "data/config/index";
-import resultModelInit from "data/models/Compute/result.model";
-import { singleUseWorker } from "common/workers";
 
 const logger = new Logger(baseLogger, "[purgeResults]");
 

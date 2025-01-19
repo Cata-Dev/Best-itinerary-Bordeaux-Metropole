@@ -7,7 +7,7 @@ import type { HookContext } from "../../declarations";
 import { dataValidator, queryValidator } from "../../validators";
 import type { JourneyService } from "./journey.class";
 
-import { coords } from "common/geographics";
+import { coords } from "@bibm/common/geographics";
 import { GEOCODE_type, geocodeSchema, TBMVehicles } from "../geocode/geocode.schema";
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
 

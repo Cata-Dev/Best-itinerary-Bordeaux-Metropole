@@ -1,5 +1,5 @@
-import { memoize } from "common/cache";
-import type { Logger } from "common/logger";
+import { memoize } from "@bibm/common/cache";
+import type { Logger } from "@bibm/common/logger";
 import { createConnection } from "mongoose";
 
 const connect = memoize(async function (remove, logger: Logger, dbAddress: string, dbName: string) {

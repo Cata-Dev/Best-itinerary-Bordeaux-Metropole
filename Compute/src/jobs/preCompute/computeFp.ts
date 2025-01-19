@@ -1,8 +1,8 @@
 // Needed to solve "Reflect.getMetadata is not a function" error of typegoose
 import "core-js/features/reflect";
 
-import { Logger } from "common/logger";
-import sectionsModelInit, { dbSections } from "data/models/TBM/sections.model";
+import { Logger } from "@bibm/common/logger";
+import sectionsModelInit, { dbSections } from "@bibm/data/models/TBM/sections.model";
 import { sep } from "node:path";
 import { parentPort } from "node:worker_threads";
 import { preComputeLogger } from ".";
