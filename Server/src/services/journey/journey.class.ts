@@ -38,11 +38,11 @@ import TBMLinesRoutesModelInit from "@bibm/data/models/TBM/TBM_lines_routes.mode
 import TBMSchedulesModelInit from "@bibm/data/models/TBM/TBM_schedules.model";
 import TBMStopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
 import TBMScheduledRoutesModelInit from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
-// To force TypeScript detect "compute" as a JobName
 import { mapAsync } from "@bibm/common/async";
 import { JobData } from "@bibm/compute/lib/jobs";
 import { isDocument } from "@typegoose/typegoose";
-import "compute/lib/jobs/compute";
+// To force TypeScript detect "compute" as a JobName
+import "@bibm/compute/lib/jobs/compute";
 
 function formatAddress(addressDoc: dbAddresses) {
   return `${addressDoc.numero} ${"rep" in addressDoc ? addressDoc.rep + " " : ""}${addressDoc.nom_voie} ${addressDoc.commune}`;
