@@ -18,6 +18,15 @@ type UnpackRefType<T> =
 
 type PopulateRef<T> = T extends Ref<infer D> ? D : T extends Ref<infer D>[] ? D[] : never;
 
+type UnionToIntersection<U> = (U extends never ? never : (arg: U) => never) extends (arg: infer I) => void
+  ? I
+  : never;
+
+type UnionToTuple<T> =
+  UnionToIntersection<T extends never ? never : (t: T) => T> extends (_: never) => infer W
+    ? [...UnionToTuple<Exclude<T, W>>, W]
+    : [];
+
 /**
  * @description Search for a value in a **sorted** array, in O(log2(n)).
  * @param arr The **sorted** array where performing the search
@@ -60,4 +69,4 @@ function withDefaults<O extends object>(obj: Partial<O>, defaults: O): O {
 }
 
 export { binarySearch, withDefaults };
-export type { UnpackRefType, PopulateRef };
+export type { PopulateRef, UnionToTuple, UnpackRefType };
