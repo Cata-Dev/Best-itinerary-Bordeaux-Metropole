@@ -10,6 +10,7 @@ import { askShutdown, app as bApp, makeQueue } from "./base";
 import { makeComputeData } from "./jobs/preCompute/compute";
 import { makeComputeFpData } from "./jobs/preCompute/computeFp";
 import { makeComputePTNData } from "./jobs/preCompute/computePTN";
+import { UnionToTuple } from "./utils";
 import { isMessage, makeMessage, Message } from "./utils/para";
 
 declare module "./utils/para" {
@@ -23,6 +24,9 @@ declare module "./utils/para" {
     stop: undefined;
   }
 }
+const allDataUpdates = ["compute", "computeFp", "computePTN"] satisfies UnionToTuple<
+  keyof Message<"data">["data"]
+>;
 
 bApp.logger = new Logger(bApp.logger, "[MAIN]");
 
@@ -61,7 +65,7 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
     ) as Promise<Required<Pick<Message<"dataUpdate">["data"], T>>>;
   };
 
-  data ??= await preComputeDataFor(["compute", "computeFp", "computePTN"]);
+  data ??= await preComputeDataFor(allDataUpdates);
 
   // Init main instance
   const workers = Array.from(
@@ -92,8 +96,8 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
     /**
      * Should NOT be called multiple times in parallel, i.e., wait for the previous refresh to resolve
      */
-    refreshData: async (which?: (keyof Message<"dataUpdate">["data"])[]) => {
-      const data = await preComputeDataFor(which ?? ["compute", "computeFp", "computePTN"]);
+    refreshData: async (which: (keyof Message<"dataUpdate">["data"])[] = allDataUpdates) => {
+      const data = await preComputeDataFor(which);
 
       // Wait for all workers to have ack data before resolving
       const def = new Deferred<void>();
