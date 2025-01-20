@@ -111,7 +111,7 @@ if (parentPort) {
             .catch((err) => bApp.logger.error("Error during shutdown", err))
             .finally(() => process.exit(0));
         });
-        
+
         break;
     }
   });
