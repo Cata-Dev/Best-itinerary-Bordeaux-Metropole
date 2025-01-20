@@ -78,7 +78,7 @@ if (parentPort) {
 
   // Worker spawned by code
   parentPort.on("message", (message) => {
-    if (!isMessage(message)) return;
+    if (!isMessage(message)) throw new Error("Unexpected message");
 
     switch (message.code) {
       case "data":
