@@ -10,7 +10,6 @@ import { Message, isMessage, makeMessage } from "./utils/para";
 declare module "./utils/para" {
   interface Messages {
     started: undefined;
-    stopped: undefined;
     dataAck: undefined;
   }
 }
@@ -110,10 +109,7 @@ if (parentPort) {
           void askShutdown(app)
             .then(() => bApp.logger.info("Gracefully stopped."))
             .catch((err) => bApp.logger.error("Error during shutdown", err))
-            .finally(() => {
-              parentPort?.postMessage(makeMessage("stopped", undefined));
-              process.exit(0);
-            });
+            .finally(() => process.exit(0));
         });
         break;
     }

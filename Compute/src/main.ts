@@ -129,11 +129,10 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
         let count = 0;
 
         for (const worker of workers) {
-          worker.on("message", function stopped(message) {
-            if (isMessage(message) && message.code !== "stopped") return;
-
-            app.logger.log(`Stopped W-${worker.threadId}`);
-            worker.removeListener("message", stopped);
+          const wThId = worker.threadId;
+          worker.on("exit", function exited() {
+            app.logger.log(`Stopped W-${wThId}`);
+            worker.removeListener("message", exited);
 
             count++;
             if (count === workers.length) res();
