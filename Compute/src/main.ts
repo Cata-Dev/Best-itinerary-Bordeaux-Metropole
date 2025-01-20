@@ -3,8 +3,7 @@ import "core-js/features/reflect";
 import { AwaitableProps, Deferred, reduceAsync } from "@bibm/common/async";
 import { Logger } from "@bibm/common/logger";
 import { singleUseWorker } from "@bibm/common/workers";
-import { isMainThread, Worker } from "node:worker_threads";
-import { cpus } from "os";
+import { Worker } from "node:worker_threads";
 import { join } from "path";
 import { askShutdown, app as bApp, makeQueue } from "./base";
 import { makeComputeData } from "./jobs/preCompute/compute";
@@ -153,22 +152,4 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
       return def.promise;
     },
   };
-}
-
-if (require.main === module && isMainThread) {
-  bApp.logger.log(`Main starting...`);
-
-  void main(cpus().length)
-    .then(({ gracefulStop }) => {
-      const askShutdown = () => {
-        void gracefulStop;
-        bApp.logger.info("Gracefully stopped, exiting.");
-      };
-
-      process.on("SIGTERM", askShutdown);
-      process.on("SIGINT", askShutdown);
-
-      bApp.logger.log(`Main started.`);
-    })
-    .catch((err) => bApp.logger.error(err));
 }
