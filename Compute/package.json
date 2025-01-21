@@ -2,7 +2,7 @@
   "name": "@bibm/compute",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/base.js",
+  "main": "lib/main.js",
   "scripts": {
     "build": "shx rm -rf lib/ && tsc -b",
     "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
