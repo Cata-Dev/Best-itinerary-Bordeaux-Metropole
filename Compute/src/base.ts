@@ -133,6 +133,18 @@ export async function makeQueue() {
                 },
               ]
             : []),
+            ...(from.type === TBMEndpoints.Addresses && to.type === TBMEndpoints.Addresses
+              ? [
+                  {
+                    name: "computeFp" as const,
+                    queueName: "computeFp" as const,
+                    data: [from.coords, to.coords] satisfies [unknown, unknown],
+                    opts: {
+                      failParentOnFailure: false,
+                    },
+                  },
+                ]
+              : []),
         ],
       } satisfies FlowJobBase<"compute">),
   } as Application<"queue">;

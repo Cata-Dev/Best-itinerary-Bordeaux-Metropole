@@ -92,7 +92,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         data: [ps, pt, departureDateStr, reqSettings],
       } = job;
       let childrenResults:
-        | Awaited<ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>>[string][]
+        | Awaited<ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA" | "computeFp">>>>[string][]
         | null = null;
 
       const attachStops = new Map<
@@ -112,8 +112,10 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       if (ps.type === TBMEndpoints.Addresses) {
         childrenResults = Object.values(await job.getChildrenValues());
 
-        // Must have been computing inside children jobs
-        const childrenResultPs = childrenResults.find((cr) => cr.alias === "ps")?.distances;
+        // Must have been computed inside children jobs
+        const childrenResultPs = childrenResults.find(
+          (cr): cr is JobResult<"computeFpOTA"> => "distances" in cr && cr.alias === "ps",
+        )?.distances;
         if (!childrenResultPs) throw new Error("Missing pre-computation for ps");
 
         attachStops.set(psIdNumber, {
@@ -146,8 +148,10 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       if (pt.type === TBMEndpoints.Addresses) {
         childrenResults ??= Object.values(await job.getChildrenValues());
 
-        // Must have been computing inside children jobs
-        const childrenResultPt = childrenResults.find((cr) => cr.alias === "pt")?.distances;
+        // Must have been computed inside children jobs
+        const childrenResultPt = childrenResults.find(
+          (cr): cr is JobResult<"computeFpOTA"> => "distances" in cr && cr.alias === "pt",
+        )?.distances;
         if (!childrenResultPt) throw new Error("Missing pre-computation for pt");
 
         attachStops.set(ptIdNumber, {
@@ -177,6 +181,31 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         ptId = SharedRAPTORData.serializeId(ptIdNumber);
       } else ptId = (await stops.findOne({ coords: pt.coords }))?._id ?? -1;
       if (ptId === -1) throw new Error("Cannot find pt");
+
+      if (ps.type === TBMEndpoints.Addresses && pt.type === TBMEndpoints.Addresses) {
+        // Must have been computed inside children jobs
+        const psToPt = (childrenResults ??= Object.values(await job.getChildrenValues())).find(
+          (cr): cr is JobResult<"computeFp"> => "distance" in cr,
+        )?.distance;
+        if (!psToPt) throw new Error("Missing pre-computation for ps-to-pt");
+        
+        if (psToPt < Infinity) {
+          // Add foot path directly from ps to pt and vice-versa
+          const attachedToPs = attachStops.get(psIdNumber);
+          attachStops.set(psIdNumber, {
+            id: psIdNumber,
+            connectedRoutes: [],
+            transfers: [...(attachedToPs?.transfers ?? []), { to: ptIdNumber, length: psToPt }],
+          });
+
+          const attachedToPt = attachStops.get(ptIdNumber);
+          attachStops.set(ptIdNumber, {
+            id: ptIdNumber,
+            connectedRoutes: [],
+            transfers: [...(attachedToPt?.transfers ?? []), { to: psIdNumber, length: psToPt }],
+          });
+        }
+      }
 
       RAPTORData.attachData(Array.from(attachStops.values()), []);
 
