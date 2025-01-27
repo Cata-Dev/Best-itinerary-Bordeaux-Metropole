@@ -188,12 +188,12 @@ export default async (app: Application) => {
             });
           }
 
-          await Schedule.deleteMany({
-            _id: { $nin: schedules.map((s) => s._id) },
-          });
-          await Schedule.bulkWrite(
+          const bulked = await Schedule.bulkWrite(
             bulkOps("updateOne", schedules as unknown as Record<keyof dbSNCF_Schedules, unknown>[]),
           );
+          await Schedule.deleteMany({
+            _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+          });
 
           return true;
         },
@@ -230,10 +230,12 @@ export default async (app: Application) => {
             })
             .filter(unique);
 
-          await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-          await Stop.bulkWrite(
+          const bulked = await Stop.bulkWrite(
             bulkOps("updateOne", Stops as unknown as Record<keyof dbSNCF_Stops, unknown>[]),
           );
+          await Stop.deleteMany({
+            _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+          });
 
           return true;
         },
