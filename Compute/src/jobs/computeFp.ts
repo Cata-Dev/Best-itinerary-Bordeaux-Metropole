@@ -83,10 +83,13 @@ export default async function (
       refreshWithApproachedPoint(edges, footGraph, "apt", apt);
 
       const path = Dijkstra<unpackGraphNode<typeof footGraph>>(footGraph, ["aps", "apt"]);
-      const distance = path.reduce<number>(
-        (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
-        0,
-      );
+      const distance =
+        path.length === 0
+          ? Infinity
+          : path.reduce<number>(
+              (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
+              0,
+            );
 
       // In reverted order!
       revertFromApproachedPoint(edges, footGraph, "apt", apt[1]);
