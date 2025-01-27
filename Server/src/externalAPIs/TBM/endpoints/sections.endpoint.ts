@@ -70,12 +70,12 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           // Got null ends once...
           .filter((s) => s.rg_fv_graph_nd !== null && s.rg_fv_graph_na !== null);
 
-        await Section.deleteMany({
-          _id: { $nin: Sections.map((s) => s._id) },
-        });
-        await Section.bulkWrite(
+        const bulked = await Section.bulkWrite(
           bulkOps("updateOne", Sections as unknown as Record<keyof dbSections, unknown>[]),
         );
+        await Section.deleteMany({
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+        });
 
         return true;
       },
