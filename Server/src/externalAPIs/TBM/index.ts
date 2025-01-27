@@ -28,6 +28,8 @@ import TBM_tripsEndpoint from "./endpoints/TBM_trips.endpoint";
 
 import TBMScheduledRoutesEndpoint from "./endpoints/TBMScheduledRoutes.endpoint";
 
+import TBM_route_sections from "./endpoints/TBM_route_sections";
+
 declare module "../../declarations" {
   interface ExternalAPIs {
     TBM: { endpoints: { [EN in TBMEndpoints]: Endpoint<EN> } };
@@ -75,6 +77,7 @@ export default async (app: Application) => {
           TBM_tripsEndpointInstantiated,
         )
       )[0],
+      [TBMEndpoints.RouteSections]: (await TBM_route_sections(app, getData))[0],
     },
   };
   logger.info(`TBM models & endpoints initialized.`);
