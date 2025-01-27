@@ -85,16 +85,15 @@ export default async (app: Application, getData: <T>(id: string, queries: string
           };
         });
 
-        await ScheduleRt.deleteMany({
-          realtime: true,
-          gid: { $nin: SchedulesRt.map((s) => s.gid) },
-        });
-        await ScheduleRt.bulkWrite(
+        const bulked = await ScheduleRt.bulkWrite(
           bulkOps("updateOne", SchedulesRt as unknown as Record<keyof dbTBM_Schedules_rt, unknown>[], [
-            "gid",
+            "_id",
             "realtime",
           ]),
         );
+        await ScheduleRt.deleteMany({
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+        });
 
         return true;
       },

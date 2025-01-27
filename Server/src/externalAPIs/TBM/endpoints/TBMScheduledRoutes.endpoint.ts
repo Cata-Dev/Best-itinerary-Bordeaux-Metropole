@@ -119,13 +119,12 @@ export default async (
           };
         }
 
-        await ScheduledRoute.deleteMany({
-          _id: { $nin: scheduledRoutes.map(({ _id }) => _id) },
-        });
-
-        await ScheduledRoute.bulkWrite(
+        const bulked = await ScheduledRoute.bulkWrite(
           bulkOps("updateOne", scheduledRoutes as unknown as Record<keyof dbTBM_ScheduledRoutes, unknown>[]),
         );
+        await ScheduledRoute.deleteMany({
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+        });
 
         return true;
       },

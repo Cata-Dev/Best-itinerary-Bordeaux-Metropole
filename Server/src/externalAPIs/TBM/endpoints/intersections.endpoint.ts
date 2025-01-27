@@ -31,12 +31,12 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        await Intersection.deleteMany({
-          _id: { $nin: Intersections.map((i) => i._id) },
-        });
-        await Intersection.bulkWrite(
+        const bulked = await Intersection.bulkWrite(
           bulkOps("updateOne", Intersections as unknown as Record<keyof dbIntersections, unknown>[]),
         );
+        await Intersection.deleteMany({
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+        });
 
         return true;
       },

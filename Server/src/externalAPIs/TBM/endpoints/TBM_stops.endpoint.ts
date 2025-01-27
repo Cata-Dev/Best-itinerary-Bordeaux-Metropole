@@ -41,8 +41,12 @@ export default async (app: Application, getData: <T>(id: string, queries: string
           };
         });
 
-        await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-        await Stop.bulkWrite(bulkOps("updateOne", Stops as unknown as Record<keyof dbTBM_Stops, unknown>[]));
+        const bulked = await Stop.bulkWrite(
+          bulkOps("updateOne", Stops as unknown as Record<keyof dbTBM_Stops, unknown>[]),
+        );
+        await Stop.deleteMany({
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+        });
 
         return true;
       },

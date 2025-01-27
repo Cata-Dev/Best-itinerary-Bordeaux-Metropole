@@ -32,8 +32,10 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        await Line.deleteMany({ _id: { $nin: Lines.map((l) => l._id) } });
-        await Line.bulkWrite(bulkOps("updateOne", Lines));
+        const bulked = await Line.bulkWrite(bulkOps("updateOne", Lines));
+        await Line.deleteMany({
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+        });
 
         return true;
       },

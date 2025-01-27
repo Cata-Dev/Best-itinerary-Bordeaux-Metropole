@@ -43,10 +43,12 @@ export default async (app: Application, getData: <T>(id: string, queries: string
           };
         });
 
+        const bulked = await Trip.bulkWrite(
+          bulkOps("updateOne", Trips as unknown as Record<keyof dbTBM_Trips, unknown>[]),
+        );
         await Trip.deleteMany({
-          _id: { $nin: Trips.map((v) => v._id) },
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
         });
-        await Trip.bulkWrite(bulkOps("updateOne", Trips as unknown as Record<keyof dbTBM_Trips, unknown>[]));
 
         return true;
       },

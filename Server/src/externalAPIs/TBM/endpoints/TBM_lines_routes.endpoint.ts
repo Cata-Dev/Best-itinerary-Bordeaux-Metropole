@@ -49,12 +49,13 @@ export default async (app: Application, getData: <T>(id: string, queries: string
             rg_sv_arret_p_na: lines_route.properties.rg_sv_arret_p_na,
           };
         });
-        await LinesRoute.deleteMany({
-          _id: { $nin: Lines_routes.map((l_r) => l_r._id) },
-        });
-        await LinesRoute.bulkWrite(
+
+        const bulked = await LinesRoute.bulkWrite(
           bulkOps("updateOne", Lines_routes as unknown as Record<keyof dbTBM_Lines_routes, unknown>[]),
         );
+        await LinesRoute.deleteMany({
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+        });
 
         return true;
       },

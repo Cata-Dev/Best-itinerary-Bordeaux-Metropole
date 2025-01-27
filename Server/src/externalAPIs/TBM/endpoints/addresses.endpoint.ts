@@ -48,12 +48,12 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        await Address.deleteMany({
-          _id: { $nin: Addresses.map((i) => i._id) },
-        });
-        await Address.bulkWrite(
+        const bulked = await Address.bulkWrite(
           bulkOps("updateOne", Addresses as unknown as Record<keyof dbAddresses, unknown>[]),
         );
+        await Address.deleteMany({
+          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
+        });
 
         return true;
       },
