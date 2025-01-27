@@ -37,20 +37,35 @@ declare module "../../declarations" {
 }
 
 export default async (app: Application) => {
+  function makeGetData<T>(
+    makeURL: (id: string, queries: string[]) => string,
+  ): (id: string, queries?: string[]) => Promise<T> {
+    return async (id: string, queries: string[] = []) => {
+      const bURL = "https://data.bordeaux-metropole.fr/";
+      const url = makeURL(id, queries);
+      const { data }: { data: { features: T } } = await axios.get(`${bURL}${url}`, {
+        maxContentLength: 4_000_000_000,
+        maxBodyLength: 4_000_000_000,
+      });
+      return data.features;
+    };
+  }
   /**
    * Fetch data from TBM API
    * @param {String} id dataset identifier
    * @param {Array} queries array of queries to apply
    */
-  async function getData<T>(id: string, queries: string[] = []): Promise<T> {
-    const bURL = "https://data.bordeaux-metropole.fr/";
-    const url = `geojson?key=${app.get("server").TBMkey}&typename=${id}&${queries.join("&")}`;
-    const { data }: { data: { features: T } } = await axios.get(`${bURL}${url}`, {
-      maxContentLength: 4_000_000_000,
-      maxBodyLength: 4_000_000_000,
-    });
-    return data.features;
-  }
+  const getData: <T>(id: string, queries?: string[]) => Promise<T> = makeGetData(
+    (id, queries) => `geojson?key=${app.get("server").TBMkey}&typename=${id}&${queries.join("&")}`,
+  );
+   /**
+   * Fetch data from TBM API
+   * @param {String} relation Id of relation
+   * @param {Array} queries array of queries to apply
+   */
+  const getRelationData: <T>(relation: string, queries?: string[]) => Promise<T> = makeGetData(
+    (id, queries) => `geojson/relations/${id}?key=${app.get("server").TBMkey}&${queries.join("&")}`,
+  );
 
   logger.log(`Initializing TBM models & endpoints...`);
   const TBM_lines_routesEndpointInstantiated = (await TBM_lines_routesEndpoint(app, getData))[0];
