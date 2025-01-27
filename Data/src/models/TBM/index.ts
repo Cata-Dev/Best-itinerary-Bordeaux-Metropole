@@ -29,7 +29,7 @@ enum TBMEndpoints {
   RouteSections = "TBM_Route_sections",
 }
 
-type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
+type TBMClass<E extends TBMEndpoints = TBMEndpoints> = E extends TBMEndpoints.Addresses
   ? dbAddresses
   : E extends TBMEndpoints.Intersections
     ? dbIntersections
@@ -51,8 +51,9 @@ type TBMClass<E extends TBMEndpoints | undefined = undefined> = E extends TBMEnd
                     ? dbTBM_ScheduledRoutes
                     : E extends TBMEndpoints.RouteSections
                       ? dbTBM_RouteSections
+                        : never;
 
-type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends TBMEndpoints.Addresses
+type TBMModel<E extends TBMEndpoints = TBMEndpoints> = E extends TBMEndpoints.Addresses
   ? dbAddressesModel
   : E extends TBMEndpoints.Intersections
     ? dbIntersectionsModel
@@ -74,6 +75,8 @@ type TBMModel<E extends TBMEndpoints | undefined = undefined> = E extends TBMEnd
                     ? dbTBM_ScheduledRoutesModel
                     : E extends TBMEndpoints.RouteSections
                       ? dbTBM_RouteSectionsModel
+                        : never;
 
 export { TBMEndpoints };
 export type { TBMClass, TBMModel };
+
