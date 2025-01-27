@@ -21,7 +21,7 @@ export default async (app: Application, getData: <T>(id: string, queries: string
   return [
     await new Endpoint(
       TBMEndpoints.Trips,
-      10 * 60,
+      60,
       async () => {
         const rawTrips: TBM_Vehicle[] = await getData("sv_cours_a", [
           "filter=" +
