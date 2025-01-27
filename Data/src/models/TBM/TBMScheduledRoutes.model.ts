@@ -21,8 +21,8 @@ export class TripOfScheduledRoute {
   @prop({ required: true })
   public tripId!: number;
 
-  @prop({ required: true, ref: () => dbTBM_Schedules_rt })
-  public schedules!: Ref<dbTBM_Schedules_rt>[];
+  @prop({ required: true, ref: () => dbTBM_Schedules_rt, type: () => Number })
+  public schedules!: Ref<dbTBM_Schedules_rt, number>[];
 }
 
 @modelOptions({ options: { customName: TBMEndpoints.ScheduledRoutes } })

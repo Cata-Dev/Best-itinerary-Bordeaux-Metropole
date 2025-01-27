@@ -73,7 +73,7 @@ export default async (app: Application, getData: <T>(id: string, queries: string
 
         const SchedulesRt: dbTBM_Schedules_rt[] = rawSchedulesRt.map((scheduleRt) => {
           return {
-            gid: parseInt(scheduleRt.properties.gid),
+            _id: parseInt(scheduleRt.properties.gid),
             realtime: true,
             hor_theo: new Date(scheduleRt.properties.hor_theo),
             hor_app: new Date(scheduleRt.properties.hor_app),

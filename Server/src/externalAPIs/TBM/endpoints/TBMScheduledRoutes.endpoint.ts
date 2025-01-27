@@ -39,7 +39,7 @@ export default async (
         const fillSchedule =
           (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
           (await TBM_schedulesRtEndpointInstantiated.model.create({
-            gid: Infinity,
+            _id: Infinity,
             hor_theo: new Date(0),
             hor_app: new Date(0),
             hor_estime: new Date(0),
