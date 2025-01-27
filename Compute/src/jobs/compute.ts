@@ -110,7 +110,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       let psId: Parameters<typeof RAPTORData.stops.get>[0] = -1;
       // Need to insert point to be used as starting point in RAPTOR
       if (ps.type === TBMEndpoints.Addresses) {
-        childrenResults = Object.values(await job.getChildrenValues<JobResult<"computeFpOTA">>());
+        childrenResults = Object.values(await job.getChildrenValues());
 
         // Must have been computing inside children jobs
         const childrenResultPs = childrenResults.find((cr) => cr.alias === "ps")?.distances;
@@ -144,7 +144,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       let ptId: Parameters<typeof RAPTORData.stops.get>[0] = -1;
       // Need to insert point to be used as target point in RAPTOR
       if (pt.type === TBMEndpoints.Addresses) {
-        childrenResults ??= Object.values(await job.getChildrenValues<JobResult<"computeFpOTA">>());
+        childrenResults ??= Object.values(await job.getChildrenValues());
 
         // Must have been computing inside children jobs
         const childrenResultPt = childrenResults.find((cr) => cr.alias === "pt")?.distances;
