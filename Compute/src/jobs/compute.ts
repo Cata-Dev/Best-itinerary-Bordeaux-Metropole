@@ -84,6 +84,8 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
 
     // https://www.mongodb.com/docs/manual/core/aggregation-pipeline-optimization/#-sort----limit-coalescence
     const maxStopId = (await stops.find({}, { _id: 1 }).sort({ _id: -1 }).limit(1))[0]?._id ?? 0;
+    const psIdNumber = maxStopId + 1;
+    const ptIdNumber = maxStopId + 2;
 
     return async (job) => {
       const {
@@ -113,8 +115,6 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         // Must have been computing inside children jobs
         const childrenResultPs = childrenResults.find((cr) => cr.alias === "ps")?.distances;
         if (!childrenResultPs) throw new Error("Missing pre-computation for ps");
-
-        const psIdNumber = maxStopId + 1;
 
         attachStops.set(psIdNumber, {
           id: psIdNumber,
@@ -149,8 +149,6 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         // Must have been computing inside children jobs
         const childrenResultPt = childrenResults.find((cr) => cr.alias === "pt")?.distances;
         if (!childrenResultPt) throw new Error("Missing pre-computation for pt");
-
-        const ptIdNumber = maxStopId + 2;
 
         attachStops.set(ptIdNumber, {
           id: ptIdNumber,
