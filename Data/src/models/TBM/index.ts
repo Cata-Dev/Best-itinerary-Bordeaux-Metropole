@@ -3,6 +3,10 @@ import { dbIntersections, dbIntersectionsModel } from "./intersections.model";
 import { dbSections, dbSectionsModel } from "./sections.model";
 import { dbTBM_Lines, dbTBM_LinesModel } from "./TBM_lines.model";
 import { dbTBM_Lines_routes, dbTBM_Lines_routesModel } from "./TBM_lines_routes.model";
+import {
+  dbTBM_LinkLineRoutesSections,
+  dbTBM_LinkLineRoutesSectionsModel,
+} from "./TBM_link_line_routes_sections";
 import { dbTBM_RouteSections, dbTBM_RouteSectionsModel } from "./TBM_route_sections";
 import {
   dbTBM_Schedules,
@@ -27,6 +31,7 @@ enum TBMEndpoints {
   Lines_routes = "TBM_Lines_routes",
   ScheduledRoutes = "TBM_Scheduled_routes",
   RouteSections = "TBM_Route_sections",
+  LinkLineRoutesSections = "TBM_Link_line_routes_sections",
 }
 
 type TBMClass<E extends TBMEndpoints = TBMEndpoints> = E extends TBMEndpoints.Addresses
@@ -51,6 +56,8 @@ type TBMClass<E extends TBMEndpoints = TBMEndpoints> = E extends TBMEndpoints.Ad
                     ? dbTBM_ScheduledRoutes
                     : E extends TBMEndpoints.RouteSections
                       ? dbTBM_RouteSections
+                      : E extends TBMEndpoints.LinkLineRoutesSections
+                        ? dbTBM_LinkLineRoutesSections
                         : never;
 
 type TBMModel<E extends TBMEndpoints = TBMEndpoints> = E extends TBMEndpoints.Addresses
@@ -75,6 +82,8 @@ type TBMModel<E extends TBMEndpoints = TBMEndpoints> = E extends TBMEndpoints.Ad
                     ? dbTBM_ScheduledRoutesModel
                     : E extends TBMEndpoints.RouteSections
                       ? dbTBM_RouteSectionsModel
+                      : E extends TBMEndpoints.LinkLineRoutesSections
+                        ? dbTBM_LinkLineRoutesSectionsModel
                         : never;
 
 export { TBMEndpoints };

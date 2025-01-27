@@ -30,6 +30,8 @@ import TBMScheduledRoutesEndpoint from "./endpoints/TBMScheduledRoutes.endpoint"
 
 import TBM_route_sections from "./endpoints/TBM_route_sections";
 
+import TBM_link_line_routes_sections from "./endpoints/TBM_link_line_routes_sections";
+
 declare module "../../declarations" {
   interface ExternalAPIs {
     TBM: { endpoints: { [EN in TBMEndpoints]: Endpoint<EN> } };
@@ -93,6 +95,7 @@ export default async (app: Application) => {
         )
       )[0],
       [TBMEndpoints.RouteSections]: (await TBM_route_sections(app, getData))[0],
+      [TBMEndpoints.LinkLineRoutesSections]: (await TBM_link_line_routes_sections(app, getRelationData))[0],
     },
   };
   logger.info(`TBM models & endpoints initialized.`);
