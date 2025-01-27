@@ -19,7 +19,7 @@ export type TBM_Stop = BaseTBM<{
   geometry: { coordinates: Coords };
 };
 
-export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const Stop = TBM_Stops(app.get("sourceDBConn"));
 
   return [

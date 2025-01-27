@@ -6,7 +6,7 @@ import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
-export type TBM_Vehicle = BaseTBM<{
+export type TBM_Trip = BaseTBM<{
   gid: string;
   etat: string;
   rg_sv_arret_p_nd: number;
@@ -15,7 +15,7 @@ export type TBM_Vehicle = BaseTBM<{
   rs_sv_chem_l: number;
 }>;
 
-export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const Trip = TBM_Trips(app.get("sourceDBConn"));
 
   return [
@@ -23,7 +23,7 @@ export default async (app: Application, getData: <T>(id: string, queries: string
       TBMEndpoints.Trips,
       60,
       async () => {
-        const rawTrips: TBM_Vehicle[] = await getData("sv_cours_a", [
+        const rawTrips: TBM_Trip[] = await getData("sv_cours_a", [
           "filter=" +
             JSON.stringify({
               etat: {

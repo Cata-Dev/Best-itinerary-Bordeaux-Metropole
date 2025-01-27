@@ -17,7 +17,7 @@ export type TBM_Lines_route = BaseTBM<{
   rg_sv_arret_p_na: number;
 }>;
 
-export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const LinesRoute = TBM_Lines_routes(app.get("sourceDBConn"));
 
   return [

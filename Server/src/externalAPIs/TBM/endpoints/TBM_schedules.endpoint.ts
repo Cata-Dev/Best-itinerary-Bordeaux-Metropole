@@ -26,7 +26,7 @@ export type TBM_Schedule_rt = TBM_Schedule &
     tempsarret: number;
   }>;
 
-export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const [Schedule, ScheduleRt] = TBM_Schedules(app.get("sourceDBConn"));
 
   // Data needed
