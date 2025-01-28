@@ -92,8 +92,8 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
     id = normalize(id);
 
     const queries: ParsedId<GEOCODE_type>[] = [
-      [TBM_Stops, { libelle_lowercase: { $regex: id } }],
-      [SNCF_Stops, { name_lowercase: { $regex: id } }],
+      [TBM_Stops, { libelle_norm: { $regex: id } }],
+      [SNCF_Stops, { name_norm: { $regex: id } }],
     ];
 
     if (

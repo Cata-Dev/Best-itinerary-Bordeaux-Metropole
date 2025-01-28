@@ -37,7 +37,7 @@ const TBM_StopsObject = Type.Object(
     type: Type.Enum(StopType),
     vehicule: TBMVehicles,
     libelle: Type.String(),
-    libelle_lowercase: Type.String(),
+    libelle_norm: Type.String(),
     actif: Type.Union([Type.Literal(0), Type.Literal(1)]),
   },
   { $id: "TBM_Stops", additionalProperties: false },
@@ -49,7 +49,7 @@ const TBM_Stops = Type.Literal(TBMEndpoints.Stops);
 const SNCF_StopsObject = Type.Object(
   {
     name: Type.String(),
-    name_lowercase: Type.String(),
+    name_norm: Type.String(),
   },
   { $id: "SNCF_Stops", additionalProperties: false },
 );
