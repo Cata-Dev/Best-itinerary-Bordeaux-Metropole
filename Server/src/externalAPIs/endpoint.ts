@@ -1,4 +1,4 @@
-import { Deferred, mapAsync } from "@bibm/common/async";
+import { Deferred } from "@bibm/common/async";
 import { ReturnModelType } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { EndpointName, ProviderModel } from ".";
@@ -18,6 +18,33 @@ function hasUpdatedAt(doc: unknown): doc is { updatedAt: Date } {
 }
 
 type Hook<N extends EndpointName> = (endpoint: Endpoint<N>) => Promise<void> | void;
+
+async function runHook<N extends EndpointName>(hook: Hook<N>, endpoint: Endpoint<N>) {
+  try {
+    await hook(endpoint);
+  } catch (err) {
+    logger.warn(`Error during fetched hook execution "${hook.name || "anonymous"}"`, err);
+  }
+}
+
+/**
+ * Enforce hooks to run in parallel
+ * @param hooks Hooks to run in parallel
+ */
+export function parallelHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
+  return async (endpoint) => {
+    await Promise.all(hooks.map((hook) => runHook(hook, endpoint)));
+  };
+}
+/**
+ * Enforce hooks to run sequentially
+ * @param hooks Hooks to run sequentially, in the given order
+ */
+export function sequenceHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
+  return async (endpoint) => {
+    for (const hook of hooks) await runHook(hook, endpoint);
+  };
+}
 
 export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
   private readonly deferredInit = new Deferred<this>();
@@ -119,13 +146,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
 
       if (result)
         // Run hooks
-        await mapAsync(this.hooks, async (hook) => {
-          try {
-            await hook(this);
-          } catch (err) {
-            logger.warn(`Error during fetched hook execution "${hook.name || "anonymous"}"`, err);
-          }
-        });
+        await parallelHooks(...this.hooks)(this);
 
       if (result) this.deferredFetch.resolve(true);
       else this.deferredFetch.reject(false);

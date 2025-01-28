@@ -5,7 +5,7 @@ import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "@bibm/dat
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
-import { Endpoint } from "../../endpoint";
+import { Endpoint, parallelHooks, sequenceHooks } from "../../endpoint";
 import { makeNSRHook } from "./sections.endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
@@ -52,8 +52,11 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       },
       Stop,
     )
-      .registerHook(makeNSRHook(app, TBMEndpoints.Stops), makeSRHook(app, TBMEndpoints.Stops), () =>
-        app.get("computeInstance").refreshData(["compute", "computePTN"]),
+      .registerHook(
+        sequenceHooks(
+          () => app.get("computeInstance").refreshData(["compute", "computePTN"]),
+          parallelHooks(makeSRHook(app, TBMEndpoints.Stops), makeNSRHook(app, TBMEndpoints.Stops)),
+        ),
       )
       .init(),
   ] as const;

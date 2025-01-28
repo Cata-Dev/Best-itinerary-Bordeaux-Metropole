@@ -6,7 +6,7 @@ import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
 import { makeConcurrentHook } from "../../concurrentHook";
-import { Endpoint } from "../../endpoint";
+import { Endpoint, sequenceHooks } from "../../endpoint";
 
 export type Section = BaseTBM<{
   gid: string;
@@ -81,8 +81,11 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       },
       Section,
     )
-      .registerHook(makeNSRHook(app, TBMEndpoints.Sections), () =>
-        app.get("computeInstance").refreshData(["computeFp"]),
+      .registerHook(
+        sequenceHooks(
+          () => app.get("computeInstance").refreshData(["computeFp"]),
+          makeNSRHook(app, TBMEndpoints.Sections),
+        ),
       )
       .init(),
   ] as const;
