@@ -28,9 +28,9 @@ import TBM_tripsEndpoint from "./endpoints/TBM_trips.endpoint";
 
 import TBMScheduledRoutesEndpoint from "./endpoints/TBMScheduledRoutes.endpoint";
 
-import TBM_route_sections from "./endpoints/TBM_route_sections";
+import TBM_route_sections from "./endpoints/TBM_route_sections.endpoint";
 
-import TBM_link_line_routes_sections from "./endpoints/TBM_link_line_routes_sections";
+import TBM_link_line_routes_sections from "./endpoints/TBM_link_line_routes_sections.endpoint";
 
 declare module "../../declarations" {
   interface ExternalAPIs {
