@@ -27,6 +27,7 @@ export default async (
   return [
     await new Endpoint(
       TBMEndpoints.ScheduledRoutes,
+      // Manual fetches only
       Infinity,
       async () => {
         const routeProjection = {
