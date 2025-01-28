@@ -16,13 +16,11 @@ import setupActions from "./actions";
 import { channels } from "./channels";
 import { setupCompute, teardownCompute } from "./compute";
 import { setupExternalAPIs } from "./externalAPIs/index";
-import { logErrorHook } from "./logger";
 import { setupMongoose, teardownMongoose } from "./mongoose";
 import { services } from "./services";
 
 const app: Application = koa(feathers()) as Application;
 
-// Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator));
 
 // Set up Koa middleware
@@ -44,7 +42,7 @@ app.configure(
 // Register hooks that run on all service methods
 app.hooks({
   around: {
-    all: [log, logErrorHook],
+    all: [log],
   },
   before: {},
   after: {},
