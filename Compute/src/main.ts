@@ -46,6 +46,9 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
       data.computeFp = fpData = singleUseWorker<makeComputeFpData>(
         join(__dirname, "jobs/", "preCompute/", "computeFp.js"),
       );
+
+      // Updating computeFp implies updating computePTN
+      which.push("computePTN" as T);
     }
 
     if (which.find((w) => w === "computePTN"))
