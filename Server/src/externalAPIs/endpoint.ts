@@ -31,7 +31,7 @@ async function runHook<N extends EndpointName>(hook: Hook<N>, endpoint: Endpoint
  * Enforce hooks to run in parallel
  * @param hooks Hooks to run in parallel
  */
-export function parallelHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
+function parallelHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
   return async (endpoint) => {
     await Promise.all(hooks.map((hook) => runHook(hook, endpoint)));
   };
@@ -40,13 +40,13 @@ export function parallelHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook
  * Enforce hooks to run sequentially
  * @param hooks Hooks to run sequentially, in the given order
  */
-export function sequenceHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
+function sequenceHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
   return async (endpoint) => {
     for (const hook of hooks) await runHook(hook, endpoint);
   };
 }
 
-export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
+class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
   private readonly deferredInit = new Deferred<this>();
   private deferredFetch = new Deferred<boolean>();
   private _fetching = false;
@@ -157,3 +157,5 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     return this.deferredFetch.promise;
   }
 }
+
+export { Endpoint, parallelHooks, sequenceHooks };
