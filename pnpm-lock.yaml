@@ -233,6 +233,9 @@ importers:
       '@bibm/data':
         specifier: workspace:*
         version: link:../Data
+      '@catatomik/dijkstra':
+        specifier: github:catatomik/dijkstra
+        version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
       '@feathersjs/adapter-commons':
         specifier: ^5.0.31
         version: 5.0.31

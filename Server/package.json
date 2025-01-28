@@ -61,6 +61,7 @@
     "prepare": "pnpm run compile"
   },
   "dependencies": {
+    "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@feathersjs/adapter-commons": "^5.0.31",
     "@feathersjs/authentication": "^5.0.31",
     "@feathersjs/authentication-client": "^5.0.31",
