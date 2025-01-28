@@ -24,7 +24,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       TBMEndpoints.RouteSections,
       5 * 60,
       async () => {
-        const rawRouteSections: TBM_RouteSections[] = await getData("sv_tronc_l");
+        const rawRouteSections: TBM_RouteSections[] = await getData("sv_tronc_l", ["crs=epsg:2154"]);
 
         const routeSections: dbTBM_RouteSections[] = rawRouteSections.map((routeSection) => {
           return {
