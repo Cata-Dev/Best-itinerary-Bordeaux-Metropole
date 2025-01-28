@@ -1,10 +1,12 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
 import type { Static } from "@feathersjs/typebox";
-import { Type, getValidator } from "@feathersjs/typebox";
+import { getValidator, Type } from "@feathersjs/typebox";
 
 import { coords } from "@bibm/common/geographics";
+import { Satisfy } from "@bibm/common/types";
 import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
+import { dbSNCF_Stops } from "@bibm/data/models/SNCF/SNCF_stops.model";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { dbTBM_Stops, StopType, VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import type { HookContext } from "../../declarations";
@@ -40,6 +42,7 @@ const TBM_StopsObject = Type.Object(
   },
   { $id: "TBM_Stops", additionalProperties: false },
 );
+type _ = Satisfy<Omit<dbTBM_Stops, "_id" | "coords">, Static<typeof TBM_StopsObject>>;
 
 const TBM_Stops = Type.Literal(TBMEndpoints.Stops);
 
@@ -50,6 +53,7 @@ const SNCF_StopsObject = Type.Object(
   },
   { $id: "SNCF_Stops", additionalProperties: false },
 );
+type __ = Satisfy<Omit<dbSNCF_Stops, "_id" | "coords">, Static<typeof SNCF_StopsObject>>;
 
 const SNCF_Stops = Type.Literal(SNCFEndpoints.Stops);
 
