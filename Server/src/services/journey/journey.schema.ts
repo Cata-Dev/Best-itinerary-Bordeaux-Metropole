@@ -40,9 +40,12 @@ const SNCFStageDetails = Type.Object(
   { $id: "SNCFStageDetails", additionalProperties: false },
 );
 
-const FOOT = Type.Literal("FOOT");
-const TBM = Type.Literal("TBM");
-const SNCF = Type.Literal("SNCF");
+export enum Transport {
+  FOOT = "FOOT",
+  TBM = "TBM",
+  SNCF = "SNCF",
+}
+export const transport = Type.Enum(Transport)
 
 const StageBase = Type.Object(
   {
@@ -57,7 +60,7 @@ const Stage = Type.Union([
     StageBase,
     Type.Object(
       {
-        type: FOOT,
+        type: Type.Literal(Transport.FOOT),
         details: FOOTStageDetails,
       },
       { additionalProperties: false },
@@ -67,7 +70,7 @@ const Stage = Type.Union([
     StageBase,
     Type.Object(
       {
-        type: TBM,
+        type: Type.Literal(Transport.TBM),
         details: TBMStageDetails,
       },
       { additionalProperties: false },
@@ -77,7 +80,7 @@ const Stage = Type.Union([
     StageBase,
     Type.Object(
       {
-        type: SNCF,
+        type: Type.Literal(Transport.SNCF),
         details: SNCFStageDetails,
       },
       { additionalProperties: false },
@@ -153,7 +156,7 @@ export const journeyQuerySchema = Type.Union([
         to: locationQuery,
         transports: Type.Optional(
           Type.Partial(
-            Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+            Type.Record(Type.Union(transport.anyOf), Type.Boolean(), { additionalProperties: false }),
           ),
         ),
         departureTime: Type.Optional(Type.String()),

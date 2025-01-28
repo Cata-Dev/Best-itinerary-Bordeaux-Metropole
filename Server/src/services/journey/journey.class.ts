@@ -2,7 +2,13 @@
 import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import type { Application } from "../../declarations";
-import type { Journey, JourneyData, JourneyPatch, JourneyQuery } from "./journey.schema";
+import {
+  Transport,
+  type Journey,
+  type JourneyData,
+  type JourneyPatch,
+  type JourneyQuery,
+} from "./journey.schema";
 
 export type { Journey, JourneyData, JourneyPatch, JourneyQuery };
 
@@ -20,6 +26,8 @@ function hasData(obj: unknown): obj is { data: unknown } {
   return typeof obj === "object" && obj !== null && "data" in obj;
 }
 
+import { mapAsync } from "@bibm/common/async";
+import { JobData } from "@bibm/compute/lib/jobs";
 import resultModelInit, {
   dbComputeResult,
   isLabelFoot,
@@ -38,8 +46,6 @@ import TBMLinesRoutesModelInit from "@bibm/data/models/TBM/TBM_lines_routes.mode
 import TBMSchedulesModelInit from "@bibm/data/models/TBM/TBM_schedules.model";
 import TBMStopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
 import TBMScheduledRoutesModelInit from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
-import { mapAsync } from "@bibm/common/async";
-import { JobData } from "@bibm/compute/lib/jobs";
 import { isDocument } from "@typegoose/typegoose";
 // To force TypeScript detect "compute" as a JobName
 import "@bibm/compute/lib/jobs/compute";
@@ -119,7 +125,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             if (isLabelFoot(l)) {
               return {
                 to,
-                type: "FOOT",
+                type: Transport.FOOT,
                 // m / m*s-1 = s
                 duration: l.transfer.length / result.settings.walkSpeed,
                 details: {
@@ -148,7 +154,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
 
             return {
               to,
-              type: "TBM",
+              type: Transport.TBM,
               // Arrival - departure, in sec
               duration: (l.time - departureTime) / 1e3,
               details: {
