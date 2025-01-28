@@ -6,6 +6,7 @@ import { Type, getValidator } from "@feathersjs/typebox";
 import { coords } from "@bibm/common/geographics";
 import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import { dbTBM_Stops, StopType, VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import type { HookContext } from "../../declarations";
 import { defaultOptional } from "../../utils/schemas";
 import { dataValidator, queryValidator } from "../../validators";
@@ -27,16 +28,11 @@ const AddressesObject = Type.Object(
 
 const Addresses = Type.Literal(TBMEndpoints.Addresses);
 
-export const TBMVehicles = Type.Union([Type.Literal("BUS"), Type.Literal("TRAM"), Type.Literal("BATEAU")]);
+export const TBMVehicles = Type.Enum(VehicleType);
 
 const TBM_StopsObject = Type.Object(
   {
-    type: Type.Union([
-      Type.Literal("CLASSIQUE"),
-      Type.Literal("DELESTAGE"),
-      Type.Literal("AUTRE"),
-      Type.Literal("FICTIF"),
-    ]),
+    type: Type.Enum(StopType),
     vehicule: TBMVehicles,
     libelle: Type.String(),
     libelle_lowercase: Type.String(),
