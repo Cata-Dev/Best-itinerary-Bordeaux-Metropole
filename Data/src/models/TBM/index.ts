@@ -6,8 +6,8 @@ import { dbTBM_Lines_routes, dbTBM_Lines_routesModel } from "./TBM_lines_routes.
 import {
   dbTBM_LinkLineRoutesSections,
   dbTBM_LinkLineRoutesSectionsModel,
-} from "./TBM_link_line_routes_sections";
-import { dbTBM_RouteSections, dbTBM_RouteSectionsModel } from "./TBM_route_sections";
+} from "./TBM_link_line_routes_sections.model";
+import { dbTBM_RouteSections, dbTBM_RouteSectionsModel } from "./TBM_route_sections.model";
 import {
   dbTBM_Schedules,
   dbTBM_Schedules_rt,

@@ -1,6 +1,6 @@
 import { Coords } from "@bibm/common/geographics";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
-import TBM_RouteSections, { dbTBM_RouteSections } from "@bibm/data/models/TBM/TBM_route_sections";
+import TBM_RouteSections, { dbTBM_RouteSections } from "@bibm/data/models/TBM/TBM_route_sections.model";
 import { VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";

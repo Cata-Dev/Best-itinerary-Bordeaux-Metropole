@@ -1,7 +1,7 @@
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import TBM_LinkLineRoutesSections, {
   dbTBM_LinkLineRoutesSections,
-} from "@bibm/data/models/TBM/TBM_link_line_routes_sections";
+} from "@bibm/data/models/TBM/TBM_link_line_routes_sections.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";

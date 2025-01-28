@@ -15,7 +15,7 @@ import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
 import { TBMEndpoints } from ".";
 import { dbTBM_Lines_routes } from "./TBM_lines_routes.model";
-import { dbTBM_RouteSections } from "./TBM_route_sections";
+import { dbTBM_RouteSections } from "./TBM_route_sections.model";
 
 @index({ rs_sv_chem_l: 1, rs_sv_tronc_l: 1 }, { unique: true })
 @modelOptions({ options: { customName: TBMEndpoints.LinkLineRoutesSections } })
