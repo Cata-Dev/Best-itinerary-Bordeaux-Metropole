@@ -44,6 +44,7 @@ function isError(e: unknown): e is { code?: number; stack?: unknown } {
 const errorHandler = (context: HookContext) => {
   if (isError(context.error)) {
     const error = context.error;
+    if (context.app.get("debug")) logger.debug(error);
 
     if (!error.code) {
       context.error = new GeneralError("Server error");
