@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import BaseModal from "@/components/BaseModal.vue";
 import TransportBadge from "@/components/TransportBadge.vue";
+import type { Props as VecMapProps } from "@/components/VecMap.vue";
 import VecMap from "@/components/VecMap.vue";
 import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
 import { currentJourney, fetchFootpaths, result } from "@/store/api";
 import { duration } from "@bibm/common/time";
 import type { Journey } from "@bibm/server";
+import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
+import Stroke from "ol/style/Stroke";
+import Style from "ol/style/Style";
 import { ref } from "vue";
 
 interface Props {
@@ -60,7 +64,31 @@ function computeDuration(index: number): number {
 
 const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
 
-const paths = ref<[number, number][][][]>([]);
+const paths = ref<VecMapProps["multiLineStrings"]["data"]>([]);
+const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature) => {
+  switch (feature.getProperties().props.type as ServerTransport) {
+    case "FOOT":
+      return new Style({
+        stroke: new Stroke({
+          width: 5,
+          color: [0, 0, 0],
+          lineDash: [10],
+        }),
+      });
+
+    case "TBM":
+      return new Style({
+        stroke: new Stroke({
+          width: 3,
+          // Should be TBM line color
+          color: [200, 0, 0],
+        }),
+      });
+
+    default:
+      return undefined;
+  }
+};
 
 async function displayMap() {
   if (result.value === null) throw new Error("Unexpected unset result.");
@@ -71,8 +99,19 @@ async function displayMap() {
   paths.value.splice(
     0,
     paths.value.length,
-    ...(await fetchFootpaths(result.value.id, result.value.paths.indexOf(currentJourney.value))).map(
-      (path) => path.steps,
+    ...(await fetchFootpaths(result.value.id, result.value.paths.indexOf(currentJourney.value))).reduce<
+      VecMapProps["multiLineStrings"]["data"]
+    >(
+      (acc, v) =>
+        v.steps[0][0] instanceof Array
+          ? acc.concat([
+              {
+                coords: v.steps as VecMapProps["multiLineStrings"]["data"][number]["coords"],
+                props: { type: v.type },
+              },
+            ])
+          : acc,
+      [],
     ),
   );
 }
@@ -190,7 +229,7 @@ async function displayMap() {
         <h1 class="text-2xl text-center">Trajets à pied</h1>
       </template>
       <template #content>
-        <VecMap :footpaths="paths"> </VecMap>
+        <VecMap :multi-line-strings="{ data: paths, style: multiLineStringsStyle }"> </VecMap>
       </template>
     </BaseModal>
   </div>

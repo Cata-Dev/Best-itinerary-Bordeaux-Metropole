@@ -12,7 +12,7 @@ import {
   type QuerySettings,
   type TransportProvider,
 } from "@/store";
-import type { Journey, JourneyQuery, Path, PathQuery } from "@bibm/server";
+import type { Journey, JourneyQuery, PathQuery } from "@bibm/server";
 import { ref } from "vue";
 import { useRoute, type RouteLocationNormalized, type RouteLocationRaw } from "vue-router";
 
@@ -118,14 +118,10 @@ async function fetchOldResult(id: string) {
 async function fetchFootpaths(
   id: Extract<PathQuery, { id: unknown }>["id"],
   index: Extract<PathQuery, { id: unknown }>["index"],
-): Promise<(Omit<Path, "steps"> & { steps: [number, number][][] })[]> {
+) {
   try {
     return (
-      ((await client
-        .service("path")
-        .find({ query: { for: "journey", id, index, realShape: true } })) as (Omit<Path, "steps"> & {
-        steps: [number, number][][];
-      })[]) ?? []
+      (await client.service("path").find({ query: { for: "journey", id, index, realShape: true } })) ?? []
     );
   } catch (_) {
     return [];
