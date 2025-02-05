@@ -7,12 +7,11 @@ import { coords } from "@bibm/common/geographics";
 import type { HookContext } from "../../declarations";
 import { defaultOptional } from "../../utils/schemas";
 import { dataValidator, queryValidator } from "../../validators";
+import { Transport } from "../journey/journey.schema";
 import type { PathService } from "./path.class";
 
-// Main data model schema
-export const pathSchema = Type.Object(
+const pathSchemaBase = Type.Object(
   {
-    length: Type.Number(),
     steps: Type.Union([
       Type.Array(coords),
       // Real shape coords, MultiLine String
@@ -21,6 +20,19 @@ export const pathSchema = Type.Object(
   },
   { $id: "Path", additionalProperties: false },
 );
+
+// Main data model schema
+export const pathSchema = Type.Union([
+  Type.Intersect(
+    [pathSchemaBase, Type.Object({ type: Type.Literal(Transport.FOOT), length: Type.Number() })],
+    {
+      additionalProperties: false,
+    },
+  ),
+  Type.Intersect([pathSchemaBase, Type.Object({ type: Type.Literal(Transport.TBM), line: Type.Number() })], {
+    additionalProperties: false,
+  }),
+]);
 export type Path = Static<typeof pathSchema>;
 export const pathValidator = getValidator(pathSchema, dataValidator);
 export const pathResolver = resolve<Path, HookContext<PathService>>({});
@@ -39,9 +51,7 @@ export const pathDataValidator = getValidator(pathDataSchema, dataValidator);
 export const pathDataResolver = resolve<Path, HookContext<PathService>>({});
 
 // Schema for updating existing entries
-export const pathPatchSchema = Type.Partial(pathSchema, {
-  $id: "PathPatch",
-});
+export const pathPatchSchema = Type.Object({}, { additionalProperties: false });
 export type PathPatch = Static<typeof pathPatchSchema>;
 export const pathPatchValidator = getValidator(pathPatchSchema, dataValidator);
 export const pathPatchResolver = resolve<Path, HookContext<PathService>>({});
@@ -63,6 +73,19 @@ export const pathQuerySchema = Type.Union([
       { additionalProperties: false },
     ),
     commonQuery,
+  ]),
+  // PTN line path
+  Type.Intersect([
+    Type.Object(
+      {
+        // Line route ID
+        line: Type.Number(),
+        // Stop IDs
+        from: Type.Number(),
+        to: Type.Number(),
+      },
+      { additionalProperties: false },
+    ),
   ]),
   // Foot path computation(s) from an already computed journey referenced by "id"
   Type.Intersect([

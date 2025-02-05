@@ -1,13 +1,13 @@
 // For more information about this file see https://dove.feathersjs.com/guides/cli/service.class.html#custom-services
 import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
-import { BadRequest, GeneralError } from "@feathersjs/errors";
 import { mapAsync } from "@bibm/common/async";
 import { Coords } from "@bibm/common/geographics";
 import { JobResult } from "@bibm/compute/lib/jobs";
 import resultModelInit, {
   dbComputeResult,
   isLabelFoot,
+  isLabelVehicle,
   isLocationAddress,
   isLocationSNCF,
   isLocationTBM,
@@ -16,8 +16,17 @@ import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
 import AddressesModelInit from "@bibm/data/models/TBM/addresses.model";
 import TBMIntersectionsModelInit from "@bibm/data/models/TBM/intersections.model";
 import TBMSectionsModelInit, { dbSections } from "@bibm/data/models/TBM/sections.model";
+import TBMLinkLineRoutesSectionsInit from "@bibm/data/models/TBM/TBM_link_line_routes_sections.model";
+import TBMRouteSectionsModelInit, {
+  dbTBM_RouteSections,
+} from "@bibm/data/models/TBM/TBM_route_sections.model";
 import TBMStopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
+import { Dijkstra } from "@catatomik/dijkstra";
+import { WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
+import { BadRequest, GeneralError } from "@feathersjs/errors";
+import { isDocument } from "@typegoose/typegoose";
 import type { Application } from "../../declarations";
+import { Transport } from "../journey/journey.schema";
 import type { Path, PathData, PathPatch, PathQuery } from "./path.schema";
 
 export type { Path, PathData, PathPatch, PathQuery };
@@ -40,6 +49,8 @@ export class PathService<ServiceParams extends PathParams = PathParams>
   private readonly AddressesModel: ReturnType<typeof AddressesModelInit>;
   private readonly TBMStopsModel: ReturnType<typeof TBMStopsModelInit>;
   private readonly SNCFStopsModel: ReturnType<typeof SNCFStopsModelInit>;
+  private readonly TBMRouteSectionsModel: ReturnType<typeof TBMRouteSectionsModelInit>;
+  private readonly TBMLinkLineRoutesSectionsModel: ReturnType<typeof TBMLinkLineRoutesSectionsInit>;
 
   constructor(public options: PathServiceOptions) {
     this.app = options.app;
@@ -49,6 +60,8 @@ export class PathService<ServiceParams extends PathParams = PathParams>
     this.AddressesModel = AddressesModelInit(this.app.get("sourceDBConn"));
     this.TBMStopsModel = TBMStopsModelInit(this.app.get("sourceDBConn"));
     this.SNCFStopsModel = SNCFStopsModelInit(this.app.get("sourceDBConn"));
+    this.TBMRouteSectionsModel = TBMRouteSectionsModelInit(this.app.get("sourceDBConn"));
+    this.TBMLinkLineRoutesSectionsModel = TBMLinkLineRoutesSectionsInit(this.app.get("sourceDBConn"));
   }
 
   private async getCoords(loc: dbComputeResult["from"]): Promise<Coords> {
@@ -62,15 +75,19 @@ export class PathService<ServiceParams extends PathParams = PathParams>
             : { coords: undefined }
     )?.coords;
 
-    if (!coords) throw new Error("Unexpected or not found location.");
+    if (!coords) throw new GeneralError("Unexpected or not found location.");
 
     return coords;
   }
 
   /**
-   * Helper to compute & format a path
+   * Helper to compute & format a foot path
    */
-  private async makePath(from: Coords, to: Coords, realShape: boolean) {
+  private async makeFootPath(
+    from: Coords,
+    to: Coords,
+    realShape: boolean,
+  ): Promise<Extract<Path, { type: Transport.FOOT }>> {
     let result: JobResult<"computeFp">;
 
     try {
@@ -181,6 +198,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
     return {
       length: result.distance,
       steps: (realShape ? steps.filter((s) => s.length) : steps) as Coords[] | Coords[][],
+      type: Transport.FOOT,
     };
   }
 
@@ -213,7 +231,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                             // because it's a string <=> it's source or target
                             (await this.TBMStopsModel.findById(label.boardedAt as number).lean())?.coords;
 
-                      if (!from) throw new Error("Unable to retrieve journey path source.");
+                      if (!from) throw new GeneralError("Unable to retrieve journey foot path source.");
 
                       const to =
                         i === arr.length - 1
@@ -223,12 +241,43 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                             // because it's a string <=> it's source or target
                             (await this.TBMStopsModel.findById(label.transfer.to as number).lean())?.coords;
 
-                      if (!to) throw new Error("Unable to retrieve journey path destination.");
+                      if (!to) throw new GeneralError("Unable to retrieve journey foot path destination.");
 
-                      return await this.makePath(from, to, realShape);
+                      return await this.makeFootPath(from, to, realShape);
                     })(),
                   ]
-                : acc,
+                : isLabelVehicle(label)
+                  ? [
+                      ...acc,
+                      (async () => {
+                        const from =
+                          // Must come from stop <=> stop id <=> number
+                          label.boardedAt as number;
+
+                        let to: number;
+                        if (i < arr.length - 1) {
+                          const nextLabel = arr[i + 1];
+                          if (!("boardedAt" in nextLabel))
+                            throw new GeneralError("Unexpected journey construction.");
+
+                          to =
+                            // Must go to stop <=> stop id <=> number
+                            nextLabel?.boardedAt as number;
+                        } else {
+                          if (!isLocationTBM(journey.to))
+                            throw new GeneralError("Unexpected journey construction.");
+
+                          to = journey.to.id as number;
+                        }
+
+                        if (isDocument(label.route)) throw new GeneralError("Unexpected populated label.");
+
+                        return await this.get("tbm", {
+                          query: { from, to, line: label.route } satisfies PathParams["query"],
+                        } as ServiceParams);
+                      })(),
+                    ]
+                  : acc,
             [],
           ),
         );
@@ -244,10 +293,54 @@ export class PathService<ServiceParams extends PathParams = PathParams>
 
     switch (id) {
       case "foot": {
-        if (!("from" in params.query)) throw new BadRequest(`Missing required parameter(s).`);
+        if (!("from" in params.query) || !("realShape" in params.query))
+          throw new BadRequest(`Missing required parameter(s).`);
         const { from, to, realShape } = params.query;
 
-        return this.makePath(from, to, realShape);
+        return this.makeFootPath(from, to, realShape);
+      }
+
+      case "tbm": {
+        if (!("line" in params.query)) throw new BadRequest(`Missing required parameter(s).`);
+        const { line, from, to } = params.query;
+
+        const links = await this.TBMLinkLineRoutesSectionsModel.find({ rs_sv_chem_l: line }, undefined, {
+          populate: { path: "rs_sv_tronc_l", model: this.TBMRouteSectionsModel },
+        });
+        if (!links.length) throw new GeneralError(`Unable to find paths for line ${line}.`);
+        if (
+          !links.every((link): link is typeof link & { rs_sv_tronc_l: dbTBM_RouteSections } =>
+            isDocument(link.rs_sv_tronc_l),
+          )
+        )
+          throw new GeneralError(`Unexpected unpopulated link.`);
+
+        const linksGraph = new WeightedGraph<number>();
+        for (const link of links)
+          linksGraph.addArc(
+            link.rs_sv_tronc_l.rg_sv_arret_p_nd as number,
+            link.rs_sv_tronc_l.rg_sv_arret_p_na as number,
+          );
+
+        const sectionsPath = Dijkstra(linksGraph, [from, to] satisfies [unknown, unknown]);
+        if (sectionsPath.length < 2) throw new GeneralError("Unable to determine path.");
+
+        return {
+          type: Transport.TBM,
+          line,
+          steps: sectionsPath.reduce<[number, number][][]>((acc, v, i, arr) => {
+            if (i === arr.length - 1) return acc;
+
+            const section = links.find(
+              (link) =>
+                link.rs_sv_tronc_l.rg_sv_arret_p_nd === v &&
+                link.rs_sv_tronc_l.rg_sv_arret_p_na === arr[i + 1],
+            );
+            if (!section) throw new GeneralError("Unexpected unobtainable section. ");
+
+            return acc.concat([section.rs_sv_tronc_l.coords]);
+          }, []),
+        };
       }
 
       default:
