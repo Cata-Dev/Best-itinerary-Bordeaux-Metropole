@@ -26,7 +26,7 @@
     "core-js": "^3.39.0",
     "@bibm/data": "workspace:*",
     "ol": "^10.3.1",
-    "proj4": "^2.15.0",
+    "proj4": "^2.17.0",
     "@bibm/server": "workspace:*",
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^3.4.17",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "22",
-    "@types/proj4": "^2.5.5",
+    "@types/proj4": "^2.5.6",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/eslint-config-prettier": "^10.1.0",
     "@vue/eslint-config-typescript": "^14.2.0",
