@@ -27,7 +27,7 @@
     "@typegoose/typegoose": "^12.10.1",
     "bullmq": "^5.34.5",
     "@bibm/common": "workspace:*",
-    "core-js": "^3.39.0",
+    "core-js": "^3.42.0",
     "@bibm/data": "workspace:*",
     "mongoose": "^8.9.3",
     "raptor": "github:cata-dev/raptor#no-local-pruning",
