@@ -21,7 +21,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.0.8",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^10.4.21",
     "@bibm/common": "workspace:*",
     "core-js": "^3.39.0",
     "@bibm/data": "workspace:*",
