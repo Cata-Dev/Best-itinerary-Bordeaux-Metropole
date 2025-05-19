@@ -41,7 +41,7 @@
     "raptor": "github:cata-dev/raptor#no-local-pruning"
   },
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.0",
+    "@tsconfig/node22": "^22.0.1",
     "@types/config": "^3.3.5",
     "eslint": "^9.17.0",
     "prettier": "^3.4.2",
