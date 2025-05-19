@@ -97,6 +97,6 @@
     "shx": "^0.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.19.0"
+    "typescript-eslint": "^8.32.1"
   }
 }
