@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
-    "@typegoose/typegoose": "^12.10.1",
+    "@typegoose/typegoose": "^12.16.0",
     "bullmq": "^5.34.5",
     "@bibm/common": "workspace:*",
     "core-js": "^3.39.0",
