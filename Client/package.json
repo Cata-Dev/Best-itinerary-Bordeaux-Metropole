@@ -2,6 +2,10 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.13.0",
+    "pnpm": ">=10"
+  },
   "files": [
     "dist/"
   ],

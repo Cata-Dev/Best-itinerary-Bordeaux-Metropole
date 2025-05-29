@@ -2,6 +2,10 @@
   "name": "@bibm/common",
   "version": "1.0.0",
   "description": "Common files for BIBM",
+  "engines": {
+    "node": ">=22.13.0",
+    "pnpm": ">=10"
+  },
   "exports": {
     ".": {
       "types": "./lib/types/index.d.ts",

@@ -2,6 +2,10 @@
   "name": "@bibm/data",
   "version": "1.0.0",
   "description": "Data source for BIBM",
+  "engines": {
+    "node": ">=22.13.0",
+    "pnpm": ">=10"
+  },
   "exports": {
     ".": {
       "types": "./lib/types/index.d.ts",
