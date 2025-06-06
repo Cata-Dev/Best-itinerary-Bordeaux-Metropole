@@ -4,4 +4,3 @@ packages:
   - Client
   - Compute
   - Common
-injectWorkspacePackages: true
