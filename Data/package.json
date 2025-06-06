@@ -4,7 +4,7 @@
   "description": "Data source for BIBM",
   "engines": {
     "node": ">=22.13.0",
-    "pnpm": ">=10"
+    "pnpm": ">=9"
   },
   "exports": {
     ".": {

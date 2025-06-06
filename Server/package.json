@@ -15,7 +15,7 @@
   "bugs": {},
   "engines": {
     "node": ">=22.13.0",
-    "pnpm": ">=10"
+    "pnpm": ">=9"
   },
   "feathers": {
     "language": "ts",
