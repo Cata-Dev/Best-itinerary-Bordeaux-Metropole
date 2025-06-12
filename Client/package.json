@@ -33,7 +33,7 @@
     "proj4": "^2.15.0",
     "@bibm/server": "workspace:*",
     "socket.io-client": "^4.8.1",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.10",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
