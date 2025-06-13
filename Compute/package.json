@@ -33,7 +33,7 @@
     "@bibm/common": "workspace:*",
     "core-js": "^3.39.0",
     "@bibm/data": "workspace:*",
-    "mongoose": "^8.9.3",
+    "mongoose": "^8.15.2",
     "raptor": "github:cata-dev/raptor#no-local-pruning",
     "@bibm/server": "workspace:*",
     "shx": "^0.3.4"
