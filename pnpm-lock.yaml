@@ -155,7 +155,7 @@ importers:
         version: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/d69e2031f866360476f1da604a7d274f335e5a68
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/03e6f72105b8e45770c4ec69447a3c5d310585a7
       shx:
         specifier: ^0.3.4
         version: 0.3.4
@@ -201,7 +201,7 @@ importers:
         version: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/d69e2031f866360476f1da604a7d274f335e5a68
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/03e6f72105b8e45770c4ec69447a3c5d310585a7
     devDependencies:
       '@tsconfig/node22':
         specifier: ^22.0.0
@@ -3496,8 +3496,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/d69e2031f866360476f1da604a7d274f335e5a68:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/d69e2031f866360476f1da604a7d274f335e5a68}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/03e6f72105b8e45770c4ec69447a3c5d310585a7:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/03e6f72105b8e45770c4ec69447a3c5d310585a7}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -8027,7 +8027,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/d69e2031f866360476f1da604a7d274f335e5a68: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/03e6f72105b8e45770c4ec69447a3c5d310585a7: {}
 
   raw-body@2.5.2:
     dependencies:
