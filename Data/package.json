@@ -42,7 +42,7 @@
     "@bibm/common": "workspace:*",
     "config": "^3.3.12",
     "mongoose": "^8.9.3",
-    "raptor": "github:cata-dev/raptor#no-local-pruning"
+    "raptor": "github:cata-dev/raptor"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
