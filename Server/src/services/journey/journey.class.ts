@@ -95,7 +95,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
       if (!from) throw new GeneralError("Could not populate journey.");
 
       return {
-        departure: j[0].time,
+        departure: result.departureTime.getTime(),
         from,
         stages: await mapAsync<LabelFoot | LabelVehicle, Journey["paths"][number]["stages"][number]>(
           j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {

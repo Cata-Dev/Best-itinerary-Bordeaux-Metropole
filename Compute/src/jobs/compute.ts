@@ -319,6 +319,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
             : pt.type === TBMEndpoints.Stops
               ? ({ type: LocationType.TBM, id: pt.id } satisfies LocationTBM)
               : ({ type: LocationType.SNCF, id: pt.id } satisfies LocationSNCF),
+        departureTime: departureDate,
         journeys: bestJourneysResolved.flat().map((journey) => journeyDBFormatter(journey)),
         settings,
       });

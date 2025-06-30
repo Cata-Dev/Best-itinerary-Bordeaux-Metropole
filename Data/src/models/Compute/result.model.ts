@@ -170,6 +170,9 @@ export class dbComputeResult extends TimeStamps {
   })
   public to!: LocationBase;
 
+  @prop({ required: true })
+  departureTime!: Date;
+
   @prop({ required: true, type: () => RunSettings })
   settings!: RunSettings;
 
