@@ -41,7 +41,8 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
     ).init(),
     await new Endpoint(
       TBMEndpoints.Schedules_rt,
-      10,
+      // 10s in reality but it's of no use to be that precise because data treatment takes way more time...
+      3 * 60,
       async () => {
         const date = new Date().toJSON().substring(0, 19);
 

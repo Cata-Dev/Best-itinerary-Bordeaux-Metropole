@@ -21,7 +21,8 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
   return [
     await new Endpoint(
       TBMEndpoints.Trips,
-      60,
+      // 60s in reality but it's of no use to be that precise because data treatment takes way more time...
+      3 * 60,
       async () => {
         const rawTrips: TBM_Trip[] = await getData("sv_cours_a", [
           "filter=" +
