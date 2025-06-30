@@ -30,13 +30,13 @@ import { mapAsync } from "@bibm/common/async";
 import { JobData } from "@bibm/compute/lib/jobs";
 import resultModelInit, {
   dbComputeResult,
-  isLabelFoot,
-  isLabelVehicle,
+  isJourneyStepFoot,
+  isJourneyStepVehicle,
   isLocationAddress,
   isLocationSNCF,
   isLocationTBM,
-  LabelFoot,
-  LabelVehicle,
+  JourneyStepFoot,
+  JourneyStepVehicle,
 } from "@bibm/data/models/Compute/result.model";
 import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
 import AddressesModelInit, { dbAddresses } from "@bibm/data/models/TBM/addresses.model";
@@ -97,9 +97,12 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
       return {
         departure: result.departureTime.getTime(),
         from,
-        stages: await mapAsync<LabelFoot | LabelVehicle, Journey["paths"][number]["stages"][number]>(
-          j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {
-            if (!isLabelFoot(l) && !isLabelVehicle(l)) throw new Error("Unexpected journey.");
+        stages: await mapAsync<
+          JourneyStepFoot | JourneyStepVehicle,
+          Journey["paths"][number]["stages"][number]
+        >(
+          j.steps.slice(1).filter((js): js is JourneyStepFoot | JourneyStepVehicle => {
+            if (!isJourneyStepFoot(js) && !isJourneyStepVehicle(js)) throw new Error("Unexpected journey.");
             return true;
           }),
           async (l, i, arr) => {
@@ -112,7 +115,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
                     : isLocationSNCF(result.to)
                       ? (await this.SNCFStopsModel.findById(result.to.id).lean())?.name
                       : null
-                : isLabelFoot(l)
+                : isJourneyStepFoot(l)
                   ? typeof l.transfer.to === "number"
                     ? (await this.TBMStopsModel.findById(l.transfer.to).lean())?.libelle
                     : l.transfer.to
@@ -122,7 +125,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
 
             if (!to) throw new GeneralError("Could not populate journey.");
 
-            if (isLabelFoot(l)) {
+            if (isJourneyStepFoot(l)) {
               return {
                 to,
                 type: Transport.FOOT,
@@ -135,10 +138,10 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             }
 
             // Only remaining possibility
-            if (!isLabelVehicle(l)) throw new GeneralError("Unexpected error while populating journey");
+            if (!isJourneyStepVehicle(l)) throw new GeneralError("Unexpected error while populating journey");
             const scheduledRoute = (await this.TBMScheduledRoutesModel.findById(l.route).lean())!;
 
-            // Can only be first label of journey, ignored in `arr` by `slice(1)`
+            // Can only be first journey step of journey, ignored in `arr` by `slice(1)`
             if (typeof l.boardedAt === "string")
               throw new GeneralError("Unexpected error while populating journey");
 

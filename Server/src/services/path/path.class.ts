@@ -6,8 +6,8 @@ import { Coords } from "@bibm/common/geographics";
 import { JobResult } from "@bibm/compute/lib/jobs";
 import resultModelInit, {
   dbComputeResult,
-  isLabelFoot,
-  isLabelVehicle,
+  isJourneyStepFoot,
+  isJourneyStepVehicle,
   isLocationAddress,
   isLocationSNCF,
   isLocationTBM,
@@ -217,52 +217,54 @@ export class PathService<ServiceParams extends PathParams = PathParams>
         const { realShape } = params.query;
 
         return Promise.all(
-          journey.journeys[params.query.index].reduce<Promise<Path>[]>(
-            (acc, label, i, arr) =>
-              isLabelFoot(label)
+          journey.journeys[params.query.index].steps.reduce<Promise<Path>[]>(
+            (acc, journeyStep, i, arr) =>
+              isJourneyStepFoot(journeyStep)
                 ? [
                     ...acc,
                     (async () => {
                       const from =
                         i === 1
-                          ? // First effective label (very first is a base label), source comes from "from"
+                          ? // First effective journey step (very first is a base journey step), source comes from "from"
                             await this.getCoords(journey.from)
                           : // Source comes from "boardedAt", must be a stop id by construction
                             // because it's a string <=> it's source or target
-                            (await this.TBMStopsModel.findById(label.boardedAt as number).lean())?.coords;
+                            (await this.TBMStopsModel.findById(journeyStep.boardedAt as number).lean())
+                              ?.coords;
 
                       if (!from) throw new GeneralError("Unable to retrieve journey foot path source.");
 
                       const to =
                         i === arr.length - 1
-                          ? // Last label, target comes from "to"
+                          ? // Last journey step, target comes from "to"
                             await this.getCoords(journey.to)
                           : // Target comes from "to", must be a stop id by construction
                             // because it's a string <=> it's source or target
-                            (await this.TBMStopsModel.findById(label.transfer.to as number).lean())?.coords;
+                            (await this.TBMStopsModel.findById(journeyStep.transfer.to as number).lean())
+                              ?.coords;
 
                       if (!to) throw new GeneralError("Unable to retrieve journey foot path destination.");
 
                       return await this.makeFootPath(from, to, realShape);
                     })(),
                   ]
-                : isLabelVehicle(label)
+                : isJourneyStepVehicle(journeyStep)
                   ? [
                       ...acc,
                       (async () => {
                         const from =
                           // Must come from stop <=> stop id <=> number
-                          label.boardedAt as number;
+                          journeyStep.boardedAt as number;
 
                         let to: number;
                         if (i < arr.length - 1) {
-                          const nextLabel = arr[i + 1];
-                          if (!("boardedAt" in nextLabel))
+                          const nextJourneyStep = arr[i + 1];
+                          if (!("boardedAt" in nextJourneyStep))
                             throw new GeneralError("Unexpected journey construction.");
 
                           to =
                             // Must go to stop <=> stop id <=> number
-                            nextLabel?.boardedAt as number;
+                            nextJourneyStep?.boardedAt as number;
                         } else {
                           if (!isLocationTBM(journey.to))
                             throw new GeneralError("Unexpected journey construction.");
@@ -270,10 +272,11 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                           to = journey.to.id as number;
                         }
 
-                        if (isDocument(label.route)) throw new GeneralError("Unexpected populated label.");
+                        if (isDocument(journeyStep.route))
+                          throw new GeneralError("Unexpected populated journey step.");
 
                         return await this.get("tbm", {
-                          query: { from, to, line: label.route } satisfies PathParams["query"],
+                          query: { from, to, line: journeyStep.route } satisfies PathParams["query"],
                         } as ServiceParams);
                       })(),
                     ]
