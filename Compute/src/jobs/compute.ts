@@ -4,10 +4,11 @@ import { initDB } from "../utils/mongoose";
 import "core-js/features/reflect";
 
 import ResultModelInit, {
-  JourneyLabelType,
-  LabelBase,
-  LabelFoot,
-  LabelVehicle,
+  JourneyStepType,
+  JourneyStepBase,
+  JourneyStepFoot,
+  JourneyStepVehicle,
+  Journey,
   LocationAddress,
   LocationSNCF,
   LocationTBM,
@@ -19,10 +20,8 @@ import stopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
 import { defaultRAPTORRunSettings } from "@bibm/data/values/RAPTOR/index";
 import { JourneyQuery } from "@bibm/server";
 import { DocumentType } from "@typegoose/typegoose";
-import type { RAPTORRunSettings } from "raptor";
-import SharedRAPTOR from "raptor/lib/shared";
-import { SharedRAPTORData } from "raptor/lib/SharedStructures";
-import { Stop } from "raptor/lib/Structures";
+import { bufferTime, McSharedRAPTOR, RAPTORRunSettings } from "raptor";
+import { SharedRAPTORData, Stop } from "raptor";
 import type { JobFn, JobResult } from ".";
 import type { BaseApplication } from "../base";
 import { withDefaults } from "../utils";
@@ -38,41 +37,54 @@ declare module "." {
   }
 }
 
-type DBJourney = (LabelBase | LabelFoot | LabelVehicle)[];
-function journeyDBFormatter(j: NonNullable<ReturnType<SharedRAPTOR["getBestJourneys"]>[number]>): DBJourney {
-  return j.map((label) => {
-    if ("transfer" in label) {
+type DBJourney = Omit<Journey, "steps"> & {
+  steps: (JourneyStepBase | JourneyStepFoot | JourneyStepVehicle)[];
+};
+function journeyDBFormatter<C extends string[]>(
+  journey: NonNullable<ReturnType<McSharedRAPTOR<C>["getBestJourneys"]>[number]>[number],
+): DBJourney {
+  return {
+    steps: journey.map((js) => {
+      if ("transfer" in js) {
+        return {
+          ...js,
+          time: js.label.time,
+          type: JourneyStepType.Foot,
+        } satisfies JourneyStepFoot;
+      }
+
+      if ("route" in js) {
+        if (typeof js.route.id === "string") throw new Error("Invalid route to retrieve.");
+
+        return {
+          ...js,
+          time: js.label.time,
+          route: js.route.id,
+          type: JourneyStepType.Vehicle,
+        } satisfies JourneyStepVehicle;
+      }
+
       return {
-        ...label,
-        type: JourneyLabelType.Foot,
-      } satisfies LabelFoot;
-    }
-
-    if ("route" in label) {
-      if (typeof label.route.id === "string") throw new Error("Invalid route to retrieve.");
-
-      return {
-        ...label,
-        route: label.route.id,
-        type: JourneyLabelType.Vehicle,
-      } satisfies LabelVehicle;
-    }
-
-    return {
-      ...label,
-      type: JourneyLabelType.Base,
-    } satisfies LabelBase;
-  });
+        ...js,
+        time: js.label.time,
+        type: JourneyStepType.Base,
+      } satisfies JourneyStepBase;
+    }),
+    criteria: journey[0].label.criteria.map(({ name }) => ({
+      name,
+      value: journey.at(-1)!.label.value(name),
+    })),
+  };
 }
 
 // Acts as a factory
 export default function (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) {
   let RAPTORData = SharedRAPTORData.makeFromInternalData(data);
-  let RAPTORInstance = new SharedRAPTOR(RAPTORData);
+  let McRAPTORInstance = new McSharedRAPTOR<["bufferTime"]>(RAPTORData, [bufferTime]);
 
   const updateData = (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) => {
     RAPTORData = SharedRAPTORData.makeFromInternalData(data);
-    RAPTORInstance = new SharedRAPTOR(RAPTORData);
+    McRAPTORInstance = new McSharedRAPTOR<["bufferTime"]>(RAPTORData, [bufferTime]);
   };
 
   const init = (async (app: BaseApplication) => {
@@ -188,7 +200,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
           (cr): cr is JobResult<"computeFp"> => "distance" in cr,
         )?.distance;
         if (!psToPt) throw new Error("Missing pre-computation for ps-to-pt");
-        
+
         if (psToPt < Infinity) {
           // Add foot path directly from ps to pt and vice-versa
           const attachedToPs = attachStops.get(psIdNumber);
@@ -220,76 +232,73 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       // String because stringified by Redis
       const departureDate = new Date(departureDateStr);
 
-      RAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
+      McRAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
 
-      const bestJourneys = RAPTORInstance.getBestJourneys(convertedPt).filter(
-        (j): j is NonNullable<ReturnType<typeof RAPTORInstance.getBestJourneys>[number]> => !!j,
+      const bestJourneys = McRAPTORInstance.getBestJourneys(convertedPt).filter(
+        (roundJourneys): roundJourneys is NonNullable<typeof roundJourneys> => !!roundJourneys,
       );
-      bestJourneys.forEach((j) =>
-        // Optimize journey : delay foot transfers at beginning of journey
-        (
-          j.slice(
-            0,
-            (() => {
-              // Start at second label, count first
-              let count = 1;
-              for (let i = count; i < j.length && "transfer" in j[i]; i++) count++;
+      /* bestJourneys.forEach((roundJourneys) =>
+        roundJourneys.forEach((j) =>
+          // Optimize journey : delay foot transfers at beginning of journey
+          (
+            j.slice(
+              0,
+              (() => {
+                // Start at second label, count first
+                let count = 1;
+                for (let i = count; i < j.length && "transfer" in j[i]; i++) count++;
 
-              return count;
-            })(),
-          ) as Extract<(typeof j)[number], { transfer: unknown }>[]
-        ).reduceRight((_, l, i) => {
-          // With side effect on l
+                return count;
+              })(),
+            ) as Extract<(typeof j)[number], { transfer: unknown }>[]
+          ).reduceRight((_, js, i) => {
+            // With side effect on l
 
-          const nextLabel = j[i + 1];
-          if (!nextLabel) return null;
+            const nextJourneyStep = j[i + 1];
+            if (!nextJourneyStep) return null;
 
-          const computedTime =
-            "transfer" in nextLabel
-              ? nextLabel.time -
-                // m / (m/s) * 1e3 => ms
-                (nextLabel.transfer.length / settings.walkSpeed) * 1e3
-              : "route" in nextLabel
-                ? nextLabel.route.departureTime(
-                    nextLabel.tripIndex,
-                    nextLabel.route.stops.indexOf(nextLabel.boardedAt),
-                  )
-                : // Should never reach here
-                  0;
+            const computedTime =
+              "transfer" in nextJourneyStep
+                ? nextJourneyStep.label.time -
+                  // m / (m/s) * 1e3 => ms
+                  (nextJourneyStep.transfer.length / settings.walkSpeed) * 1e3
+                : "route" in nextJourneyStep
+                  ? nextJourneyStep.route.departureTime(
+                      nextJourneyStep.tripIndex,
+                      nextJourneyStep.route.stops.indexOf(nextJourneyStep.boardedAt),
+                    )
+                  : // Should never reach here
+                    0;
 
-          if (computedTime > l.time) j[i] = { ...l, time: computedTime };
+            if (computedTime > js.label.time) j[i] = { ...js, time: computedTime };
 
-          return null;
-        }, null),
-      );
+            return null;
+          }, null),
+        ),
+       ); */
 
       // Need to do this in a 2nd time to prevent resolving ids earlier than expected
-      const bestJourneysResolved = bestJourneys.map((j) =>
-        j.map(
-          (l) =>
-            ({
-              ...l,
-              ...("boardedAt" in l ? { boardedAt: RAPTORData.stops.get(l.boardedAt)!.id } : {}),
-              ...("transfer" in l
-                ? {
-                    transfer: {
-                      to: RAPTORData.stops.get(l.transfer.to)!.id,
-                      length: l.transfer.length,
-                    },
-                  }
-                : {}),
-            }) as (typeof bestJourneys)[number][number],
+      const bestJourneysResolved = bestJourneys.map((roundJourneys) =>
+        roundJourneys.map((journeys) =>
+          journeys.map(
+            (js) =>
+              ({
+                ...js,
+                ...("boardedAt" in js ? { boardedAt: RAPTORData.stops.get(js.boardedAt)!.id } : {}),
+                ...("transfer" in js
+                  ? {
+                      transfer: {
+                        to: RAPTORData.stops.get(js.transfer.to)!.id,
+                        length: js.transfer.length,
+                      },
+                    }
+                  : {}),
+              }) as (typeof bestJourneys)[number][number][number],
+          ),
         ),
       );
 
       if (!bestJourneysResolved.length) throw new Error("No journey found");
-
-      // Keep only fastest journey & shortest journey
-      const fastestJourney = bestJourneysResolved.at(-1)!;
-      const shortestJourney = bestJourneysResolved.reduce(
-        (acc, v) => (acc.length < v.length ? acc : v),
-        bestJourneysResolved[0],
-      );
 
       const { _id } = await resultModel.create({
         from:
@@ -310,9 +319,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
             : pt.type === TBMEndpoints.Stops
               ? ({ type: LocationType.TBM, id: pt.id } satisfies LocationTBM)
               : ({ type: LocationType.SNCF, id: pt.id } satisfies LocationSNCF),
-        journeys: [fastestJourney, ...(shortestJourney === fastestJourney ? [] : [shortestJourney])].map(
-          (j) => journeyDBFormatter(j),
-        ),
+        journeys: bestJourneysResolved.flat().map((journey) => journeyDBFormatter(journey)),
         settings,
       });
 

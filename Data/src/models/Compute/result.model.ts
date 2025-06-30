@@ -1,7 +1,7 @@
 // ComputeResult-model.js - A mongoose model
 //
 // See http://mongoosejs.com/docs/models.html
-export enum JourneyLabelType {
+export enum JourneyStepType {
   Base = "B",
   Foot = "F",
   Vehicle = "V",
@@ -42,16 +42,16 @@ class RunSettings implements RAPTORRunSettings {
     _id: false,
   },
 })
-export class LabelBase {
+export class JourneyStepBase {
   @prop({ required: true })
-  /** @description Label type */
-  public type!: JourneyLabelType;
+  /** @description JourneyStep type */
+  public type!: JourneyStepType;
 
   @prop({ required: true })
   public time!: number;
 }
 
-class transfer {
+class Transfer {
   @prop({ required: true })
   public to!: stopId | string;
 
@@ -59,19 +59,19 @@ class transfer {
   public length!: number;
 }
 
-export class LabelFoot extends LabelBase {
+export class JourneyStepFoot extends JourneyStepBase {
   @prop({ required: true })
   public boardedAt!: stopId | string;
 
   @prop({ required: true })
-  public transfer!: transfer;
+  public transfer!: Transfer;
 }
 
-export function isLabelFoot(label: LabelBase): label is LabelFoot {
-  return label.type === JourneyLabelType.Foot;
+export function isJourneyStepFoot(label: JourneyStepBase): label is JourneyStepFoot {
+  return label.type === JourneyStepType.Foot;
 }
 
-export class LabelVehicle extends LabelBase {
+export class JourneyStepVehicle extends JourneyStepBase {
   @prop({ required: true })
   public boardedAt!: stopId | string;
 
@@ -82,8 +82,32 @@ export class LabelVehicle extends LabelBase {
   public tripIndex!: number;
 }
 
-export function isLabelVehicle(label: LabelBase): label is LabelVehicle {
-  return label.type === JourneyLabelType.Vehicle;
+export function isJourneyStepVehicle(js: JourneyStepBase): js is JourneyStepVehicle {
+  return js.type === JourneyStepType.Vehicle;
+}
+
+export class Criterion {
+  @prop({ required: true })
+  public name!: string;
+
+  @prop({ required: true })
+  public value!: number;
+}
+
+export class Journey {
+  @prop({
+    required: true,
+    type: [JourneyStepBase],
+    discriminators: () => [
+      { type: JourneyStepBase, value: JourneyStepType.Base },
+      { type: JourneyStepFoot, value: JourneyStepType.Foot },
+      { type: JourneyStepVehicle, value: JourneyStepType.Vehicle },
+    ],
+  })
+  public steps!: JourneyStepBase[];
+
+  @prop({ required: true })
+  public criteria!: Criterion[];
 }
 
 @modelOptions({
@@ -149,16 +173,8 @@ export class dbComputeResult extends TimeStamps {
   @prop({ required: true, type: () => RunSettings })
   settings!: RunSettings;
 
-  @prop({
-    required: true,
-    type: [[LabelBase]],
-    discriminators: () => [
-      { type: LabelBase, value: JourneyLabelType.Base },
-      { type: LabelFoot, value: JourneyLabelType.Foot },
-      { type: LabelVehicle, value: JourneyLabelType.Vehicle },
-    ],
-  })
-  journeys!: LabelBase[][];
+  @prop({ required: true })
+  journeys!: Journey[];
 }
 
 export default function init(db: Connection) {

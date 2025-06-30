@@ -13,7 +13,7 @@ import { DocumentType } from "@typegoose/typegoose";
 import { FilterQuery } from "mongoose";
 import { sep } from "node:path";
 import { parentPort } from "node:worker_threads";
-import { SharedRAPTORData } from "raptor/lib/SharedStructures";
+import { SharedRAPTORData } from "raptor";
 import { preComputeLogger } from ".";
 import { app } from "../../base";
 import { UnpackRefType } from "../../utils";
