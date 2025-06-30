@@ -27,15 +27,15 @@
     "typescript-eslint": "^8.19.0"
   },
   "dependencies": {
+    "@bibm/common": "workspace:*",
+    "@bibm/data": "workspace:*",
+    "@bibm/server": "workspace:*",
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@typegoose/typegoose": "^12.10.1",
     "bullmq": "^5.34.5",
-    "@bibm/common": "workspace:*",
     "core-js": "^3.39.0",
-    "@bibm/data": "workspace:*",
     "mongoose": "^8.9.3",
     "raptor": "github:cata-dev/raptor",
-    "@bibm/server": "workspace:*",
     "shx": "^0.3.4"
   }
 }

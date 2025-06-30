@@ -221,20 +221,13 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
 
       RAPTORData.attachData(Array.from(attachStops.values()), []);
 
-      // Convert to para-specific data (pointers)
-      const convertedPs = typeof psId === "string" ? psId : RAPTORData.stopPointerFromId(psId);
-      if (!convertedPs) throw new Error(`Invalid ps ${psId}`);
-
-      const convertedPt = typeof ptId === "string" ? ptId : RAPTORData.stopPointerFromId(ptId);
-      if (!convertedPt) throw new Error(`Invalid pt ${ptId}`);
-
       const settings = withDefaults(reqSettings, defaultRAPTORRunSettings);
       // String because stringified by Redis
       const departureDate = new Date(departureDateStr);
 
-      McRAPTORInstance.run(convertedPs, convertedPt, departureDate.getTime(), settings);
-
-      const bestJourneys = McRAPTORInstance.getBestJourneys(convertedPt).filter(
+      McRAPTORInstance.run(psId, ptId, departureDate.getTime(), settings);
+      console.log(McRAPTORInstance.getBestJourneys(ptId));
+      const bestJourneys = McRAPTORInstance.getBestJourneys(ptId).filter(
         (roundJourneys): roundJourneys is NonNullable<typeof roundJourneys> => !!roundJourneys,
       );
       /* bestJourneys.forEach((roundJourneys) =>
@@ -277,28 +270,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         ),
        ); */
 
-      // Need to do this in a 2nd time to prevent resolving ids earlier than expected
-      const bestJourneysResolved = bestJourneys.map((roundJourneys) =>
-        roundJourneys.map((journeys) =>
-          journeys.map(
-            (js) =>
-              ({
-                ...js,
-                ...("boardedAt" in js ? { boardedAt: RAPTORData.stops.get(js.boardedAt)!.id } : {}),
-                ...("transfer" in js
-                  ? {
-                      transfer: {
-                        to: RAPTORData.stops.get(js.transfer.to)!.id,
-                        length: js.transfer.length,
-                      },
-                    }
-                  : {}),
-              }) as (typeof bestJourneys)[number][number][number],
-          ),
-        ),
-      );
-
-      if (!bestJourneysResolved.length) throw new Error("No journey found");
+      if (!bestJourneys.length) throw new Error("No journey found");
 
       const { _id } = await resultModel.create({
         from:
@@ -320,7 +292,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
               ? ({ type: LocationType.TBM, id: pt.id } satisfies LocationTBM)
               : ({ type: LocationType.SNCF, id: pt.id } satisfies LocationSNCF),
         departureTime: departureDate,
-        journeys: bestJourneysResolved.flat().map((journey) => journeyDBFormatter(journey)),
+        journeys: bestJourneys.flat().map((journey) => journeyDBFormatter(journey)),
         settings,
       });
 
