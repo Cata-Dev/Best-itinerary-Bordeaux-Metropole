@@ -49,23 +49,23 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
         const rawSchedulesRt: TBM_Schedule_rt[] = await getData("sv_horai_a", [
           "filter=" +
             JSON.stringify({
-              $or: [
-                {
-                  hor_theo: {
-                    $gte: date,
-                  },
-                },
-                {
-                  hor_app: {
-                    $gte: date,
-                  },
-                },
-                {
-                  hor_estime: {
-                    $gte: date,
-                  },
-                },
-              ],
+              // $or: [
+              //   {
+              //     hor_theo: {
+              //       $gte: date,
+              //     },
+              //   },
+              //   {
+              //     hor_app: {
+              //       $gte: date,
+              //     },
+              //   },
+              //   {
+              //     hor_estime: {
+              //       $gte: date,
+              //     },
+              //   },
+              // ],
               etat: {
                 $neq: "REALISE",
               },
