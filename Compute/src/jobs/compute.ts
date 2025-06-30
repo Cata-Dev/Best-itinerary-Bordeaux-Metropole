@@ -226,7 +226,6 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       const departureDate = new Date(departureDateStr);
 
       McRAPTORInstance.run(psId, ptId, departureDate.getTime(), settings);
-      console.log(McRAPTORInstance.getBestJourneys(ptId));
       const bestJourneys = McRAPTORInstance.getBestJourneys(ptId).filter(
         (roundJourneys): roundJourneys is NonNullable<typeof roundJourneys> => !!roundJourneys,
       );
