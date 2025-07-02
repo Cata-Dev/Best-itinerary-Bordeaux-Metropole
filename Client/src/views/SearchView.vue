@@ -156,15 +156,7 @@ async function selectResult(idx: number) {
       <div v-if="currentJourney" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
           :title="`Alternative #${(result as Journey).paths.indexOf(currentJourney) + 1}`"
-          :total-duration="currentJourney.stages.reduce((acc, v) => acc + v.duration, 0)"
-          :total-distance="
-            currentJourney.stages.reduce(
-              (acc, v) => acc + ('details' in v && 'distance' in v.details ? v.details.distance : 0),
-              0,
-            )
-          "
-          :departure="currentJourney.departure"
-          :from="currentJourney.from"
+          :from="(result as Journey).from"
           :path="currentJourney.stages"
           :expanded="true"
           class="mx-auto"
@@ -178,19 +170,11 @@ async function selectResult(idx: number) {
           'fade-in': currentJourney === null,
         }"
       >
-        <template v-for="(r, i) of result.paths" :key="i">
+        <template v-for="(path, i) of result.paths" :key="i">
           <ResultItem
             :title="`Alternative #${i + 1}`"
-            :total-duration="r.stages.reduce((acc, v) => acc + v.duration, 0)"
-            :total-distance="
-              r.stages.reduce(
-                (acc, v) => acc + ('details' in v && 'distance' in v.details ? v.details.distance : 0),
-                0,
-              )
-            "
-            :departure="r.departure"
-            :from="r.from"
-            :path="r.stages"
+            :from="result.from"
+            :path="path.stages"
             class="cursor-pointer"
             @click="selectResult(i)"
           />

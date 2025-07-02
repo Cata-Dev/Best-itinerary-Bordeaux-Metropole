@@ -14,9 +14,6 @@ import { ref } from "vue";
 
 interface Props {
   title: string;
-  totalDuration: number;
-  totalDistance: number;
-  departure: number;
   from: string;
   path: Journey["paths"][number]["stages"];
   expanded?: boolean;
@@ -46,21 +43,13 @@ const uniquesTransports = transports
     times: transports.filter((t2) => t2.provider === t.provider && t2.mode === t.mode).length,
   }));
 
-const departureDate = new Date(props.departure);
-const arrivalDate = new Date(props.departure + props.totalDuration * 1000);
-
-/**
- * @description Compute duration of paths, from 0 to index
- * @param index Index (included) of the last path to compute duration
- */
-function computeDuration(index: number): number {
-  let duration = 0;
-  for (let i = 0; i <= index; i++) {
-    duration += props.path[i].duration;
-  }
-
-  return duration;
-}
+const departure = props.path[0].departure;
+const lastStage = props.path.at(-1)!;
+const arrival = lastStage.departure + lastStage.duration * 1000;
+const totalDistance = props.path.reduce(
+  (acc, v) => acc + ("distance" in v.details ? v.details.distance : 0),
+  0,
+);
 
 const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
 
@@ -137,7 +126,7 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ duration(totalDuration * 1000, false, true) }}
+        {{ duration(arrival - departure, false, true) || "< 1m" }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
@@ -184,20 +173,13 @@ async function displayMap() {
             <span class="text-sm"> ➜ {{ "direction" in p.details ? p.details.direction : "unknonw" }} </span>
           </div>
           <div class="text-sm" :class="{ 'mt-1': p.type === 'SNCF' || p.type === 'TBM' }">
-            {{ duration(p.duration * 1000, false, true) }}
+            {{ duration(p.duration * 1000, false, true) || "< 1m" }}
           </div>
         </div>
         <!-- Second row - content -->
         <!-- First col : time -->
         <div class="">
-          {{
-            formatDate(
-              path[i + 1] && "departure" in path[i + 1].details
-                ? (path[i + 1].details as any).departure
-                : departure + computeDuration(i) * 1000,
-              true,
-            )
-          }}
+          {{ formatDate(path[i + 1]?.departure ?? arrival, true) }}
         </div>
         <!-- Second col : icon (start/bullet/end) -->
         <font-awesome-icon
@@ -247,7 +229,7 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ duration(totalDuration * 1000, false, true) }}
+        {{ duration(arrival - departure, false, true) || "< 1m" }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
@@ -261,10 +243,10 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ formatDate(departureDate, departureDate.getDate() === new Date().getDate()) }}
+        {{ formatDate(departure, new Date(departure).getDate() === new Date().getDate()) }}
       </span>
       <span class="text-right ml-auto">
-        {{ formatDate(arrivalDate, arrivalDate.getDate() === new Date().getDate()) }}
+        {{ formatDate(arrival, new Date(arrival).getDate() === new Date().getDate()) }}
       </span>
       <font-awesome-icon
         icon="flag"

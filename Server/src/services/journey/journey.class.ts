@@ -82,74 +82,74 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
     this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("sourceDBConn"));
   }
 
+  private async populateLocation(loc: dbComputeResult["from"]) {
+    const populatedLoc = isLocationAddress(loc)
+      ? formatAddress((await this.AddressesModel.findById(loc.id).lean())!)
+      : isLocationTBM(loc)
+        ? (await this.TBMStopsModel.findById(loc.id).lean())?.libelle
+        : isLocationSNCF(loc)
+          ? (await this.SNCFStopsModel.findById(loc.id).lean())?.name
+          : undefined;
+
+    if (populatedLoc === undefined) throw new GeneralError("Could not populate journey.");
+
+    return populatedLoc;
+  }
+
   private populateResult(result: dbComputeResult): Promise<Journey["paths"]> {
-    return mapAsync(result.journeys, async (j) => {
-      const from = isLocationAddress(result.from)
-        ? formatAddress((await this.AddressesModel.findById(result.from.id).lean())!)
-        : isLocationTBM(result.from)
-          ? (await this.TBMStopsModel.findById(result.from.id).lean())?.libelle
-          : isLocationSNCF(result.from)
-            ? (await this.SNCFStopsModel.findById(result.from.id).lean())?.name
-            : null;
-
-      if (!from) throw new GeneralError("Could not populate journey.");
-
+    return mapAsync(result.journeys, async (journey) => {
       return {
-        departure: result.departureTime.getTime(),
-        from,
         stages: await mapAsync<
           JourneyStepFoot | JourneyStepVehicle,
           Journey["paths"][number]["stages"][number]
         >(
-          j.steps.slice(1).filter((js): js is JourneyStepFoot | JourneyStepVehicle => {
+          journey.steps.slice(1).filter((js): js is JourneyStepFoot | JourneyStepVehicle => {
             if (!isJourneyStepFoot(js) && !isJourneyStepVehicle(js)) throw new Error("Unexpected journey.");
             return true;
           }),
-          async (l, i, arr) => {
+          async (js, i, arr) => {
             const to =
               i === arr.length - 1
-                ? isLocationAddress(result.to)
-                  ? formatAddress((await this.AddressesModel.findById(result.to.id).lean())!)
-                  : isLocationTBM(result.to)
-                    ? (await this.TBMStopsModel.findById(result.to.id).lean())?.libelle
-                    : isLocationSNCF(result.to)
-                      ? (await this.SNCFStopsModel.findById(result.to.id).lean())?.name
-                      : null
-                : isJourneyStepFoot(l)
-                  ? typeof l.transfer.to === "number"
-                    ? (await this.TBMStopsModel.findById(l.transfer.to).lean())?.libelle
-                    : l.transfer.to
+                ? await this.populateLocation(result.to)
+                : isJourneyStepFoot(js)
+                  ? typeof js.transfer.to === "number"
+                    ? (await this.TBMStopsModel.findById(js.transfer.to).lean())?.libelle
+                    : js.transfer.to
                   : typeof arr[i + 1].boardedAt === "number"
                     ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
                     : arr[i + 1].boardedAt.toString();
 
             if (!to) throw new GeneralError("Could not populate journey.");
 
-            if (isJourneyStepFoot(l)) {
+            if (isJourneyStepFoot(js)) {
               return {
                 to,
                 type: Transport.FOOT,
+                departure:
+                  // Arrival of previous step
+                  journey.steps[i].time,
                 // m / m*s-1 = s
-                duration: l.transfer.length / result.settings.walkSpeed,
+                duration: js.transfer.length / result.settings.walkSpeed,
                 details: {
-                  distance: l.transfer.length,
+                  distance: js.transfer.length,
                 },
               } satisfies Journey["paths"][number]["stages"][number];
             }
 
             // Only remaining possibility
-            if (!isJourneyStepVehicle(l)) throw new GeneralError("Unexpected error while populating journey");
-            const scheduledRoute = (await this.TBMScheduledRoutesModel.findById(l.route).lean())!;
+            if (!isJourneyStepVehicle(js))
+              throw new GeneralError("Unexpected error while populating journey");
+            const scheduledRoute = (await this.TBMScheduledRoutesModel.findById(js.route).lean())!;
 
             // Can only be first journey step of journey, ignored in `arr` by `slice(1)`
-            if (typeof l.boardedAt === "string")
+            if (typeof js.boardedAt === "string")
               throw new GeneralError("Unexpected error while populating journey");
 
             const departureTime = (await this.TBMSchedulesModel.findById(
-              scheduledRoute.trips[l.tripIndex].schedules[scheduledRoute.stops.indexOf(l.boardedAt)],
+              scheduledRoute.trips[js.tripIndex].schedules[scheduledRoute.stops.indexOf(js.boardedAt)],
             ).lean())!.hor_estime.getTime();
 
-            const lineRoute = await this.TBMLinesRoutesModel.findById(l.route, undefined, {
+            const lineRoute = await this.TBMLinesRoutesModel.findById(js.route, undefined, {
               populate: ["rs_sv_ligne_a"],
             });
             if (!lineRoute || !isDocument(lineRoute.rs_sv_ligne_a))
@@ -158,10 +158,10 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             return {
               to,
               type: Transport.TBM,
+              departure: departureTime,
               // Arrival - departure, in sec
-              duration: (l.time - departureTime) / 1e3,
+              duration: (js.time - departureTime) / 1e3,
               details: {
-                departure: departureTime,
                 direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
                 line: lineRoute.rs_sv_ligne_a.libelle,
                 type: lineRoute.vehicule,
@@ -239,6 +239,8 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
       message: "OK",
       lastActualization,
       id: resultId,
+      from: await this.populateLocation(result.from),
+      departure: result.departureTime.getTime(),
       paths: await this.populateResult(result),
     };
   }
@@ -252,6 +254,8 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
       message: "OK",
       lastActualization: 0,
       id,
+      from: await this.populateLocation(result.from),
+      departure: result.departureTime.getTime(),
       paths: await this.populateResult(result),
     };
   }

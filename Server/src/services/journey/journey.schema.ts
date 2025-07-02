@@ -23,7 +23,6 @@ const TBMStageDetails = Type.Object(
     type: TBMVehicles,
     line: Type.String(),
     direction: Type.String(),
-    departure: Type.Integer(),
   },
   { $id: "TBMStageDetails", additionalProperties: false },
 );
@@ -35,7 +34,6 @@ const SNCFStageDetails = Type.Object(
     type: SNCFStageDetailsType,
     line: Type.String(),
     direction: Type.String(),
-    departure: Type.Integer(),
   },
   { $id: "SNCFStageDetails", additionalProperties: false },
 );
@@ -45,11 +43,12 @@ export enum Transport {
   TBM = "TBM",
   SNCF = "SNCF",
 }
-export const transport = Type.Enum(Transport)
+export const transport = Type.Enum(Transport);
 
 const StageBase = Type.Object(
   {
     to: Type.String(),
+    departure: Type.Integer(),
     duration: Type.Integer(),
   },
   { additionalProperties: false },
@@ -95,11 +94,11 @@ export const journeySchema = Type.Object(
     message: Type.String(),
     lastActualization: Type.Integer(),
     id: ObjectIdSchema(),
+    from: Type.String(),
+    departure: Type.Integer(),
     paths: Type.Array(
       Type.Object(
         {
-          departure: Type.Integer(),
-          from: Type.String(),
           stages: Type.Array(Stage, { uniqueItems: true }),
         },
         { additionalProperties: false },
