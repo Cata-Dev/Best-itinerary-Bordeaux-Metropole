@@ -158,6 +158,7 @@ async function selectResult(idx: number) {
           :title="`Alternative #${(result as Journey).paths.indexOf(currentJourney) + 1}`"
           :from="(result as Journey).from"
           :path="currentJourney.stages"
+          :criteria="currentJourney.criteria"
           :expanded="true"
           class="mx-auto"
         />
@@ -175,6 +176,7 @@ async function selectResult(idx: number) {
             :title="`Alternative #${i + 1}`"
             :from="result.from"
             :path="path.stages"
+            :criteria="path.criteria"
             class="cursor-pointer"
             @click="selectResult(i)"
           />

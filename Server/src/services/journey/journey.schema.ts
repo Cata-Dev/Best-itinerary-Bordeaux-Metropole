@@ -100,6 +100,7 @@ export const journeySchema = Type.Object(
       Type.Object(
         {
           stages: Type.Array(Stage, { uniqueItems: true }),
+          criteria: Type.Record(Type.String(), Type.Number()),
         },
         { additionalProperties: false },
       ),

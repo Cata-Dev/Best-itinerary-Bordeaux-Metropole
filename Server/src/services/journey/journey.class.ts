@@ -169,6 +169,10 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             } satisfies Journey["paths"][number]["stages"][number];
           },
         ),
+        criteria: journey.criteria.reduce<Record<string, number>>(
+          (acc, v) => ({ ...acc, [v.name]: v.value }),
+          {},
+        ),
       };
     });
   }

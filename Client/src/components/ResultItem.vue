@@ -16,6 +16,7 @@ interface Props {
   title: string;
   from: string;
   path: Journey["paths"][number]["stages"];
+  criteria: Journey["paths"][number]["criteria"];
   expanded?: boolean;
 }
 
@@ -134,6 +135,22 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
+    <div v-if="'bufferTime' in criteria" class="flex w-full mt-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        class="fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
+      >
+        <!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. -->
+        <path
+          d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
+        />
+      </svg>
+      <span class="text-left">
+        {{ duration(criteria.bufferTime, false, true) || "< 1m" }}
+      </span>
+    </div>
+
     <div
       class="grid gap-3 grid-cols-3-auto justify-items-center items-center mt-3"
       :class="`grid-rows-${path.length * 2 + 1}`"
@@ -236,6 +253,21 @@ async function displayMap() {
         icon="road"
         class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
+    </div>
+    <div v-if="'bufferTime' in criteria" class="flex w-full mt-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        class="fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
+      >
+        <!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. -->
+        <path
+          d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
+        />
+      </svg>
+      <span class="text-left">
+        {{ duration(criteria.bufferTime, false, true) || "< 1m" }}
+      </span>
     </div>
     <div class="flex w-full mt-2">
       <font-awesome-icon
