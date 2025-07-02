@@ -58,6 +58,19 @@ function normalizeSearchQuery(): JourneyQuery | null {
   } satisfies JourneyQuery;
 }
 
+function treatFetchedResult(fetchedResult: Journey) {
+  return {
+    ...fetchedResult,
+    // Sort paths
+    paths: fetchedResult.paths.sort(
+      (a, b) =>
+        a.stages.at(-1)!.departure +
+        a.stages.at(-1)!.duration * 1000 -
+        (b.stages.at(-1)!.departure + b.stages.at(-1)!.duration * 1000),
+    ),
+  };
+}
+
 /**
  * @description Fetch new result for current query
  */
@@ -75,7 +88,7 @@ async function fetchResult() {
     const r = await client.service("journey").find({ query });
     if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
 
-    result.value = r;
+    result.value = treatFetchedResult(r);
     // To insert result id
     updateRoute();
 
@@ -101,7 +114,7 @@ async function fetchOldResult(id: string) {
     const r = await client.service("journey").get(id);
     if (r.code != 200) throw new Error(`Unable to retrieve old result, ${r}.`);
 
-    result.value = r;
+    result.value = treatFetchedResult(r);
     // if (currentJourney.value) currentJourney.value = null;
 
     status.value.state = SearchResultStatus.SUCCESS;
