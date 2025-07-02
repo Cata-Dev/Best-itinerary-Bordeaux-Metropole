@@ -13,7 +13,7 @@ import { DocumentType } from "@typegoose/typegoose";
 import { FilterQuery } from "mongoose";
 import { sep } from "node:path";
 import { parentPort } from "node:worker_threads";
-import { SharedRAPTORData } from "raptor";
+import { MAX_SAFE_TIMESTAMP, SharedRAPTORData } from "raptor";
 import { preComputeLogger } from ".";
 import { app } from "../../base";
 import { UnpackRefType } from "../../utils";
@@ -131,8 +131,8 @@ if (parentPort) {
               times: schedules.map((schedule) =>
                 "hor_estime" in schedule
                   ? ([
-                      schedule.hor_estime.getTime() || SharedRAPTORData.MAX_SAFE_TIMESTAMP,
-                      schedule.hor_estime.getTime() || SharedRAPTORData.MAX_SAFE_TIMESTAMP,
+                      schedule.hor_estime.getTime() || MAX_SAFE_TIMESTAMP,
+                      schedule.hor_estime.getTime() || MAX_SAFE_TIMESTAMP,
                     ] satisfies [unknown, unknown])
                   : ([Infinity, Infinity] satisfies [unknown, unknown]),
               ),
