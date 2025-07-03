@@ -52,7 +52,6 @@ let multiLineStringsLayer = makeMLSLayer(props.multiLineStrings);
 watch(
   () => props.multiLineStrings,
   (multiLineStrings) => {
-    console.log(multiLineStrings.data, multiLineStrings.style);
     map.removeLayer(multiLineStringsLayer);
     map.addLayer((multiLineStringsLayer = makeMLSLayer(multiLineStrings)));
 
