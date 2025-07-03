@@ -95,7 +95,7 @@ const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature
       styles.push(
         new Style({
           stroke: new Stroke({
-            width: 3,
+            width: 4,
             // Should be TBM line color
             color: [200, 0, 0],
           }),
