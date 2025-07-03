@@ -269,7 +269,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         ),
        ); */
 
-      if (!bestJourneys.length) throw new Error("No journey found");
+      if (bestJourneys.every((journeys) => journeys.length === 0)) throw new Error("No journey found");
 
       const { _id } = await resultModel.create({
         from:
