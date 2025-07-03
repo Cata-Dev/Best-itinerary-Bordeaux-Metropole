@@ -8,8 +8,13 @@ import { currentJourney, fetchFootpaths, result } from "@/store/api";
 import { duration } from "@bibm/common/time";
 import type { Journey } from "@bibm/server";
 import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
+import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
+import { MultiLineString, Point } from "ol/geom";
+import Fill from "ol/style/Fill";
+import Icon from "ol/style/Icon";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
+import Text from "ol/style/Text";
 import { ref } from "vue";
 
 interface Props {
@@ -54,30 +59,76 @@ const totalDistance = props.path.reduce(
 
 const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
 
+function getClosesPointToMiddle(geom: MultiLineString) {
+  const geomExtent = geom.getExtent();
+  return new Point(
+    geom.getClosestPoint([(geomExtent[0] + geomExtent[2]) / 2, (geomExtent[1] + geomExtent[3]) / 2]),
+  );
+}
+
 const paths = ref<VecMapProps["multiLineStrings"]["data"]>([]);
 const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature) => {
+  const styles: Style[] = [];
   switch (feature.getProperties().props.type as ServerTransport) {
     case "FOOT":
-      return new Style({
-        stroke: new Stroke({
-          width: 5,
-          color: [0, 0, 0],
-          lineDash: [10],
+      styles.push(
+        new Style({
+          stroke: new Stroke({
+            width: 5,
+            color: [0, 0, 0],
+            lineDash: [10],
+          }),
         }),
-      });
+        new Style({
+          geometry: getClosesPointToMiddle(feature.getGeometry() as MultiLineString),
+          image: new Icon({
+            opacity: 1,
+            src:
+              "data:image/svg+xml;utf8," +
+              `<svg width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faPersonWalking.icon[0]} ${faPersonWalking.icon[1]}"><path d="${faPersonWalking.icon[4]}"/></svg>`,
+          }),
+        }),
+      );
+      break;
 
     case "TBM":
-      return new Style({
-        stroke: new Stroke({
-          width: 3,
-          // Should be TBM line color
-          color: [200, 0, 0],
+      styles.push(
+        new Style({
+          stroke: new Stroke({
+            width: 3,
+            // Should be TBM line color
+            color: [200, 0, 0],
+          }),
         }),
-      });
-
-    default:
-      return undefined;
+      );
+      if (
+        "stageIdx" in feature.getProperties().props &&
+        "line" in currentJourney.value!.stages[feature.getProperties().props.stageIdx].details
+      )
+        styles.push(
+          new Style({
+            geometry: getClosesPointToMiddle(feature.getGeometry() as MultiLineString),
+            text: new Text({
+              text: `${(currentJourney.value!.stages[feature.getProperties().props.stageIdx].details as Extract<Journey["paths"][number]["stages"][number]["details"], { line: unknown }>).line}`,
+              fill: new Fill({
+                // Text color
+                color: "black",
+              }),
+              padding: [3, 3, 3, 3],
+              overflow: true,
+              backgroundFill: new Fill({
+                // Background color
+                color: [200, 0, 0],
+              }),
+              placement: "point",
+              textBaseline: "ideographic",
+            }),
+          }),
+        );
+      break;
   }
+
+  return styles;
 };
 
 async function displayMap() {
@@ -92,12 +143,12 @@ async function displayMap() {
     ...(await fetchFootpaths(result.value.id, result.value.paths.indexOf(currentJourney.value))).reduce<
       VecMapProps["multiLineStrings"]["data"]
     >(
-      (acc, v) =>
+      (acc, v, i) =>
         v.steps[0][0] instanceof Array
           ? acc.concat([
               {
                 coords: v.steps as VecMapProps["multiLineStrings"]["data"][number]["coords"],
-                props: { type: v.type },
+                props: { type: v.type, stageIdx: i, ...("line" in v ? { line: v.line } : {}) },
               },
             ])
           : acc,
@@ -131,7 +182,7 @@ async function displayMap() {
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
-        icon="road"
+        icon="person-walking"
         class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
@@ -250,7 +301,7 @@ async function displayMap() {
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
-        icon="road"
+        icon="person-walking"
         class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
