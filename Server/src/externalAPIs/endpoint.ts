@@ -149,7 +149,7 @@ class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents>
         await parallelHooks(...this.hooks)(this);
 
       if (result) this.deferredFetch.resolve(true);
-      else this.deferredFetch.reject(false);
+      else this.deferredFetch.reject(`Fetch failed for ${this.name}`);
 
       super.emit("fetched", result);
     }
