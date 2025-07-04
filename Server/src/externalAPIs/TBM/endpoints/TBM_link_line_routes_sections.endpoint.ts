@@ -21,7 +21,8 @@ export default async (
   return [
     await new Endpoint(
       TBMEndpoints.LinkLineRoutesSections,
-      24 * 3600,
+      // Manual fetches only, triggered when related endpoints are refreshed
+      Infinity,
       async () => {
         const rawLinkLineRoutesSections: TBM_LinkLineRoutesSections[] =
           await getRelationData("SV_TRONC_L/SV_CHEM_L");
