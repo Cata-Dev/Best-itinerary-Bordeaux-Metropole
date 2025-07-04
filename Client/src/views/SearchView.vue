@@ -16,8 +16,8 @@ import {
   status,
   updateQuery,
   updateRoute,
+  type Journey,
 } from "@/store/api";
-import type { Journey } from "@bibm/server";
 import { onMounted, ref } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
 
@@ -55,10 +55,10 @@ if (client.io?.io)
 onMounted(updateQuery);
 onBeforeRouteUpdate(updateQuery);
 
-async function selectResult(idx: number) {
+async function selectResult(path: Journey["paths"][number][number]) {
   if (!result.value) return;
 
-  currentJourney.value = result.value.paths[idx];
+  currentJourney.value = path;
 
   updateRoute();
 }
@@ -155,9 +155,9 @@ async function selectResult(idx: number) {
       </div>
       <div v-if="currentJourney" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
-          :title="`Alternative #${(result as Journey).paths.indexOf(currentJourney) + 1}`"
+          :title="`Alternative #${currentJourney.idx + 1}`"
           :from="(result as Journey).from"
-          :path="currentJourney.stages"
+          :path="currentJourney"
           :criteria="currentJourney.criteria"
           :expanded="true"
           class="mx-auto"
@@ -165,21 +165,29 @@ async function selectResult(idx: number) {
       </div>
       <div
         v-else-if="result && typeof result === 'object'"
-        class="grid gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        class="grid items-center gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         :class="{
           'wait-fade-in': currentJourney === undefined,
           'fade-in': currentJourney === null,
         }"
       >
-        <template v-for="(path, i) of result.paths" :key="i">
-          <ResultItem
-            :title="`Alternative #${i + 1}`"
-            :from="result.from"
-            :path="path.stages"
-            :criteria="path.criteria"
-            class="cursor-pointer"
-            @click="selectResult(i)"
-          />
+        <template v-for="(paths, i) of result.paths" :key="i">
+          <div class="grid">
+            <template v-for="(path, j) of paths" :key="j">
+              <ResultItem
+                :title="`Alternative #${path.idx + 1}`"
+                :from="result.from"
+                :path="path"
+                class="col-start-1 col-end-1 row-start-1 row-end-1 h-fit cursor-pointer transition-transform duration-300"
+                :class="[
+                  `scale-${100 - 5 * Math.min(paths.length - 1 - j, 6)}`,
+                  ...(j > 0 ? [`mt-${8 * j}`] : []),
+                  ...(j < paths.length - 1 ? ['hover:-translate-y-10', 'hover:scale-105', 'hover:z-50'] : []),
+                ]"
+                @click="selectResult(path)"
+              />
+            </template>
+          </div>
         </template>
       </div>
       <div v-else class="grid gap-2 row-start-3" />
@@ -199,6 +207,9 @@ async function selectResult(idx: number) {
 </template>
 
 <style>
+@source inline("scale-{100,95,90,85,80,75,70}");
+@source inline("mt-{100,95,90,85,80,75,70}");
+
 input {
   @apply bg-transparent;
 }

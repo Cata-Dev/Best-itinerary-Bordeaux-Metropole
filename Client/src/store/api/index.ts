@@ -12,7 +12,7 @@ import {
   type QuerySettings,
   type TransportProvider,
 } from "@/store";
-import type { Journey, JourneyQuery, PathQuery } from "@bibm/server";
+import type { Journey as APIJourney, JourneyQuery, PathQuery } from "@bibm/server";
 import { ref } from "vue";
 import { useRoute, type RouteLocationNormalized, type RouteLocationRaw } from "vue-router";
 
@@ -38,8 +38,10 @@ const status = ref<{ state: SearchResultStatus; previousSearch: JourneyQuery | s
   previousSearch: null,
 });
 
+type Journey = Omit<APIJourney, "paths"> & { paths: (APIJourney["paths"][number] & { idx: number })[][] };
+
 const result = ref<Journey | null>(null);
-const currentJourney = ref<Journey["paths"][number] | null>(null);
+const currentJourney = ref<Journey["paths"][number][number] | null>(null);
 
 function normalizeSearchQuery(): JourneyQuery | null {
   if (!source.value) return null;
@@ -59,6 +61,34 @@ function normalizeSearchQuery(): JourneyQuery | null {
 }
 
 /**
+ * Generates an identifier unique for every taken route (not trips), hence identical for two paths with same routes but different trips
+ */
+function pathSlug(path: APIJourney["paths"][number]) {
+  return path.stages.reduce(
+    (acc, stage) =>
+      acc +
+      `${stage.type}-${"type" in stage.details ? `${stage.details.type}-${stage.details.line}-${stage.details.direction}` : stage.details.distance}-${stage.to}`,
+    "",
+  );
+}
+
+function treatFetchedResult(fetchedResult: APIJourney): Journey {
+  return {
+    ...fetchedResult,
+    // Groups paths by slugs
+    paths: Object.values(
+      // Dismiss slugs
+      fetchedResult.paths.reduce<Record<string, Journey["paths"][number]>>((acc, path, idx) => {
+        const slug = pathSlug(path);
+        acc[slug] = [{ ...path, idx }, ...(acc[slug] ?? [])];
+
+        return acc;
+      }, {}),
+    ),
+  };
+}
+
+/**
  * @description Fetch new result for current query
  */
 async function fetchResult() {
@@ -75,7 +105,7 @@ async function fetchResult() {
     const r = await client.service("journey").find({ query });
     if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
 
-    result.value = r;
+    result.value = treatFetchedResult(r);
     // To insert result id
     updateRoute();
 
@@ -101,7 +131,7 @@ async function fetchOldResult(id: string) {
     const r = await client.service("journey").get(id);
     if (r.code != 200) throw new Error(`Unable to retrieve old result, ${r}.`);
 
-    result.value = r;
+    result.value = treatFetchedResult(r);
     // if (currentJourney.value) currentJourney.value = null;
 
     status.value.state = SearchResultStatus.SUCCESS;
@@ -180,7 +210,8 @@ async function updateQuery(to = useRoute()) {
   if (to.hash) {
     if (result.value) {
       const idx = parseInt(to.hash.substring(1));
-      if (!isNaN(idx) && idx < result.value.paths.length) currentJourney.value = result.value.paths[idx];
+      const path = result.value.paths.flat().find((path) => path.idx === idx);
+      if (path) currentJourney.value = path;
     }
   } else if (currentJourney.value) currentJourney.value = null;
 }
@@ -208,10 +239,7 @@ async function updateRoute() {
 
   if (result.value) newRoute.query.rId = result.value.id as string;
 
-  if (currentJourney.value) {
-    const idx = result.value?.paths.findIndex((p) => p === currentJourney.value) ?? -1;
-    if (idx >= 0) newRoute.hash = `#${idx}`;
-  }
+  if (currentJourney.value) newRoute.hash = `#${currentJourney.value.idx}`;
 
   return await router.push(newRoute);
 }
@@ -230,3 +258,5 @@ export {
   updateQuery,
   updateRoute,
 };
+
+export type { Journey };

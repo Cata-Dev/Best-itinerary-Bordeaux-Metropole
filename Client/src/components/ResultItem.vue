@@ -4,9 +4,8 @@ import TransportBadge from "@/components/TransportBadge.vue";
 import type { Props as VecMapProps } from "@/components/VecMap.vue";
 import VecMap from "@/components/VecMap.vue";
 import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
-import { currentJourney, fetchFootpaths, result } from "@/store/api";
+import { currentJourney, fetchFootpaths, result, type Journey } from "@/store/api";
 import { duration } from "@bibm/common/time";
-import type { Journey } from "@bibm/server";
 import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
 import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
 import { MultiLineString, Point } from "ol/geom";
@@ -15,13 +14,12 @@ import Icon from "ol/style/Icon";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import Text from "ol/style/Text";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 interface Props {
   title: string;
   from: string;
-  path: Journey["paths"][number]["stages"];
-  criteria: Journey["paths"][number]["criteria"];
+  path: Journey["paths"][number][number];
   expanded?: boolean;
 }
 
@@ -34,27 +32,30 @@ interface Transport {
   mode?: TransportMode;
 }
 
-const transports: Transport[] = props.path.map((p) => ({
-  provider: p.type,
-  mode: "type" in p.details ? p.details.type : undefined,
-}));
+const transports = computed<Transport[]>(() =>
+  props.path.stages.map((p) => ({
+    provider: p.type,
+    mode: "type" in p.details ? p.details.type : undefined,
+  })),
+);
 
-const uniquesTransports = transports
-  .filter(
-    (v, i, arr) =>
-      arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode) as Transport) === i,
-  )
-  .map((t) => ({
-    ...t,
-    times: transports.filter((t2) => t2.provider === t.provider && t2.mode === t.mode).length,
-  }));
+const uniquesTransports = computed(() =>
+  transports.value
+    .filter(
+      (v, i, arr) =>
+        arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode) as Transport) === i,
+    )
+    .map((t) => ({
+      ...t,
+      times: transports.value.filter((t2) => t2.provider === t.provider && t2.mode === t.mode).length,
+    })),
+);
 
-const departure = props.path[0].departure;
-const lastStage = props.path.at(-1)!;
-const arrival = lastStage.departure + lastStage.duration * 1000;
-const totalDistance = props.path.reduce(
-  (acc, v) => acc + ("distance" in v.details ? v.details.distance : 0),
-  0,
+const departure = computed(() => props.path.stages[0].departure);
+const lastStage = computed(() => props.path.stages.at(-1)!);
+const arrival = computed(() => lastStage.value.departure + lastStage.value.duration * 1000);
+const totalDistance = computed(() =>
+  props.path.stages.reduce((acc, v) => acc + ("distance" in v.details ? v.details.distance : 0), 0),
 );
 
 const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
@@ -109,7 +110,7 @@ const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature
           new Style({
             geometry: getClosesPointToMiddle(feature.getGeometry() as MultiLineString),
             text: new Text({
-              text: `${(currentJourney.value!.stages[feature.getProperties().props.stageIdx].details as Extract<Journey["paths"][number]["stages"][number]["details"], { line: unknown }>).line}`,
+              text: `${(currentJourney.value!.stages[feature.getProperties().props.stageIdx].details as Extract<Journey["paths"][number][number]["stages"][number]["details"], { line: unknown }>).line}`,
               fill: new Fill({
                 // Text color
                 color: "black",
@@ -140,7 +141,7 @@ async function displayMap() {
   paths.value.splice(
     0,
     paths.value.length,
-    ...(await fetchFootpaths(result.value.id, result.value.paths.indexOf(currentJourney.value))).reduce<
+    ...(await fetchFootpaths(result.value.id, currentJourney.value.idx)).reduce<
       VecMapProps["multiLineStrings"]["data"]
     >(
       (acc, v, i) =>
@@ -186,7 +187,7 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
-    <div v-if="'bufferTime' in criteria" class="flex w-full mt-2">
+    <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
@@ -198,13 +199,13 @@ async function displayMap() {
         />
       </svg>
       <span class="text-left">
-        {{ duration(criteria.bufferTime, false, true) || "< 1m" }}
+        {{ duration(path.criteria.bufferTime, false, true) || "< 1m" }}
       </span>
     </div>
 
     <div
       class="grid gap-3 grid-cols-3-auto justify-items-center items-center mt-3"
-      :class="`grid-rows-${path.length * 2 + 1}`"
+      :class="`grid-rows-${path.stages.length * 2 + 1}`"
     >
       <!-- First first row - departure -->
       <div class="">
@@ -221,7 +222,7 @@ async function displayMap() {
         </span>
         <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
       </div>
-      <template v-for="(p, i) in path" :key="i">
+      <template v-for="(p, i) in path.stages" :key="i">
         <!-- First row - header -->
         <!-- First col : mode icon -->
         <font-awesome-icon
@@ -247,11 +248,11 @@ async function displayMap() {
         <!-- Second row - content -->
         <!-- First col : time -->
         <div class="">
-          {{ formatDate(path[i + 1]?.departure ?? arrival, true) }}
+          {{ formatDate(path.stages[i + 1]?.departure ?? arrival, true) }}
         </div>
         <!-- Second col : icon (start/bullet/end) -->
         <font-awesome-icon
-          v-if="i === path.length - 1"
+          v-if="i === path.stages.length - 1"
           icon="flag"
           class="text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
@@ -305,7 +306,7 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
-    <div v-if="'bufferTime' in criteria" class="flex w-full mt-2">
+    <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
@@ -317,7 +318,7 @@ async function displayMap() {
         />
       </svg>
       <span class="text-left">
-        {{ duration(criteria.bufferTime, false, true) || "< 1m" }}
+        {{ duration(path.criteria.bufferTime, false, true) || "< 1m" }}
       </span>
     </div>
     <div class="flex w-full mt-2">
