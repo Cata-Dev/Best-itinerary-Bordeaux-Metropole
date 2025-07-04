@@ -75,7 +75,7 @@ defineExpose({
       ref="inputElem"
       v-model="input"
       type="text"
-      class="w-full flex-grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
+      class="w-full grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
       :placeholder="placeholder"
       @input="newInput()"
       @focus="showDatalist = true"
@@ -88,7 +88,7 @@ defineExpose({
       <div
         v-for="(e, i) in datalist"
         :key="i"
-        class="px-1 py-2 text-sm cursor-pointer hover:bg-bg-light-contrasted hover:dark:bg-bg-dark-contrasted"
+        class="px-1 py-2 text-sm cursor-pointer hover:bg-bg-light-contrasted dark:hover:bg-bg-dark-contrasted"
         @mousedown="forceInput(e.alias)"
       >
         <span class="ml-1 mr-2">

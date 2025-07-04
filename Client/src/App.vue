@@ -24,7 +24,7 @@ window.onresize = () => {
 <template>
   <div id="mainWrapper" class="flex flex-col w-screen h-real-screen justify-between">
     <main
-      class="mb-auto bg-gradient-to-r bg-size-200 bg-pos-0 dark:bg-pos-100 transition-all duration-200 from-blue-400 via-indigo-500 to-blue-800 h-full overflow-x-auto"
+      class="mb-auto bg-linear-to-r bg-size-200 bg-pos-0 dark:bg-pos-100 transition-all duration-200 from-blue-400 via-indigo-500 to-blue-800 h-full overflow-x-auto"
       :class="{ dark: theme === 'dark' }"
     >
       <router-view />
@@ -42,7 +42,7 @@ window.onresize = () => {
   height: calc(var(--vh, 1vh) * 100);
 }
 
-@tailwind base;
+@reference "./index.css";
 
 @layer base {
   /* Width */

@@ -135,7 +135,7 @@ const popUp = (msg: string) => alert(msg);
       v-model="model"
       :placeholder="placeholder"
       :datalist="datalist"
-      class="px-2 flex-grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
+      class="px-2 grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
       @input="refreshSuggestions($event)"
     />
     <span class="flex mr-1 items-center">

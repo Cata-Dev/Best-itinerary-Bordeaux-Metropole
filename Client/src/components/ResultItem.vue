@@ -216,11 +216,11 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
       <div class="flex items-center w-full">
-        <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
+        <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
         <span class="mx-2 text-center text-lg text-semibold">
           {{ from }}
         </span>
-        <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
+        <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
       </div>
       <template v-for="(p, i) in path.stages" :key="i">
         <!-- First row - header -->
@@ -259,11 +259,11 @@ async function displayMap() {
         <div v-else class="bullet bg-text-light-primary dark:bg-text-dark-primary" />
         <!-- Third col : position -->
         <div class="flex items-center w-full">
-          <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
+          <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
           <span class="mx-2 text-center text-lg text-semibold">
             {{ p.to }}
           </span>
-          <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
+          <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
         </div>
       </template>
     </div>
@@ -351,6 +351,8 @@ async function displayMap() {
 </template>
 
 <style scoped>
+@reference "../index.css";
+
 .bullet {
   width: 8px;
   height: 8px;

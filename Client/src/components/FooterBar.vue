@@ -33,7 +33,7 @@ APIRefresh.promise
     </p>
     <button
       class="flex duration-700 justify-self-end my-1 mr-2 sm:mr-4"
-      :class="{ 'rotate-[360deg]': theme === 'light' }"
+      :class="{ 'rotate-360': theme === 'light' }"
       @click="toggleDarkMode"
     >
       <font-awesome-icon :icon="theme === 'light' ? 'moon' : 'sun'" class="text-xl" />

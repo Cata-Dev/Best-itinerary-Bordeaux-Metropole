@@ -219,12 +219,12 @@ button:focus {
   @apply outline-0;
 }
 
-.loading-wrapper {
-  @apply opacity-70 !important;
-  @apply cursor-wait !important;
+@utility loading-wrapper {
+  @apply opacity-70!;
+  @apply cursor-wait!;
 }
 
-.loading {
+@utility loading {
   pointer-events: none !important;
 }
 

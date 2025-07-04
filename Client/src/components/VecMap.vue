@@ -84,5 +84,5 @@ onMounted(() => map.setTarget("map"));
 </template>
 
 <style>
-@import "/node_modules/ol/ol.css";
+@import "../../node_modules/ol/ol.css";
 </style>
