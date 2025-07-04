@@ -4,7 +4,8 @@ import TBM_LinkLineRoutesSections, {
 } from "@bibm/data/models/TBM/TBM_link_line_routes_sections.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
+import { logger } from "../../../logger";
+import { makeConcurrentHook } from "../../concurrentHook";
 import { Endpoint } from "../../endpoint";
 
 export type TBM_LinkLineRoutesSections = BaseTBM<{
@@ -52,3 +53,9 @@ export default async (
     ).init(),
   ] as const;
 };
+
+export const makeLinkLineRoutesHook = makeConcurrentHook((app) =>
+  app.externalAPIs.TBM.endpoints[TBMEndpoints.LinkLineRoutesSections]
+    .fetch(true, app.get("debug"))
+    .catch((err) => logger.warn(err)),
+);

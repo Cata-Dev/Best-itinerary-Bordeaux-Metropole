@@ -6,6 +6,7 @@ import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
+import { makeLinkLineRoutesHook } from "./TBM_link_line_routes_sections.endpoint";
 
 export type TBM_RouteSections = BaseTBM<{
   gid: string;
@@ -46,6 +47,8 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
         return true;
       },
       RouteSection,
-    ).init(),
+    )
+      .registerHook(makeLinkLineRoutesHook(app, TBMEndpoints.RouteSections))
+      .init(),
   ] as const;
 };
