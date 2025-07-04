@@ -13,8 +13,7 @@ import { HydratedDocument } from "mongoose";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
-import { makeConcurrentHook } from "../../concurrentHook";
-import { Endpoint } from "../../endpoint";
+import { Endpoint, makeConcurrentHook } from "../../endpoint";
 
 export default async (
   app: Application,
@@ -136,8 +135,11 @@ export default async (
   ] as const;
 };
 
-export const makeSRHook = makeConcurrentHook((app) =>
-  app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes]
-    .fetch(true, app.get("debug"))
-    .catch((err) => logger.warn(err)),
+export const makeSRHook = makeConcurrentHook<
+  TBMEndpoints.Lines_routes | TBMEndpoints.Schedules_rt | TBMEndpoints.Stops | TBMEndpoints.Trips
+>(
+  (app) =>
+    void app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes]
+      .fetch(true, app.get("debug"))
+      .catch((err) => logger.warn(err)),
 );

@@ -5,8 +5,7 @@ import TBM_LinkLineRoutesSections, {
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { makeConcurrentHook } from "../../concurrentHook";
-import { Endpoint } from "../../endpoint";
+import { Endpoint, makeConcurrentHook } from "../../endpoint";
 
 export type TBM_LinkLineRoutesSections = BaseTBM<{
   rs_sv_chem_l: number;
@@ -54,8 +53,9 @@ export default async (
   ] as const;
 };
 
-export const makeLinkLineRoutesHook = makeConcurrentHook((app) =>
-  app.externalAPIs.TBM.endpoints[TBMEndpoints.LinkLineRoutesSections]
-    .fetch(true, app.get("debug"))
-    .catch((err) => logger.warn(err)),
+export const makeLinkLineRoutesHook = makeConcurrentHook(
+  (app) =>
+    void app.externalAPIs.TBM.endpoints[TBMEndpoints.LinkLineRoutesSections]
+      .fetch(true, app.get("debug"))
+      .catch((err) => logger.warn(err)),
 );

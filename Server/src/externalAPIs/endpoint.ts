@@ -2,6 +2,7 @@ import { Deferred } from "@bibm/common/async";
 import { ReturnModelType } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { EndpointName, ProviderModel } from ".";
+import { Application } from "../declarations";
 import { logger } from "../logger";
 import { TypedEventEmitter } from "../utils/TypedEmitter";
 
@@ -17,14 +18,62 @@ function hasUpdatedAt(doc: unknown): doc is { updatedAt: Date } {
   return typeof doc === "object" && doc !== null && "updatedAt" in doc && doc.updatedAt instanceof Date;
 }
 
-type Hook<N extends EndpointName> = (endpoint: Endpoint<N>) => Promise<void> | void;
+type Hook<N extends EndpointName> = (endpointName: N) => Promise<void> | void;
 
-async function runHook<N extends EndpointName>(hook: Hook<N>, endpoint: Endpoint<N>) {
+async function runHook<N extends EndpointName>(hook: Hook<N>, endpointName: N) {
   try {
-    await hook(endpoint);
+    await hook(endpointName);
   } catch (err) {
     logger.warn(`Error during fetched hook execution "${hook.name || "anonymous"}"`, err);
   }
+}
+
+function shouldDefer<N extends EndpointName>(
+  app: Application,
+  concurrentEndpoints: EndpointName[],
+  candidateEndpoint: N,
+) {
+  return concurrentEndpoints.find((e) => e != candidateEndpoint && app.externalAPIs.endpoints[e].fetching);
+}
+
+/**
+ * Make a concurrent hook, i.e. a hook that executes when no other Endpoint that registered is fetching
+ * @param hook The actual hook function to be awaited
+ * @returns A register function to apply this hook to an Endpoint
+ */
+function makeConcurrentHook<NS extends EndpointName>(
+  hook: (app: Application, ...params: Parameters<Hook<NS>>) => ReturnType<Hook<NS>>,
+) {
+  const concurrentEndpoints: NS[] = [];
+  let deferred = false;
+
+  return <N extends NS>(app: Application, registeringEndpoint: N): Hook<N> => {
+    concurrentEndpoints.push(registeringEndpoint);
+
+    const artificialHook = (endpointName: N) => {
+      if (shouldDefer(app, concurrentEndpoints, endpointName)) {
+        deferred = true;
+        return;
+      }
+
+      deferred = false;
+      return hook(app, endpointName);
+    };
+
+    app.externalAPIs.endpoints[registeringEndpoint].on("fetched", (result) => {
+      if (result === true) return;
+
+      // Fetch failed
+      if (deferred && !shouldDefer(app, concurrentEndpoints, registeringEndpoint)) {
+        // (deferred === true <=> one concurrent endpoint fetch succeeded)
+        // But if it was the last running, run anyway
+        deferred = false;
+        void runHook(artificialHook, registeringEndpoint);
+      }
+    });
+
+    return artificialHook;
+  };
 }
 
 /**
@@ -146,7 +195,7 @@ class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents>
 
       if (result)
         // Run hooks
-        await parallelHooks(...this.hooks)(this);
+        await parallelHooks(...this.hooks)(this.name);
 
       if (result) this.deferredFetch.resolve(true);
       else this.deferredFetch.reject(`Fetch failed for ${this.name}`);
@@ -158,4 +207,4 @@ class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents>
   }
 }
 
-export { Endpoint, parallelHooks, sequenceHooks };
+export { Endpoint, makeConcurrentHook, parallelHooks, sequenceHooks };
