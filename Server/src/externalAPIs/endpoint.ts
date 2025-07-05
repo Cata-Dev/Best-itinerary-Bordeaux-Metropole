@@ -19,6 +19,7 @@ function hasUpdatedAt(doc: unknown): doc is { updatedAt: Date } {
 }
 
 type Hook<N extends EndpointName> = (endpointName: N) => Promise<void> | void;
+type HookConstructor<N extends EndpointName> = (endpoint: Endpoint<N>) => Hook<N>;
 
 async function runHook<N extends EndpointName>(hook: Hook<N>, endpointName: N) {
   try {
@@ -47,7 +48,7 @@ function makeConcurrentHook<NS extends EndpointName>(
   const concurrentEndpoints: NS[] = [];
   let deferred = false;
 
-  return <N extends NS>(app: Application, registeringEndpoint: N): Hook<N> => {
+  return <N extends NS>(app: Application, registeringEndpoint: N): HookConstructor<N> => {
     concurrentEndpoints.push(registeringEndpoint);
 
     const artificialHook = (endpointName: N) => {
@@ -60,24 +61,26 @@ function makeConcurrentHook<NS extends EndpointName>(
       return hook(app, endpointName);
     };
 
-    app.externalAPIs.endpoints[registeringEndpoint].on("fetched", (result) => {
-      if (result === true) return;
+    return (endpoint) => {
+      endpoint.on("fetched", (result) => {
+        if (result === true) return;
 
-      // Fetch failed
-      if (deferred && !shouldDefer(app, concurrentEndpoints, registeringEndpoint)) {
-        // (deferred === true <=> one concurrent endpoint fetch succeeded)
-        // But if it was the last running, run anyway
-        deferred = false;
-        void runHook(artificialHook, registeringEndpoint);
-      }
-    });
+        // Fetch failed
+        if (deferred && !shouldDefer(app, concurrentEndpoints, registeringEndpoint)) {
+          // (deferred === true <=> one concurrent endpoint fetch succeeded)
+          // But if it was the last running, run anyway
+          deferred = false;
+          void runHook(artificialHook, registeringEndpoint);
+        }
+      });
 
-    return artificialHook;
+      return artificialHook;
+    };
   };
 }
 
 /**
- * Enforce hooks to run in parallel
+ * Construct hook running hooks in parallel
  * @param hooks Hooks to run in parallel
  */
 function parallelHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
@@ -85,13 +88,30 @@ function parallelHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
     await Promise.all(hooks.map((hook) => runHook(hook, endpoint)));
   };
 }
+
 /**
- * Enforce hooks to run sequentially
+ * Construct hook running hooks in parallel
+ * @param hooks Hooks to run in parallel
+ */
+function parallelHooksConstructor<N extends EndpointName>(
+  ...hooks: HookConstructor<N>[]
+): HookConstructor<N> {
+  return (constructorEndpoint) => {
+    return parallelHooks(...hooks.map((hook) => hook(constructorEndpoint)));
+  };
+}
+/**
+ * Construct hook sequentially running hooks
  * @param hooks Hooks to run sequentially, in the given order
  */
-function sequenceHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
-  return async (endpoint) => {
-    for (const hook of hooks) await runHook(hook, endpoint);
+function sequenceHooksConstructor<N extends EndpointName>(
+  ...hooks: HookConstructor<N>[]
+): HookConstructor<N> {
+  return (constructorEndpoint) => {
+    const constructedHooks = hooks.map((hook) => hook(constructorEndpoint));
+    return async (endpoint) => {
+      for (const hook of constructedHooks) await runHook(hook, endpoint);
+    };
   };
 }
 
@@ -160,8 +180,8 @@ class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents>
    * Those hooks will be awaited before resolving fetching, but doesn't block for further fetches.
    * Therefore, if a hook execution lasts longer than the current Endpoint cooldown, their executions might overlap.
    */
-  public registerHook(...hooks: Hook<N>[]) {
-    this.hooks.push(...hooks);
+  public registerHook(...hooks: HookConstructor<N>[]) {
+    for (const hook of hooks) this.hooks.push(hook(this));
     return this;
   }
 
@@ -207,4 +227,4 @@ class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents>
   }
 }
 
-export { Endpoint, makeConcurrentHook, parallelHooks, sequenceHooks };
+export { Endpoint, makeConcurrentHook, parallelHooks, parallelHooksConstructor, sequenceHooksConstructor };
