@@ -207,9 +207,6 @@ async function selectResult(path: Journey["paths"][number][number]) {
 </template>
 
 <style>
-@source inline("scale-{100,95,90,85,80,75,70}");
-@source inline("mt-{100,95,90,85,80,75,70}");
-
 input {
   @apply bg-transparent;
 }

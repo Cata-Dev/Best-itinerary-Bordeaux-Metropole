@@ -19,3 +19,6 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 }
+
+@source inline("scale-{100,95,90,85,80,75,70}");
+@source inline("mt-{0,8,16,24,32,40,48}");
