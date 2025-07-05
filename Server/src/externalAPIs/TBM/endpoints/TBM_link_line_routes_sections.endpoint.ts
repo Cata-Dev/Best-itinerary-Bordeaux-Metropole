@@ -5,6 +5,7 @@ import TBM_LinkLineRoutesSections, {
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
+import { bulkOps } from "../../../utils";
 import { Endpoint, makeConcurrentHook } from "../../endpoint";
 
 export type TBM_LinkLineRoutesSections = BaseTBM<{
