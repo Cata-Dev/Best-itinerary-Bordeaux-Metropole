@@ -133,9 +133,12 @@ export default async (
         const bulked = await ScheduledRoute.bulkWrite(
           bulkOps("updateOne", scheduledRoutes as unknown as Record<keyof dbTBM_ScheduledRoutes, unknown>[]),
         );
-        await ScheduledRoute.deleteMany({
+        if (app.get("debug"))
+          logger.debug(`Updated ${bulked.upsertedCount} and inserted ${bulked.insertedCount}`);
+        const { deletedCount } = await ScheduledRoute.deleteMany({
           _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
         });
+        if (app.get("debug")) logger.debug(`Deleted ${deletedCount}`);
 
         return true;
       },
