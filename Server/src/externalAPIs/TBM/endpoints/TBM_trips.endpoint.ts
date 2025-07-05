@@ -5,6 +5,7 @@ import { Application } from "../../../declarations";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
+import { logger } from "../../../logger";
 
 export type TBM_Trip = BaseTBM<{
   gid: string;
@@ -32,6 +33,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
               },
             }),
         ]);
+        if (app.get("debug")) logger.debug(`Fetched ${rawTrips.length} trips`);
 
         const Trips: dbTBM_Trips[] = rawTrips.map((trip) => {
           return {
