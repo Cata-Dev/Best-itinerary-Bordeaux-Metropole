@@ -139,21 +139,29 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             // Only remaining possibility
             if (!isJourneyStepVehicle(js))
               throw new GeneralError("Unexpected error while populating journey");
-            const scheduledRoute = (await this.TBMScheduledRoutesModel.findById(js.route).lean())!;
+
+            const scheduledRoute = await this.TBMScheduledRoutesModel.findById(js.route).lean();
+            if (!scheduledRoute)
+              throw new GeneralError("Unable to retrieve scheduled route while populating journey");
 
             // Can only be first journey step of journey, ignored in `arr` by `slice(1)`
             if (typeof js.boardedAt === "string")
               throw new GeneralError("Unexpected error while populating journey");
 
-            const departureTime = (await this.TBMSchedulesModel.findById(
-              scheduledRoute.trips[js.tripIndex].schedules[scheduledRoute.stops.indexOf(js.boardedAt)],
-            ).lean())!.hor_estime.getTime();
+            const departureTime = (
+              await this.TBMSchedulesModel.findById(
+                scheduledRoute.trips[js.tripIndex].schedules[scheduledRoute.stops.indexOf(js.boardedAt)],
+              ).lean()
+            )?.hor_estime.getTime();
+            if (departureTime === undefined)
+              throw new GeneralError("Unable to retrieve realtime schedule while populating journey");
 
             const lineRoute = await this.TBMLinesRoutesModel.findById(js.route, undefined, {
               populate: ["rs_sv_ligne_a"],
             });
-            if (!lineRoute || !isDocument(lineRoute.rs_sv_ligne_a))
-              throw new GeneralError("Unexpected error while populating journey");
+            if (!lineRoute) throw new GeneralError("Unable to retrieve line route while populating journey");
+            if (!isDocument(lineRoute.rs_sv_ligne_a))
+              throw new GeneralError("Unable to retrieve line while populating journey");
 
             return {
               to,
