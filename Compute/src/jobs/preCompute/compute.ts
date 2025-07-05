@@ -3,6 +3,7 @@ import "core-js/features/reflect";
 
 import { mapAsync } from "@bibm/common/async";
 import { Logger } from "@bibm/common/logger";
+import { binarySearch } from "@bibm/common/opti";
 import NonScheduledRoutesModelInit, { dbFootPaths } from "@bibm/data/models/TBM/NonScheduledRoutes.model";
 import TBMSchedulesInit, { dbTBM_Schedules_rt } from "@bibm/data/models/TBM/TBM_schedules.model";
 import stopsModelInit, { dbTBM_Stops } from "@bibm/data/models/TBM/TBM_stops.model";
@@ -43,7 +44,7 @@ interface ScheduledRoutesOverwritten /* extends dbTBM_ScheduledRoutes */ {
 type ScheduledRoute = Omit<dbScheduledRoute, keyof ScheduledRoutesOverwritten> & ScheduledRoutesOverwritten;
 
 // Stops
-const dbStopProjection = { _id: 1, coords: 1 };
+const dbStopProjection = { _id: 1 };
 type Stop = Pick<dbTBM_Stops, keyof typeof dbStopProjection>;
 
 // Non Schedules Routes
@@ -81,10 +82,29 @@ if (parentPort) {
       .lean()
       .exec()) as ScheduledRoute[];
 
-    const dbStops = (await stopsModel
-      .find<DocumentType<Stop>>({ coords: { $not: { $elemMatch: { $eq: Infinity } } } }, dbStopProjection)
-      .lean()
-      .exec()) as Stop[];
+    const stops = dbScheduledRoutes.reduce<
+      { id: ScheduledRoute["stops"][number]; connectedRoutes: ScheduledRoute["_id"][] }[]
+    >(
+      (acc, { _id, stops }) => {
+        for (const stop of stops) {
+          let pos = binarySearch(acc, stop, (a, b) => a - b.id);
+          if (pos < 0) {
+            pos = -pos - 1;
+            acc.splice(pos, 0, { id: stop, connectedRoutes: [] });
+          }
+          acc[pos].connectedRoutes.push(_id);
+        }
+
+        return acc;
+      },
+      (
+        (await stopsModel
+          .find<DocumentType<Stop>>({ coords: { $not: { $elemMatch: { $eq: Infinity } } } }, dbStopProjection)
+          .sort({ _id: 1 })
+          .lean()
+          .exec()) as Stop[]
+      ).map(({ _id: id }) => ({ id, connectedRoutes: [] })),
+    );
 
     // Query must associate (s, from) AND (from, s) forall s in stops !
     const dbNonScheduledRoutes = async (
@@ -101,15 +121,11 @@ if (parentPort) {
       ).map(({ from, to, distance }) => ({ distance, to: to === stopId ? from : to }));
 
     const RAPTORData = SharedRAPTORData.makeFromRawData(
-      await mapAsync(dbStops, async ({ _id, coords }) => ({
-        id: _id,
-        lat: coords[0],
-        long: coords[1],
-        connectedRoutes: dbScheduledRoutes
-          .filter((ScheduledRoute) => ScheduledRoute.stops.find((stopId) => stopId === _id))
-          .map(({ _id }) => _id),
+      await mapAsync(stops, async ({ id, connectedRoutes }) => ({
+        id,
+        connectedRoutes,
         transfers: (
-          await dbNonScheduledRoutes(_id, {
+          await dbNonScheduledRoutes(id, {
             distance: {
               $lte:
                 // TODO: do no hardcode ?
