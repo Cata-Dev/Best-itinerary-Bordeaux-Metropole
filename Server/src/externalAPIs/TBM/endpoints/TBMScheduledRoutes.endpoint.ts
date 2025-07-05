@@ -35,6 +35,7 @@ export default async (
         const routes = await TBM_lines_routesEndpointInstantiated.model
           .find<HydratedDocument<Pick<dbTBM_Lines_routes, keyof typeof routeProjection>>>({}, routeProjection)
           .lean();
+        if (app.get("debug")) logger.debug(`Retrieved ${routes.length} lines routes`);
 
         const fillSchedule =
           (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
@@ -60,6 +61,9 @@ export default async (
           rs_sv_arret_p: 1,
         };
 
+        let tripsCount = 0;
+        let schedulesCount = 0;
+
         const scheduledRoutes = new Array<dbTBM_ScheduledRoutes>(routes.length);
         for (const [i, route] of routes.entries()) {
           const relevantTrips = await TBM_tripsEndpointInstantiated.model
@@ -67,6 +71,7 @@ export default async (
               HydratedDocument<Pick<DocumentType<dbTBM_Trips>, keyof typeof tripProjection>>
             >({ rs_sv_chem_l: route._id }, tripProjection)
             .lean();
+          tripsCount += relevantTrips.length;
 
           /** `[tripId, length of schedules]` */
           let maxLength: [number, number] | [null, -1] = [null, -1];
@@ -85,6 +90,7 @@ export default async (
                     >
                   >({ rs_sv_cours_a: t._id, etat: { $ne: RtScheduleState.Annule } }, scheduleRtProjection)
                   .lean();
+                schedulesCount += schedules.length;
                 if (schedules.length > maxLength[1]) maxLength = [t._id, schedules.length];
                 return {
                   tripId: t._id,
@@ -118,6 +124,11 @@ export default async (
             stops: schedulesOfMaxLength,
           };
         }
+
+        if (app.get("debug"))
+          logger.debug(
+            `Retrieved ${tripsCount} trips and ${schedulesCount} realtime schedules during scheduled routes computation`,
+          );
 
         const bulked = await ScheduledRoute.bulkWrite(
           bulkOps("updateOne", scheduledRoutes as unknown as Record<keyof dbTBM_ScheduledRoutes, unknown>[]),
