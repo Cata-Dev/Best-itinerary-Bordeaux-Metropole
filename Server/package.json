@@ -82,7 +82,7 @@
     "axios": "^1.7.9",
     "core-js": "^3.39.0",
     "feathers-hooks-common": "^8.2.1",
-    "mongoose": "^8.9.3"
+    "mongoose": "^8.16.1"
   },
   "devDependencies": {
     "@feathersjs/cli": "5.0.31",
