@@ -45,11 +45,12 @@ export default async (app: Application) => {
     return async (id: string, queries: string[] = []) => {
       const bURL = "https://data.bordeaux-metropole.fr/";
       const url = makeURL(id, queries);
-      const { data }: { data: { features: T } } = await axios.get(`${bURL}${url}`, {
-        maxContentLength: 4_000_000_000,
-        maxBodyLength: 4_000_000_000,
+      const res = await axios.get<{ features: T }>(`${bURL}${url}`, {
+        maxContentLength: 500_000_000,
+        maxBodyLength: 500_000_000,
       });
-      return data.features;
+      if (app.get("debug")) logger.debug(`Fetched "${bURL}${url}": ${res.status} ${res.statusText}`);
+      return res.data.features;
     };
   }
   /**
@@ -60,7 +61,7 @@ export default async (app: Application) => {
   const getData: <T>(id: string, queries?: string[]) => Promise<T> = makeGetData(
     (id, queries) => `geojson?key=${app.get("server").TBMkey}&typename=${id}&${queries.join("&")}`,
   );
-   /**
+  /**
    * Fetch data from TBM API
    * @param {String} relation Id of relation
    * @param {Array} queries array of queries to apply
