@@ -7,7 +7,7 @@ import type { HookContext } from "../../declarations";
 import { dataValidator, queryValidator } from "../../validators";
 import type { JourneyService } from "./journey.class";
 
-import { coords } from "common/geographics";
+import { coords } from "@bibm/common/geographics";
 import { GEOCODE_type, geocodeSchema, TBMVehicles } from "../geocode/geocode.schema";
 import { refreshDataQuerySchema } from "../refresh-data/refresh-data.schema";
 
@@ -23,7 +23,6 @@ const TBMStageDetails = Type.Object(
     type: TBMVehicles,
     line: Type.String(),
     direction: Type.String(),
-    departure: Type.Integer(),
   },
   { $id: "TBMStageDetails", additionalProperties: false },
 );
@@ -35,18 +34,21 @@ const SNCFStageDetails = Type.Object(
     type: SNCFStageDetailsType,
     line: Type.String(),
     direction: Type.String(),
-    departure: Type.Integer(),
   },
   { $id: "SNCFStageDetails", additionalProperties: false },
 );
 
-const FOOT = Type.Literal("FOOT");
-const TBM = Type.Literal("TBM");
-const SNCF = Type.Literal("SNCF");
+export enum Transport {
+  FOOT = "FOOT",
+  TBM = "TBM",
+  SNCF = "SNCF",
+}
+export const transport = Type.Enum(Transport);
 
 const StageBase = Type.Object(
   {
     to: Type.String(),
+    departure: Type.Integer(),
     duration: Type.Integer(),
   },
   { additionalProperties: false },
@@ -57,7 +59,7 @@ const Stage = Type.Union([
     StageBase,
     Type.Object(
       {
-        type: FOOT,
+        type: Type.Literal(Transport.FOOT),
         details: FOOTStageDetails,
       },
       { additionalProperties: false },
@@ -67,7 +69,7 @@ const Stage = Type.Union([
     StageBase,
     Type.Object(
       {
-        type: TBM,
+        type: Type.Literal(Transport.TBM),
         details: TBMStageDetails,
       },
       { additionalProperties: false },
@@ -77,7 +79,7 @@ const Stage = Type.Union([
     StageBase,
     Type.Object(
       {
-        type: SNCF,
+        type: Type.Literal(Transport.SNCF),
         details: SNCFStageDetails,
       },
       { additionalProperties: false },
@@ -92,12 +94,13 @@ export const journeySchema = Type.Object(
     message: Type.String(),
     lastActualization: Type.Integer(),
     id: ObjectIdSchema(),
+    from: Type.String(),
+    departure: Type.Integer(),
     paths: Type.Array(
       Type.Object(
         {
-          departure: Type.Integer(),
-          from: Type.String(),
           stages: Type.Array(Stage, { uniqueItems: true }),
+          criteria: Type.Record(Type.String(), Type.Number()),
         },
         { additionalProperties: false },
       ),
@@ -153,7 +156,7 @@ export const journeyQuerySchema = Type.Union([
         to: locationQuery,
         transports: Type.Optional(
           Type.Partial(
-            Type.Record(Type.Union([FOOT, TBM, SNCF]), Type.Boolean(), { additionalProperties: false }),
+            Type.Record(Type.Union(transport.anyOf), Type.Boolean(), { additionalProperties: false }),
           ),
         ),
         departureTime: Type.Optional(Type.String()),

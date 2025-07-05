@@ -1,13 +1,13 @@
-import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
-import { unpackGraphNode, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { Duration } from "common/benchmark";
-import { Coords } from "common/geographics";
+import { Duration } from "@bibm/common/benchmark";
+import { Coords } from "@bibm/common/geographics";
 import nonScheduledRoutesModelInit, {
   approachedStopName,
   dbFootPaths,
   dbFootPathsModel,
-} from "data/models/TBM/NonScheduledRoutes.model";
-import { dbSections } from "data/models/TBM/sections.model";
+} from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+import { dbSections } from "@bibm/data/models/TBM/sections.model";
+import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
+import { unpackGraphNode, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { JobResult, Processor } from ".";
 import { BaseApplication } from "../base";
 import { limiter } from "../utils/asyncs";
@@ -83,10 +83,13 @@ export default async function (
       refreshWithApproachedPoint(edges, footGraph, "apt", apt);
 
       const path = Dijkstra<unpackGraphNode<typeof footGraph>>(footGraph, ["aps", "apt"]);
-      const distance = path.reduce<number>(
-        (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
-        0,
-      );
+      const distance =
+        path.length === 0
+          ? Infinity
+          : path.reduce<number>(
+              (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
+              0,
+            );
 
       // In reverted order!
       revertFromApproachedPoint(edges, footGraph, "apt", apt[1]);
@@ -233,7 +236,7 @@ export default async function (
             if (stopsTreatedCount % Math.round((stops.size / 100) * LOG_EVERY) === 0) {
               const newTime = Date.now();
               const progress = Math.round((stopsTreatedCount / stops.size) * 1000) / 10;
-              job.updateProgress(progress).catch(app.logger.error);
+              job.updateProgress(progress).catch((err) => app.logger.error(err));
               app.logger.debug(
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `Inserting to NSR done at ${progress}%, inserted NSR : ${NSRInsertedCount}. Time since last ${LOG_EVERY}% compute & insert : ${new Duration(newTime - lastChunkInsertLogTime)}`,

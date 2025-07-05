@@ -22,7 +22,7 @@ defineProps({
 
 <template>
   <div
-    class="flex py-[0.125rem] px-2 rounded-full items-center border-2"
+    class="flex py-0.5 px-2 rounded-full items-center border-2"
     :class="
       color === 'success'
         ? [{ 'bg-success-bg': bg }, 'border-success-t']

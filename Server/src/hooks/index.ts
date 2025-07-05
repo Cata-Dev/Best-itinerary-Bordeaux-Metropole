@@ -1,6 +1,6 @@
+import { colorFunctions } from "@bibm/common/colors";
 import { GeneralError } from "@feathersjs/errors";
 import { performance } from "perf_hooks";
-import { colorFunctions } from "common/colors";
 import { HookContext, NextFunction } from "../declarations";
 import { logger } from "../logger";
 import { compactDate } from "../utils";
@@ -44,6 +44,7 @@ function isError(e: unknown): e is { code?: number; stack?: unknown } {
 const errorHandler = (context: HookContext) => {
   if (isError(context.error)) {
     const error = context.error;
+    if (context.app.get("debug")) logger.debug(error);
 
     if (!error.code) {
       context.error = new GeneralError("Server error");
@@ -55,4 +56,4 @@ const errorHandler = (context: HookContext) => {
   }
 };
 
-export { log, errorHandler };
+export { errorHandler, log };

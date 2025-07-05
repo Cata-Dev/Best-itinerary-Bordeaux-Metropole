@@ -1,11 +1,11 @@
-import { Coords } from "common/geographics";
-import { normalize } from "common/string";
-import { TBMEndpoints } from "data/models/TBM/index";
-import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "data/models/TBM/TBM_stops.model";
+import { Coords } from "@bibm/common/geographics";
+import { normalize } from "@bibm/common/string";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
-import { Endpoint } from "../../endpoint";
+import { bulkUpsertAndPurge } from "../../../utils";
+import { Endpoint, parallelHooksConstructor, sequenceHooksConstructor } from "../../endpoint";
 import { makeNSRHook } from "./sections.endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
@@ -19,7 +19,7 @@ export type TBM_Stop = BaseTBM<{
   geometry: { coordinates: Coords };
 };
 
-export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const Stop = TBM_Stops(app.get("sourceDBConn"));
 
   return [
@@ -29,7 +29,7 @@ export default async (app: Application, getData: <T>(id: string, queries: string
       async () => {
         const rawStops: TBM_Stop[] = await getData("sv_arret_p", ["crs=epsg:2154"]);
 
-        const Stops: dbTBM_Stops[] = rawStops.map((stop) => {
+        const stops: dbTBM_Stops[] = rawStops.map((stop) => {
           return {
             coords: stop.geometry?.coordinates ?? [Infinity, Infinity], //out of BM
             _id: parseInt(stop.properties.gid),
@@ -41,15 +41,17 @@ export default async (app: Application, getData: <T>(id: string, queries: string
           };
         });
 
-        await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-        await Stop.bulkWrite(bulkOps("updateOne", Stops as unknown as Record<keyof dbTBM_Stops, unknown>[]));
+        await bulkUpsertAndPurge(Stop, stops, ["_id"]);
 
         return true;
       },
       Stop,
     )
-      .registerHook(makeNSRHook(app, TBMEndpoints.Stops), makeSRHook(app, TBMEndpoints.Stops), () =>
-        app.get("computeInstance").refreshData(["compute", "computePTN"]),
+      .registerHook(
+        sequenceHooksConstructor(
+          () => () => app.get("computeInstance").refreshData(["compute", "computePTN"]),
+          parallelHooksConstructor(makeSRHook(app, TBMEndpoints.Stops), makeNSRHook(app, TBMEndpoints.Stops)),
+        ),
       )
       .init(),
   ] as const;

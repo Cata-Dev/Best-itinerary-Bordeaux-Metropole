@@ -30,12 +30,11 @@ import { TBMEndpoints } from ".";
 import { dbTBM_Stops } from "./TBM_stops.model";
 import { dbTBM_Trips } from "./TBM_trips.model";
 
-@index({ gid: 1, realtime: 1 }, { unique: true })
-@index({ rs_sv_cours_a: 1 })
+@index({ _id: 1, realtime: 1 }, { unique: true })
 @modelOptions({ options: { customName: TBMEndpoints.Schedules } })
 export class dbTBM_Schedules extends TimeStamps {
-  @prop({ required: true, index: true })
-  public gid!: number;
+  @prop({ required: true })
+  public _id!: number;
 
   @prop({ required: true })
   public hor_theo!: Date;
@@ -46,7 +45,7 @@ export class dbTBM_Schedules extends TimeStamps {
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
   public rs_sv_arret_p!: Ref<dbTBM_Stops, number>;
 
-  @prop({ required: true, ref: () => dbTBM_Trips, type: () => Number })
+  @prop({ required: true, ref: () => dbTBM_Trips, type: () => Number, index: true })
   public rs_sv_cours_a!: Ref<dbTBM_Trips, number>;
 }
 

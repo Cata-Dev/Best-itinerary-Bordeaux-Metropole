@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onUpdated, ref } from "vue";
-import { screens } from "tailwindcss/defaultTheme";
+import defaultTheme from "tailwindcss/defaultTheme";
 import BaseModal from "@/components/BaseModal.vue";
 import { theme, type QuerySettings } from "@/store";
 
@@ -19,7 +19,7 @@ const emit = defineEmits<{
 
 const settings = ref<QuerySettings>(props.modelValue);
 
-const breakpoint = parseInt(screens.lg.match(/\d+/)![0]);
+const breakpoint = parseInt(defaultTheme.screens.lg.match(/\d+/)![0]);
 
 const shown = ref<boolean>(props.initShown);
 function show(s = !shown.value) {

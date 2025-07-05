@@ -28,11 +28,11 @@ type ParsedId<N extends EndpointName> = [DistributedEndpoints<N>, DistributedFil
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GeocodeParams extends Params<GeocodeQuery> {}
 
+import { unique } from "@bibm/common/filters";
+import { normalize } from "@bibm/common/string";
+import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { BadRequest, NotFound } from "@feathersjs/errors";
-import { unique } from "common/filters";
-import { normalize } from "common/string";
-import { SNCFEndpoints } from "data/models/SNCF/index";
-import { TBMEndpoints } from "data/models/TBM/index";
 import { FilterQuery } from "mongoose";
 import { EndpointName, ProviderClass } from "../../externalAPIs";
 import { Endpoint } from "../../externalAPIs/endpoint";
@@ -92,8 +92,8 @@ export class GeocodeService<ServiceParams extends GeocodeParams = GeocodeParams>
     id = normalize(id);
 
     const queries: ParsedId<GEOCODE_type>[] = [
-      [TBM_Stops, { libelle_lowercase: { $regex: id } }],
-      [SNCF_Stops, { name_lowercase: { $regex: id } }],
+      [TBM_Stops, { libelle_norm: { $regex: id } }],
+      [SNCF_Stops, { name_norm: { $regex: id } }],
     ];
 
     if (

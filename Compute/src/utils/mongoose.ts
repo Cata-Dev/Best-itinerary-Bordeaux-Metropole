@@ -1,21 +1,7 @@
-import { createConnection } from "mongoose";
+import { connect } from "@bibm/data/utils/db";
 import type { Application, BaseApplication } from "../base";
-import { memoize } from "common/cache";
 
-const initDB = memoize(async function (
-  app: BaseApplication,
-  db: Application["config"]["sourceDB" | "computeDB"],
-) {
-  const connection = createConnection(
-    app.config.dbAddress + db,
-    //{ useNewUrlParser: true }
-  );
-
-  await connection.asPromise();
-
-  app.logger.log(`Database ${connection.db?.databaseName ?? "UNKNOWN"} connected.`);
-
-  return connection;
-});
+const initDB = (app: BaseApplication, dbName: Application["config"]["sourceDB" | "computeDB"]) =>
+  connect(app.logger, app.config.dbAddress, dbName);
 
 export { initDB };

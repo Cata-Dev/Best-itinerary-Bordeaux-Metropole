@@ -1,42 +1,69 @@
-/* eslint-disable prefer-rest-params */
 import { format } from "util";
 import { colorFunctions } from "./colors";
 
-const prefix = (prefixes: string[]) => [`[${new Date().toLocaleString("fr-FR")}]`].concat(prefixes).join(" ");
-const formatArgs = (args: IArguments) => format.apply(format, Array.prototype.slice.call(args));
+class Logger {
+  private readonly prefix: string;
 
-const makeLogger = (
-  ...prefixes: string[]
-): Record<"log" | "info" | "warn" | "error" | "debug", typeof console.log> => ({
-  log: function () {
-    const args = formatArgs(arguments);
-    const str = `${[prefix(prefixes)].concat(args).join(" ")}`;
-    console.log(str);
-  },
+  constructor(...prefixes: string[]);
+  constructor(logger: Logger, ...prefixes: string[]);
+  constructor(loggerOrPrefix: Logger | string, ...prefixes: string[]) {
+    if (loggerOrPrefix instanceof Logger)
+      this.prefix = [loggerOrPrefix.prefix]
+        .concat(...prefixes)
+        .join(" ")
+        .trim();
+    else this.prefix = [loggerOrPrefix].concat(prefixes).join(" ").trim();
+  }
 
-  info: function () {
-    const args = formatArgs(arguments);
-    const str = `${[prefix(prefixes), "ℹ️"].concat(args).join(" ")}`;
-    console.log(colorFunctions.bright(colorFunctions.fG(str)));
-  },
+  static formatArgs(...args: unknown[]) {
+    return format.apply(format, Array.prototype.slice.call(args));
+  }
 
-  warn: function () {
-    const args = formatArgs(arguments);
-    const str = `${[prefix(prefixes), "⚠️"].concat(args).join(" ")}`;
-    console.log(colorFunctions.bY(colorFunctions.bright(colorFunctions.fW(str))));
-  },
+  private get datedPrefix() {
+    return `[${new Date().toLocaleString("fr-FR")}] ${this.prefix}`.trimEnd();
+  }
 
-  error: function () {
-    const args = formatArgs(arguments);
-    const str = `${[prefix(prefixes), "❌"].concat(args).join(" ")}`;
-    console.log(colorFunctions.bR(colorFunctions.bright(colorFunctions.fW(str))));
-  },
+  log(...args: unknown[]) {
+    console.log(this.datedPrefix, Logger.formatArgs(...args));
+  }
 
-  debug: function () {
-    const args = formatArgs(arguments);
-    const str = `${[prefix(prefixes), "{🐛 DEBUG}"].concat(args).join(" ")}`;
-    console.log(colorFunctions.bBlack(colorFunctions.bright(colorFunctions.fY(str))));
-  },
-});
+  info(...args: unknown[]) {
+    console.log(
+      colorFunctions.bright(
+        colorFunctions.fG(`${[this.datedPrefix, "ℹ️"].concat(Logger.formatArgs(...args)).join(" ")}`),
+      ),
+    );
+  }
 
-export { makeLogger };
+  warn(...args: unknown[]) {
+    console.log(
+      colorFunctions.bY(
+        colorFunctions.bright(
+          colorFunctions.fW(`${[this.datedPrefix, "⚠️"].concat(Logger.formatArgs(...args)).join(" ")}`),
+        ),
+      ),
+    );
+  }
+
+  error(...args: unknown[]) {
+    console.log(
+      colorFunctions.bR(
+        colorFunctions.bright(
+          colorFunctions.fW(`${[this.datedPrefix, "❌"].concat(Logger.formatArgs(...args)).join(" ")}`),
+        ),
+      ),
+    );
+  }
+
+  debug(...args: unknown[]) {
+    console.log(
+      colorFunctions.bBlack(
+        colorFunctions.bright(
+          colorFunctions.fY(`${[this.datedPrefix, "🐛"].concat(Logger.formatArgs(...args)).join(" ")}`),
+        ),
+      ),
+    );
+  }
+}
+
+export { Logger };

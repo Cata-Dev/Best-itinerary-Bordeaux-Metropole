@@ -1,10 +1,10 @@
+import { mapAsync } from "@bibm/common/async";
+import { Logger } from "@bibm/common/logger";
+import { config } from "@bibm/data/config/index";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import { JourneyQuery } from "@bibm/server";
 import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
-import { mapAsync } from "common/async";
-import { makeLogger } from "common/logger";
-import { config } from "data/config/index";
-import { TBMEndpoints } from "data/models/TBM/index";
 import { RAPTORRunSettings } from "raptor";
-import { JourneyQuery } from "server";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
 
 export interface Config {
@@ -40,7 +40,7 @@ export interface BaseApplication {
   /**
    * Feel free to override it with a custom logger (prefixes)
    */
-  logger: ReturnType<typeof makeLogger>;
+  logger: Logger;
 }
 
 export type Application<T extends SchedulerInstanceType = SchedulerInstanceType> = BaseApplication &
@@ -63,7 +63,7 @@ export type Application<T extends SchedulerInstanceType = SchedulerInstanceType>
       ? { workers: Instances<typeof jobNames, "worker"> }
       : never);
 
-const logger = makeLogger();
+const logger = new Logger("[COMPUTE]");
 
 export const app = {
   config: {
@@ -89,9 +89,9 @@ interface FlowJobBase<N extends JobName> extends FlowJob {
 export async function makeQueue() {
   const queues = jobNames.map((j) => new Queue(j, { connection })) as Instances<typeof jobNames, "queue">;
   // Enforce NSR to be done at most 1 by 1
-  await queues[3].setGlobalConcurrency(1).catch(logger.error);
+  await queues[3].setGlobalConcurrency(1).catch((err) => logger.error(err));
 
-  await mapAsync(queues, (q) => q.waitUntilReady()).catch(logger.error);
+  await mapAsync(queues, (q) => q.waitUntilReady()).catch((err) => logger.error(err));
   app.logger.log("Queue ready");
 
   const flowProducer = new FlowProducer({ connection });
@@ -133,6 +133,18 @@ export async function makeQueue() {
                 },
               ]
             : []),
+            ...(from.type === TBMEndpoints.Addresses && to.type === TBMEndpoints.Addresses
+              ? [
+                  {
+                    name: "computeFp" as const,
+                    queueName: "computeFp" as const,
+                    data: [from.coords, to.coords] satisfies [unknown, unknown],
+                    opts: {
+                      failParentOnFailure: false,
+                    },
+                  },
+                ]
+              : []),
         ],
       } satisfies FlowJobBase<"compute">),
   } as Application<"queue">;
@@ -153,7 +165,7 @@ export function makeWorker(processors: Instances<typeof jobNames, "processor">) 
 
   mapAsync(workers, (w) => w.waitUntilReady())
     .then(() => app.logger.log("Workers ready"))
-    .catch(logger.error);
+    .catch((err) => logger.error(err));
 
   return { ...app, workers } satisfies Application<"worker">;
 }

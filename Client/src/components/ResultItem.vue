@@ -1,20 +1,25 @@
 <script setup lang="ts">
 import BaseModal from "@/components/BaseModal.vue";
 import TransportBadge from "@/components/TransportBadge.vue";
+import type { Props as VecMapProps } from "@/components/VecMap.vue";
 import VecMap from "@/components/VecMap.vue";
 import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
-import { currentJourney, fetchFootpaths, result } from "@/store/api";
-import { duration } from "common/time";
-import type { Journey } from "server";
-import { ref } from "vue";
+import { currentJourney, fetchFootpaths, result, type Journey } from "@/store/api";
+import { duration } from "@bibm/common/time";
+import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
+import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
+import { MultiLineString, Point } from "ol/geom";
+import Fill from "ol/style/Fill";
+import Icon from "ol/style/Icon";
+import Stroke from "ol/style/Stroke";
+import Style from "ol/style/Style";
+import Text from "ol/style/Text";
+import { computed, ref } from "vue";
 
 interface Props {
   title: string;
-  totalDuration: number;
-  totalDistance: number;
-  departure: number;
   from: string;
-  path: Journey["paths"][number]["stages"];
+  path: Journey["paths"][number][number];
   expanded?: boolean;
 }
 
@@ -27,40 +32,105 @@ interface Transport {
   mode?: TransportMode;
 }
 
-const transports: Transport[] = props.path.map((p) => ({
-  provider: p.type,
-  mode: "type" in p.details ? p.details.type : undefined,
-}));
+const transports = computed<Transport[]>(() =>
+  props.path.stages.map((p) => ({
+    provider: p.type,
+    mode: "type" in p.details ? p.details.type : undefined,
+  })),
+);
 
-const uniquesTransports = transports
-  .filter(
-    (v, i, arr) =>
-      arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode) as Transport) === i,
-  )
-  .map((t) => ({
-    ...t,
-    times: transports.filter((t2) => t2.provider === t.provider && t2.mode === t.mode).length,
-  }));
+const uniquesTransports = computed(() =>
+  transports.value
+    .filter(
+      (v, i, arr) =>
+        arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode) as Transport) === i,
+    )
+    .map((t) => ({
+      ...t,
+      times: transports.value.filter((t2) => t2.provider === t.provider && t2.mode === t.mode).length,
+    })),
+);
 
-const departureDate = new Date(props.departure);
-const arrivalDate = new Date(props.departure + props.totalDuration * 1000);
-
-/**
- * @description Compute duration of paths, from 0 to index
- * @param index Index (included) of the last path to compute duration
- */
-function computeDuration(index: number): number {
-  let duration = 0;
-  for (let i = 0; i <= index; i++) {
-    duration += props.path[i].duration;
-  }
-
-  return duration;
-}
+const departure = computed(() => props.path.stages[0].departure);
+const lastStage = computed(() => props.path.stages.at(-1)!);
+const arrival = computed(() => lastStage.value.departure + lastStage.value.duration * 1000);
+const totalDistance = computed(() =>
+  props.path.stages.reduce((acc, v) => acc + ("distance" in v.details ? v.details.distance : 0), 0),
+);
 
 const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
 
-const paths = ref<[number, number][][][]>([]);
+function getClosesPointToMiddle(geom: MultiLineString) {
+  const geomExtent = geom.getExtent();
+  return new Point(
+    geom.getClosestPoint([(geomExtent[0] + geomExtent[2]) / 2, (geomExtent[1] + geomExtent[3]) / 2]),
+  );
+}
+
+const paths = ref<VecMapProps["multiLineStrings"]["data"]>([]);
+const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature) => {
+  const styles: Style[] = [];
+  switch (feature.getProperties().props.type as ServerTransport) {
+    case "FOOT":
+      styles.push(
+        new Style({
+          stroke: new Stroke({
+            width: 5,
+            color: [0, 0, 0],
+            lineDash: [10],
+          }),
+        }),
+        new Style({
+          geometry: getClosesPointToMiddle(feature.getGeometry() as MultiLineString),
+          image: new Icon({
+            opacity: 1,
+            src:
+              "data:image/svg+xml;utf8," +
+              `<svg width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faPersonWalking.icon[0]} ${faPersonWalking.icon[1]}"><path d="${faPersonWalking.icon[4]}"/></svg>`,
+          }),
+        }),
+      );
+      break;
+
+    case "TBM":
+      styles.push(
+        new Style({
+          stroke: new Stroke({
+            width: 4,
+            // Should be TBM line color
+            color: [200, 0, 0],
+          }),
+        }),
+      );
+      if (
+        "stageIdx" in feature.getProperties().props &&
+        "line" in currentJourney.value!.stages[feature.getProperties().props.stageIdx].details
+      )
+        styles.push(
+          new Style({
+            geometry: getClosesPointToMiddle(feature.getGeometry() as MultiLineString),
+            text: new Text({
+              text: `${(currentJourney.value!.stages[feature.getProperties().props.stageIdx].details as Extract<Journey["paths"][number][number]["stages"][number]["details"], { line: unknown }>).line}`,
+              fill: new Fill({
+                // Text color
+                color: "black",
+              }),
+              padding: [3, 3, 3, 3],
+              overflow: true,
+              backgroundFill: new Fill({
+                // Background color
+                color: [200, 0, 0],
+              }),
+              placement: "point",
+              textBaseline: "ideographic",
+            }),
+          }),
+        );
+      break;
+  }
+
+  return styles;
+};
 
 async function displayMap() {
   if (result.value === null) throw new Error("Unexpected unset result.");
@@ -71,8 +141,19 @@ async function displayMap() {
   paths.value.splice(
     0,
     paths.value.length,
-    ...(await fetchFootpaths(result.value.id, result.value.paths.indexOf(currentJourney.value))).map(
-      (path) => path.steps,
+    ...(await fetchFootpaths(result.value.id, currentJourney.value.idx)).reduce<
+      VecMapProps["multiLineStrings"]["data"]
+    >(
+      (acc, v, i) =>
+        v.steps[0][0] instanceof Array
+          ? acc.concat([
+              {
+                coords: v.steps as VecMapProps["multiLineStrings"]["data"][number]["coords"],
+                props: { type: v.type, stageIdx: i, ...("line" in v ? { line: v.line } : {}) },
+              },
+            ])
+          : acc,
+      [],
     ),
   );
 }
@@ -98,17 +179,33 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ duration(totalDuration * 1000, false, true) }}
+        {{ duration(arrival - departure, false, true) || "< 1m" }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
-        icon="road"
+        icon="person-walking"
         class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
+    <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        class="fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
+      >
+        <!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. -->
+        <path
+          d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
+        />
+      </svg>
+      <span class="text-left">
+        {{ duration(path.criteria.bufferTime, false, true) || "< 1m" }}
+      </span>
+    </div>
+
     <div
       class="grid gap-3 grid-cols-3-auto justify-items-center items-center mt-3"
-      :class="`grid-rows-${path.length * 2 + 1}`"
+      :class="`grid-rows-${path.stages.length * 2 + 1}`"
     >
       <!-- First first row - departure -->
       <div class="">
@@ -119,13 +216,13 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
       <div class="flex items-center w-full">
-        <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
+        <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
         <span class="mx-2 text-center text-lg text-semibold">
           {{ from }}
         </span>
-        <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
+        <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
       </div>
-      <template v-for="(p, i) in path" :key="i">
+      <template v-for="(p, i) in path.stages" :key="i">
         <!-- First row - header -->
         <!-- First col : mode icon -->
         <font-awesome-icon
@@ -145,35 +242,28 @@ async function displayMap() {
             <span class="text-sm"> ➜ {{ "direction" in p.details ? p.details.direction : "unknonw" }} </span>
           </div>
           <div class="text-sm" :class="{ 'mt-1': p.type === 'SNCF' || p.type === 'TBM' }">
-            {{ duration(p.duration * 1000, false, true) }}
+            {{ duration(p.duration * 1000, false, true) || "< 1m" }}
           </div>
         </div>
         <!-- Second row - content -->
         <!-- First col : time -->
         <div class="">
-          {{
-            formatDate(
-              path[i + 1] && "departure" in path[i + 1].details
-                ? (path[i + 1].details as any).departure
-                : departure + computeDuration(i) * 1000,
-              true,
-            )
-          }}
+          {{ formatDate(path.stages[i + 1]?.departure ?? arrival, true) }}
         </div>
         <!-- Second col : icon (start/bullet/end) -->
         <font-awesome-icon
-          v-if="i === path.length - 1"
+          v-if="i === path.stages.length - 1"
           icon="flag"
           class="text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
         <div v-else class="bullet bg-text-light-primary dark:bg-text-dark-primary" />
         <!-- Third col : position -->
         <div class="flex items-center w-full">
-          <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
+          <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
           <span class="mx-2 text-center text-lg text-semibold">
             {{ p.to }}
           </span>
-          <span class="h-[1px] grow min-w-[1rem] bg-text-light-primary dark:bg-text-dark-primary" />
+          <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
         </div>
       </template>
     </div>
@@ -190,7 +280,7 @@ async function displayMap() {
         <h1 class="text-2xl text-center">Trajets à pied</h1>
       </template>
       <template #content>
-        <VecMap :footpaths="paths"> </VecMap>
+        <VecMap :multi-line-strings="{ data: paths, style: multiLineStringsStyle }"> </VecMap>
       </template>
     </BaseModal>
   </div>
@@ -208,13 +298,28 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ duration(totalDuration * 1000, false, true) }}
+        {{ duration(arrival - departure, false, true) || "< 1m" }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
-        icon="road"
+        icon="person-walking"
         class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
+    </div>
+    <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        class="fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
+      >
+        <!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. -->
+        <path
+          d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
+        />
+      </svg>
+      <span class="text-left">
+        {{ duration(path.criteria.bufferTime, false, true) || "< 1m" }}
+      </span>
     </div>
     <div class="flex w-full mt-2">
       <font-awesome-icon
@@ -222,10 +327,10 @@ async function displayMap() {
         class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ formatDate(departureDate, departureDate.getDate() === new Date().getDate()) }}
+        {{ formatDate(departure, new Date(departure).getDate() === new Date().getDate()) }}
       </span>
       <span class="text-right ml-auto">
-        {{ formatDate(arrivalDate, arrivalDate.getDate() === new Date().getDate()) }}
+        {{ formatDate(arrival, new Date(arrival).getDate() === new Date().getDate()) }}
       </span>
       <font-awesome-icon
         icon="flag"
@@ -246,6 +351,8 @@ async function displayMap() {
 </template>
 
 <style scoped>
+@reference "../index.css";
+
 .bullet {
   width: 8px;
   height: 8px;

@@ -65,8 +65,5 @@ export default {
       "pos-100": "100% 100%",
     },
   },
-  variants: {
-    extend: {},
-  },
   plugins: [],
 } satisfies Config;

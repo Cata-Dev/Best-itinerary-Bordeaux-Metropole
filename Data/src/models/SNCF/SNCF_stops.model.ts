@@ -2,10 +2,10 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
+import { Coords } from "@bibm/common/geographics";
 import { type ReturnModelType, deleteModelWithClass, getModelForClass, prop } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
-import { Coords } from "common/geographics";
 import { Connection } from "mongoose";
 import { SNCFEndpoints } from ".";
 

@@ -45,7 +45,7 @@ onUpdated(async () => {
   <div
     ref="focusDiv"
     tabindex="10"
-    class="flex fixed top-0 left-0 w-full h-full outline-none transition-all duration-150 bg-slate-600/75"
+    class="flex fixed top-0 left-0 w-full h-full outline-hidden transition-all duration-150 bg-slate-600/75"
     :class="{
       invisible: !shown,
       'opacity-0': !shown,
@@ -58,7 +58,7 @@ onUpdated(async () => {
   >
     <div class="m-auto w-fit duration-300 overflow-hidden" @click="(e: MouseEvent) => e.stopPropagation()">
       <div class="shadow-lg flex flex-col w-full rounded-md" :class="[mainClasses]">
-        <div class="flex flex-shrink-0 items-center justify-between py-4 px-2 mx-2 border-b border-inherit">
+        <div class="flex shrink-0 items-center justify-between py-4 px-2 mx-2 border-b border-inherit">
           <slot name="title"></slot>
           <CloseButton class="ml-2 hover:scale-[110%] duration-300 justify-self-end" @click="show(false)" />
         </div>

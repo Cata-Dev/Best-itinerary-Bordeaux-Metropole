@@ -23,6 +23,7 @@ services:
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     networks:
+      - bibm-api
       - mongodb
       - redis
     depends_on:
@@ -47,6 +48,8 @@ services:
       REDIS_ARGS: "--save 60 1 --loglevel warning"
 
 networks:
+  # "Shared" network for BIBM API
+  bibm-api:
   # Private network for mongodb
   mongodb:
   # Private network for redis

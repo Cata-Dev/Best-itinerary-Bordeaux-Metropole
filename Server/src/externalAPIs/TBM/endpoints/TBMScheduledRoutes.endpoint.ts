@@ -1,16 +1,19 @@
+import { mapAsync } from "@bibm/common/async";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import { dbTBM_Lines_routes } from "@bibm/data/models/TBM/TBM_lines_routes.model";
+import {
+  RtScheduleState,
+  RtScheduleType,
+  dbTBM_Schedules_rt,
+} from "@bibm/data/models/TBM/TBM_schedules.model";
+import { dbTBM_Trips } from "@bibm/data/models/TBM/TBM_trips.model";
+import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
 import { DocumentType, mongoose } from "@typegoose/typegoose";
-import { mapAsync } from "common/async";
-import { TBMEndpoints } from "data/models/TBM/index";
-import { dbTBM_Lines_routes } from "data/models/TBM/TBM_lines_routes.model";
-import { RtScheduleState, RtScheduleType, dbTBM_Schedules_rt } from "data/models/TBM/TBM_schedules.model";
-import { dbTBM_Trips } from "data/models/TBM/TBM_trips.model";
-import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "data/models/TBM/TBMScheduledRoutes.model";
 import { HydratedDocument } from "mongoose";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { bulkOps } from "../../../utils";
-import { makeConcurrentHook } from "../../concurrentHook";
-import { Endpoint } from "../../endpoint";
+import { bulkUpsertAndPurge } from "../../../utils";
+import { Endpoint, makeConcurrentHook } from "../../endpoint";
 
 export default async (
   app: Application,
@@ -23,6 +26,7 @@ export default async (
   return [
     await new Endpoint(
       TBMEndpoints.ScheduledRoutes,
+      // Manual fetches only
       Infinity,
       async () => {
         const routeProjection = {
@@ -31,11 +35,12 @@ export default async (
         const routes = await TBM_lines_routesEndpointInstantiated.model
           .find<HydratedDocument<Pick<dbTBM_Lines_routes, keyof typeof routeProjection>>>({}, routeProjection)
           .lean();
+        if (app.get("debug")) logger.debug(`Retrieved ${routes.length} lines routes`);
 
         const fillSchedule =
           (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
           (await TBM_schedulesRtEndpointInstantiated.model.create({
-            gid: Infinity,
+            _id: Infinity,
             hor_theo: new Date(0),
             hor_app: new Date(0),
             hor_estime: new Date(0),
@@ -56,6 +61,9 @@ export default async (
           rs_sv_arret_p: 1,
         };
 
+        let tripsCount = 0;
+        let schedulesCount = 0;
+
         const scheduledRoutes = new Array<dbTBM_ScheduledRoutes>(routes.length);
         for (const [i, route] of routes.entries()) {
           const relevantTrips = await TBM_tripsEndpointInstantiated.model
@@ -63,6 +71,7 @@ export default async (
               HydratedDocument<Pick<DocumentType<dbTBM_Trips>, keyof typeof tripProjection>>
             >({ rs_sv_chem_l: route._id }, tripProjection)
             .lean();
+          tripsCount += relevantTrips.length;
 
           /** `[tripId, length of schedules]` */
           let maxLength: [number, number] | [null, -1] = [null, -1];
@@ -81,6 +90,7 @@ export default async (
                     >
                   >({ rs_sv_cours_a: t._id, etat: { $ne: RtScheduleState.Annule } }, scheduleRtProjection)
                   .lean();
+                schedulesCount += schedules.length;
                 if (schedules.length > maxLength[1]) maxLength = [t._id, schedules.length];
                 return {
                   tripId: t._id,
@@ -115,25 +125,31 @@ export default async (
           };
         }
 
-        await ScheduledRoute.deleteMany({
-          _id: { $nin: scheduledRoutes.map(({ _id }) => _id) },
-        });
+        if (app.get("debug"))
+          logger.debug(
+            `Retrieved ${tripsCount} trips and ${schedulesCount} realtime schedules during scheduled routes computation`,
+          );
 
-        await ScheduledRoute.bulkWrite(
-          bulkOps("updateOne", scheduledRoutes as unknown as Record<keyof dbTBM_ScheduledRoutes, unknown>[]),
-        );
+        const [bulked, { deletedCount }] = await bulkUpsertAndPurge(ScheduledRoute, scheduledRoutes, ["_id"]);
+        if (app.get("debug"))
+          logger.debug(
+            `Scheduled routes: updated ${bulked.upsertedCount}, inserted ${bulked.insertedCount} and deleted ${deletedCount}`,
+          );
 
         return true;
       },
       ScheduledRoute,
     )
-      .registerHook(() => app.get("computeInstance").refreshData(["compute"]))
+      .registerHook(() => () => app.get("computeInstance").refreshData(["compute"]))
       .init(),
   ] as const;
 };
 
-export const makeSRHook = makeConcurrentHook((app) =>
-  app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes]
-    .fetch(true, app.get("debug"))
-    .catch(logger.warn),
+export const makeSRHook = makeConcurrentHook<
+  TBMEndpoints.Lines_routes | TBMEndpoints.Schedules_rt | TBMEndpoints.Stops | TBMEndpoints.Trips
+>(
+  (app) =>
+    void app.externalAPIs.TBM.endpoints[TBMEndpoints.ScheduledRoutes]
+      .fetch(true, app.get("debug"))
+      .catch((err) => logger.warn(err)),
 );

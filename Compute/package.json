@@ -1,8 +1,12 @@
 {
-  "name": "compute",
+  "name": "@bibm/compute",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/base.js",
+  "engines": {
+    "node": ">=22.13.0",
+    "pnpm": ">=9"
+  },
+  "main": "lib/main.js",
   "scripts": {
     "build": "shx rm -rf lib/ && tsc -b",
     "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
@@ -23,15 +27,15 @@
     "typescript-eslint": "^8.19.0"
   },
   "dependencies": {
+    "@bibm/common": "workspace:*",
+    "@bibm/data": "workspace:*",
+    "@bibm/server": "workspace:*",
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@typegoose/typegoose": "^12.10.1",
     "bullmq": "^5.34.5",
-    "common": "workspace:*",
     "core-js": "^3.39.0",
-    "data": "workspace:*",
     "mongoose": "^8.9.3",
-    "raptor": "github:cata-dev/raptor#no-local-pruning",
-    "server": "workspace:*",
+    "raptor": "github:cata-dev/raptor",
     "shx": "^0.3.4"
   }
 }

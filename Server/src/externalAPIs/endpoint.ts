@@ -1,9 +1,10 @@
-import { EndpointName, ProviderModel } from ".";
-import { logger } from "../logger";
-import { Deferred, mapAsync } from "common/async";
-import { TypedEventEmitter } from "../utils/TypedEmitter";
+import { Deferred } from "@bibm/common/async";
 import { ReturnModelType } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { EndpointName, ProviderModel } from ".";
+import { Application } from "../declarations";
+import { logger } from "../logger";
+import { TypedEventEmitter } from "../utils/TypedEmitter";
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type EndpointEvents = {
@@ -17,9 +18,104 @@ function hasUpdatedAt(doc: unknown): doc is { updatedAt: Date } {
   return typeof doc === "object" && doc !== null && "updatedAt" in doc && doc.updatedAt instanceof Date;
 }
 
-type Hook<N extends EndpointName> = (endpoint: Endpoint<N>) => Promise<void> | void;
+type Hook<N extends EndpointName> = (endpointName: N) => Promise<void> | void;
+type HookConstructor<N extends EndpointName> = (endpoint: Endpoint<N>) => Hook<N>;
 
-export class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
+async function runHook<N extends EndpointName>(hook: Hook<N>, endpointName: N) {
+  try {
+    await hook(endpointName);
+  } catch (err) {
+    logger.warn(`Error during fetched hook execution "${hook.name || "anonymous"}"`, err);
+  }
+}
+
+function shouldDefer<N extends EndpointName>(
+  app: Application,
+  concurrentEndpoints: EndpointName[],
+  candidateEndpoint: N,
+) {
+  return concurrentEndpoints.find((e) => e != candidateEndpoint && app.externalAPIs.endpoints[e].fetching);
+}
+
+/**
+ * Make a concurrent hook, i.e. a hook that executes when no other Endpoint that registered is fetching
+ * @param hook The actual hook function to be awaited
+ * @returns A register function to apply this hook to an Endpoint
+ */
+function makeConcurrentHook<NS extends EndpointName>(
+  hook: (app: Application, ...params: Parameters<Hook<NS>>) => ReturnType<Hook<NS>>,
+) {
+  const concurrentEndpoints: NS[] = [];
+  let deferred = false;
+
+  return <N extends NS>(app: Application, registeringEndpoint: N): HookConstructor<N> => {
+    concurrentEndpoints.push(registeringEndpoint);
+
+    const artificialHook = (endpointName: N) => {
+      if (shouldDefer(app, concurrentEndpoints, endpointName)) {
+        deferred = true;
+        return;
+      }
+
+      deferred = false;
+      return hook(app, endpointName);
+    };
+
+    return (endpoint) => {
+      endpoint.on("fetched", (result) => {
+        if (result === true) return;
+
+        // Fetch failed
+        if (deferred && !shouldDefer(app, concurrentEndpoints, registeringEndpoint)) {
+          // (deferred === true <=> one concurrent endpoint fetch succeeded)
+          // But if it was the last running, run anyway
+          deferred = false;
+          void runHook(artificialHook, registeringEndpoint);
+        }
+      });
+
+      return artificialHook;
+    };
+  };
+}
+
+/**
+ * Construct hook running hooks in parallel
+ * @param hooks Hooks to run in parallel
+ */
+function parallelHooks<N extends EndpointName>(...hooks: Hook<N>[]): Hook<N> {
+  return async (endpoint) => {
+    await Promise.all(hooks.map((hook) => runHook(hook, endpoint)));
+  };
+}
+
+/**
+ * Construct hook running hooks in parallel
+ * @param hooks Hooks to run in parallel
+ */
+function parallelHooksConstructor<N extends EndpointName>(
+  ...hooks: HookConstructor<N>[]
+): HookConstructor<N> {
+  return (constructorEndpoint) => {
+    return parallelHooks(...hooks.map((hook) => hook(constructorEndpoint)));
+  };
+}
+/**
+ * Construct hook sequentially running hooks
+ * @param hooks Hooks to run sequentially, in the given order
+ */
+function sequenceHooksConstructor<N extends EndpointName>(
+  ...hooks: HookConstructor<N>[]
+): HookConstructor<N> {
+  return (constructorEndpoint) => {
+    const constructedHooks = hooks.map((hook) => hook(constructorEndpoint));
+    return async (endpoint) => {
+      for (const hook of constructedHooks) await runHook(hook, endpoint);
+    };
+  };
+}
+
+class Endpoint<N extends EndpointName> extends TypedEventEmitter<EndpointEvents> {
   private readonly deferredInit = new Deferred<this>();
   private deferredFetch = new Deferred<boolean>();
   private _fetching = false;
@@ -51,7 +147,7 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
         if (lastUpdatedDoc && hasUpdatedAt(lastUpdatedDoc))
           this._lastFetch = lastUpdatedDoc.updatedAt.getTime();
       })
-      .catch(logger.error)
+      .catch((err) => logger.error(err))
       .finally(() => {
         this.deferredFetch.resolve(false); // Initialization
         this.deferredInit.resolve(this);
@@ -84,8 +180,8 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
    * Those hooks will be awaited before resolving fetching, but doesn't block for further fetches.
    * Therefore, if a hook execution lasts longer than the current Endpoint cooldown, their executions might overlap.
    */
-  public registerHook(...hooks: Hook<N>[]) {
-    this.hooks.push(...hooks);
+  public registerHook(...hooks: HookConstructor<N>[]) {
+    for (const hook of hooks) this.hooks.push(hook(this));
     return this;
   }
 
@@ -119,16 +215,10 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
 
       if (result)
         // Run hooks
-        await mapAsync(this.hooks, async (hook) => {
-          try {
-            await hook(this);
-          } catch (err) {
-            logger.warn(`Error during fetched hook execution "${hook.name || "anonymous"}"`, err);
-          }
-        });
+        await parallelHooks(...this.hooks)(this.name);
 
       if (result) this.deferredFetch.resolve(true);
-      else this.deferredFetch.reject(false);
+      else this.deferredFetch.reject(`Fetch failed for ${this.name}`);
 
       super.emit("fetched", result);
     }
@@ -136,3 +226,5 @@ export class Endpoint<N extends EndpointName> extends TypedEventEmitter<Endpoint
     return this.deferredFetch.promise;
   }
 }
+
+export { Endpoint, makeConcurrentHook, parallelHooks, parallelHooksConstructor, sequenceHooksConstructor };

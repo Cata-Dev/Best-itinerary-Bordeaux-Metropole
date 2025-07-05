@@ -5,10 +5,9 @@
 import {
   deleteModelWithClass,
   getModelForClass,
-  index,
   prop,
   type Ref,
-  type ReturnModelType,
+  type ReturnModelType
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
@@ -18,7 +17,6 @@ import { dbTBM_Lines } from "./TBM_lines.model";
 import { dbTBM_Lines_routes } from "./TBM_lines_routes.model";
 import { dbTBM_Stops } from "./TBM_stops.model";
 
-@index({ rs_sv_chem_l: 1 })
 @modelOptions({ options: { customName: TBMEndpoints.Trips } })
 export class dbTBM_Trips extends TimeStamps {
   @prop({ required: true })
@@ -36,7 +34,7 @@ export class dbTBM_Trips extends TimeStamps {
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
   public rg_sv_arret_p_na!: Ref<dbTBM_Stops, number>;
 
-  @prop({ required: true, ref: () => dbTBM_Lines_routes, type: () => Number })
+  @prop({ required: true, ref: () => dbTBM_Lines_routes, type: () => Number, index: true })
   public rs_sv_chem_l!: Ref<dbTBM_Lines_routes, number>;
 }
 

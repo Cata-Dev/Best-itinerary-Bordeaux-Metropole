@@ -1,6 +1,6 @@
 import "core-js/features/reflect";
 
-import { makeLogger } from "common/logger";
+import { Logger } from "@bibm/common/logger";
 import { parentPort, threadId, workerData } from "node:worker_threads";
 import { Application, askShutdown, app as bApp, makeWorker } from "./base";
 import initComputeJob from "./jobs/compute";
@@ -10,7 +10,6 @@ import { Message, isMessage, makeMessage } from "./utils/para";
 declare module "./utils/para" {
   interface Messages {
     started: undefined;
-    stopped: undefined;
     dataAck: undefined;
   }
 }
@@ -54,7 +53,7 @@ async function start(data: Message<"data">["data"]) {
 }
 
 if (parentPort) {
-  bApp.logger = makeLogger(`[W-${threadId}]`);
+  bApp.logger = new Logger(bApp.logger, `[W-${threadId}]`);
 
   const init = new Promise<{
     updateData: ReturnType<typeof initComputeJob>["updateData"];
@@ -79,7 +78,7 @@ if (parentPort) {
 
   // Worker spawned by code
   parentPort.on("message", (message) => {
-    if (!isMessage(message)) return;
+    if (!isMessage(message)) throw new Error("Unexpected message");
 
     switch (message.code) {
       case "data":
@@ -110,11 +109,9 @@ if (parentPort) {
           void askShutdown(app)
             .then(() => bApp.logger.info("Gracefully stopped."))
             .catch((err) => bApp.logger.error("Error during shutdown", err))
-            .finally(() => {
-              parentPort?.postMessage(makeMessage("stopped", undefined));
-              process.exit(0);
-            });
+            .finally(() => process.exit(0));
         });
+
         break;
     }
   });

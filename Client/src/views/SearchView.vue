@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { onBeforeRouteUpdate } from "vue-router";
-import type { Journey } from "server";
-import LocationSearch from "@/components/LocationSearch.vue";
-import ExtraSettings from "@/components/ExtraSettings.vue";
 import BaseModal from "@/components/BaseModal.vue";
+import ExtraSettings from "@/components/ExtraSettings.vue";
+import LocationSearch from "@/components/LocationSearch.vue";
 import ResultItem from "@/components/ResultItem.vue";
-import { client, APIRefresh, type colorPalette, type colorComm } from "@/store";
+import { APIRefresh, client, type colorComm, type colorPalette } from "@/store";
 import {
+  actualRoute,
+  currentJourney,
   destination,
+  fetchResult,
   result,
   SearchResultStatus,
-  status,
   settings,
   source,
+  status,
   updateQuery,
-  currentJourney,
-  actualRoute,
   updateRoute,
-  fetchResult,
+  type Journey,
 } from "@/store/api";
+import { onMounted, ref } from "vue";
+import { onBeforeRouteUpdate } from "vue-router";
 
 const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
 const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
@@ -55,10 +55,10 @@ if (client.io?.io)
 onMounted(updateQuery);
 onBeforeRouteUpdate(updateQuery);
 
-async function selectResult(idx: number) {
+async function selectResult(path: Journey["paths"][number][number]) {
   if (!result.value) return;
 
-  currentJourney.value = result.value.paths[idx];
+  currentJourney.value = path;
 
   updateRoute();
 }
@@ -155,45 +155,39 @@ async function selectResult(idx: number) {
       </div>
       <div v-if="currentJourney" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
-          :title="`Alternative #${(result as Journey).paths.indexOf(currentJourney) + 1}`"
-          :total-duration="currentJourney.stages.reduce((acc, v) => acc + v.duration, 0)"
-          :total-distance="
-            currentJourney.stages.reduce(
-              (acc, v) => acc + ('details' in v && 'distance' in v.details ? v.details.distance : 0),
-              0,
-            )
-          "
-          :departure="currentJourney.departure"
-          :from="currentJourney.from"
-          :path="currentJourney.stages"
+          :title="`Alternative #${currentJourney.idx + 1}`"
+          :from="(result as Journey).from"
+          :path="currentJourney"
+          :criteria="currentJourney.criteria"
           :expanded="true"
           class="mx-auto"
         />
       </div>
       <div
         v-else-if="result && typeof result === 'object'"
-        class="grid gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        class="grid items-center gap-3 px-4 pt-2 pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         :class="{
           'wait-fade-in': currentJourney === undefined,
           'fade-in': currentJourney === null,
         }"
       >
-        <template v-for="(r, i) of result.paths" :key="i">
-          <ResultItem
-            :title="`Alternative #${i + 1}`"
-            :total-duration="r.stages.reduce((acc, v) => acc + v.duration, 0)"
-            :total-distance="
-              r.stages.reduce(
-                (acc, v) => acc + ('details' in v && 'distance' in v.details ? v.details.distance : 0),
-                0,
-              )
-            "
-            :departure="r.departure"
-            :from="r.from"
-            :path="r.stages"
-            class="cursor-pointer"
-            @click="selectResult(i)"
-          />
+        <template v-for="(paths, i) of result.paths" :key="i">
+          <div class="grid">
+            <template v-for="(path, j) of paths" :key="j">
+              <ResultItem
+                :title="`Alternative #${path.idx + 1}`"
+                :from="result.from"
+                :path="path"
+                class="col-start-1 col-end-1 row-start-1 row-end-1 h-fit cursor-pointer transition-transform duration-300"
+                :class="[
+                  `scale-${100 - 5 * Math.min(paths.length - 1 - j, 6)}`,
+                  ...(j > 0 ? [`mt-${8 * j}`] : []),
+                  ...(j < paths.length - 1 ? ['hover:-translate-y-10', 'hover:scale-105', 'hover:z-50'] : []),
+                ]"
+                @click="selectResult(path)"
+              />
+            </template>
+          </div>
         </template>
       </div>
       <div v-else class="grid gap-2 row-start-3" />
@@ -222,12 +216,12 @@ button:focus {
   @apply outline-0;
 }
 
-.loading-wrapper {
-  @apply opacity-70 !important;
-  @apply cursor-wait !important;
+@utility loading-wrapper {
+  @apply opacity-70!;
+  @apply cursor-wait!;
 }
 
-.loading {
+@utility loading {
   pointer-events: none !important;
 }
 

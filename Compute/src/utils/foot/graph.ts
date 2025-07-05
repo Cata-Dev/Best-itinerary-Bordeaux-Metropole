@@ -1,6 +1,6 @@
+import { Coords, euclideanDistance } from "@bibm/common/geographics";
+import { dbSections as dbSectionsRaw } from "@bibm/data/models/TBM/sections.model";
 import { KeyOfMap, node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
-import { Coords, euclideanDistance } from "common/geographics";
-import { dbSections as dbSectionsRaw } from "data/models/TBM/sections.model";
 import { ProjectionType } from "mongoose";
 import type { makeComputeFpData } from "../../jobs/preCompute/computeFp";
 import Point from "../geometry/Point";

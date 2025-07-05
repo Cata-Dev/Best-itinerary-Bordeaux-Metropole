@@ -1,16 +1,16 @@
 import "core-js/features/reflect";
 
-import { AwaitableProps, Deferred, reduceAsync } from "common/async";
-import { makeLogger } from "common/logger";
-import { isMainThread, Worker } from "node:worker_threads";
-import { cpus } from "os";
+import { AwaitableProps, Deferred, reduceAsync } from "@bibm/common/async";
+import { Logger } from "@bibm/common/logger";
+import { singleUseWorker } from "@bibm/common/workers";
+import { Worker } from "node:worker_threads";
 import { join } from "path";
-import { askShutdown, makeQueue } from "./base";
+import { askShutdown, app as bApp, makeQueue } from "./base";
 import { makeComputeData } from "./jobs/preCompute/compute";
 import { makeComputeFpData } from "./jobs/preCompute/computeFp";
 import { makeComputePTNData } from "./jobs/preCompute/computePTN";
+import { UnionToTuple } from "./utils";
 import { isMessage, makeMessage, Message } from "./utils/para";
-import { singleUseWorker } from "./utils/SingleUseWorker";
 
 declare module "./utils/para" {
   interface Messages {
@@ -23,12 +23,14 @@ declare module "./utils/para" {
     stop: undefined;
   }
 }
+const allDataUpdates = ["compute", "computeFp", "computePTN"] satisfies UnionToTuple<
+  keyof Message<"data">["data"]
+>;
 
-const logger = makeLogger(`[MAIN]`);
+bApp.logger = new Logger(bApp.logger, "[MAIN]");
 
 export async function main(workersCount: number, data?: Message<"data">["data"]) {
   const app = await makeQueue();
-  app.logger = logger;
 
   // Cache
   let fpData: ReturnType<typeof singleUseWorker<makeComputeFpData>> | null = null;
@@ -44,6 +46,9 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
       data.computeFp = fpData = singleUseWorker<makeComputeFpData>(
         join(__dirname, "jobs/", "preCompute/", "computeFp.js"),
       );
+
+      // Updating computeFp implies updating computePTN
+      which.push("computePTN" as T);
     }
 
     if (which.find((w) => w === "computePTN"))
@@ -62,7 +67,7 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
     ) as Promise<Required<Pick<Message<"dataUpdate">["data"], T>>>;
   };
 
-  data ??= await preComputeDataFor(["compute", "computeFp", "computePTN"]);
+  data ??= await preComputeDataFor(allDataUpdates);
 
   // Init main instance
   const workers = Array.from(
@@ -93,8 +98,8 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
     /**
      * Should NOT be called multiple times in parallel, i.e., wait for the previous refresh to resolve
      */
-    refreshData: async (which?: (keyof Message<"dataUpdate">["data"])[]) => {
-      const data = await preComputeDataFor(which ?? ["compute", "computeFp", "computePTN"]);
+    refreshData: async (which: (keyof Message<"dataUpdate">["data"])[] = allDataUpdates) => {
+      const data = await preComputeDataFor(which);
 
       // Wait for all workers to have ack data before resolving
       const def = new Deferred<void>();
@@ -127,11 +132,10 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
         let count = 0;
 
         for (const worker of workers) {
-          worker.on("message", function stopped(message) {
-            if (isMessage(message) && message.code !== "stopped") return;
-
-            app.logger.log(`Stopped W-${worker.threadId}`);
-            worker.removeListener("message", stopped);
+          const wThId = worker.threadId;
+          worker.on("exit", function exited() {
+            app.logger.log(`Stopped W-${wThId}`);
+            worker.removeListener("message", exited);
 
             count++;
             if (count === workers.length) res();
@@ -141,29 +145,13 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
         }
       });
 
-      workersStopped.catch(app.logger.error).finally(() => {
-        askShutdown(app).then(def.resolve).catch(def.reject);
-      });
+      workersStopped
+        .catch((err) => app.logger.error(err))
+        .finally(() => {
+          askShutdown(app).then(def.resolve).catch(def.reject);
+        });
 
       return def.promise;
     },
   };
-}
-
-if (require.main === module && isMainThread) {
-  logger.log(`Main starting...`);
-
-  void main(cpus().length)
-    .then(({ gracefulStop }) => {
-      const askShutdown = () => {
-        void gracefulStop;
-        logger.info("Gracefully stopped, exiting.");
-      };
-
-      process.on("SIGTERM", askShutdown);
-      process.on("SIGINT", askShutdown);
-
-      logger.log(`Main started.`);
-    })
-    .catch(logger.error);
 }

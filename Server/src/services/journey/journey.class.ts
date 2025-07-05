@@ -2,7 +2,13 @@
 import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import type { Application } from "../../declarations";
-import type { Journey, JourneyData, JourneyPatch, JourneyQuery } from "./journey.schema";
+import {
+  Transport,
+  type Journey,
+  type JourneyData,
+  type JourneyPatch,
+  type JourneyQuery,
+} from "./journey.schema";
 
 export type { Journey, JourneyData, JourneyPatch, JourneyQuery };
 
@@ -13,36 +19,36 @@ export interface JourneyServiceOptions {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface JourneyParams extends Params<JourneyQuery> {}
 
-import { BadRequest, NotFound, GeneralError } from "@feathersjs/errors";
+import { BadRequest, GeneralError, NotFound } from "@feathersjs/errors";
 import { hasLastActualization } from "../refresh-data/refresh-data.class";
 
 function hasData(obj: unknown): obj is { data: unknown } {
   return typeof obj === "object" && obj !== null && "data" in obj;
 }
 
+import { mapAsync } from "@bibm/common/async";
+import { JobData } from "@bibm/compute/lib/jobs";
 import resultModelInit, {
   dbComputeResult,
-  isLabelFoot,
-  isLabelVehicle,
+  isJourneyStepFoot,
+  isJourneyStepVehicle,
   isLocationAddress,
   isLocationSNCF,
   isLocationTBM,
-  LabelFoot,
-  LabelVehicle,
-} from "data/models/Compute/result.model";
-import NonScheduledRoutesModelInit from "data/models/TBM/NonScheduledRoutes.model";
-import TBMScheduledRoutesModelInit from "data/models/TBM/TBMScheduledRoutes.model";
-import AddressesModelInit, { dbAddresses } from "data/models/TBM/addresses.model";
-import TBMStopsModelInit from "data/models/TBM/TBM_stops.model";
-import TBMSchedulesModelInit from "data/models/TBM/TBM_schedules.model";
-import TBMLinesRoutesModelInit from "data/models/TBM/TBM_lines_routes.model";
-import TBMLinesModelInit from "data/models/TBM/TBM_lines.model";
-import SNCFStopsModelInit from "data/models/SNCF/SNCF_stops.model";
-// To force TypeScript detect "compute" as a JobName
-import "compute/lib/jobs/compute";
-import { JobData } from "compute/lib/jobs";
-import { mapAsync } from "common/async";
+  JourneyStepFoot,
+  JourneyStepVehicle,
+} from "@bibm/data/models/Compute/result.model";
+import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
+import AddressesModelInit, { dbAddresses } from "@bibm/data/models/TBM/addresses.model";
+import NonScheduledRoutesModelInit from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+import TBMLinesModelInit from "@bibm/data/models/TBM/TBM_lines.model";
+import TBMLinesRoutesModelInit from "@bibm/data/models/TBM/TBM_lines_routes.model";
+import TBMSchedulesModelInit from "@bibm/data/models/TBM/TBM_schedules.model";
+import TBMStopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
+import TBMScheduledRoutesModelInit from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
 import { isDocument } from "@typegoose/typegoose";
+// To force TypeScript detect "compute" as a JobName
+import "@bibm/compute/lib/jobs/compute";
 
 function formatAddress(addressDoc: dbAddresses) {
   return `${addressDoc.numero} ${"rep" in addressDoc ? addressDoc.rep + " " : ""}${addressDoc.nom_voie} ${addressDoc.commune}`;
@@ -76,89 +82,104 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
     this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("sourceDBConn"));
   }
 
+  private async populateLocation(loc: dbComputeResult["from"]) {
+    const populatedLoc = isLocationAddress(loc)
+      ? formatAddress((await this.AddressesModel.findById(loc.id).lean())!)
+      : isLocationTBM(loc)
+        ? (await this.TBMStopsModel.findById(loc.id).lean())?.libelle
+        : isLocationSNCF(loc)
+          ? (await this.SNCFStopsModel.findById(loc.id).lean())?.name
+          : undefined;
+
+    if (populatedLoc === undefined) throw new GeneralError("Could not populate journey.");
+
+    return populatedLoc;
+  }
+
   private populateResult(result: dbComputeResult): Promise<Journey["paths"]> {
-    return mapAsync(result.journeys, async (j) => {
-      const from = isLocationAddress(result.from)
-        ? formatAddress((await this.AddressesModel.findById(result.from.id).lean())!)
-        : isLocationTBM(result.from)
-          ? (await this.TBMStopsModel.findById(result.from.id).lean())?.libelle
-          : isLocationSNCF(result.from)
-            ? (await this.SNCFStopsModel.findById(result.from.id).lean())?.name
-            : null;
-
-      if (!from) throw new GeneralError("Could not populate journey.");
-
+    return mapAsync(result.journeys, async (journey) => {
       return {
-        departure: j[0].time,
-        from,
-        stages: await mapAsync<LabelFoot | LabelVehicle, Journey["paths"][number]["stages"][number]>(
-          j.slice(1).filter((l): l is LabelFoot | LabelVehicle => {
-            if (!isLabelFoot(l) && !isLabelVehicle(l)) throw new Error("Unexpected journey.");
+        stages: await mapAsync<
+          JourneyStepFoot | JourneyStepVehicle,
+          Journey["paths"][number]["stages"][number]
+        >(
+          journey.steps.slice(1).filter((js): js is JourneyStepFoot | JourneyStepVehicle => {
+            if (!isJourneyStepFoot(js) && !isJourneyStepVehicle(js)) throw new Error("Unexpected journey.");
             return true;
           }),
-          async (l, i, arr) => {
+          async (js, i, arr) => {
             const to =
               i === arr.length - 1
-                ? isLocationAddress(result.to)
-                  ? formatAddress((await this.AddressesModel.findById(result.to.id).lean())!)
-                  : isLocationTBM(result.to)
-                    ? (await this.TBMStopsModel.findById(result.to.id).lean())?.libelle
-                    : isLocationSNCF(result.to)
-                      ? (await this.SNCFStopsModel.findById(result.to.id).lean())?.name
-                      : null
-                : isLabelFoot(l)
-                  ? typeof l.transfer.to === "number"
-                    ? (await this.TBMStopsModel.findById(l.transfer.to).lean())?.libelle
-                    : l.transfer.to
+                ? await this.populateLocation(result.to)
+                : isJourneyStepFoot(js)
+                  ? typeof js.transfer.to === "number"
+                    ? (await this.TBMStopsModel.findById(js.transfer.to).lean())?.libelle
+                    : js.transfer.to
                   : typeof arr[i + 1].boardedAt === "number"
                     ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
                     : arr[i + 1].boardedAt.toString();
 
             if (!to) throw new GeneralError("Could not populate journey.");
 
-            if (isLabelFoot(l)) {
+            if (isJourneyStepFoot(js)) {
               return {
                 to,
-                type: "FOOT",
+                type: Transport.FOOT,
+                departure:
+                  // Arrival of previous step
+                  journey.steps[i].time,
                 // m / m*s-1 = s
-                duration: l.transfer.length / result.settings.walkSpeed,
+                duration: js.transfer.length / result.settings.walkSpeed,
                 details: {
-                  distance: l.transfer.length,
+                  distance: js.transfer.length,
                 },
               } satisfies Journey["paths"][number]["stages"][number];
             }
 
             // Only remaining possibility
-            if (!isLabelVehicle(l)) throw new GeneralError("Unexpected error while populating journey");
-            const scheduledRoute = (await this.TBMScheduledRoutesModel.findById(l.route).lean())!;
-
-            // Can only be first label of journey, ignored in `arr` by `slice(1)`
-            if (typeof l.boardedAt === "string")
+            if (!isJourneyStepVehicle(js))
               throw new GeneralError("Unexpected error while populating journey");
 
-            const departureTime = (await this.TBMSchedulesModel.findById(
-              scheduledRoute.trips[l.tripIndex].schedules[scheduledRoute.stops.indexOf(l.boardedAt)],
-            ).lean())!.hor_estime.getTime();
+            const scheduledRoute = await this.TBMScheduledRoutesModel.findById(js.route).lean();
+            if (!scheduledRoute)
+              throw new GeneralError("Unable to retrieve scheduled route while populating journey");
 
-            const lineRoute = await this.TBMLinesRoutesModel.findById(l.route, undefined, {
+            // Can only be first journey step of journey, ignored in `arr` by `slice(1)`
+            if (typeof js.boardedAt === "string")
+              throw new GeneralError("Unexpected error while populating journey");
+
+            const departureTime = (
+              await this.TBMSchedulesModel.findById(
+                scheduledRoute.trips[js.tripIndex].schedules[scheduledRoute.stops.indexOf(js.boardedAt)],
+              ).lean()
+            )?.hor_estime.getTime();
+            if (departureTime === undefined)
+              throw new GeneralError("Unable to retrieve realtime schedule while populating journey");
+
+            const lineRoute = await this.TBMLinesRoutesModel.findById(js.route, undefined, {
               populate: ["rs_sv_ligne_a"],
             });
-            if (!lineRoute || !isDocument(lineRoute.rs_sv_ligne_a))
-              throw new GeneralError("Unexpected error while populating journey");
+            if (!lineRoute) throw new GeneralError("Unable to retrieve line route while populating journey");
+            if (!isDocument(lineRoute.rs_sv_ligne_a))
+              throw new GeneralError("Unable to retrieve line while populating journey");
 
             return {
               to,
-              type: "TBM",
+              type: Transport.TBM,
+              departure: departureTime,
               // Arrival - departure, in sec
-              duration: (l.time - departureTime) / 1e3,
+              duration: (js.time - departureTime) / 1e3,
               details: {
-                departure: departureTime,
                 direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
                 line: lineRoute.rs_sv_ligne_a.libelle,
                 type: lineRoute.vehicule,
               },
             } satisfies Journey["paths"][number]["stages"][number];
           },
+        ),
+        criteria: journey.criteria.reduce<Record<string, number>>(
+          (acc, v) => ({ ...acc, [v.name]: v.value }),
+          {},
         ),
       };
     });
@@ -230,6 +251,8 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
       message: "OK",
       lastActualization,
       id: resultId,
+      from: await this.populateLocation(result.from),
+      departure: result.departureTime.getTime(),
       paths: await this.populateResult(result),
     };
   }
@@ -243,6 +266,8 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
       message: "OK",
       lastActualization: 0,
       id,
+      from: await this.populateLocation(result.from),
+      departure: result.departureTime.getTime(),
       paths: await this.populateResult(result),
     };
   }

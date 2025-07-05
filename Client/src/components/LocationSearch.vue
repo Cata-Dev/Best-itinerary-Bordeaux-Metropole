@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import type { Geocode } from "server";
-import DatalistInput from "./DatalistInput.vue";
-import { client, defaultLocation, equalObjects } from "../store/";
 import type { Location } from "@/store";
+import { wait } from "@bibm/common/async";
+import type { Geocode } from "@bibm/server";
+import { ref, watch } from "vue";
+import { client, defaultLocation, equalObjects } from "../store/";
+import DatalistInput from "./DatalistInput.vue";
 
 interface Props {
   name: string;
@@ -60,6 +61,7 @@ async function fetchSuggestions(value: string): Promise<Location[]> {
 }
 
 let lastInput: string | null = "";
+let lastInputDate: number = -1;
 
 /**
  * Updates suggestions according to provided value.
@@ -69,6 +71,8 @@ async function refreshSuggestions(value: string | null) {
   // Could have been the same through `forceInput`
   if (value === lastInput) return;
   lastInput = value;
+  const inputDate = Date.now();
+  lastInputDate = inputDate;
 
   if (!value || value.length < 5) {
     // Will trigger update of model from Datalist
@@ -77,11 +81,16 @@ async function refreshSuggestions(value: string | null) {
     return;
   }
 
+  await wait(1e3 / 3);
+  if (lastInputDate != inputDate)
+    // New input during threshold, cancel
+    return;
+
   const now = Date.now();
 
   const suggestions = await fetchSuggestions(value);
 
-  // If another call was faster, skip this one
+  // If another call was faster (<=> this call has been way much longer), skip this one
   if (now < updated.value) return;
 
   datalist.value = suggestions;
@@ -126,7 +135,7 @@ const popUp = (msg: string) => alert(msg);
       v-model="model"
       :placeholder="placeholder"
       :datalist="datalist"
-      class="px-2 flex-grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
+      class="px-2 grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
       @input="refreshSuggestions($event)"
     />
     <span class="flex mr-1 items-center">

@@ -1,10 +1,10 @@
 import { feathers } from "@feathersjs/feathers";
 
-import { koa, rest, bodyParser, errorHandler, parseAuthentication, cors } from "@feathersjs/koa";
+import { bodyParser, cors, errorHandler, koa, parseAuthentication, rest } from "@feathersjs/koa";
 import socketio from "@feathersjs/socketio";
 
-import type { Application, HookContext, NextFunction } from "./declarations";
 import { configurationValidator } from "./configuration";
+import type { Application, HookContext, NextFunction } from "./declarations";
 // Import after ../configuration which defines configuration path
 import configuration from "@feathersjs/configuration";
 import { errorHandler as errorHandlerHook, log } from "./hooks";
@@ -12,16 +12,15 @@ import { errorHandler as errorHandlerHook, log } from "./hooks";
 // Needed to solve Reflect import for typegoose
 import "core-js/features/reflect";
 
-import { services } from "./services";
+import setupActions from "./actions";
 import { channels } from "./channels";
-import { setupExternalAPIs } from "./externalAPIs/index";
-import { logErrorHook } from "./logger";
-import { setupMongoose, teardownMongoose } from "./mongoose";
 import { setupCompute, teardownCompute } from "./compute";
+import { setupExternalAPIs } from "./externalAPIs/index";
+import { setupMongoose, teardownMongoose } from "./mongoose";
+import { services } from "./services";
 
 const app: Application = koa(feathers()) as Application;
 
-// Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator));
 
 // Set up Koa middleware
@@ -43,7 +42,7 @@ app.configure(
 // Register hooks that run on all service methods
 app.hooks({
   around: {
-    all: [log, logErrorHook],
+    all: [log],
   },
   before: {},
   after: {},
@@ -59,6 +58,7 @@ app.hooks({
     setupCompute,
     async (context: HookContext, next: NextFunction) => {
       const refresh = await setupExternalAPIs(context.app);
+
       await next();
       // Start refreshing after having registered everything
       void refresh();
@@ -67,6 +67,12 @@ app.hooks({
       // Configure services
       app.configure(services);
       app.configure(channels);
+
+      await next();
+    },
+    async (_: HookContext, next: NextFunction) => {
+      setupActions();
+
       await next();
     },
   ],

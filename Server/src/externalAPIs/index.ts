@@ -1,8 +1,8 @@
 import { Application, ExternalAPIs } from "../declarations";
 
-import { mapAsync } from "common/async";
-import { SNCFClass, SNCFEndpoints, SNCFModel } from "data/models/SNCF/index";
-import { TBMClass, TBMEndpoints, TBMModel } from "data/models/TBM/index";
+import { mapAsync } from "@bibm/common/async";
+import { SNCFClass, SNCFEndpoints, SNCFModel } from "@bibm/data/models/SNCF/index";
+import { TBMClass, TBMEndpoints, TBMModel } from "@bibm/data/models/TBM/index";
 import { logger } from "../logger";
 import sncf from "./SNCF";
 import tbm from "./TBM";

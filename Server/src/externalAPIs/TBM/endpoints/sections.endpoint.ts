@@ -1,12 +1,11 @@
-import { Coords, euclideanDistance } from "common/geographics";
-import { TBMEndpoints } from "data/models/TBM/index";
-import TBM_Sections, { dbSections } from "data/models/TBM/sections.model";
+import { Coords, euclideanDistance } from "@bibm/common/geographics";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import TBM_Sections, { dbSections } from "@bibm/data/models/TBM/sections.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { bulkOps } from "../../../utils";
-import { makeConcurrentHook } from "../../concurrentHook";
-import { Endpoint } from "../../endpoint";
+import { bulkUpsertAndPurge } from "../../../utils";
+import { Endpoint, makeConcurrentHook, sequenceHooksConstructor } from "../../endpoint";
 
 export type Section = BaseTBM<{
   gid: string;
@@ -37,7 +36,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       async () => {
         const rawSections: Section[] = await getData("fv_tronc_l", ["crs=epsg:2154"]);
 
-        const Sections: dbSections[] = rawSections
+        const sections: dbSections[] = rawSections
           .filter(
             (section): section is Omit<Section, "geometry"> & { geometry: { coordinates: Coords[] } } =>
               !!section.geometry,
@@ -70,28 +69,27 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           // Got null ends once...
           .filter((s) => s.rg_fv_graph_nd !== null && s.rg_fv_graph_na !== null);
 
-        await Section.deleteMany({
-          _id: { $nin: Sections.map((s) => s._id) },
-        });
-        await Section.bulkWrite(
-          bulkOps("updateOne", Sections as unknown as Record<keyof dbSections, unknown>[]),
-        );
+        await bulkUpsertAndPurge(Section, sections, ["_id"]);
 
         return true;
       },
       Section,
     )
-      .registerHook(makeNSRHook(app, TBMEndpoints.Sections), () =>
-        app.get("computeInstance").refreshData(["computeFp"]),
+      .registerHook(
+        sequenceHooksConstructor(
+          () => () => app.get("computeInstance").refreshData(["computeFp"]),
+          makeNSRHook(app, TBMEndpoints.Sections),
+        ),
       )
       .init(),
   ] as const;
 };
 
-export const makeNSRHook = makeConcurrentHook((app) =>
-  // Could be effectively awaited (through job.waitUntilFinished(queue))
-  app
-    .get("computeInstance")
-    .app.queues[3].add("computeNSR", [5e3])
-    .catch((err) => logger.error("Failed to start computing Non Schedules Routes", err)),
+export const makeNSRHook = makeConcurrentHook(
+  (app) =>
+    // Could be effectively awaited (through job.waitUntilFinished(queue))
+    void app
+      .get("computeInstance")
+      .app.queues[3].add("computeNSR", [5_000])
+      .catch((err) => logger.error("Failed to start computing Non Schedules Routes", err)),
 );

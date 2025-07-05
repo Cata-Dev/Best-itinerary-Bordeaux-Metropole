@@ -1,15 +1,18 @@
 // // For more information about this file see https://dove.feathersjs.com/guides/cli/service.schemas.html
 import { resolve } from "@feathersjs/schema";
 import type { Static } from "@feathersjs/typebox";
-import { Type, getValidator } from "@feathersjs/typebox";
+import { getValidator, Type } from "@feathersjs/typebox";
 
-import { SNCFEndpoints } from "data/models/SNCF/index";
-import { TBMEndpoints } from "data/models/TBM/index";
+import { coords } from "@bibm/common/geographics";
+import { Satisfy } from "@bibm/common/types";
+import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
+import { dbSNCF_Stops } from "@bibm/data/models/SNCF/SNCF_stops.model";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import { dbTBM_Stops, StopType, VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import type { HookContext } from "../../declarations";
 import { defaultOptional } from "../../utils/schemas";
 import { dataValidator, queryValidator } from "../../validators";
 import type { GeocodeService } from "./geocode.class";
-import { coords } from "common/geographics";
 
 const AddressesObject = Type.Object(
   {
@@ -27,33 +30,30 @@ const AddressesObject = Type.Object(
 
 const Addresses = Type.Literal(TBMEndpoints.Addresses);
 
-export const TBMVehicles = Type.Union([Type.Literal("BUS"), Type.Literal("TRAM"), Type.Literal("BATEAU")]);
+export const TBMVehicles = Type.Enum(VehicleType);
 
 const TBM_StopsObject = Type.Object(
   {
-    type: Type.Union([
-      Type.Literal("CLASSIQUE"),
-      Type.Literal("DELESTAGE"),
-      Type.Literal("AUTRE"),
-      Type.Literal("FICTIF"),
-    ]),
+    type: Type.Enum(StopType),
     vehicule: TBMVehicles,
     libelle: Type.String(),
-    libelle_lowercase: Type.String(),
+    libelle_norm: Type.String(),
     actif: Type.Union([Type.Literal(0), Type.Literal(1)]),
   },
   { $id: "TBM_Stops", additionalProperties: false },
 );
+type _ = Satisfy<Omit<dbTBM_Stops, "_id" | "coords">, Static<typeof TBM_StopsObject>>;
 
 const TBM_Stops = Type.Literal(TBMEndpoints.Stops);
 
 const SNCF_StopsObject = Type.Object(
   {
     name: Type.String(),
-    name_lowercase: Type.String(),
+    name_norm: Type.String(),
   },
   { $id: "SNCF_Stops", additionalProperties: false },
 );
+type __ = Satisfy<Omit<dbSNCF_Stops, "_id" | "coords">, Static<typeof SNCF_StopsObject>>;
 
 const SNCF_Stops = Type.Literal(SNCFEndpoints.Stops);
 

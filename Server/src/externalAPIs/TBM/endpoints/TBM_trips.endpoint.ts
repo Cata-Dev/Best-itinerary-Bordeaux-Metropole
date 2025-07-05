@@ -1,12 +1,13 @@
-import { TBMEndpoints } from "data/models/TBM/index";
-import TBM_Trips, { dbTBM_Trips } from "data/models/TBM/TBM_trips.model";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import TBM_Trips, { dbTBM_Trips } from "@bibm/data/models/TBM/TBM_trips.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
+import { logger } from "../../../logger";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
-export type TBM_Vehicle = BaseTBM<{
+export type TBM_Trip = BaseTBM<{
   gid: string;
   etat: string;
   rg_sv_arret_p_nd: number;
@@ -15,15 +16,16 @@ export type TBM_Vehicle = BaseTBM<{
   rs_sv_chem_l: number;
 }>;
 
-export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const Trip = TBM_Trips(app.get("sourceDBConn"));
 
   return [
     await new Endpoint(
       TBMEndpoints.Trips,
-      10 * 60,
+      // 60s in reality but it's of no use to be that precise because data treatment takes way more time...
+      3 * 60,
       async () => {
-        const rawTrips: TBM_Vehicle[] = await getData("sv_cours_a", [
+        const rawTrips: TBM_Trip[] = await getData("sv_cours_a", [
           "filter=" +
             JSON.stringify({
               etat: {
@@ -31,8 +33,9 @@ export default async (app: Application, getData: <T>(id: string, queries: string
               },
             }),
         ]);
+        if (app.get("debug")) logger.debug(`Fetched ${rawTrips.length} trips`);
 
-        const Trips: dbTBM_Trips[] = rawTrips.map((trip) => {
+        const trips: dbTBM_Trips[] = rawTrips.map((trip) => {
           return {
             _id: parseInt(trip.properties.gid),
             etat: trip.properties.etat,
@@ -43,10 +46,11 @@ export default async (app: Application, getData: <T>(id: string, queries: string
           };
         });
 
-        await Trip.deleteMany({
-          _id: { $nin: Trips.map((v) => v._id) },
-        });
-        await Trip.bulkWrite(bulkOps("updateOne", Trips as unknown as Record<keyof dbTBM_Trips, unknown>[]));
+        const [bulked, { deletedCount }] = await bulkUpsertAndPurge(Trip, trips, ["_id"]);
+        if (app.get("debug"))
+          logger.debug(
+            `Trips: updated ${bulked.upsertedCount}, inserted ${bulked.insertedCount} and deleted ${deletedCount}`,
+          );
 
         return true;
       },

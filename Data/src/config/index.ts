@@ -8,6 +8,7 @@ process.env.NODE_CONFIG_DIR = [join(__dirname, "../../../config/")].join(delimit
 
 // Wrapper around node-config
 import config from "config";
+import { logger } from "../utils/logger";
 
 const configurationSchema = Type.Object({
   server: Type.Object({
@@ -36,6 +37,8 @@ const dataValidator = new Ajv({});
 const configurationValidator = getValidator<Configuration>(configurationSchema, dataValidator);
 
 const configObject = config.util.toObject() as Configuration;
+
+if (configObject.debug) logger.debug(configObject);
 
 configurationValidator(configObject).catch((err) => console.error("Configuration validation failed", err));
 

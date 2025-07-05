@@ -29,11 +29,11 @@ APIRefresh.promise
       />
     </div>
     <p class="w-full text-center text-xs text-text-light-faded dark:text-text-dark-faded">
-      Trouver le meilleur itinéraire sur Bordeaux Métropole © 2023
+      Trouver le meilleur itinéraire sur Bordeaux Métropole © 2025
     </p>
     <button
       class="flex duration-700 justify-self-end my-1 mr-2 sm:mr-4"
-      :class="{ 'rotate-[360deg]': theme === 'light' }"
+      :class="{ 'rotate-360': theme === 'light' }"
       @click="toggleDarkMode"
     >
       <font-awesome-icon :icon="theme === 'light' ? 'moon' : 'sun'" class="text-xl" />

@@ -1,9 +1,9 @@
-import { Coords } from "common/geographics";
-import { TBMEndpoints } from "data/models/TBM/index";
-import TBM_Intersections, { dbIntersections } from "data/models/TBM/intersections.model";
+import { Coords } from "@bibm/common/geographics";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import TBM_Intersections, { dbIntersections } from "@bibm/data/models/TBM/intersections.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 
 export type Intersection = BaseTBM<{
@@ -23,7 +23,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       async () => {
         const rawIntersections: Intersection[] = await getData("fv_carre_p", ["crs=epsg:2154"]);
 
-        const Intersections: dbIntersections[] = rawIntersections.map((intersection) => {
+        const intersections: dbIntersections[] = rawIntersections.map((intersection) => {
           return {
             coords: intersection.geometry.coordinates,
             _id: parseInt(intersection.properties.gid),
@@ -31,12 +31,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        await Intersection.deleteMany({
-          _id: { $nin: Intersections.map((i) => i._id) },
-        });
-        await Intersection.bulkWrite(
-          bulkOps("updateOne", Intersections as unknown as Record<keyof dbIntersections, unknown>[]),
-        );
+        await bulkUpsertAndPurge(Intersection, intersections, ["_id"]);
 
         return true;
       },

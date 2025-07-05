@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Coords } from "@bibm/common/geographics";
 import Feature from "ol/Feature";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
@@ -9,13 +10,18 @@ import { setUserProjection } from "ol/proj";
 import { register } from "ol/proj/proj4.js";
 import OSM from "ol/source/OSM.js";
 import VectorSource from "ol/source/Vector.js";
-import Stroke from "ol/style/Stroke";
-import Style from "ol/style/Style";
+import { type StyleLike } from "ol/style/Style";
 import proj4 from "proj4";
 import { onMounted, watch } from "vue";
 
-interface Props {
-  footpaths: [number, number][][][];
+export interface Props {
+  multiLineStrings: {
+    data: {
+      coords: Coords[][];
+      props: Record<string, unknown>;
+    }[];
+    style: StyleLike;
+  };
 }
 const props = defineProps<Props>();
 
@@ -26,47 +32,42 @@ proj4.defs(
 register(proj4);
 setUserProjection("EPSG:9794");
 
-function makeFootLayer(footpaths: Props["footpaths"]) {
+function makeMLSLayer(multiLineStrings: Props["multiLineStrings"]) {
   return new VectorLayer({
     source: new VectorSource({
-      features: footpaths.map(
-        (fp) =>
+      features: multiLineStrings.data.map(
+        (mls) =>
           new Feature({
-            geometry: new MultiLineString(fp),
-            type: "foot",
+            geometry: new MultiLineString(mls.coords),
+            props: mls.props,
           }),
       ),
     }),
-    style: (feature) =>
-      feature.getProperties().type === "foot"
-        ? new Style({
-            stroke: new Stroke({
-              width: 5,
-              color: [0, 0, 0],
-              lineDash: [10],
-            }),
-          })
-        : undefined,
+    style: multiLineStrings.style,
   });
 }
 
-let footLayer = makeFootLayer(props.footpaths);
+let multiLineStringsLayer = makeMLSLayer(props.multiLineStrings);
 
-watch(props.footpaths, (footpaths) => {
-  map.removeLayer(footLayer);
-  map.addLayer((footLayer = makeFootLayer(footpaths)));
+watch(
+  () => props.multiLineStrings,
+  (multiLineStrings) => {
+    map.removeLayer(multiLineStringsLayer);
+    map.addLayer((multiLineStringsLayer = makeMLSLayer(multiLineStrings)));
 
-  // Center on the final updated layer
-  const newFootLayerExtent = footLayer.getSource()?.getExtent();
-  if (newFootLayerExtent)
-    map.getView().fit(newFootLayerExtent, {
-      padding: [50, 50, 50, 50],
-      duration: 1,
-    });
-});
+    // Center on the final updated layer
+    const newFootLayerExtent = multiLineStringsLayer.getSource()?.getExtent();
+    if (newFootLayerExtent && newFootLayerExtent.every((v) => v > -Infinity && v < Infinity))
+      map.getView().fit(newFootLayerExtent, {
+        padding: [50, 50, 50, 50],
+        duration: 1,
+      });
+  },
+  { deep: true },
+);
 
 const map = new Map({
-  layers: [new TileLayer({ source: new OSM() }), footLayer],
+  layers: [new TileLayer({ source: new OSM() }), multiLineStringsLayer],
   view: new View({
     projection: "EPSG:9794",
     center: [417210.8086218268, 6421659.081475512],
@@ -83,5 +84,5 @@ onMounted(() => map.setTarget("map"));
 </template>
 
 <style>
-@import "/node_modules/ol/ol.css";
+@import "../../node_modules/ol/ol.css";
 </style>

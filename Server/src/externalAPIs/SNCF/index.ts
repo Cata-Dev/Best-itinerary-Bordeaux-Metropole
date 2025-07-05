@@ -1,14 +1,14 @@
-import { SNCFEndpoints } from "data/models/SNCF/index";
+import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
 
+import { unique } from "@bibm/common/filters";
+import { WGSToLambert93 } from "@bibm/common/geographics";
+import { normalize } from "@bibm/common/string";
+import SNCF_Schedules, { dbSNCF_Schedules } from "@bibm/data/models/SNCF/SNCF_schedules.model";
+import SNCF_Stops, { dbSNCF_Stops } from "@bibm/data/models/SNCF/SNCF_stops.model";
 import axios from "axios";
-import { unique } from "common/filters";
-import { WGSToLambert93 } from "common/geographics";
-import { normalize } from "common/string";
-import SNCF_Schedules, { dbSNCF_Schedules } from "data/models/SNCF/SNCF_schedules.model";
-import SNCF_Stops, { dbSNCF_Stops } from "data/models/SNCF/SNCF_stops.model";
 import { Application } from "../../declarations";
 import { logger } from "../../logger";
-import { bulkOps } from "../../utils";
+import { bulkUpsertAndPurge } from "../../utils";
 import { Endpoint } from "../endpoint";
 
 /**
@@ -188,12 +188,7 @@ export default async (app: Application) => {
             });
           }
 
-          await Schedule.deleteMany({
-            _id: { $nin: schedules.map((s) => s._id) },
-          });
-          await Schedule.bulkWrite(
-            bulkOps("updateOne", schedules as unknown as Record<keyof dbSNCF_Schedules, unknown>[]),
-          );
+          await bulkUpsertAndPurge(Schedule, schedules, ["_id"]);
 
           return true;
         },
@@ -219,7 +214,7 @@ export default async (app: Application) => {
             )
           ).stop_points;
 
-          const Stops: dbSNCF_Stops[] = rawStops
+          const stops: dbSNCF_Stops[] = rawStops
             .map((stop) => {
               return {
                 _id: parseInt(stop.id.substring(16, 24)),
@@ -230,10 +225,7 @@ export default async (app: Application) => {
             })
             .filter(unique);
 
-          await Stop.deleteMany({ _id: { $nin: Stops.map((s) => s._id) } });
-          await Stop.bulkWrite(
-            bulkOps("updateOne", Stops as unknown as Record<keyof dbSNCF_Stops, unknown>[]),
-          );
+          await bulkUpsertAndPurge(Stop, stops, ["_id"]);
 
           return true;
         },

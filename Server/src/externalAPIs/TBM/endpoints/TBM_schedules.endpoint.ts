@@ -1,12 +1,13 @@
-import { TBMEndpoints } from "data/models/TBM/index";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import TBM_Schedules, {
   dbTBM_Schedules_rt,
   RtScheduleState,
   RtScheduleType,
-} from "data/models/TBM/TBM_schedules.model";
+} from "@bibm/data/models/TBM/TBM_schedules.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
+import { logger } from "../../../logger";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
@@ -26,7 +27,7 @@ export type TBM_Schedule_rt = TBM_Schedule &
     tempsarret: number;
   }>;
 
-export default async (app: Application, getData: <T>(id: string, queries: string[]) => Promise<T>) => {
+export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const [Schedule, ScheduleRt] = TBM_Schedules(app.get("sourceDBConn"));
 
   // Data needed
@@ -41,39 +42,22 @@ export default async (app: Application, getData: <T>(id: string, queries: string
     ).init(),
     await new Endpoint(
       TBMEndpoints.Schedules_rt,
-      10,
+      // 10s in reality but it's of no use to be that precise because data treatment takes way more time...
+      3 * 60,
       async () => {
-        const date = new Date().toJSON().substring(0, 19);
-
         const rawSchedulesRt: TBM_Schedule_rt[] = await getData("sv_horai_a", [
           "filter=" +
             JSON.stringify({
-              $or: [
-                {
-                  hor_theo: {
-                    $gte: date,
-                  },
-                },
-                {
-                  hor_app: {
-                    $gte: date,
-                  },
-                },
-                {
-                  hor_estime: {
-                    $gte: date,
-                  },
-                },
-              ],
+              // ],
               etat: {
                 $neq: "REALISE",
               },
             }),
         ]);
 
-        const SchedulesRt: dbTBM_Schedules_rt[] = rawSchedulesRt.map((scheduleRt) => {
+        const schedulesRt: dbTBM_Schedules_rt[] = rawSchedulesRt.map((scheduleRt) => {
           return {
-            gid: parseInt(scheduleRt.properties.gid),
+            _id: parseInt(scheduleRt.properties.gid),
             realtime: true,
             hor_theo: new Date(scheduleRt.properties.hor_theo),
             hor_app: new Date(scheduleRt.properties.hor_app),
@@ -85,16 +69,11 @@ export default async (app: Application, getData: <T>(id: string, queries: string
           };
         });
 
-        await ScheduleRt.deleteMany({
-          realtime: true,
-          gid: { $nin: SchedulesRt.map((s) => s.gid) },
-        });
-        await ScheduleRt.bulkWrite(
-          bulkOps("updateOne", SchedulesRt as unknown as Record<keyof dbTBM_Schedules_rt, unknown>[], [
-            "gid",
-            "realtime",
-          ]),
-        );
+        const [bulked, { deletedCount }] = await bulkUpsertAndPurge(ScheduleRt, schedulesRt, ["_id"]);
+        if (app.get("debug"))
+          logger.debug(
+            `Realtime schedules: updated ${bulked.upsertedCount}, inserted ${bulked.insertedCount} and deleted ${deletedCount}`,
+          );
 
         return true;
       },

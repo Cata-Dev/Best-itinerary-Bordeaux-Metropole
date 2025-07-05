@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "@bibm/server",
   "description": "",
   "version": "1.0.0",
   "homepage": "",
@@ -14,7 +14,8 @@
   "contributors": [],
   "bugs": {},
   "engines": {
-    "node": ">= 18.19.0"
+    "node": ">=22.13.0",
+    "pnpm": ">=9"
   },
   "feathers": {
     "language": "ts",
@@ -61,6 +62,10 @@
     "prepare": "pnpm run compile"
   },
   "dependencies": {
+    "@bibm/common": "workspace:*",
+    "@bibm/compute": "workspace:*",
+    "@bibm/data": "workspace:*",
+    "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@feathersjs/adapter-commons": "^5.0.31",
     "@feathersjs/authentication": "^5.0.31",
     "@feathersjs/authentication-client": "^5.0.31",
@@ -75,10 +80,7 @@
     "@feathersjs/typebox": "^5.0.31",
     "@typegoose/typegoose": "^12.10.1",
     "axios": "^1.7.9",
-    "common": "workspace:*",
-    "compute": "workspace:*",
     "core-js": "^3.39.0",
-    "data": "workspace:*",
     "feathers-hooks-common": "^8.2.1",
     "mongoose": "^8.9.3"
   },
@@ -91,6 +93,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^9.17.0",
     "mocha": "^11.0.1",
+    "mongodb": "^6.12.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.4.2",
     "shx": "^0.3.4",
