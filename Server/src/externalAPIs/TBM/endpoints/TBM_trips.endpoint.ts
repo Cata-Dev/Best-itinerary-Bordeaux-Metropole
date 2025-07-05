@@ -2,10 +2,10 @@ import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import TBM_Trips, { dbTBM_Trips } from "@bibm/data/models/TBM/TBM_trips.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
+import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
-import { logger } from "../../../logger";
 
 export type TBM_Trip = BaseTBM<{
   gid: string;
@@ -49,9 +49,12 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
         const bulked = await Trip.bulkWrite(
           bulkOps("updateOne", Trips as unknown as Record<keyof dbTBM_Trips, unknown>[]),
         );
-        await Trip.deleteMany({
+        if (app.get("debug"))
+          logger.debug(`Trips: updated ${bulked.upsertedCount} and inserted ${bulked.insertedCount}`);
+        const { deletedCount } = await Trip.deleteMany({
           _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
         });
+        if (app.get("debug")) logger.debug(`Trips: deleted ${deletedCount}`);
 
         return true;
       },

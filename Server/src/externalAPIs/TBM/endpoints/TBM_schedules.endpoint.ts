@@ -6,6 +6,7 @@ import TBM_Schedules, {
 } from "@bibm/data/models/TBM/TBM_schedules.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
+import { logger } from "../../../logger";
 import { bulkOps } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
@@ -74,9 +75,14 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
             "realtime",
           ]),
         );
-        await ScheduleRt.deleteMany({
+        if (app.get("debug"))
+          logger.debug(
+            `Realtime schedules: updated ${bulked.upsertedCount} and inserted ${bulked.insertedCount}`,
+          );
+        const { deletedCount } = await ScheduleRt.deleteMany({
           _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
         });
+        if (app.get("debug")) logger.debug(`Realtime schedules: deleted ${deletedCount}`);
 
         return true;
       },
