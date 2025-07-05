@@ -4,7 +4,7 @@ import TBM_Sections, { dbSections } from "@bibm/data/models/TBM/sections.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint, makeConcurrentHook, sequenceHooksConstructor } from "../../endpoint";
 
 export type Section = BaseTBM<{
@@ -36,7 +36,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       async () => {
         const rawSections: Section[] = await getData("fv_tronc_l", ["crs=epsg:2154"]);
 
-        const Sections: dbSections[] = rawSections
+        const sections: dbSections[] = rawSections
           .filter(
             (section): section is Omit<Section, "geometry"> & { geometry: { coordinates: Coords[] } } =>
               !!section.geometry,
@@ -69,12 +69,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           // Got null ends once...
           .filter((s) => s.rg_fv_graph_nd !== null && s.rg_fv_graph_na !== null);
 
-        const bulked = await Section.bulkWrite(
-          bulkOps("updateOne", Sections as unknown as Record<keyof dbSections, unknown>[]),
-        );
-        await Section.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
+        await bulkUpsertAndPurge(Section, sections, ["_id"]);
 
         return true;
       },

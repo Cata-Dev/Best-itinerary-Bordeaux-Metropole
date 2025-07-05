@@ -12,7 +12,7 @@ import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { HydratedDocument } from "mongoose";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint, makeConcurrentHook } from "../../endpoint";
 
 export default async (
@@ -130,17 +130,11 @@ export default async (
             `Retrieved ${tripsCount} trips and ${schedulesCount} realtime schedules during scheduled routes computation`,
           );
 
-        const bulked = await ScheduledRoute.bulkWrite(
-          bulkOps("updateOne", scheduledRoutes as unknown as Record<keyof dbTBM_ScheduledRoutes, unknown>[]),
-        );
+        const [bulked, { deletedCount }] = await bulkUpsertAndPurge(ScheduledRoute, scheduledRoutes, ["_id"]);
         if (app.get("debug"))
           logger.debug(
-            `Schedules routes: updated ${bulked.upsertedCount} and inserted ${bulked.insertedCount}`,
+            `Schedules routes: updated ${bulked.upsertedCount}, inserted ${bulked.insertedCount} and deleted ${deletedCount}`,
           );
-        const { deletedCount } = await ScheduledRoute.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
-        if (app.get("debug")) logger.debug(`Scheduled routes: deleted ${deletedCount}`);
 
         return true;
       },

@@ -4,7 +4,7 @@ import TBM_RouteSections, { dbTBM_RouteSections } from "@bibm/data/models/TBM/TB
 import { VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeLinkLineRoutesHook } from "./TBM_link_line_routes_sections.endpoint";
 
@@ -37,12 +37,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        const bulked = await RouteSection.bulkWrite(
-          bulkOps("updateOne", routeSections as unknown as Record<keyof dbTBM_RouteSections, unknown>[]),
-        );
-        await RouteSection.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
+        await bulkUpsertAndPurge(RouteSection, routeSections, ["_id"]);
 
         return true;
       },

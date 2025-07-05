@@ -3,7 +3,7 @@ import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import TBM_Intersections, { dbIntersections } from "@bibm/data/models/TBM/intersections.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 
 export type Intersection = BaseTBM<{
@@ -23,7 +23,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       async () => {
         const rawIntersections: Intersection[] = await getData("fv_carre_p", ["crs=epsg:2154"]);
 
-        const Intersections: dbIntersections[] = rawIntersections.map((intersection) => {
+        const intersections: dbIntersections[] = rawIntersections.map((intersection) => {
           return {
             coords: intersection.geometry.coordinates,
             _id: parseInt(intersection.properties.gid),
@@ -31,12 +31,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        const bulked = await Intersection.bulkWrite(
-          bulkOps("updateOne", Intersections as unknown as Record<keyof dbIntersections, unknown>[]),
-        );
-        await Intersection.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
+        await bulkUpsertAndPurge(Intersection, intersections, ["_id"]);
 
         return true;
       },

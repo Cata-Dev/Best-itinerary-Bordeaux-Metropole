@@ -7,7 +7,7 @@ import TBM_Schedules, {
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
@@ -55,7 +55,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
             }),
         ]);
 
-        const SchedulesRt: dbTBM_Schedules_rt[] = rawSchedulesRt.map((scheduleRt) => {
+        const schedulesRt: dbTBM_Schedules_rt[] = rawSchedulesRt.map((scheduleRt) => {
           return {
             _id: parseInt(scheduleRt.properties.gid),
             realtime: true,
@@ -69,20 +69,11 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        const bulked = await ScheduleRt.bulkWrite(
-          bulkOps("updateOne", SchedulesRt as unknown as Record<keyof dbTBM_Schedules_rt, unknown>[], [
-            "_id",
-            "realtime",
-          ]),
-        );
+        const [bulked, { deletedCount }] = await bulkUpsertAndPurge(ScheduleRt, schedulesRt, ["_id"]);
         if (app.get("debug"))
           logger.debug(
-            `Realtime schedules: updated ${bulked.upsertedCount} and inserted ${bulked.insertedCount}`,
+            `Realtime schedules: updated ${bulked.upsertedCount}, inserted ${bulked.insertedCount} and deleted ${deletedCount}`,
           );
-        const { deletedCount } = await ScheduleRt.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
-        if (app.get("debug")) logger.debug(`Realtime schedules: deleted ${deletedCount}`);
 
         return true;
       },

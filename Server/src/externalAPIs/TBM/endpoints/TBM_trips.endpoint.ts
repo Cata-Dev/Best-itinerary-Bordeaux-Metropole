@@ -3,7 +3,7 @@ import TBM_Trips, { dbTBM_Trips } from "@bibm/data/models/TBM/TBM_trips.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 
@@ -35,7 +35,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
         ]);
         if (app.get("debug")) logger.debug(`Fetched ${rawTrips.length} trips`);
 
-        const Trips: dbTBM_Trips[] = rawTrips.map((trip) => {
+        const trips: dbTBM_Trips[] = rawTrips.map((trip) => {
           return {
             _id: parseInt(trip.properties.gid),
             etat: trip.properties.etat,
@@ -46,15 +46,11 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        const bulked = await Trip.bulkWrite(
-          bulkOps("updateOne", Trips as unknown as Record<keyof dbTBM_Trips, unknown>[]),
-        );
+        const [bulked, { deletedCount }] = await bulkUpsertAndPurge(Trip, trips, ["_id"]);
         if (app.get("debug"))
-          logger.debug(`Trips: updated ${bulked.upsertedCount} and inserted ${bulked.insertedCount}`);
-        const { deletedCount } = await Trip.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
-        if (app.get("debug")) logger.debug(`Trips: deleted ${deletedCount}`);
+          logger.debug(
+            `Trips: updated ${bulked.upsertedCount}, inserted ${bulked.insertedCount} and deleted ${deletedCount}`,
+          );
 
         return true;
       },

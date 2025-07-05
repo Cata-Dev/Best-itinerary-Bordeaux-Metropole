@@ -8,7 +8,7 @@ import SNCF_Stops, { dbSNCF_Stops } from "@bibm/data/models/SNCF/SNCF_stops.mode
 import axios from "axios";
 import { Application } from "../../declarations";
 import { logger } from "../../logger";
-import { bulkOps } from "../../utils";
+import { bulkUpsertAndPurge } from "../../utils";
 import { Endpoint } from "../endpoint";
 
 /**
@@ -188,12 +188,7 @@ export default async (app: Application) => {
             });
           }
 
-          const bulked = await Schedule.bulkWrite(
-            bulkOps("updateOne", schedules as unknown as Record<keyof dbSNCF_Schedules, unknown>[]),
-          );
-          await Schedule.deleteMany({
-            _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-          });
+          await bulkUpsertAndPurge(Schedule, schedules, ["_id"]);
 
           return true;
         },
@@ -219,7 +214,7 @@ export default async (app: Application) => {
             )
           ).stop_points;
 
-          const Stops: dbSNCF_Stops[] = rawStops
+          const stops: dbSNCF_Stops[] = rawStops
             .map((stop) => {
               return {
                 _id: parseInt(stop.id.substring(16, 24)),
@@ -230,12 +225,7 @@ export default async (app: Application) => {
             })
             .filter(unique);
 
-          const bulked = await Stop.bulkWrite(
-            bulkOps("updateOne", Stops as unknown as Record<keyof dbSNCF_Stops, unknown>[]),
-          );
-          await Stop.deleteMany({
-            _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-          });
+          await bulkUpsertAndPurge(Stop, stops, ["_id"]);
 
           return true;
         },

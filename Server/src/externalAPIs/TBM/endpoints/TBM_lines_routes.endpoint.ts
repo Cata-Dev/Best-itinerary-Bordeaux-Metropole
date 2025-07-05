@@ -3,7 +3,7 @@ import { VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
 import { makeLinkLineRoutesHook } from "./TBM_link_line_routes_sections.endpoint";
@@ -39,7 +39,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
             ]),
         ]);
 
-        const Lines_routes: dbTBM_Lines_routes[] = rawLines_routes.map((lines_route) => {
+        const lines_routes: dbTBM_Lines_routes[] = rawLines_routes.map((lines_route) => {
           return {
             _id: parseInt(lines_route.properties.gid),
             libelle: lines_route.properties.libelle,
@@ -51,12 +51,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        const bulked = await LinesRoute.bulkWrite(
-          bulkOps("updateOne", Lines_routes as unknown as Record<keyof dbTBM_Lines_routes, unknown>[]),
-        );
-        await LinesRoute.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
+        await bulkUpsertAndPurge(LinesRoute, lines_routes, ["_id"]);
 
         return true;
       },

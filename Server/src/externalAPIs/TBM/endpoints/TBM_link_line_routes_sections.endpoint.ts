@@ -5,7 +5,7 @@ import TBM_LinkLineRoutesSections, {
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint, makeConcurrentHook } from "../../endpoint";
 
 export type TBM_LinkLineRoutesSections = BaseTBM<{
@@ -37,16 +37,10 @@ export default async (
           },
         );
 
-        const bulked = await LinkLineRoutesSections.bulkWrite(
-          bulkOps(
-            "updateOne",
-            linkLineRoutesSections as unknown as Record<keyof dbTBM_LinkLineRoutesSections, unknown>[],
-            ["rs_sv_chem_l", "rs_sv_tronc_l"],
-          ),
-        );
-        await LinkLineRoutesSections.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
+        await bulkUpsertAndPurge(LinkLineRoutesSections, linkLineRoutesSections, [
+          "rs_sv_chem_l",
+          "rs_sv_tronc_l",
+        ]);
 
         return true;
       },

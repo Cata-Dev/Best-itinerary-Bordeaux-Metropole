@@ -5,7 +5,7 @@ import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 
 export type Addresse = BaseTBM<{
@@ -32,7 +32,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       async () => {
         const rawAddresses: Addresse[] = await getData("fv_adresse_p", ["crs=epsg:2154"]);
 
-        const Addresses: dbAddresses[] = rawAddresses
+        const addresses: dbAddresses[] = rawAddresses
           .map((address) => {
             try {
               const voie = address.properties.nom_voie;
@@ -58,12 +58,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           })
           .filter((address) => !!address);
 
-        const bulked = await Address.bulkWrite(
-          bulkOps("updateOne", Addresses as unknown as Record<keyof dbAddresses, unknown>[]),
-        );
-        await Address.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
+        await bulkUpsertAndPurge(Address, addresses, ["_id"]);
 
         return true;
       },

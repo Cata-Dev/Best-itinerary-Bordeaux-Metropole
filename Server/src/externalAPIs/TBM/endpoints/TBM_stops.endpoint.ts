@@ -4,7 +4,7 @@ import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import TBM_Stops, { Active, dbTBM_Stops, StopType, VehicleType } from "@bibm/data/models/TBM/TBM_stops.model";
 import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
-import { bulkOps } from "../../../utils";
+import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint, parallelHooksConstructor, sequenceHooksConstructor } from "../../endpoint";
 import { makeNSRHook } from "./sections.endpoint";
 import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
@@ -29,7 +29,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       async () => {
         const rawStops: TBM_Stop[] = await getData("sv_arret_p", ["crs=epsg:2154"]);
 
-        const Stops: dbTBM_Stops[] = rawStops.map((stop) => {
+        const stops: dbTBM_Stops[] = rawStops.map((stop) => {
           return {
             coords: stop.geometry?.coordinates ?? [Infinity, Infinity], //out of BM
             _id: parseInt(stop.properties.gid),
@@ -41,12 +41,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           };
         });
 
-        const bulked = await Stop.bulkWrite(
-          bulkOps("updateOne", Stops as unknown as Record<keyof dbTBM_Stops, unknown>[]),
-        );
-        await Stop.deleteMany({
-          _id: { $nin: Object.values(bulked.upsertedIds).concat(Object.values(bulked.insertedIds)) },
-        });
+        await bulkUpsertAndPurge(Stop, stops, ["_id"]);
 
         return true;
       },

@@ -1,8 +1,13 @@
-type supportedBulkOp = "updateOne" | "deleteOne";
-export function formatDocToBulkOps<D extends Record<string, unknown>>(
-  op: supportedBulkOp,
+import { ReturnModelType } from "@typegoose/typegoose";
+import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
+import type { BulkWriteResult, DeleteResult } from "mongodb";
+import { FilterQuery } from "mongoose";
+
+type SupportedBulkOp = "updateOne" | "deleteOne";
+export function formatDocToBulkOps<K extends string | number | symbol, D extends Record<K, unknown>>(
+  op: SupportedBulkOp,
   doc: D,
-  filterKeys: (keyof D)[],
+  filterKeys: K[],
 ) {
   switch (op) {
     case "updateOne":
@@ -38,12 +43,32 @@ export function formatDocToBulkOps<D extends Record<string, unknown>>(
 /**
  * @description Format documents to be operated via bulkWrite
  */
-export function bulkOps<D extends Record<string, unknown>>(
-  op: supportedBulkOp,
+export function bulkOps<K extends string | number | symbol, D extends Record<K, unknown>>(
+  op: SupportedBulkOp,
   documents: D[],
-  filterKeys: (keyof D)[] = ["_id"],
+  filterKeys: K[],
 ) {
   return documents.map((doc) => formatDocToBulkOps(op, doc, filterKeys));
+}
+
+export function bulkUpsertAndPurge<
+  // Schema
+  S extends AnyParamConstructor<unknown>,
+  // Keys
+  K extends string | number | symbol,
+  // Documents
+  D extends InstanceType<S> & Record<K, unknown>,
+>(model: ReturnModelType<S>, docs: D[], keys: K[]): Promise<[BulkWriteResult, DeleteResult]> {
+  return Promise.all([
+    model.bulkWrite(bulkOps("updateOne", docs, keys)),
+    model.deleteMany(
+      keys.length == 1
+        ? ({ [keys[0]]: { $nin: docs.map((doc) => doc[keys[0]]) } } as FilterQuery<D>)
+        : {
+            $nor: docs.map<FilterQuery<D>>((doc) => keys.reduce((acc, v) => ({ ...acc, [v]: doc[v] }), {})),
+          },
+    ),
+  ]);
 }
 
 /**
