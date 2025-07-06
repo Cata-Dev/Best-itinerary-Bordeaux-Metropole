@@ -81,10 +81,18 @@ function journeyDBFormatter<C extends string[]>(
 export default function (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) {
   let RAPTORData = SharedRAPTORData.makeFromInternalData(data);
   let McRAPTORInstance = new McSharedRAPTOR<["bufferTime"]>(RAPTORData, [bufferTime]);
+  let maxStopId = Array.from(RAPTORData.stops).reduce(
+    (acc, [id]) => (typeof id === "number" && id > acc ? id : acc),
+    0,
+  );
 
   const updateData = (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) => {
     RAPTORData = SharedRAPTORData.makeFromInternalData(data);
     McRAPTORInstance = new McSharedRAPTOR<["bufferTime"]>(RAPTORData, [bufferTime]);
+    maxStopId = Array.from(RAPTORData.stops).reduce(
+      (acc, [_, stop]) => (typeof stop.id === "number" && stop.id > acc ? stop.id : acc),
+      0,
+    );
   };
 
   const init = (async (app: BaseApplication) => {
@@ -94,8 +102,6 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
     const sourceDataDB = await initDB(app, app.config.sourceDB);
     const stops = stopsModelInit(sourceDataDB);
 
-    // https://www.mongodb.com/docs/manual/core/aggregation-pipeline-optimization/#-sort----limit-coalescence
-    const maxStopId = (await stops.find({}, { _id: 1 }).sort({ _id: -1 }).limit(1))[0]?._id ?? 0;
     const psIdNumber = maxStopId + 1;
     const ptIdNumber = maxStopId + 2;
 
