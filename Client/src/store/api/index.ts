@@ -67,7 +67,7 @@ function pathSlug(path: APIJourney["paths"][number]) {
   return path.stages.reduce(
     (acc, stage) =>
       acc +
-      `${stage.type}-${"type" in stage.details ? `${stage.details.type}-${stage.details.line}-${stage.details.direction}` : stage.details.distance}-${stage.to}`,
+      `${stage.type}-${"type" in stage.details ? `${stage.details.type}-${stage.details.line}` : stage.details.distance}-${stage.to}`,
     "",
   );
 }
