@@ -35,9 +35,11 @@ defineProps({
     <font-awesome-icon
       v-if="transport"
       :icon="transportToIcon(transport)"
-      class="text-text-light-primary dark:text-text-dark-primary text-size-inherit mr-2"
+      class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-size-inherit mr-2"
     />
-    <span class="text-text-light-primary dark:text-text-dark-primary text-size-inherit align-top">
+    <span
+      class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-size-inherit align-top"
+    >
       <p class="inline">{{ customText || (type === "FOOT" ? "Marche" : type) }}</p>
     </span>
   </div>

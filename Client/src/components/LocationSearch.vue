@@ -122,12 +122,12 @@ const popUp = (msg: string) => alert(msg);
 <template>
   <div
     :loading="updating"
-    class="flex w-full items-stretch relative px-3 py-2 transition-colors duration-darkmode bg-bg-light dark:bg-bg-dark rounded-full shadow-xl"
+    class="flex w-full items-stretch relative px-3 py-2 transition-darkmode bg-bg-light dark:bg-bg-dark rounded-full shadow-xl"
   >
     <button class="flex mr-1 items-center" @click="popUp('Not yet :(')">
       <font-awesome-icon
         icon="crosshairs"
-        class="transition-colors duration-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
     </button>
     <DatalistInput
@@ -135,13 +135,13 @@ const popUp = (msg: string) => alert(msg);
       v-model="model"
       :placeholder="placeholder"
       :datalist="datalist"
-      class="px-2 grow transition-colors duration-darkmode text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
+      class="px-2 grow transition-darkmode text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
       @input="refreshSuggestions($event)"
     />
     <span class="flex mr-1 items-center">
       <font-awesome-icon
         :icon="name == 'destination' ? 'flag' : 'map-pin'"
-        class="transition-colors duration-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-1"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-1"
       />
     </span>
   </div>

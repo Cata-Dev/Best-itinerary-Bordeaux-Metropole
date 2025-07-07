@@ -123,7 +123,7 @@ async function selectResult(path: Journey["paths"][number][number]) {
               >
                 <font-awesome-icon
                   icon="sliders-h"
-                  class="transition-colors duration-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
+                  class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
                 />
               </button>
               <button
@@ -174,18 +174,22 @@ async function selectResult(path: Journey["paths"][number][number]) {
         <template v-for="(paths, i) of result.paths" :key="i">
           <div class="grid">
             <template v-for="(path, j) of paths" :key="j">
-              <ResultItem
-                :title="`Alternative #${path.idx + 1}`"
-                :from="result.from"
-                :path="path"
-                class="col-start-1 col-end-1 row-start-1 row-end-1 h-fit cursor-pointer transition-transform duration-300"
+              <div
+                class="col-start-1 col-end-1 row-start-1 row-end-1 transition-transform duration-300"
                 :class="[
                   `scale-${100 - 5 * Math.min(paths.length - 1 - j, 6)}`,
                   ...(j > 0 ? [`mt-${8 * j}`] : []),
                   ...(j < paths.length - 1 ? ['hover:-translate-y-10', 'hover:scale-105', 'hover:z-50'] : []),
                 ]"
-                @click="selectResult(path)"
-              />
+              >
+                <ResultItem
+                  :title="`Alternative #${path.idx + 1}`"
+                  :from="result.from"
+                  :path="path"
+                  class="cursor-pointer"
+                  @click="selectResult(path)"
+                />
+              </div>
             </template>
           </div>
         </template>

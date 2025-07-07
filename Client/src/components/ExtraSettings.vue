@@ -60,7 +60,7 @@ onUpdated(() => {
           <div class="flex items-center">
             <p class="mr-2">Date de départ</p>
             <span
-              class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+              class="align-middle p-1 px-2 transition-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
             >
               <input
                 v-model="settings.departureTime"
@@ -73,7 +73,7 @@ onUpdated(() => {
           <div class="flex items-center mt-1">
             <p class="mr-2">Distance max à pied</p>
             <span
-              class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+              class="align-middle p-1 px-2 transition-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
             >
               <input
                 v-model="settings.maxWalkDistance"
@@ -88,7 +88,7 @@ onUpdated(() => {
           <div class="flex items-center mt-1">
             <p class="mr-2">Vitesse de marche</p>
             <span
-              class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+              class="align-middle p-1 px-2 transition-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
             >
               <input
                 v-model="settings.walkSpeed"
@@ -103,7 +103,7 @@ onUpdated(() => {
           <div class="flex items-center mt-1">
             <p class="mr-2">Modes de transport</p>
             <span
-              class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+              class="align-middle p-1 px-2 transition-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
             >
               <input
                 v-model="settings.transports.TBM"
@@ -146,7 +146,7 @@ onUpdated(() => {
         <div class="flex items-center">
           <p class="mr-2">Heure de départ</p>
           <span
-            class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+            class="align-middle p-1 px-2 transition-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
           >
             <input
               v-model="settings.departureTime"
@@ -159,7 +159,7 @@ onUpdated(() => {
         <div class="flex items-center mt-1">
           <p class="mr-2">Distance max à pied</p>
           <span
-            class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+            class="align-middle p-1 px-2 transition-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
           >
             <input
               v-model="settings.maxWalkDistance"
@@ -174,7 +174,7 @@ onUpdated(() => {
         <div class="flex items-center mt-1">
           <p class="mr-2">Vitesse de marche</p>
           <span
-            class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+            class="align-middle p-1 px-2 transition-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
           >
             <input
               v-model="settings.walkSpeed"
@@ -189,7 +189,7 @@ onUpdated(() => {
         <div class="flex items-center mt-1">
           <p class="mr-2">Modes de transport</p>
           <span
-            class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+            class="align-middle p-1 px-2 transition-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
           >
             <input
               v-model="settings.transports.TBM"

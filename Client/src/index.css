@@ -68,6 +68,20 @@
   .duration-darkmode {
     @apply duration-(--duration-darkmode);
   }
+
+  .transition-darkmode {
+    transition:
+      color var(--duration-darkmode),
+      background-color var(--duration-darkmode),
+      border-color var(--duration-darkmode),
+      outline-color var(--duration-darkmode),
+      text-decoration-color var(--duration-darkmode),
+      fill var(--duration-darkmode),
+      stroke var(--duration-darkmode),
+      --tw-gradient-from var(--duration-darkmode),
+      --tw-gradient-via var(--duration-darkmode),
+      --tw-gradient-to var(--duration-darkmode);
+  }
 }
 
 /* Scrollbar */

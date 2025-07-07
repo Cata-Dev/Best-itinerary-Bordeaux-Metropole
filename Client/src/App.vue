@@ -30,7 +30,7 @@ window.onresize = () => {
       <router-view />
     </main>
     <footer
-      class="transition-colors duration-darkmode bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary"
+      class="transition-darkmode bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary"
     >
       <FooterBar />
     </footer>
