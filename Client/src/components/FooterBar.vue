@@ -32,7 +32,7 @@ APIRefresh.promise
       Trouver le meilleur itinéraire sur Bordeaux Métropole © 2025
     </p>
     <button
-      class="flex duration-700 justify-self-end my-1 mr-2 sm:mr-4"
+      class="flex duration-darkmode justify-self-end my-1 mr-2 sm:mr-4"
       :class="{ 'rotate-360': theme === 'light' }"
       @click="toggleDarkMode"
     >

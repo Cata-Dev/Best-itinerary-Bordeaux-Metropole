@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { onUpdated, ref } from "vue";
-import defaultTheme from "tailwindcss/defaultTheme";
 import BaseModal from "@/components/BaseModal.vue";
-import { theme, type QuerySettings } from "@/store";
+import { type QuerySettings } from "@/store";
+import { onUpdated, ref } from "vue";
 
 const modalComp = ref<InstanceType<typeof BaseModal> | null>(null);
 
@@ -19,7 +18,10 @@ const emit = defineEmits<{
 
 const settings = ref<QuerySettings>(props.modelValue);
 
-const breakpoint = parseInt(defaultTheme.screens.lg.match(/\d+/)![0]);
+const breakpoint =
+  parseInt(getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-xl").match(/\d+/)![0]) *
+  // In rem
+  16;
 
 const shown = ref<boolean>(props.initShown);
 function show(s = !shown.value) {
@@ -50,26 +52,29 @@ onUpdated(() => {
   <div v-if="width > breakpoint">
     <div
       ref="accordion"
-      class="flex overflow-hidden transition-all duration-500 max-w-0 max-h-fit mx-2 my-2 whitespace-nowrap bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary rounded-lg"
+      class="flex overflow-hidden transition-all duration-darkmode max-w-0 max-h-fit mx-2 my-2 whitespace-nowrap bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary rounded-lg"
       :class="{ 'max-w-full': shown }"
     >
       <div class="m-2">
         <div class="flex flex-col">
           <div class="flex items-center">
             <p class="mr-2">Date de départ</p>
-            <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
+            <span
+              class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+            >
               <input
                 v-model="settings.departureTime"
                 type="datetime-local"
                 class="bg-transparent text-inherit time"
-                :class="{ dark: theme === 'dark' }"
                 @input="$emit('update:modelValue', settings)"
               />
             </span>
           </div>
           <div class="flex items-center mt-1">
             <p class="mr-2">Distance max à pied</p>
-            <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
+            <span
+              class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+            >
               <input
                 v-model="settings.maxWalkDistance"
                 class="w-16"
@@ -82,7 +87,9 @@ onUpdated(() => {
           </div>
           <div class="flex items-center mt-1">
             <p class="mr-2">Vitesse de marche</p>
-            <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
+            <span
+              class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+            >
               <input
                 v-model="settings.walkSpeed"
                 class="w-12"
@@ -95,7 +102,9 @@ onUpdated(() => {
           </div>
           <div class="flex items-center mt-1">
             <p class="mr-2">Modes de transport</p>
-            <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
+            <span
+              class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+            >
               <input
                 v-model="settings.transports.TBM"
                 class="ml-2"
@@ -136,19 +145,22 @@ onUpdated(() => {
       <div class="flex flex-col">
         <div class="flex items-center">
           <p class="mr-2">Heure de départ</p>
-          <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
+          <span
+            class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+          >
             <input
               v-model="settings.departureTime"
               type="datetime-local"
               class="bg-transparent text-inherit time"
-              :class="{ dark: theme === 'dark' }"
               @input="$emit('update:modelValue', settings)"
             />
           </span>
         </div>
         <div class="flex items-center mt-1">
           <p class="mr-2">Distance max à pied</p>
-          <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
+          <span
+            class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+          >
             <input
               v-model="settings.maxWalkDistance"
               class="w-16"
@@ -161,7 +173,9 @@ onUpdated(() => {
         </div>
         <div class="flex items-center mt-1">
           <p class="mr-2">Vitesse de marche</p>
-          <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
+          <span
+            class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+          >
             <input
               v-model="settings.walkSpeed"
               class="w-12"
@@ -174,7 +188,9 @@ onUpdated(() => {
         </div>
         <div class="flex items-center mt-1">
           <p class="mr-2">Modes de transport</p>
-          <span class="align-middle p-1 px-2 bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md">
+          <span
+            class="align-middle p-1 px-2 transition-colors duration-darkmode bg-bg-light-contrasted dark:bg-bg-dark-contrasted rounded-md"
+          >
             <input
               v-model="settings.transports.TBM"
               class="ml-2"

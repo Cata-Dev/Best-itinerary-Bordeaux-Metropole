@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@config '../tailwind.config.ts';
-
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -20,5 +18,91 @@
   }
 }
 
+@theme {
+  --color-bg-light: var(--color-slate-50);
+  --color-bg-light-contrasted: var(--color-slate-300);
+  --color-bg-light-overcontrasted: var(--color-slate-400);
+  --color-bg-dark: var(--color-slate-800);
+  --color-bg-dark-contrasted: var(--color-slate-600);
+  --color-bg-dark-overcontrasted: var(--color-slate-500);
+
+  --color-text-light-primary: var(--color-neutral-700);
+  --color-text-light-faded: var(--color-neutral-500);
+  --color-text-dark-primary: var(--color-neutral-300);
+  --color-text-dark-faded: var(--color-neutral-400);
+
+  --color-info-bg: var(--color-amber-200);
+  --color-info-t: var(--color-amber-600);
+
+  --color-alert-bg: var(--color-red-400);
+  --color-alert-t: var(--color-red-800);
+
+  --color-success-bg: var(--color-emerald-400);
+  --color-success-t: var(--color-emerald-700);
+
+  --color-walking-bg: var(--color-orange-800);
+  --color-walking-t: var(--color-neutral-700);
+
+  --color-tbm-bg: var(--color-sky-400);
+  --color-tbm-t: var(--color-neutral-700);
+
+  --color-sncf-bg: var(--color-rose-600);
+  --color-sncf-t: var(--color-neutral-700);
+
+  --breakpoint-xs: 550px;
+
+  --duration-darkmode: 750ms;
+}
+
 @source inline("scale-{100,95,90,85,80,75,70}");
 @source inline("mt-{0,8,16,24,32,40,48}");
+
+/* Dark mode */
+/* Dark mode: class */
+@custom-variant dark {
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+}
+@layer base {
+  .duration-darkmode {
+    @apply duration-(--duration-darkmode);
+  }
+}
+
+/* Scrollbar */
+@layer base {
+  /* Width */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-light;
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    @apply bg-bg-dark;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    @apply bg-bg-light-contrasted;
+    @apply rounded-md;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-bg-dark-contrasted;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-bg-light-overcontrasted;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-bg-dark-overcontrasted;
+  }
+}

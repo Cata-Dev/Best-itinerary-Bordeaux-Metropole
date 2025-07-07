@@ -117,18 +117,18 @@ async function selectResult(path: Journey["paths"][number][number]) {
             <div class="py-2 self-center">
               <button
                 ref="showSettingsButton"
-                class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
+                class="flex hover:scale-[120%] pulse-scale-focus transition-darkmode-transform items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
                 :class="{ 'rotate-180': settingsCompo?.shown }"
                 @click="(settingsCompo?.show(), showSettingsButton?.blur())"
               >
                 <font-awesome-icon
                   icon="sliders-h"
-                  class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+                  class="transition-colors duration-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
                 />
               </button>
               <button
                 ref="searchElem"
-                class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
+                class="flex hover:scale-[120%] pulse-scale-focus transition-darkmode-transform items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
                 @click="(fetchResult(), searchElem?.blur())"
               >
                 <font-awesome-icon
@@ -287,5 +287,12 @@ button:focus {
 
 .pulse-scale-focus:focus {
   animation: pulseScale 1s;
+}
+
+.transition-darkmode-transform {
+  transition:
+    background-color var(--duration-darkmode) var(--default-transition-timing-function),
+    scale 300ms,
+    rotate 300ms;
 }
 </style>
