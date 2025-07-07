@@ -106,7 +106,8 @@ async function fetchResult() {
     if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
 
     result.value = treatFetchedResult(r);
-    // To insert result id
+    currentJourney.value = null;
+    // To insert result id (& reset current journey)
     updateRoute();
 
     status.value.state = SearchResultStatus.SUCCESS;
