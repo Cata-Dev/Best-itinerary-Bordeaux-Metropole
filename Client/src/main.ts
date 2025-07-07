@@ -1,20 +1,16 @@
 import "./index.css";
 
-import { createApp } from "vue";
-import App from "./App.vue";
-import { router } from "./router";
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faBus,
   faCheckCircle,
+  faCircleHalfStroke,
   faClock,
   faCrosshairs,
   faExclamationTriangle,
   faFlag,
   faMap,
   faMapPin,
-  faMoon,
   faQuestionCircle,
   faRoad,
   faSearchLocation,
@@ -22,11 +18,14 @@ import {
   faSlidersH,
   faSpinner,
   faSubway,
-  faSun,
   faTimes,
   faTrain,
   faWalking,
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { createApp } from "vue";
+import App from "./App.vue";
+import { router } from "./router";
 
 library.add(
   faBus,
@@ -34,10 +33,10 @@ library.add(
   faClock,
   faCrosshairs,
   faExclamationTriangle,
+  faCircleHalfStroke,
   faFlag,
   faMap,
   faMapPin,
-  faMoon,
   faQuestionCircle,
   faRoad,
   faSearchLocation,
@@ -45,7 +44,6 @@ library.add(
   faSlidersH,
   faSpinner,
   faSubway,
-  faSun,
   faTimes,
   faTrain,
   faWalking,
