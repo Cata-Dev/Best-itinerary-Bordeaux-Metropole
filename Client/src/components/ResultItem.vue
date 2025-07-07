@@ -35,11 +35,11 @@ interface Transport {
 const transports = computed<Transport[]>(() =>
   props.path.stages.map((p) => ({
     provider: p.type,
-    mode: "type" in p.details ? p.details.type : undefined,
+    mode: "type" in p.details ? p.details.type : "FOOT",
   })),
 );
 
-const uniquesTransports = computed(() =>
+const uniqueTransports = computed(() =>
   transports.value
     .filter(
       (v, i, arr) =>
@@ -177,10 +177,7 @@ async function displayMap() {
     </div>
     <div class="h-[2px] w-full my-3 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
     <div class="flex w-full mt-2">
-      <font-awesome-icon
-        icon="clock"
-        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
-      />
+      <font-awesome-icon icon="clock" class="transition-darkmode text-2xl mr-2" />
       <span class="text-left">
         {{ duration(arrival - departure, false, true) || "< 1m" }}
       </span>
@@ -347,12 +344,12 @@ async function displayMap() {
       />
     </div>
     <div class="mt-2">
-      <div v-for="(e, i) in uniquesTransports" :key="e.mode" class="inline-block mt-1">
+      <div v-for="(e, i) in uniqueTransports" :key="i" class="inline-block mt-1">
         {{ e.times }}×
         <TransportBadge
           :type="e.provider"
-          :mode="e.mode"
-          :class="{ 'mr-2': i < uniquesTransports.length - 1 }"
+          :transport="e.mode"
+          :class="{ 'mr-2': i < uniqueTransports.length - 1 }"
         />
       </div>
     </div>

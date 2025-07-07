@@ -1,22 +1,7 @@
 <script setup lang="ts">
 import { transportToIcon } from "@/store";
 
-defineProps({
-  type: {
-    type: String,
-    required: true,
-  },
-  transport: {
-    type: String,
-    required: false,
-    default: "",
-  },
-  customText: {
-    type: String,
-    required: false,
-    default: "",
-  },
-});
+defineProps<{ type: string; transport?: string; customText?: string }>();
 </script>
 
 <template>
@@ -33,14 +18,14 @@ defineProps({
     "
   >
     <font-awesome-icon
-      v-if="transport"
+      v-if="transport !== undefined"
       :icon="transportToIcon(transport)"
       class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-size-inherit mr-2"
     />
     <span
       class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-size-inherit align-top"
     >
-      <p class="inline">{{ customText || (type === "FOOT" ? "Marche" : type) }}</p>
+      <p class="inline">{{ customText ?? (type === "FOOT" ? "Marche" : type) }}</p>
     </span>
   </div>
 </template>
