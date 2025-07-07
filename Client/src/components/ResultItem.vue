@@ -162,21 +162,24 @@ async function displayMap() {
 <template>
   <div
     v-if="expanded"
-    class="bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-4 rounded-lg shadow-xl min-w-[40%]"
+    class="transition-darkmode bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-4 rounded-lg shadow-xl min-w-[40%] h-fit"
   >
     <div class="flex place-content-center">
       <h3 class="mx-auto text-center font-bold text-xl">
         {{ title }}
       </h3>
       <button @click="displayMap()">
-        <font-awesome-icon icon="map" class="text-text-light-primary dark:text-text-dark-primary text-2xl" />
+        <font-awesome-icon
+          icon="map"
+          class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
+        />
       </button>
     </div>
-    <div class="h-[2px] w-full my-3 bg-text-light-primary dark:bg-text-dark-primary" />
+    <div class="h-[2px] w-full my-3 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
     <div class="flex w-full mt-2">
       <font-awesome-icon
         icon="clock"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
         {{ duration(arrival - departure, false, true) || "< 1m" }}
@@ -184,14 +187,14 @@ async function displayMap() {
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
         icon="person-walking"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
     <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
-        class="fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
+        class="transition-darkmode fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
       >
         <!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. -->
         <path
@@ -213,24 +216,26 @@ async function displayMap() {
       </div>
       <font-awesome-icon
         icon="map-pin"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
       <div class="flex items-center w-full">
-        <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
+        <span class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
         <span class="mx-2 text-center text-lg text-semibold">
           {{ from }}
         </span>
-        <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
+        <span class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
       </div>
       <template v-for="(p, i) in path.stages" :key="i">
         <!-- First row - header -->
         <!-- First col : mode icon -->
         <font-awesome-icon
           :icon="transportToIcon('type' in p.details ? p.details.type : p.type)"
-          class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+          class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
         <!-- Second col : linkin el (vertical bar) -->
-        <div class="vertical-link border-text-light-primary dark:border-text-dark-primary" />
+        <div
+          class="vertical-link transition-darkmode border-text-light-primary dark:border-text-dark-primary"
+        />
         <!-- Third col : details -->
         <div class="w-full pb-2">
           <div v-if="p.type === 'SNCF' || p.type === 'TBM'" class="flex items-center">
@@ -254,16 +259,20 @@ async function displayMap() {
         <font-awesome-icon
           v-if="i === path.stages.length - 1"
           icon="flag"
-          class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+          class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
-        <div v-else class="bullet bg-text-light-primary dark:bg-text-dark-primary" />
+        <div v-else class="bullet transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
         <!-- Third col : position -->
         <div class="flex items-center w-full">
-          <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
+          <span
+            class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
+          />
           <span class="mx-2 text-center text-lg text-semibold">
             {{ p.to }}
           </span>
-          <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
+          <span
+            class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
+          />
         </div>
       </template>
     </div>
@@ -286,16 +295,16 @@ async function displayMap() {
   </div>
   <div
     v-else
-    class="bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-3 rounded-lg shadow-xl"
+    class="transition-darkmode bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-3 rounded-lg shadow-xl"
   >
     <h3 class="text-center font-bold text-lg">
       {{ title }}
     </h3>
-    <div class="h-[2px] w-full my-3 bg-text-light-primary dark:bg-text-dark-primary" />
+    <div class="h-[2px] w-full my-3 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
     <div class="flex w-full">
       <font-awesome-icon
         icon="clock"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
         {{ duration(arrival - departure, false, true) || "< 1m" }}
@@ -303,14 +312,14 @@ async function displayMap() {
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
         icon="person-walking"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
     <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
-        class="fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
+        class="transition-darkmode fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
       >
         <!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. -->
         <path
@@ -324,7 +333,7 @@ async function displayMap() {
     <div class="flex w-full mt-2">
       <font-awesome-icon
         icon="map-pin"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
         {{ formatDate(departure, new Date(departure).getDate() === new Date().getDate()) }}
@@ -334,7 +343,7 @@ async function displayMap() {
       </span>
       <font-awesome-icon
         icon="flag"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
     <div class="mt-2">
