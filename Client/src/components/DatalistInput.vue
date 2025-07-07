@@ -38,25 +38,28 @@ const input = ref<string>(model.value?.alias ?? "");
 /**
  * Emits new modelValue only if value found & it's different from cur ent
  */
-function refreshModelValue() {
-  const value = props.datalist.find((el) => el.alias === input.value) ?? null;
+function refreshModelValue(loc?: Location) {
+  const value =
+    (loc && props.datalist.find((el) => equalObjects(loc, el))) ??
+    props.datalist.find((el) => el.alias === input.value) ??
+    null;
 
   if (equalObjects(model.value, value)) return;
 
   model.value = value;
 }
 
-function newInput() {
+function newInput(loc?: Location) {
   emit("input", input.value);
 
-  refreshModelValue();
+  refreshModelValue(loc);
 }
 
-function forceInput(v: string) {
-  if (input.value === v) return;
+function forceInput(loc: Location) {
+  if (input.value === loc.alias && equalObjects(model.value, loc)) return;
 
-  input.value = v;
-  newInput();
+  input.value = loc.alias;
+  newInput(loc);
 }
 
 function focus() {
@@ -89,7 +92,7 @@ defineExpose({
         v-for="(e, i) in datalist"
         :key="i"
         class="px-1 py-2 text-sm cursor-pointer transition-darkmode hover:bg-bg-light-contrasted dark:hover:bg-bg-dark-contrasted"
-        @mousedown="forceInput(e.alias)"
+        @mousedown="forceInput(e)"
       >
         <span class="ml-1 mr-2">
           {{ e.alias }}

@@ -17,7 +17,7 @@ const model = defineModel<Location | null>();
 watch(model, (val, oldVal) => {
   if (!equalObjects(val, oldVal))
     refreshSuggestions(val?.alias ?? null).then(() => {
-      if (val?.alias) inputCompo.value?.forceInput(val.alias);
+      if (val) inputCompo.value?.forceInput(val);
     });
 });
 
@@ -102,13 +102,13 @@ const inputCompo = ref<InstanceType<typeof DatalistInput> | null>(null);
 /**
  * Will call forceInput on datalistInput
  */
-async function forceInput(v: string) {
+async function forceInput(loc: Location) {
   // Force refreshing before the datalist does
   updating.value = true;
-  await refreshSuggestions(v);
+  await refreshSuggestions(loc.alias);
   updating.value = false;
 
-  inputCompo.value?.forceInput(v);
+  inputCompo.value?.forceInput(loc);
 }
 
 defineExpose({
