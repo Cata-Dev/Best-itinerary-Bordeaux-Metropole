@@ -33,7 +33,10 @@ APIRefresh.promise
     </p>
     <button
       class="flex transition-transform duration-darkmode justify-self-end my-1 mr-2 sm:mr-4"
-      :class="{ 'rotate-90': theme === 'auto-light' || theme === 'auto-dark' }"
+      :class="{
+        'rotate-90': theme === 'auto-light' || theme === 'auto-dark',
+        'rotate-180': theme === 'dark',
+      }"
       @click="toggleDarkMode"
     >
       <font-awesome-icon
