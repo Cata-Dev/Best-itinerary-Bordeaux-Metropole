@@ -23,19 +23,19 @@ const icons: Record<TransportMode | UnknownLiteral, TransportIcon | UnknownIcon>
   TRAM: "train",
   BATEAU: "ship",
   TRAIN: "subway",
-  UNKNOW: "question-circle",
+  UNKNOWN: "question-circle",
 };
 
 /**
  * @param {String} transport
  * @returns {String}
  */
-function transportToIcon(transport: string): string {
+function transportToIcon(transport: string) {
   transport = transport.toUpperCase();
-  return transport in icons ? icons[transport as keyof typeof icons] : icons["UNKNOW"];
+  return transport in icons ? icons[transport as keyof typeof icons] : icons["UNKNOWN"];
 }
 
-export type UnknownLiteral = "UNKNOW";
+export type UnknownLiteral = "UNKNOWN";
 export type TransportMode = "FOOT" | "BUS" | "TRAM" | "BATEAU" | "TRAIN";
 export type TransportProvider = "FOOT" | "TBM" | "SNCF";
 
@@ -49,7 +49,7 @@ const transports: Record<TransportMode, TransportProvider> = {
 
 function transportToType(transport: string) {
   transport = transport.toUpperCase();
-  return transport in transports ? transports[transport as keyof typeof transports] : "unknow";
+  return transport in transports ? transports[transport as keyof typeof transports] : "unknown";
 }
 
 /**
