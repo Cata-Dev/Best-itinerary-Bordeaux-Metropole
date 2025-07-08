@@ -255,8 +255,8 @@ importers:
         specifier: ^5.0.31
         version: 5.0.31
       '@feathersjs/feathers':
-        specifier: ^5.0.31
-        version: 5.0.31
+        specifier: ^5.0.34
+        version: 5.0.34
       '@feathersjs/koa':
         specifier: ^5.0.31
         version: 5.0.31(typescript@5.7.2)
@@ -286,7 +286,7 @@ importers:
         version: 3.44.0
       feathers-hooks-common:
         specifier: ^8.2.1
-        version: 8.2.1(@feathersjs/feathers@5.0.31)
+        version: 8.2.1(@feathersjs/feathers@5.0.34)
       mongoose:
         specifier: ^8.9.3
         version: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
@@ -1014,6 +1014,10 @@ packages:
     resolution: {integrity: sha512-Kp8euV0ARSxQMCSH+em0opQBK2QkuWf+gPs+pnWK16H8kDciQ0tOz1st11X/5CYMbhy5Ccp2LSclpMQ7xNcrdA==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/commons@5.0.34':
+    resolution: {integrity: sha512-UfHzq7taVJx++TXxX5pmDSR72xRp+h5nler4xcUlcJWLLykCOYo8YCeW03S7T1p1NuFdy0qBmU+B+G89bjyGmg==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/configuration@5.0.31':
     resolution: {integrity: sha512-/dkLR0bhmrOiydL5c/XWMGm8R8MKiS7kpfvnDOmZ/M6J9UzhaRB7lKMBO7grX9oOgrVDbdpYBbL4K28qyvKabg==}
     engines: {node: '>= 12'}
@@ -1024,6 +1028,10 @@ packages:
 
   '@feathersjs/feathers@5.0.31':
     resolution: {integrity: sha512-QCGyemcRGnKMLMJ0XssAwaaGwydhE4KG8QwUVgMQdrJ1yOjx4NvXbOgsWeJ0kJ971KkxzNt1AKN1WJc398qyhw==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/feathers@5.0.34':
+    resolution: {integrity: sha512-jgeqKq/Uhsfeld42F8uimqzPv/uhtohkenpaWeD+NudJp2YZNYfA6gDZAL5UTpAvrTJFmK3QR1q1CnuL1mJdHg==}
     engines: {node: '>= 12'}
 
   '@feathersjs/generators@5.0.31':
@@ -5287,14 +5295,14 @@ snapshots:
     dependencies:
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
 
   '@feathersjs/authentication-client@5.0.31(typescript@5.7.2)':
     dependencies:
       '@feathersjs/authentication': 5.0.31(typescript@5.7.2)
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
     transitivePeerDependencies:
       - typescript
 
@@ -5302,7 +5310,7 @@ snapshots:
     dependencies:
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
       '@feathersjs/hooks': 0.9.0
       '@feathersjs/schema': 5.0.31(typescript@5.7.2)
       '@feathersjs/transport-commons': 5.0.31
@@ -5322,10 +5330,12 @@ snapshots:
 
   '@feathersjs/commons@5.0.31': {}
 
+  '@feathersjs/commons@5.0.34': {}
+
   '@feathersjs/configuration@5.0.31(typescript@5.7.2)':
     dependencies:
       '@feathersjs/commons': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
       '@feathersjs/schema': 5.0.31(typescript@5.7.2)
       '@types/config': 3.3.5
       config: 3.3.12
@@ -5337,6 +5347,12 @@ snapshots:
   '@feathersjs/feathers@5.0.31':
     dependencies:
       '@feathersjs/commons': 5.0.31
+      '@feathersjs/hooks': 0.9.0
+      events: 3.3.0
+
+  '@feathersjs/feathers@5.0.34':
+    dependencies:
+      '@feathersjs/commons': 5.0.34
       '@feathersjs/hooks': 0.9.0
       events: 3.3.0
 
@@ -5355,7 +5371,7 @@ snapshots:
       '@feathersjs/authentication': 5.0.31(typescript@5.7.2)
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
       '@feathersjs/transport-commons': 5.0.31
       '@koa/cors': 5.0.0
       '@types/koa': 2.15.0
@@ -5376,14 +5392,14 @@ snapshots:
       '@feathersjs/adapter-commons': 5.0.31
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
       mongodb: 6.12.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
 
   '@feathersjs/rest-client@5.0.31':
     dependencies:
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
       '@types/superagent': 8.1.9
       qs: 6.13.0
 
@@ -5408,7 +5424,7 @@ snapshots:
   '@feathersjs/socketio@5.0.31':
     dependencies:
       '@feathersjs/commons': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
       '@feathersjs/transport-commons': 5.0.31
       socket.io: 4.8.1
     transitivePeerDependencies:
@@ -5420,7 +5436,7 @@ snapshots:
     dependencies:
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
       encodeurl: 2.0.0
       lodash: 4.17.21
 
@@ -7222,10 +7238,10 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.2
 
-  feathers-hooks-common@8.2.1(@feathersjs/feathers@5.0.31):
+  feathers-hooks-common@8.2.1(@feathersjs/feathers@5.0.34):
     dependencies:
       '@feathersjs/errors': 5.0.31
-      '@feathersjs/feathers': 5.0.31
+      '@feathersjs/feathers': 5.0.34
       ajv: 6.12.6
       debug: 4.3.7
       graphql: 16.9.0
