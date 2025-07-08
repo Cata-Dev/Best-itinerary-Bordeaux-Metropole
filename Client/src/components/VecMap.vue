@@ -57,7 +57,7 @@ watch(
 
     // Center on the final updated layer
     const newFootLayerExtent = multiLineStringsLayer.getSource()?.getExtent();
-    if (newFootLayerExtent && newFootLayerExtent.every((v) => v > -Infinity && v < Infinity))
+    if (newFootLayerExtent?.every((v) => v > -Infinity && v < Infinity))
       map.getView().fit(newFootLayerExtent, {
         padding: [50, 50, 50, 50],
         duration: 1,

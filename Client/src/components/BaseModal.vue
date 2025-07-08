@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUpdated, ref } from "vue";
 import { getNewTopZIndex } from "@/store";
+import { onMounted, onUpdated, ref, useTemplateRef } from "vue";
 import CloseButton from "./CloseButton.vue";
 
 export interface Modal {
@@ -9,11 +9,9 @@ export interface Modal {
 }
 const props = withDefaults(defineProps<Modal>(), { initShown: false });
 
-const emit = defineEmits<{
-  (e: "update:shown", shown: boolean): void;
-}>();
+const emit = defineEmits<(e: "update:shown", shown: boolean) => void>();
 
-const focusDiv = ref<HTMLDivElement | null>(null);
+const focusDiv = useTemplateRef("focusDiv");
 
 const zIndex = ref<number>(-1);
 onMounted(() => {
@@ -33,7 +31,7 @@ defineExpose({
   shown,
 });
 
-onUpdated(async () => {
+onUpdated(() => {
   if (shown.value)
     setTimeout(() => {
       focusDiv.value?.focus();

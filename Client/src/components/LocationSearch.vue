@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { Location } from "@/store";
 import { wait } from "@bibm/common/async";
+import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import type { Geocode } from "@bibm/server";
-import { ref, watch } from "vue";
+import { ref, useTemplateRef, watch } from "vue";
 import { client, defaultLocation, equalObjects } from "../store/";
 import DatalistInput from "./DatalistInput.vue";
 
@@ -16,7 +18,7 @@ const model = defineModel<Location | null>();
 
 watch(model, (val, oldVal) => {
   if (!equalObjects(val, oldVal))
-    refreshSuggestions(val?.alias ?? null).then(() => {
+    void refreshSuggestions(val?.alias ?? null).then(() => {
       if (val) inputCompo.value?.forceInput(val);
     });
 });
@@ -27,7 +29,7 @@ const updating = ref<boolean>(false);
 
 function parseGeocode(s: Geocode): Location {
   switch (s.GEOCODE_type) {
-    case "Addresses":
+    case TBMEndpoints.Addresses:
       return {
         alias: `${s.dedicated.numero} ${"rep" in s.dedicated ? s.dedicated.rep + " " : ""}${
           s.dedicated.nom_voie
@@ -37,10 +39,10 @@ function parseGeocode(s: Geocode): Location {
         coords: s.coords,
       };
 
-    case "TBM_Stops":
+    case TBMEndpoints.Stops:
       return { alias: s.dedicated.libelle, type: s.dedicated.vehicule, coords: s.coords, id: s._id };
 
-    case "SNCF_Stops":
+    case SNCFEndpoints.Stops:
       return { alias: s.dedicated.name, type: "TRAIN", coords: s.coords, id: s._id };
 
     default:
@@ -61,7 +63,7 @@ async function fetchSuggestions(value: string): Promise<Location[]> {
 }
 
 let lastInput: string | null = "";
-let lastInputDate: number = -1;
+let lastInputDate = -1;
 
 /**
  * Updates suggestions according to provided value.
@@ -97,7 +99,7 @@ async function refreshSuggestions(value: string | null) {
   updated.value = now;
 }
 
-const inputCompo = ref<InstanceType<typeof DatalistInput> | null>(null);
+const inputCompo = useTemplateRef("inputCompo");
 
 /**
  * Will call forceInput on datalistInput

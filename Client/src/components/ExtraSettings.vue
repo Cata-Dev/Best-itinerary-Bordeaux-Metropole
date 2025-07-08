@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import BaseModal from "@/components/BaseModal.vue";
 import { type QuerySettings } from "@/store";
-import { onUpdated, ref } from "vue";
+import { onUpdated, ref, useTemplateRef } from "vue";
 
-const modalComp = ref<InstanceType<typeof BaseModal> | null>(null);
+const modalComp = useTemplateRef("modalComp");
 
 interface Props {
   initShown?: boolean;
@@ -19,7 +19,7 @@ const emit = defineEmits<{
 const settings = ref<QuerySettings>(props.modelValue);
 
 const breakpoint =
-  parseInt(getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-xl").match(/\d+/)![0]) *
+  parseInt(/\d+/.exec(getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-xl"))![0]) *
   // In rem
   16;
 

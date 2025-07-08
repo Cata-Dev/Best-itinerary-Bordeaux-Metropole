@@ -1,5 +1,5 @@
-import type { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
-import type { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import type { JourneyQuery } from "@bibm/server";
 import { APIRefresh, client } from "./feathers/feathers";
 import { theme, toggleDarkMode } from "./theme/theme";
@@ -32,7 +32,7 @@ type Location = Omit<JourneyQueryLocation, keyof JourneyQueryLocationOverride> &
 
 const defaultLocation = {
   id: -1 as const,
-  type: "Addresses" as TBMEndpoints.Addresses,
+  type: TBMEndpoints.Addresses,
   coords: [-1, -1] satisfies [unknown, unknown],
   alias: "" as const,
 } satisfies Location;
@@ -42,10 +42,10 @@ function normalizeLocationForQuery(loc: Location): JourneyQueryLocation {
     ...loc,
     type:
       loc.type === "BATEAU" || loc.type === "BUS" || loc.type === "TRAM"
-        ? ("TBM_Stops" as TBMEndpoints.Stops)
+        ? TBMEndpoints.Stops
         : loc.type === "TRAIN"
-          ? ("SNCF_Stops" as SNCFEndpoints.Stops)
-          : ("Addresses" as TBMEndpoints.Addresses),
+          ? SNCFEndpoints.Stops
+          : TBMEndpoints.Addresses,
   };
 }
 

@@ -18,16 +18,16 @@ import {
   updateRoute,
   type Journey,
 } from "@/store/api";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, useTemplateRef } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
 
-const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
-const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
-const settingsCompo = ref<InstanceType<typeof ExtraSettings> | null>(null);
-const modalCompo = ref<InstanceType<typeof BaseModal> | null>(null);
+const sourceCompo = useTemplateRef("sourceCompo");
+const destinationCompo = useTemplateRef("destinationCompo");
+const settingsCompo = useTemplateRef("settingsCompo");
+const modalCompo = useTemplateRef("modalCompo");
 
-const searchElem = ref<HTMLButtonElement | null>(null);
-const showSettingsButton = ref<HTMLButtonElement | null>(null);
+const searchElem = useTemplateRef("searchElem");
+const showSettingsButton = useTemplateRef("showSettingsButton");
 
 interface CustomModal {
   title: string;
@@ -55,12 +55,12 @@ if (client.io?.io)
 onMounted(updateQuery);
 onBeforeRouteUpdate(updateQuery);
 
-async function selectResult(path: Journey["paths"][number][number]) {
+function selectResult(path: Journey["paths"][number][number]) {
   if (!result.value) return;
 
   currentJourney.value = path;
 
-  updateRoute();
+  return updateRoute();
 }
 </script>
 
@@ -171,7 +171,7 @@ async function selectResult(path: Journey["paths"][number][number]) {
           'fade-in': currentJourney === null,
         }"
       >
-        <template v-for="(paths, i) of result.paths" :key="i">
+        <template v-for="(paths, _i) of result.paths" :key="_i">
           <div class="grid">
             <template v-for="(path, j) of paths" :key="j">
               <div

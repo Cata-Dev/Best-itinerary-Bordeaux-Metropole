@@ -103,12 +103,12 @@ async function fetchResult() {
   status.value.previousSearch = query;
   try {
     const r = await client.service("journey").find({ query });
-    if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
+    if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${JSON.stringify(r)}.`);
 
     result.value = treatFetchedResult(r);
     currentJourney.value = null;
     // To insert result id (& reset current journey)
-    updateRoute();
+    void updateRoute();
 
     status.value.state = SearchResultStatus.SUCCESS;
   } catch (_) {
@@ -130,7 +130,7 @@ async function fetchOldResult(id: string) {
   status.value.previousSearch = id;
   try {
     const r = await client.service("journey").get(id);
-    if (r.code != 200) throw new Error(`Unable to retrieve old result, ${r}.`);
+    if (r.code != 200) throw new Error(`Unable to retrieve old result, ${JSON.stringify(r)}.`);
 
     result.value = treatFetchedResult(r);
     // if (currentJourney.value) currentJourney.value = null;

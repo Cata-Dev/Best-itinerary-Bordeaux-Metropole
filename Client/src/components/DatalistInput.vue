@@ -2,8 +2,8 @@
 import TransportBadge from "@/components/TransportBadge.vue";
 import type { Location } from "@/store";
 import { equalObjects, transportToType } from "@/store/";
-import type { TBMEndpoints } from "@bibm/data/models/TBM/index";
-import { ref, watch } from "vue";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import { ref, useTemplateRef, watch } from "vue";
 
 type ModelValue = Location;
 
@@ -16,12 +16,12 @@ const model = defineModel<ModelValue | null>();
 
 const props = defineProps<Props<ModelValue>>();
 
-const emit = defineEmits<{
+const emit = defineEmits<
   /**
    * Raw input string, emitted every time it changes
    */
-  (e: "input", input: string): void;
-}>();
+  (e: "input", input: string) => void
+>();
 
 watch(
   () => props.datalist,
@@ -32,7 +32,7 @@ watch(
 
 const showDatalist = ref<boolean>(false);
 
-const inputElem = ref<HTMLInputElement>();
+const inputElem = useTemplateRef("inputElem");
 const input = ref<string>(model.value?.alias ?? "");
 
 /**
@@ -98,8 +98,8 @@ defineExpose({
           {{ e.alias }}
         </span>
         <TransportBadge
-          :type="transportToType(e.type.replace('Addresses' as TBMEndpoints.Addresses, 'FOOT'))"
-          :transport="e.type.replace('Addresses' as TBMEndpoints.Addresses, 'FOOT')"
+          :type="transportToType(e.type.replace(TBMEndpoints.Addresses, 'FOOT'))"
+          :transport="e.type.replace(TBMEndpoints.Addresses, 'FOOT')"
           :custom-text="e.type.toLowerCase().capitalize()"
           class="mr-1"
         />

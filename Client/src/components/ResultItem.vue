@@ -6,7 +6,7 @@ import VecMap from "@/components/VecMap.vue";
 import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
 import { currentJourney, fetchFootpaths, result, type Journey } from "@/store/api";
 import { duration } from "@bibm/common/time";
-import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
+import { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
 import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
 import { MultiLineString, Point } from "ol/geom";
 import Fill from "ol/style/Fill";
@@ -14,7 +14,7 @@ import Icon from "ol/style/Icon";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import Text from "ol/style/Text";
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 
 interface Props {
   title: string;
@@ -25,7 +25,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), { expanded: false });
 
-const numberFormat = new Intl.NumberFormat("fr-FR").format;
+const numberFormat = (val: number) => new Intl.NumberFormat("fr-FR").format(val);
 
 interface Transport {
   provider: TransportProvider;
@@ -42,8 +42,7 @@ const transports = computed<Transport[]>(() =>
 const uniqueTransports = computed(() =>
   transports.value
     .filter(
-      (v, i, arr) =>
-        arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode) as Transport) === i,
+      (v, i, arr) => arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode)!) === i,
     )
     .map((t) => ({
       ...t,
@@ -58,7 +57,7 @@ const totalDistance = computed(() =>
   props.path.stages.reduce((acc, v) => acc + ("distance" in v.details ? v.details.distance : 0), 0),
 );
 
-const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
+const modalMapComp = useTemplateRef("modalMapComp");
 
 function getClosesPointToMiddle(geom: MultiLineString) {
   const geomExtent = geom.getExtent();
@@ -71,7 +70,7 @@ const paths = ref<VecMapProps["multiLineStrings"]["data"]>([]);
 const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature) => {
   const styles: Style[] = [];
   switch (feature.getProperties().props.type as ServerTransport) {
-    case "FOOT":
+    case ServerTransport.FOOT:
       styles.push(
         new Style({
           stroke: new Stroke({
@@ -86,13 +85,13 @@ const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature
             opacity: 1,
             src:
               "data:image/svg+xml;utf8," +
-              `<svg width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faPersonWalking.icon[0]} ${faPersonWalking.icon[1]}"><path d="${faPersonWalking.icon[4]}"/></svg>`,
+              `<svg width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faPersonWalking.icon[0]} ${faPersonWalking.icon[1]}"><path d="${faPersonWalking.icon[4] as string}"/></svg>`,
           }),
         }),
       );
       break;
 
-    case "TBM":
+    case ServerTransport.TBM:
       styles.push(
         new Style({
           stroke: new Stroke({

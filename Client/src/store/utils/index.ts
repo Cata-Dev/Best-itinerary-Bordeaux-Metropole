@@ -32,7 +32,7 @@ const icons: Record<TransportMode | UnknownLiteral, TransportIcon | UnknownIcon>
  */
 function transportToIcon(transport: string) {
   transport = transport.toUpperCase();
-  return transport in icons ? icons[transport as keyof typeof icons] : icons["UNKNOWN"];
+  return transport in icons ? icons[transport as keyof typeof icons] : icons.UNKNOWN;
 }
 
 export type UnknownLiteral = "UNKNOWN";
@@ -55,15 +55,12 @@ function transportToType(transport: string) {
 /**
  * Properly compare 2 objects.
  */
-function equalObjects(
-  o1: Record<string, unknown> | unknown,
-  o2: Record<string, unknown> | unknown,
-): boolean | null {
+function equalObjects(o1: unknown, o2: unknown): boolean | null {
   if (o1 == undefined || typeof o1 !== "object" || o2 == undefined || typeof o2 !== "object")
     return o1 === o2;
 
-  const keys = Object.keys(o1 as object);
-  keys.push(...Object.keys(o2 as object).filter((k) => !keys.find((kk) => kk === k)));
+  const keys = Object.keys(o1);
+  keys.push(...Object.keys(o2).filter((k) => !keys.find((kk) => kk === k)));
   for (const k of keys) {
     if (!Object.prototype.hasOwnProperty.call(o1, k)) return false;
     if (!Object.prototype.hasOwnProperty.call(o2, k)) return false;
