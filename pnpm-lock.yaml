@@ -270,8 +270,8 @@ importers:
         specifier: ^5.0.31
         version: 5.0.31
       '@feathersjs/transport-commons':
-        specifier: ^5.0.31
-        version: 5.0.31
+        specifier: ^5.0.34
+        version: 5.0.34
       '@feathersjs/typebox':
         specifier: ^5.0.31
         version: 5.0.31(typescript@5.7.2)
@@ -1012,6 +1012,10 @@ packages:
     resolution: {integrity: sha512-Kp8euV0ARSxQMCSH+em0opQBK2QkuWf+gPs+pnWK16H8kDciQ0tOz1st11X/5CYMbhy5Ccp2LSclpMQ7xNcrdA==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/commons@5.0.34':
+    resolution: {integrity: sha512-UfHzq7taVJx++TXxX5pmDSR72xRp+h5nler4xcUlcJWLLykCOYo8YCeW03S7T1p1NuFdy0qBmU+B+G89bjyGmg==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/configuration@5.0.31':
     resolution: {integrity: sha512-/dkLR0bhmrOiydL5c/XWMGm8R8MKiS7kpfvnDOmZ/M6J9UzhaRB7lKMBO7grX9oOgrVDbdpYBbL4K28qyvKabg==}
     engines: {node: '>= 12'}
@@ -1020,8 +1024,16 @@ packages:
     resolution: {integrity: sha512-+ar4aq8Ka1EtTGH1+BBIDW12nfNJKnnzGdevoCmSmfHVAdb66se5fWv3I4rShvnguYyeUg8rkICJYf7AEcrPiw==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/errors@5.0.34':
+    resolution: {integrity: sha512-C0t+pONnMvwlDW6iczcYmxaHzGvaGn3+BLhwlySEVYRciWOURIO8Eo5JVdN7cSM3Z7AxS3Dpk4DEhyFU/D2w6w==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/feathers@5.0.31':
     resolution: {integrity: sha512-QCGyemcRGnKMLMJ0XssAwaaGwydhE4KG8QwUVgMQdrJ1yOjx4NvXbOgsWeJ0kJ971KkxzNt1AKN1WJc398qyhw==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/feathers@5.0.34':
+    resolution: {integrity: sha512-jgeqKq/Uhsfeld42F8uimqzPv/uhtohkenpaWeD+NudJp2YZNYfA6gDZAL5UTpAvrTJFmK3QR1q1CnuL1mJdHg==}
     engines: {node: '>= 12'}
 
   '@feathersjs/generators@5.0.31':
@@ -1062,6 +1074,10 @@ packages:
 
   '@feathersjs/transport-commons@5.0.31':
     resolution: {integrity: sha512-md3dhUm47vh6aqPwb0T0Kj+LZI2JkRwMRTSx/X6w0n2evOB1x3/wspI4QY4JeUnPN0ab+IHlZVEF10FL0UQPQw==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/transport-commons@5.0.34':
+    resolution: {integrity: sha512-l+oQm1oIvfrxNUlidcqCtKfdWdKn1zHXGhEa13xIKiU5m2LFz1EYeMuq5vh/1pU0iECq3Oi+KdW53YnGl446cw==}
     engines: {node: '>= 12'}
 
   '@feathersjs/typebox@5.0.31':
@@ -5290,7 +5306,7 @@ snapshots:
       '@feathersjs/feathers': 5.0.31
       '@feathersjs/hooks': 0.9.0
       '@feathersjs/schema': 5.0.31(typescript@5.7.2)
-      '@feathersjs/transport-commons': 5.0.31
+      '@feathersjs/transport-commons': 5.0.34
       '@types/jsonwebtoken': 9.0.7
       jsonwebtoken: 9.0.2
       lodash: 4.17.21
@@ -5307,6 +5323,8 @@ snapshots:
 
   '@feathersjs/commons@5.0.31': {}
 
+  '@feathersjs/commons@5.0.34': {}
+
   '@feathersjs/configuration@5.0.31(typescript@5.7.2)':
     dependencies:
       '@feathersjs/commons': 5.0.31
@@ -5319,9 +5337,17 @@ snapshots:
 
   '@feathersjs/errors@5.0.31': {}
 
+  '@feathersjs/errors@5.0.34': {}
+
   '@feathersjs/feathers@5.0.31':
     dependencies:
       '@feathersjs/commons': 5.0.31
+      '@feathersjs/hooks': 0.9.0
+      events: 3.3.0
+
+  '@feathersjs/feathers@5.0.34':
+    dependencies:
+      '@feathersjs/commons': 5.0.34
       '@feathersjs/hooks': 0.9.0
       events: 3.3.0
 
@@ -5341,7 +5367,7 @@ snapshots:
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
       '@feathersjs/feathers': 5.0.31
-      '@feathersjs/transport-commons': 5.0.31
+      '@feathersjs/transport-commons': 5.0.34
       '@koa/cors': 5.0.0
       '@types/koa': 2.15.0
       '@types/koa-qs': 2.0.3
@@ -5394,7 +5420,7 @@ snapshots:
     dependencies:
       '@feathersjs/commons': 5.0.31
       '@feathersjs/feathers': 5.0.31
-      '@feathersjs/transport-commons': 5.0.31
+      '@feathersjs/transport-commons': 5.0.34
       socket.io: 4.8.1
     transitivePeerDependencies:
       - bufferutil
@@ -5406,6 +5432,14 @@ snapshots:
       '@feathersjs/commons': 5.0.31
       '@feathersjs/errors': 5.0.31
       '@feathersjs/feathers': 5.0.31
+      encodeurl: 2.0.0
+      lodash: 4.17.21
+
+  '@feathersjs/transport-commons@5.0.34':
+    dependencies:
+      '@feathersjs/commons': 5.0.34
+      '@feathersjs/errors': 5.0.34
+      '@feathersjs/feathers': 5.0.34
       encodeurl: 2.0.0
       lodash: 4.17.21
 
