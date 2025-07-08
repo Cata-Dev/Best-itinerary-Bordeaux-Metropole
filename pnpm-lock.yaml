@@ -35,8 +35,8 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(vite@6.0.6(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.1)(yaml@2.8.0))
       core-js:
-        specifier: ^3.39.0
-        version: 3.39.0
+        specifier: ^3.44.0
+        version: 3.44.0
       ol:
         specifier: ^10.3.1
         version: 10.3.1
@@ -148,8 +148,8 @@ importers:
         specifier: ^5.56.2
         version: 5.56.2
       core-js:
-        specifier: ^3.39.0
-        version: 3.39.0
+        specifier: ^3.44.0
+        version: 3.44.0
       mongoose:
         specifier: ^8.9.3
         version: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
@@ -282,8 +282,8 @@ importers:
         specifier: ^1.7.9
         version: 1.7.9
       core-js:
-        specifier: ^3.39.0
-        version: 3.39.0
+        specifier: ^3.44.0
+        version: 3.44.0
       feathers-hooks-common:
         specifier: ^8.2.1
         version: 8.2.1(@feathersjs/feathers@5.0.31)
@@ -2163,8 +2163,8 @@ packages:
     resolution: {integrity: sha512-yCEafptTtb4bk7GLEQoM8KVJpxAfdBJYaXyzQEgQQQgYrZiDp8SJmGKlYza6CYjEDNstAdNdKA3UuoULlEbS6w==}
     engines: {node: '>=12.13'}
 
-  core-js@3.39.0:
-    resolution: {integrity: sha512-raM0ew0/jJUqkJ0E6e8UDtl+y/7ktFivgWvqw8dNSQeNWoSDLvQ1H/RN3aPXB9tBd4/FhyR4RDPGhsNIMsAn7g==}
+  core-js@3.44.0:
+    resolution: {integrity: sha512-aFCtd4l6GvAXwVEh3XbbVqJGHDJt0OZRa+5ePGx3LLwi12WfexqQxcsohb2wgsa/92xtl19Hd66G/L+TaAxDMw==}
 
   cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
@@ -6627,7 +6627,7 @@ snapshots:
     dependencies:
       is-what: 4.1.16
 
-  core-js@3.39.0: {}
+  core-js@3.44.0: {}
 
   cors@2.8.5:
     dependencies:
