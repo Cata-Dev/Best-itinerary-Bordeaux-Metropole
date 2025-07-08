@@ -19,7 +19,7 @@ const log = async (context: HookContext, next: NextFunction) => {
         `${context.http?.status ?? "200"} ${context.method.toUpperCase()}`,
       )} ${context.path}${context.id ? "/" + colorFunctions.fY(context.id) : ""} (provider: ${
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        context.params?.provider || "internal"
+        context.params?.provider ?? "internal"
       })`,
     );
   } catch (error) {
@@ -31,7 +31,7 @@ const log = async (context: HookContext, next: NextFunction) => {
         `${(context.http?.status ?? ("code" in (error as object) && (error as { code: number }).code)) || "500"} ${context.method.toUpperCase()}`,
       )} ${context.path}${context.id ? "/" + colorFunctions.fY(context.id) : ""} (provider: ${
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        context.params?.provider || "internal"
+        context.params?.provider ?? "internal"
       })`,
     );
   }
