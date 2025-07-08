@@ -193,6 +193,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
     const force = (_params && _params.query?.force) ?? false;
 
     const RAPTORSettings: JobData<"compute">[3] = {};
+    if (_params.query.maxWalkDistance) RAPTORSettings.maxTransferLength = _params.query.maxWalkDistance;
     if (_params.query.walkSpeed) RAPTORSettings.walkSpeed = _params.query.walkSpeed;
 
     const params: Parameters<

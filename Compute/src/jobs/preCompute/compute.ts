@@ -128,8 +128,8 @@ if (parentPort) {
           await dbNonScheduledRoutes(id, {
             distance: {
               $lte:
-                // TODO: do no hardcode ?
-                1_000,
+                // TODO: do not limit?
+                3_000,
             },
           })
         ).map(({ to, distance }) => ({
