@@ -78,7 +78,7 @@
     "@feathersjs/socketio": "^5.0.34",
     "@feathersjs/transport-commons": "^5.0.34",
     "@feathersjs/typebox": "^5.0.34",
-    "@typegoose/typegoose": "^12.10.1",
+    "@typegoose/typegoose": "^12.17.0",
     "axios": "^1.10.0",
     "core-js": "^3.44.0",
     "feathers-hooks-common": "^8.2.1",

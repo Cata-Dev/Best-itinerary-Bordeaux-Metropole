@@ -38,7 +38,7 @@
   "dependencies": {
     "@feathersjs/schema": "^5.0.31",
     "@feathersjs/typebox": "^5.0.31",
-    "@typegoose/typegoose": "^12.10.1",
+    "@typegoose/typegoose": "^12.17.0",
     "@bibm/common": "workspace:*",
     "config": "^4.0.0",
     "mongoose": "^8.9.3",
