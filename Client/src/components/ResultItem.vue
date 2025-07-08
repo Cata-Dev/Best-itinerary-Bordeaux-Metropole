@@ -6,7 +6,7 @@ import VecMap from "@/components/VecMap.vue";
 import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
 import { currentJourney, fetchFootpaths, result, type Journey } from "@/store/api";
 import { duration } from "@bibm/common/time";
-import { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
+import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
 import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
 import { MultiLineString, Point } from "ol/geom";
 import Fill from "ol/style/Fill";
@@ -70,7 +70,7 @@ const paths = ref<VecMapProps["multiLineStrings"]["data"]>([]);
 const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature) => {
   const styles: Style[] = [];
   switch (feature.getProperties().props.type as ServerTransport) {
-    case ServerTransport.FOOT:
+    case "FOOT" as ServerTransport.FOOT:
       styles.push(
         new Style({
           stroke: new Stroke({
@@ -91,7 +91,7 @@ const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature
       );
       break;
 
-    case ServerTransport.TBM:
+    case "TBM" as ServerTransport.TBM:
       styles.push(
         new Style({
           stroke: new Stroke({
