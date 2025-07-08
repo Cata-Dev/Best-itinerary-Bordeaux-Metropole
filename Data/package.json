@@ -40,7 +40,7 @@
     "@feathersjs/typebox": "^5.0.31",
     "@typegoose/typegoose": "^12.10.1",
     "@bibm/common": "workspace:*",
-    "config": "^3.3.12",
+    "config": "^4.0.0",
     "mongoose": "^8.9.3",
     "raptor": "github:cata-dev/raptor"
   },
