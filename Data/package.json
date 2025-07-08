@@ -36,7 +36,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@feathersjs/schema": "^5.0.31",
+    "@feathersjs/schema": "^5.0.34",
     "@feathersjs/typebox": "^5.0.31",
     "@typegoose/typegoose": "^12.10.1",
     "@bibm/common": "workspace:*",
