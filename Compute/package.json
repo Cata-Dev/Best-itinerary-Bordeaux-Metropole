@@ -34,7 +34,7 @@
     "@typegoose/typegoose": "^12.10.1",
     "bullmq": "^5.34.5",
     "core-js": "^3.39.0",
-    "mongoose": "^8.9.3",
+    "mongoose": "^8.9.5",
     "raptor": "github:cata-dev/raptor",
     "shx": "^0.3.4"
   }
