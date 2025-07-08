@@ -85,7 +85,7 @@
     "mongoose": "^8.9.3"
   },
   "devDependencies": {
-    "@feathersjs/cli": "5.0.31",
+    "@feathersjs/cli": "5.0.34",
     "@feathersjs/rest-client": "^5.0.31",
     "@tsconfig/node22": "^22.0.0",
     "@types/mocha": "^10.0.10",
