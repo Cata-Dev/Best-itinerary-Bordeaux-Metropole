@@ -57,8 +57,8 @@ importers:
         version: 4.5.1(vue@3.5.17(typescript@5.8.3))
     devDependencies:
       '@tsconfig/node22':
-        specifier: ^22.0.0
-        version: 22.0.0
+        specifier: ^22.0.2
+        version: 22.0.2
       '@types/node':
         specifier: '22'
         version: 22.16.0
@@ -106,8 +106,8 @@ importers:
         version: 5.0.31(typescript@5.8.3)
     devDependencies:
       '@tsconfig/node22':
-        specifier: ^22.0.0
-        version: 22.0.0
+        specifier: ^22.0.2
+        version: 22.0.2
       '@types/node':
         specifier: '22'
         version: 22.16.0
@@ -158,8 +158,8 @@ importers:
         version: 0.3.4
     devDependencies:
       '@tsconfig/node22':
-        specifier: ^22.0.0
-        version: 22.0.0
+        specifier: ^22.0.2
+        version: 22.0.2
       '@types/node':
         specifier: '22'
         version: 22.16.0
@@ -201,8 +201,8 @@ importers:
         version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
     devDependencies:
       '@tsconfig/node22':
-        specifier: ^22.0.0
-        version: 22.0.0
+        specifier: ^22.0.2
+        version: 22.0.2
       '@types/config':
         specifier: ^3.3.5
         version: 3.3.5
@@ -295,8 +295,8 @@ importers:
         specifier: ^5.0.31
         version: 5.0.31
       '@tsconfig/node22':
-        specifier: ^22.0.0
-        version: 22.0.0
+        specifier: ^22.0.2
+        version: 22.0.2
       '@types/mocha':
         specifier: ^10.0.10
         version: 10.0.10
@@ -1578,8 +1578,8 @@ packages:
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
 
-  '@tsconfig/node22@22.0.0':
-    resolution: {integrity: sha512-twLQ77zevtxobBOD4ToAtVmuYrpeYUh3qh+TEp+08IWhpsrIflVHqQ1F1CiPxQGL7doCdBIOOCF+1Tm833faNg==}
+  '@tsconfig/node22@22.0.2':
+    resolution: {integrity: sha512-Kmwj4u8sDRDrMYRoN9FDEcXD8UpBSaPQQ24Gz+Gamqfm7xxn+GBR7ge/Z7pK8OXNGyUzbSwJj+TH6B+DS/epyA==}
 
   '@typegoose/typegoose@12.10.1':
     resolution: {integrity: sha512-ueJx86GkNQX9ZaWGAeAHItKPK31OhcHVGSbzjSmjsocXztw7QEN+y7NeFgDRB/2O4TK2i36cbkVmVWjHV1B/cg==}
@@ -5956,7 +5956,7 @@ snapshots:
 
   '@tsconfig/node16@1.0.4': {}
 
-  '@tsconfig/node22@22.0.0': {}
+  '@tsconfig/node22@22.0.2': {}
 
   '@typegoose/typegoose@12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
     dependencies:
