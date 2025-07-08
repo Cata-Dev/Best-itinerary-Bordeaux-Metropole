@@ -102,8 +102,8 @@ importers:
   Common:
     dependencies:
       '@feathersjs/typebox':
-        specifier: ^5.0.31
-        version: 5.0.31(typescript@5.8.3)
+        specifier: ^5.0.34
+        version: 5.0.34(typescript@5.8.3)
     devDependencies:
       '@tsconfig/node22':
         specifier: ^22.0.2
@@ -139,8 +139,8 @@ importers:
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
       '@typegoose/typegoose':
-        specifier: ^12.10.1
-        version: 12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        specifier: ^12.17.0
+        version: 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       bullmq:
         specifier: ^5.56.2
         version: 5.56.2
@@ -148,8 +148,8 @@ importers:
         specifier: ^3.44.0
         version: 3.44.0
       mongoose:
-        specifier: ^8.9.3
-        version: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.16.2
+        version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
         version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
@@ -188,14 +188,14 @@ importers:
         specifier: ^5.0.31
         version: 5.0.31(typescript@5.8.3)
       '@typegoose/typegoose':
-        specifier: ^12.10.1
-        version: 12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        specifier: ^12.17.0
+        version: 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       config:
         specifier: ^4.0.0
         version: 4.0.0
       mongoose:
-        specifier: ^8.9.3
-        version: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.16.2
+        version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
         version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
@@ -259,7 +259,7 @@ importers:
         version: 5.0.34(typescript@5.8.3)
       '@feathersjs/mongodb':
         specifier: ^5.0.34
-        version: 5.0.34(mongodb@6.12.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        version: 5.0.34(mongodb@6.17.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       '@feathersjs/schema':
         specifier: ^5.0.34
         version: 5.0.34(typescript@5.8.3)
@@ -273,8 +273,8 @@ importers:
         specifier: ^5.0.34
         version: 5.0.34(typescript@5.8.3)
       '@typegoose/typegoose':
-        specifier: ^12.10.1
-        version: 12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        specifier: ^12.17.0
+        version: 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       axios:
         specifier: ^1.10.0
         version: 1.10.0
@@ -285,8 +285,8 @@ importers:
         specifier: ^8.2.1
         version: 8.2.1(@feathersjs/feathers@5.0.34)
       mongoose:
-        specifier: ^8.9.3
-        version: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.16.2
+        version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
     devDependencies:
       '@feathersjs/cli':
         specifier: 5.0.34
@@ -313,8 +313,8 @@ importers:
         specifier: ^11.7.1
         version: 11.7.1
       mongodb:
-        specifier: ^6.12.0
-        version: 6.12.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^6.17.0
+        version: 6.17.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       nodemon:
         specifier: ^3.1.10
         version: 3.1.10
@@ -1595,11 +1595,11 @@ packages:
   '@tsconfig/node22@22.0.2':
     resolution: {integrity: sha512-Kmwj4u8sDRDrMYRoN9FDEcXD8UpBSaPQQ24Gz+Gamqfm7xxn+GBR7ge/Z7pK8OXNGyUzbSwJj+TH6B+DS/epyA==}
 
-  '@typegoose/typegoose@12.10.1':
-    resolution: {integrity: sha512-ueJx86GkNQX9ZaWGAeAHItKPK31OhcHVGSbzjSmjsocXztw7QEN+y7NeFgDRB/2O4TK2i36cbkVmVWjHV1B/cg==}
+  '@typegoose/typegoose@12.17.0':
+    resolution: {integrity: sha512-oty0KpmURqJBZiBD0DuEhpKaMwB5KDAoosvVB3V2JI630b1WMGSN2IeiiCqEhKAhTCxRwmMM48YrX1Ih6BMg/A==}
     engines: {node: '>=16.20.1'}
     peerDependencies:
-      mongoose: ~8.9.0
+      mongoose: ~8.16.0
 
   '@types/accepts@1.3.7':
     resolution: {integrity: sha512-Pay9fq2lM2wXPWbteBsRAGiWH2hig4ZE2asK+mm7kUzlxRTfL961rj89I6zV/E3PcIkDqyuBEcMxFT7rccugeQ==}
@@ -2039,10 +2039,9 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  bson@6.10.1:
-    resolution: {integrity: sha512-P92xmHDQjSKPLHqFxefqMxASNq/aWJMEZugpCjf+AF/pgcUpMMQCg7t7+ewko0/u8AapvF3luf/FoehddEK+sA==}
+  bson@6.10.4:
+    resolution: {integrity: sha512-WIsKqkSC0ABoBJuT1LEX+2HEvNmNKKgnTAyd0fL8qzK4SH2i9NXg+t08YtdZp/V9IZ33cxe3iV4yM0qg8lMQng==}
     engines: {node: '>=16.20.1'}
-    deprecated: a critical bug affecting only useBigInt64=true deserialization usage is fixed in bson@6.10.3
 
   buffer-equal-constant-time@1.0.1:
     resolution: {integrity: sha512-zRpUiDwd/xk6ADqPMATG8vc9VPrkck7T07OIx0gnjmJAnHnTVXNQG3vfvWNuiZIkwu9KrKdA1iJKfsfTVxE6NA==}
@@ -3325,8 +3324,8 @@ packages:
   mongodb-connection-string-url@3.0.0:
     resolution: {integrity: sha512-t1Vf+m1I5hC2M5RJx/7AtxgABy1cZmIPQRMXw+gEIPn/cZNF3Oiy+l0UIypUwVB5trcWHq3crg2g3uAR9aAwsQ==}
 
-  mongodb@6.12.0:
-    resolution: {integrity: sha512-RM7AHlvYfS7jv7+BXund/kR64DryVI+cHbVAy9P61fnb1RcWZqOW1/Wj2YhqMCx+MuYhqTRGv7AwHBzmsCKBfA==}
+  mongodb@6.17.0:
+    resolution: {integrity: sha512-neerUzg/8U26cgruLysKEjJvoNSXhyID3RvzvdcpsIi2COYM3FS3o9nlH7fxFtefTb942dX3W9i37oPfCVj4wA==}
     engines: {node: '>=16.20.1'}
     peerDependencies:
       '@aws-sdk/credential-providers': ^3.188.0
@@ -3352,8 +3351,8 @@ packages:
       socks:
         optional: true
 
-  mongoose@8.9.3:
-    resolution: {integrity: sha512-G50GNPdMqhoiRAJ/24GYAzg13yxXDD3FOOFeYiFwtHmHpAJem3hxbYIxAhLJGWbYEiUZL0qFMu2LXYkgGAmo+Q==}
+  mongoose@8.16.2:
+    resolution: {integrity: sha512-52T4XPhDgJL4cqooBsOORzYBH3ddMwABMEF/LV7TgvD2DEKZlnYTc2HF9ch1U2lcKjhE4pQ+WuInfLFJbguGcQ==}
     engines: {node: '>=16.20.1'}
 
   mpath@0.9.0:
@@ -3796,11 +3795,6 @@ packages:
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
-    hasBin: true
-
-  semver@7.6.3:
-    resolution: {integrity: sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==}
-    engines: {node: '>=10'}
     hasBin: true
 
   semver@7.7.2:
@@ -5394,13 +5388,13 @@ snapshots:
       - supports-color
       - typescript
 
-  '@feathersjs/mongodb@5.0.34(mongodb@6.12.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
+  '@feathersjs/mongodb@5.0.34(mongodb@6.17.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
     dependencies:
       '@feathersjs/adapter-commons': 5.0.34
       '@feathersjs/commons': 5.0.34
       '@feathersjs/errors': 5.0.34
       '@feathersjs/feathers': 5.0.34
-      mongodb: 6.12.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+      mongodb: 6.17.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
 
   '@feathersjs/rest-client@5.0.34':
     dependencies:
@@ -6054,13 +6048,13 @@ snapshots:
 
   '@tsconfig/node22@22.0.2': {}
 
-  '@typegoose/typegoose@12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
+  '@typegoose/typegoose@12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
     dependencies:
       lodash: 4.17.21
       loglevel: 1.9.2
-      mongoose: 8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+      mongoose: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       reflect-metadata: 0.2.2
-      semver: 7.6.3
+      semver: 7.7.2
       tslib: 2.8.1
 
   '@types/accepts@1.3.7':
@@ -6623,7 +6617,7 @@ snapshots:
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
 
-  bson@6.10.1: {}
+  bson@6.10.4: {}
 
   buffer-equal-constant-time@1.0.1: {}
 
@@ -8035,20 +8029,20 @@ snapshots:
       '@types/whatwg-url': 11.0.4
       whatwg-url: 13.0.0
 
-  mongodb@6.12.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
+  mongodb@6.17.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
     dependencies:
       '@mongodb-js/saslprep': 1.1.9
-      bson: 6.10.1
+      bson: 6.10.4
       mongodb-connection-string-url: 3.0.0
     optionalDependencies:
       '@aws-sdk/credential-providers': 3.525.0
       socks: 2.8.1
 
-  mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
+  mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
     dependencies:
-      bson: 6.10.1
+      bson: 6.10.4
       kareem: 2.6.3
-      mongodb: 6.12.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+      mongodb: 6.17.0(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       mpath: 0.9.0
       mquery: 5.0.0
       ms: 2.1.3
@@ -8507,8 +8501,6 @@ snapshots:
   semver@5.7.2: {}
 
   semver@6.3.1: {}
-
-  semver@7.6.3: {}
 
   semver@7.7.2: {}
 

@@ -19,7 +19,7 @@ import { exportWGraph, importWGraph } from "../../utils/graph";
 import { initDB } from "../../utils/mongoose";
 import { makeComputeFpData } from "./computeFp";
 
-const stopProjection = { _id: 1, coords: 1 };
+const stopProjection = { _id: 1, coords: 1 } satisfies Partial<Record<keyof dbTBM_Stops, 1>>;
 type dbStops = Pick<dbTBM_Stops, keyof typeof stopProjection>;
 interface StopOverwritten {
   // Remove it
