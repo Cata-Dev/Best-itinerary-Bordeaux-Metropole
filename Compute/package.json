@@ -36,6 +36,6 @@
     "core-js": "^3.44.0",
     "mongoose": "^8.9.3",
     "raptor": "github:cata-dev/raptor",
-    "shx": "^0.3.4"
+    "shx": "^0.4.0"
   }
 }
