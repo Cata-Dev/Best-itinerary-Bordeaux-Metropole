@@ -105,8 +105,8 @@ importers:
   Common:
     dependencies:
       '@feathersjs/typebox':
-        specifier: ^5.0.31
-        version: 5.0.31(typescript@5.7.2)
+        specifier: ^5.0.34
+        version: 5.0.34(typescript@5.7.2)
     devDependencies:
       '@tsconfig/node22':
         specifier: ^22.0.0
@@ -188,8 +188,8 @@ importers:
         specifier: ^5.0.31
         version: 5.0.31(typescript@5.7.2)
       '@feathersjs/typebox':
-        specifier: ^5.0.31
-        version: 5.0.31(typescript@5.7.2)
+        specifier: ^5.0.34
+        version: 5.0.34(typescript@5.7.2)
       '@typegoose/typegoose':
         specifier: ^12.10.1
         version: 12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
@@ -273,8 +273,8 @@ importers:
         specifier: ^5.0.31
         version: 5.0.31
       '@feathersjs/typebox':
-        specifier: ^5.0.31
-        version: 5.0.31(typescript@5.7.2)
+        specifier: ^5.0.34
+        version: 5.0.34(typescript@5.7.2)
       '@typegoose/typegoose':
         specifier: ^12.10.1
         version: 12.10.1(mongoose@8.9.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
@@ -997,6 +997,10 @@ packages:
     resolution: {integrity: sha512-x+RfY1H25ZGOmv/1p6Ob81AO/2KC+N2iJCVUFLItsHaGuMRn+s692GNYAl4Vk/kL3HzoPmfunSrCUxCXZ6MV5Q==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/adapter-commons@5.0.34':
+    resolution: {integrity: sha512-wc0HAZ0uov68p1ytBR5npyAePdNbFrRqr1fINSpLvIkrUkKDEcC6I/lOpk1TBpoI8so5IO/seZhkl25pqKM43A==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/authentication-client@5.0.31':
     resolution: {integrity: sha512-SzAtQ8QK49HbYIokzLUEnv7MfvKAobZoCi5tVkssgfVP0L9fiYcR6fXdtfJ7UkaoR55IbLGUctkPpz0zExCr6Q==}
     engines: {node: '>= 12'}
@@ -1014,6 +1018,10 @@ packages:
     resolution: {integrity: sha512-Kp8euV0ARSxQMCSH+em0opQBK2QkuWf+gPs+pnWK16H8kDciQ0tOz1st11X/5CYMbhy5Ccp2LSclpMQ7xNcrdA==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/commons@5.0.34':
+    resolution: {integrity: sha512-UfHzq7taVJx++TXxX5pmDSR72xRp+h5nler4xcUlcJWLLykCOYo8YCeW03S7T1p1NuFdy0qBmU+B+G89bjyGmg==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/configuration@5.0.31':
     resolution: {integrity: sha512-/dkLR0bhmrOiydL5c/XWMGm8R8MKiS7kpfvnDOmZ/M6J9UzhaRB7lKMBO7grX9oOgrVDbdpYBbL4K28qyvKabg==}
     engines: {node: '>= 12'}
@@ -1022,8 +1030,16 @@ packages:
     resolution: {integrity: sha512-+ar4aq8Ka1EtTGH1+BBIDW12nfNJKnnzGdevoCmSmfHVAdb66se5fWv3I4rShvnguYyeUg8rkICJYf7AEcrPiw==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/errors@5.0.34':
+    resolution: {integrity: sha512-C0t+pONnMvwlDW6iczcYmxaHzGvaGn3+BLhwlySEVYRciWOURIO8Eo5JVdN7cSM3Z7AxS3Dpk4DEhyFU/D2w6w==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/feathers@5.0.31':
     resolution: {integrity: sha512-QCGyemcRGnKMLMJ0XssAwaaGwydhE4KG8QwUVgMQdrJ1yOjx4NvXbOgsWeJ0kJ971KkxzNt1AKN1WJc398qyhw==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/feathers@5.0.34':
+    resolution: {integrity: sha512-jgeqKq/Uhsfeld42F8uimqzPv/uhtohkenpaWeD+NudJp2YZNYfA6gDZAL5UTpAvrTJFmK3QR1q1CnuL1mJdHg==}
     engines: {node: '>= 12'}
 
   '@feathersjs/generators@5.0.31':
@@ -1054,6 +1070,12 @@ packages:
     peerDependencies:
       typescript: '>=5.6'
 
+  '@feathersjs/schema@5.0.34':
+    resolution: {integrity: sha512-BpQxp46Vp0tH7l9jW4HIAGQerql7aJBeRXRggCVhBuqK48KoD1UhvYCWBmWwEouaYUnZ77HjQIMn9c1fK+dF2w==}
+    engines: {node: '>= 12'}
+    peerDependencies:
+      typescript: '>=5.8'
+
   '@feathersjs/socketio-client@5.0.31':
     resolution: {integrity: sha512-Ig1ZyBDUbbLRG8d4jV6bvIlgRspvDXNtAyc5hKc57UyU1uGAV8dFTk2xH0micz+rzky+PIds4ZqGMb/n+b0D6w==}
     engines: {node: '>= 12'}
@@ -1066,8 +1088,8 @@ packages:
     resolution: {integrity: sha512-md3dhUm47vh6aqPwb0T0Kj+LZI2JkRwMRTSx/X6w0n2evOB1x3/wspI4QY4JeUnPN0ab+IHlZVEF10FL0UQPQw==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/typebox@5.0.31':
-    resolution: {integrity: sha512-SZpnZYf5RMuIILZOP8p4UCQWVJJAULj4rg+CyzfWrr6LbJvwj2qrijiHCkqCz/6lA2WxgOBNASx6uMVmoza9yg==}
+  '@feathersjs/typebox@5.0.34':
+    resolution: {integrity: sha512-+xBQa4/cPqb1ozcfFk5/1PLJ7lVGYvnnfqSm5sTTxygsZUwZaBgKC23DRQ/tGL8p4dKdMSjgGEZYjuj1uWjbig==}
     engines: {node: '>= 12'}
 
   '@fortawesome/fontawesome-common-types@6.7.2':
@@ -5289,6 +5311,12 @@ snapshots:
       '@feathersjs/errors': 5.0.31
       '@feathersjs/feathers': 5.0.31
 
+  '@feathersjs/adapter-commons@5.0.34':
+    dependencies:
+      '@feathersjs/commons': 5.0.34
+      '@feathersjs/errors': 5.0.34
+      '@feathersjs/feathers': 5.0.34
+
   '@feathersjs/authentication-client@5.0.31(typescript@5.7.2)':
     dependencies:
       '@feathersjs/authentication': 5.0.31(typescript@5.7.2)
@@ -5322,6 +5350,8 @@ snapshots:
 
   '@feathersjs/commons@5.0.31': {}
 
+  '@feathersjs/commons@5.0.34': {}
+
   '@feathersjs/configuration@5.0.31(typescript@5.7.2)':
     dependencies:
       '@feathersjs/commons': 5.0.31
@@ -5334,9 +5364,17 @@ snapshots:
 
   '@feathersjs/errors@5.0.31': {}
 
+  '@feathersjs/errors@5.0.34': {}
+
   '@feathersjs/feathers@5.0.31':
     dependencies:
       '@feathersjs/commons': 5.0.31
+      '@feathersjs/hooks': 0.9.0
+      events: 3.3.0
+
+  '@feathersjs/feathers@5.0.34':
+    dependencies:
+      '@feathersjs/commons': 5.0.34
       '@feathersjs/hooks': 0.9.0
       events: 3.3.0
 
@@ -5400,6 +5438,19 @@ snapshots:
       json-schema-to-ts: 3.1.1
       typescript: 5.7.2
 
+  '@feathersjs/schema@5.0.34(typescript@5.7.2)':
+    dependencies:
+      '@feathersjs/adapter-commons': 5.0.34
+      '@feathersjs/commons': 5.0.34
+      '@feathersjs/errors': 5.0.34
+      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/hooks': 0.9.0
+      '@types/json-schema': 7.0.15
+      ajv: 8.17.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
+      json-schema-to-ts: 3.1.1
+      typescript: 5.7.2
+
   '@feathersjs/socketio-client@5.0.31':
     dependencies:
       '@feathersjs/feathers': 5.0.31
@@ -5424,9 +5475,9 @@ snapshots:
       encodeurl: 2.0.0
       lodash: 4.17.21
 
-  '@feathersjs/typebox@5.0.31(typescript@5.7.2)':
+  '@feathersjs/typebox@5.0.34(typescript@5.7.2)':
     dependencies:
-      '@feathersjs/schema': 5.0.31(typescript@5.7.2)
+      '@feathersjs/schema': 5.0.34(typescript@5.7.2)
       '@sinclair/typebox': 0.25.24
     transitivePeerDependencies:
       - typescript
