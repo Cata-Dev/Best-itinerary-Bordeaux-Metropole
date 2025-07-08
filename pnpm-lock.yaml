@@ -41,8 +41,8 @@ importers:
         specifier: ^10.3.1
         version: 10.3.1
       proj4:
-        specifier: ^2.15.0
-        version: 2.15.0
+        specifier: ^2.19.5
+        version: 2.19.5
       socket.io-client:
         specifier: ^4.8.1
         version: 4.8.1
@@ -63,8 +63,8 @@ importers:
         specifier: '22'
         version: 22.10.5
       '@types/proj4':
-        specifier: ^2.5.5
-        version: 2.5.5
+        specifier: ^2.5.6
+        version: 2.5.6
       '@vitejs/plugin-vue':
         specifier: ^6.0.0
         version: 6.0.0(vite@7.0.3(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.1)(yaml@2.8.0))(vue@3.5.17(typescript@5.7.2))
@@ -1683,8 +1683,8 @@ packages:
   '@types/node@22.10.5':
     resolution: {integrity: sha512-F8Q+SeGimwOo86fiovQh8qiXfFEh2/ocYv7tU5pJ3EXMSSxk1Joj5wefpFK2fHTf/N6HKGSxIDBT9f3gCxXPkQ==}
 
-  '@types/proj4@2.5.5':
-    resolution: {integrity: sha512-y4tHUVVoMEOm2nxRLQ2/ET8upj/pBmoutGxFw2LZJTQWPgWXI+cbxVEUFFmIzr/bpFR83hGDOTSXX6HBeObvZA==}
+  '@types/proj4@2.5.6':
+    resolution: {integrity: sha512-zfMrPy9fx+8DchqM0kIUGeu2tTVB5ApO1KGAYcSGFS8GoqRIkyL41xq2yCx/iV3sOLzo7v4hEgViSLTiPI1L0w==}
 
   '@types/qs@6.9.11':
     resolution: {integrity: sha512-oGk0gmhnEJK4Yyk+oI7EfXsLayXatCWPHary1MtcmbAifkobT9cM9yutG/hZKIseOU0MqbIwQ/u2nn/Gb+ltuQ==}
@@ -3581,8 +3581,8 @@ packages:
     resolution: {integrity: sha512-4yf0QO/sllf/1zbZWYnvWw3NxCQwLXKzIj0G849LSufP15BXKM0rbD2Z3wVnkMfjdn/CB0Dpp444gYAACdsplg==}
     engines: {node: '>=18'}
 
-  proj4@2.15.0:
-    resolution: {integrity: sha512-LqCNEcPdI03BrCHxPLj29vsd5afsm+0sV1H/O3nTDKrv8/LA01ea1z4QADDMjUqxSXWnrmmQDjqFm1J/uZ5RLw==}
+  proj4@2.19.5:
+    resolution: {integrity: sha512-hFn7GJwUZ1YiAAfSfur7VRgiH0swIZFxJb7UZ7C4E9tbqyozSn+SI9ZxFgFKmUldtY3tVTBvylJhwfD+O3pHQw==}
 
   protocol-buffers-schema@3.6.0:
     resolution: {integrity: sha512-TdDRD+/QNdrCGCE7v8340QyuXd4kIWIgapsE2+n/SaGiSSbomYl4TjHlvIoCWRpE7wFt02EpB35VVA2ImcBVqw==}
@@ -4239,8 +4239,8 @@ packages:
     engines: {node: '>= 8'}
     hasBin: true
 
-  wkt-parser@1.4.0:
-    resolution: {integrity: sha512-qpwO7Ihds/YYDTi1aADFTI1Sm9YC/tTe3SHD24EeIlZxy7Ik6a1b4HOz7jAi0xdUAw487duqpo8OGu+Tf4nwlQ==}
+  wkt-parser@1.5.2:
+    resolution: {integrity: sha512-1ZUiV1FTwSiSrgWzV9KXJuOF2BVW91KY/mau04BhnmgOdroRQea7Q0s5TVqwGLm0D2tZwObd/tBYXW49sSxp3Q==}
 
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
@@ -6074,7 +6074,7 @@ snapshots:
     dependencies:
       undici-types: 6.20.0
 
-  '@types/proj4@2.5.5': {}
+  '@types/proj4@2.5.6': {}
 
   '@types/qs@6.9.11': {}
 
@@ -8176,10 +8176,10 @@ snapshots:
     dependencies:
       parse-ms: 4.0.0
 
-  proj4@2.15.0:
+  proj4@2.19.5:
     dependencies:
       mgrs: 1.0.0
-      wkt-parser: 1.4.0
+      wkt-parser: 1.5.2
 
   protocol-buffers-schema@3.6.0: {}
 
@@ -8892,7 +8892,7 @@ snapshots:
     dependencies:
       isexe: 2.0.0
 
-  wkt-parser@1.4.0: {}
+  wkt-parser@1.5.2: {}
 
   word-wrap@1.2.5: {}
 

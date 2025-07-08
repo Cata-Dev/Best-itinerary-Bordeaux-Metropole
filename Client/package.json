@@ -31,7 +31,7 @@
     "@tailwindcss/vite": "^4.1.11",
     "core-js": "^3.44.0",
     "ol": "^10.3.1",
-    "proj4": "^2.15.0",
+    "proj4": "^2.19.5",
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.1.11",
     "vue": "^3.5.17",
@@ -40,7 +40,7 @@
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "22",
-    "@types/proj4": "^2.5.5",
+    "@types/proj4": "^2.5.6",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.6.0",
