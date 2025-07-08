@@ -18,16 +18,16 @@ import {
   updateRoute,
   type Journey,
 } from "@/store/api";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, useTemplateRef } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
 
-const sourceCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
-const destinationCompo = ref<InstanceType<typeof LocationSearch> | null>(null);
-const settingsCompo = ref<InstanceType<typeof ExtraSettings> | null>(null);
-const modalCompo = ref<InstanceType<typeof BaseModal> | null>(null);
+const sourceCompo = useTemplateRef("sourceCompo");
+const destinationCompo = useTemplateRef("destinationCompo");
+const settingsCompo = useTemplateRef("settingsCompo");
+const modalCompo = useTemplateRef("modalCompo");
 
-const searchElem = ref<HTMLButtonElement | null>(null);
-const showSettingsButton = ref<HTMLButtonElement | null>(null);
+const searchElem = useTemplateRef("searchElem");
+const showSettingsButton = useTemplateRef("showSettingsButton");
 
 interface CustomModal {
   title: string;
@@ -55,12 +55,12 @@ if (client.io?.io)
 onMounted(updateQuery);
 onBeforeRouteUpdate(updateQuery);
 
-async function selectResult(path: Journey["paths"][number][number]) {
+function selectResult(path: Journey["paths"][number][number]) {
   if (!result.value) return;
 
   currentJourney.value = path;
 
-  updateRoute();
+  return updateRoute();
 }
 </script>
 
@@ -117,18 +117,18 @@ async function selectResult(path: Journey["paths"][number][number]) {
             <div class="py-2 self-center">
               <button
                 ref="showSettingsButton"
-                class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
+                class="flex hover:scale-[120%] pulse-scale-focus transition-darkmode-transform items-center p-2 bg-bg-light dark:bg-bg-dark rounded-md justify-self-end"
                 :class="{ 'rotate-180': settingsCompo?.shown }"
                 @click="(settingsCompo?.show(), showSettingsButton?.blur())"
               >
                 <font-awesome-icon
                   icon="sliders-h"
-                  class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+                  class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
                 />
               </button>
               <button
                 ref="searchElem"
-                class="flex hover:scale-[120%] pulse-scale-focus transition-scale items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
+                class="flex hover:scale-[120%] pulse-scale-focus transition-darkmode-transform items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
                 @click="(fetchResult(), searchElem?.blur())"
               >
                 <font-awesome-icon
@@ -171,21 +171,25 @@ async function selectResult(path: Journey["paths"][number][number]) {
           'fade-in': currentJourney === null,
         }"
       >
-        <template v-for="(paths, i) of result.paths" :key="i">
+        <template v-for="(paths, _i) of result.paths" :key="_i">
           <div class="grid">
             <template v-for="(path, j) of paths" :key="j">
-              <ResultItem
-                :title="`Alternative #${path.idx + 1}`"
-                :from="result.from"
-                :path="path"
-                class="col-start-1 col-end-1 row-start-1 row-end-1 h-fit cursor-pointer transition-transform duration-300"
+              <div
+                class="col-start-1 col-end-1 row-start-1 row-end-1 transition-transform duration-300"
                 :class="[
                   `scale-${100 - 5 * Math.min(paths.length - 1 - j, 6)}`,
                   ...(j > 0 ? [`mt-${8 * j}`] : []),
                   ...(j < paths.length - 1 ? ['hover:-translate-y-10', 'hover:scale-105', 'hover:z-50'] : []),
                 ]"
-                @click="selectResult(path)"
-              />
+              >
+                <ResultItem
+                  :title="`Alternative #${path.idx + 1}`"
+                  :from="result.from"
+                  :path="path"
+                  class="cursor-pointer"
+                  @click="selectResult(path)"
+                />
+              </div>
             </template>
           </div>
         </template>
@@ -287,5 +291,12 @@ button:focus {
 
 .pulse-scale-focus:focus {
   animation: pulseScale 1s;
+}
+
+.transition-darkmode-transform {
+  transition:
+    background-color var(--duration-darkmode) var(--default-transition-timing-function),
+    scale 300ms,
+    rotate 300ms;
 }
 </style>

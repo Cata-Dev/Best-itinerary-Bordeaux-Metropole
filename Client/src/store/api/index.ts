@@ -54,7 +54,7 @@ function normalizeSearchQuery(): JourneyQuery | null {
     from,
     to,
     ...settings.value,
-    departureTime: new Date(settings.value.departureTime ?? Date.now()).toISOString(),
+    departureTime: new Date(settings.value.departureTime).toISOString(),
     // From km/h to m/s
     walkSpeed: settings.value.walkSpeed / 3.6,
   } satisfies JourneyQuery;
@@ -67,7 +67,7 @@ function pathSlug(path: APIJourney["paths"][number]) {
   return path.stages.reduce(
     (acc, stage) =>
       acc +
-      `${stage.type}-${"type" in stage.details ? `${stage.details.type}-${stage.details.line}-${stage.details.direction}` : stage.details.distance}-${stage.to}`,
+      `${stage.type}-${"type" in stage.details ? `${stage.details.type}-${stage.details.line}` : stage.details.distance}-${stage.to}`,
     "",
   );
 }
@@ -103,11 +103,12 @@ async function fetchResult() {
   status.value.previousSearch = query;
   try {
     const r = await client.service("journey").find({ query });
-    if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${r}.`);
+    if (r.code != 200) throw new Error(`Unable to retrieve itineraries, ${JSON.stringify(r)}.`);
 
     result.value = treatFetchedResult(r);
-    // To insert result id
-    updateRoute();
+    currentJourney.value = null;
+    // To insert result id (& reset current journey)
+    void updateRoute();
 
     status.value.state = SearchResultStatus.SUCCESS;
   } catch (_) {
@@ -129,7 +130,7 @@ async function fetchOldResult(id: string) {
   status.value.previousSearch = id;
   try {
     const r = await client.service("journey").get(id);
-    if (r.code != 200) throw new Error(`Unable to retrieve old result, ${r}.`);
+    if (r.code != 200) throw new Error(`Unable to retrieve old result, ${JSON.stringify(r)}.`);
 
     result.value = treatFetchedResult(r);
     // if (currentJourney.value) currentJourney.value = null;
@@ -150,9 +151,7 @@ async function fetchFootpaths(
   index: Extract<PathQuery, { id: unknown }>["index"],
 ) {
   try {
-    return (
-      (await client.service("path").find({ query: { for: "journey", id, index, realShape: true } })) ?? []
-    );
+    return await client.service("path").find({ query: { for: "journey", id, index, realShape: true } });
   } catch (_) {
     return [];
   }

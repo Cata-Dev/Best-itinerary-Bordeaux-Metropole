@@ -23,7 +23,7 @@ import { initDB } from "../../utils/mongoose";
 /** DB Types */
 
 // Schedules
-const dbSchedulesProjection = { hor_app: 1, hor_estime: 1 } satisfies Partial<
+const dbSchedulesProjection = { /* hor_app: 1, */ hor_estime: 1 } satisfies Partial<
   Record<keyof dbTBM_Schedules_rt, 1>
 >;
 type dbScheduleRt = Pick<dbTBM_Schedules_rt, keyof typeof dbSchedulesProjection>;
@@ -44,7 +44,7 @@ interface ScheduledRoutesOverwritten /* extends dbTBM_ScheduledRoutes */ {
 type ScheduledRoute = Omit<dbScheduledRoute, keyof ScheduledRoutesOverwritten> & ScheduledRoutesOverwritten;
 
 // Stops
-const dbStopProjection = { _id: 1 };
+const dbStopProjection = { _id: 1 } satisfies Partial<Record<keyof dbTBM_Stops, 1>>;
 type Stop = Pick<dbTBM_Stops, keyof typeof dbStopProjection>;
 
 // Non Schedules Routes
@@ -128,8 +128,8 @@ if (parentPort) {
           await dbNonScheduledRoutes(id, {
             distance: {
               $lte:
-                // TODO: do no hardcode ?
-                1_000,
+                // TODO: do not limit?
+                3_000,
             },
           })
         ).map(({ to, distance }) => ({

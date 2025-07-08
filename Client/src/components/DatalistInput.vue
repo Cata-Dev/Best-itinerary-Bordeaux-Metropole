@@ -2,8 +2,8 @@
 import TransportBadge from "@/components/TransportBadge.vue";
 import type { Location } from "@/store";
 import { equalObjects, transportToType } from "@/store/";
-import type { TBMEndpoints } from "@bibm/data/models/TBM/index";
-import { ref, watch } from "vue";
+import { TBMEndpoints } from "@bibm/data/models/TBM/index";
+import { ref, useTemplateRef, watch } from "vue";
 
 type ModelValue = Location;
 
@@ -16,12 +16,12 @@ const model = defineModel<ModelValue | null>();
 
 const props = defineProps<Props<ModelValue>>();
 
-const emit = defineEmits<{
+const emit = defineEmits<
   /**
    * Raw input string, emitted every time it changes
    */
-  (e: "input", input: string): void;
-}>();
+  (e: "input", input: string) => void
+>();
 
 watch(
   () => props.datalist,
@@ -32,31 +32,34 @@ watch(
 
 const showDatalist = ref<boolean>(false);
 
-const inputElem = ref<HTMLInputElement>();
+const inputElem = useTemplateRef("inputElem");
 const input = ref<string>(model.value?.alias ?? "");
 
 /**
  * Emits new modelValue only if value found & it's different from cur ent
  */
-function refreshModelValue() {
-  const value = props.datalist.find((el) => el.alias === input.value) ?? null;
+function refreshModelValue(loc?: Location) {
+  const value =
+    (loc && props.datalist.find((el) => equalObjects(loc, el))) ??
+    props.datalist.find((el) => el.alias === input.value) ??
+    null;
 
   if (equalObjects(model.value, value)) return;
 
   model.value = value;
 }
 
-function newInput() {
+function newInput(loc?: Location) {
   emit("input", input.value);
 
-  refreshModelValue();
+  refreshModelValue(loc);
 }
 
-function forceInput(v: string) {
-  if (input.value === v) return;
+function forceInput(loc: Location) {
+  if (input.value === loc.alias && equalObjects(model.value, loc)) return;
 
-  input.value = v;
-  newInput();
+  input.value = loc.alias;
+  newInput(loc);
 }
 
 function focus() {
@@ -70,12 +73,12 @@ defineExpose({
 </script>
 
 <template>
-  <div class="w-full relative bg-bg-light dark:bg-bg-dark">
+  <div class="w-full relative transition-darkmode bg-bg-light dark:bg-bg-dark">
     <input
       ref="inputElem"
       v-model="input"
       type="text"
-      class="w-full grow text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
+      class="w-full grow transition-darkmode text-text-light-primary dark:text-text-dark-primary placeholder-text-light-faded dark:placeholder-text-dark-faded"
       :placeholder="placeholder"
       @input="newInput()"
       @focus="showDatalist = true"
@@ -88,15 +91,15 @@ defineExpose({
       <div
         v-for="(e, i) in datalist"
         :key="i"
-        class="px-1 py-2 text-sm cursor-pointer hover:bg-bg-light-contrasted dark:hover:bg-bg-dark-contrasted"
-        @mousedown="forceInput(e.alias)"
+        class="px-1 py-2 text-sm cursor-pointer transition-darkmode hover:bg-bg-light-contrasted dark:hover:bg-bg-dark-contrasted"
+        @mousedown="forceInput(e)"
       >
         <span class="ml-1 mr-2">
           {{ e.alias }}
         </span>
         <TransportBadge
-          :type="transportToType(e.type.replace('Addresses' as TBMEndpoints.Addresses, 'FOOT'))"
-          :transport="e.type.replace('Addresses' as TBMEndpoints.Addresses, 'FOOT')"
+          :type="transportToType(e.type.replace(TBMEndpoints.Addresses, 'FOOT'))"
+          :transport="e.type.replace(TBMEndpoints.Addresses, 'FOOT')"
           :custom-text="e.type.toLowerCase().capitalize()"
           class="mr-1"
         />

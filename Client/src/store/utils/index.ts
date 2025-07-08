@@ -3,12 +3,11 @@
  */
 function formatDate(date: string | number | Date, hourOnly = false): string {
   if (!(date instanceof Date)) date = new Date(date);
-  if (!date) return "?";
-  const h = date.getHours() < 10 ? "0" + date.getHours() : date.getHours().toString();
-  const mi = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes().toString();
+  const h = date.getHours().toString().padStart(2, "0");
+  const mi = date.getMinutes().toString().padStart(2, "0");
   if (!hourOnly) {
-    const d = date.getDate() < 10 ? "0" + date.getDate() : date.getDate().toString();
-    const mo = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : (date.getMonth() + 1).toString();
+    const d = date.getDate().toString().padStart(2, "0");
+    const mo = (date.getMonth() + 1).toString().padStart(2, "0");
     return `${d}/${mo}, ${h}:${mi}`;
   }
   return `${h}:${mi}`;
@@ -23,19 +22,19 @@ const icons: Record<TransportMode | UnknownLiteral, TransportIcon | UnknownIcon>
   TRAM: "train",
   BATEAU: "ship",
   TRAIN: "subway",
-  UNKNOW: "question-circle",
+  UNKNOWN: "question-circle",
 };
 
 /**
  * @param {String} transport
  * @returns {String}
  */
-function transportToIcon(transport: string): string {
+function transportToIcon(transport: string) {
   transport = transport.toUpperCase();
-  return transport in icons ? icons[transport as keyof typeof icons] : icons["UNKNOW"];
+  return transport in icons ? icons[transport as keyof typeof icons] : icons.UNKNOWN;
 }
 
-export type UnknownLiteral = "UNKNOW";
+export type UnknownLiteral = "UNKNOWN";
 export type TransportMode = "FOOT" | "BUS" | "TRAM" | "BATEAU" | "TRAIN";
 export type TransportProvider = "FOOT" | "TBM" | "SNCF";
 
@@ -49,21 +48,18 @@ const transports: Record<TransportMode, TransportProvider> = {
 
 function transportToType(transport: string) {
   transport = transport.toUpperCase();
-  return transport in transports ? transports[transport as keyof typeof transports] : "unknow";
+  return transport in transports ? transports[transport as keyof typeof transports] : "unknown";
 }
 
 /**
  * Properly compare 2 objects.
  */
-function equalObjects(
-  o1: Record<string, unknown> | unknown,
-  o2: Record<string, unknown> | unknown,
-): boolean | null {
+function equalObjects(o1: unknown, o2: unknown): boolean | null {
   if (o1 == undefined || typeof o1 !== "object" || o2 == undefined || typeof o2 !== "object")
     return o1 === o2;
 
-  const keys = Object.keys(o1 as object);
-  keys.push(...Object.keys(o2 as object).filter((k) => !keys.find((kk) => kk === k)));
+  const keys = Object.keys(o1);
+  keys.push(...Object.keys(o2).filter((k) => !keys.find((kk) => kk === k)));
   for (const k of keys) {
     if (!Object.prototype.hasOwnProperty.call(o1, k)) return false;
     if (!Object.prototype.hasOwnProperty.call(o2, k)) return false;
@@ -85,13 +81,7 @@ function rebaseObject<V extends string | number | boolean>(target: Obj<V>, base:
   for (const k in base) {
     if (!(k in target)) continue;
 
-    if (
-      typeof target[k] === "object" &&
-      target[k] !== null &&
-      typeof base[k] === "object" &&
-      base[k] !== null
-    )
-      return rebaseObject(target[k], base[k]);
+    if (typeof target[k] === "object" && typeof base[k] === "object") return rebaseObject(target[k], base[k]);
 
     if (base[k] != target[k]) target[k] = base[k];
   }
@@ -148,7 +138,7 @@ function getNewTopZIndex() {
 }
 
 Object.defineProperty(String.prototype, "capitalize", {
-  value: function () {
+  value: function (this: string) {
     return this.charAt(0).toUpperCase() + this.slice(1);
   },
   enumerable: false,

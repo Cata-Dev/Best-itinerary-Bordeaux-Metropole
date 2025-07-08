@@ -1,7 +1,9 @@
 import { RAPTORRunSettings } from "raptor";
 
 const defaultRAPTORRunSettings: RAPTORRunSettings = {
-  walkSpeed: 1.4,
+  maxTransferLength: 1_000,
+  // In m/s = 3.6 km/h
+  walkSpeed: 1,
 };
 
 export { defaultRAPTORRunSettings };

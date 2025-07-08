@@ -8,24 +8,28 @@ RUN corepack enable
 RUN corepack prepare pnpm@9 --activate
 
 FROM base AS build_base
-COPY . /usr/src/app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml /usr/src/app/
 
+COPY Common/ /usr/src/app/Common/
 WORKDIR /usr/src/app/Common
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "common" install --frozen-lockfile --ignore-scripts
 RUN pnpm run build
 
+COPY Data/ /usr/src/app/Data/
 WORKDIR /usr/src/app/Data
 # Cannot ignore scripts : RAPTOR build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "data" install --frozen-lockfile
 # 'prepare' script should have already built
 # RUN pnpm run build
 
+COPY Compute/ /usr/src/app/Compute/
 WORKDIR /usr/src/app/Compute
 # Cannot ignore scripts : Dijkstra build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile || true
 # 'prepare' script should have already built
 # RUN pnpm run build
 
+COPY Server/ /usr/src/app/Server/
 WORKDIR /usr/src/app/Server
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "server" install --frozen-lockfile --ignore-scripts
 RUN pnpm run compile
@@ -37,6 +41,7 @@ RUN pnpm run build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server
 
 FROM build_base AS build_client
+COPY Client/ /usr/src/app/Client/
 WORKDIR /usr/src/app/Client
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "client" install --frozen-lockfile
 # Set API URL/path, alias

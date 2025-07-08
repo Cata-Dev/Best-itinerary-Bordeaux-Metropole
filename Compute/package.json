@@ -19,23 +19,23 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.0",
+    "@tsconfig/node22": "^22.0.2",
     "@types/node": "22",
-    "eslint": "^9.17.0",
-    "prettier": "^3.4.2",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.19.0"
+    "eslint": "^9.30.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.36.0"
   },
   "dependencies": {
     "@bibm/common": "workspace:*",
     "@bibm/data": "workspace:*",
     "@bibm/server": "workspace:*",
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
-    "@typegoose/typegoose": "^12.10.1",
-    "bullmq": "^5.34.5",
-    "core-js": "^3.39.0",
-    "mongoose": "^8.9.3",
+    "@typegoose/typegoose": "^12.17.0",
+    "bullmq": "^5.56.2",
+    "core-js": "^3.44.0",
+    "mongoose": "^8.16.2",
     "raptor": "github:cata-dev/raptor",
-    "shx": "^0.3.4"
+    "shx": "^0.4.0"
   }
 }

@@ -31,9 +31,9 @@ export default async (
       async () => {
         const routeProjection = {
           _id: 1,
-        };
+        } satisfies Partial<Record<keyof dbTBM_Lines_routes, 1>>;
         const routes = await TBM_lines_routesEndpointInstantiated.model
-          .find<HydratedDocument<Pick<dbTBM_Lines_routes, keyof typeof routeProjection>>>({}, routeProjection)
+          .find<DocumentType<Pick<dbTBM_Lines_routes, keyof typeof routeProjection>>>({}, routeProjection)
           .lean();
         if (app.get("debug")) logger.debug(`Retrieved ${routes.length} lines routes`);
 
@@ -53,13 +53,13 @@ export default async (
 
         const tripProjection = {
           _id: 1,
-        };
+        } satisfies Partial<Record<keyof dbTBM_Trips, 1>>;
 
         const scheduleRtProjection = {
           _id: 1,
           hor_estime: 1,
           rs_sv_arret_p: 1,
-        };
+        } satisfies Partial<Record<keyof dbTBM_Schedules_rt, 1>>;
 
         let tripsCount = 0;
         let schedulesCount = 0;

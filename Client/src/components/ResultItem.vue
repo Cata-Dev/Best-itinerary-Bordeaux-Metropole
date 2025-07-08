@@ -14,7 +14,7 @@ import Icon from "ol/style/Icon";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import Text from "ol/style/Text";
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 
 interface Props {
   title: string;
@@ -25,7 +25,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), { expanded: false });
 
-const numberFormat = new Intl.NumberFormat("fr-FR").format;
+const numberFormat = (val: number) => new Intl.NumberFormat("fr-FR").format(val);
 
 interface Transport {
   provider: TransportProvider;
@@ -35,15 +35,15 @@ interface Transport {
 const transports = computed<Transport[]>(() =>
   props.path.stages.map((p) => ({
     provider: p.type,
-    mode: "type" in p.details ? p.details.type : undefined,
+    mode: "type" in p.details ? p.details.type : "FOOT",
   })),
 );
 
-const uniquesTransports = computed(() =>
+const uniqueTransports = computed(() =>
   transports.value
     .filter(
-      (v, i, arr) =>
-        arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode) as Transport) === i,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      (v, i, arr) => arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode)!) === i,
     )
     .map((t) => ({
       ...t,
@@ -52,13 +52,14 @@ const uniquesTransports = computed(() =>
 );
 
 const departure = computed(() => props.path.stages[0].departure);
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const lastStage = computed(() => props.path.stages.at(-1)!);
 const arrival = computed(() => lastStage.value.departure + lastStage.value.duration * 1000);
 const totalDistance = computed(() =>
   props.path.stages.reduce((acc, v) => acc + ("distance" in v.details ? v.details.distance : 0), 0),
 );
 
-const modalMapComp = ref<InstanceType<typeof BaseModal> | null>(null);
+const modalMapComp = useTemplateRef("modalMapComp");
 
 function getClosesPointToMiddle(geom: MultiLineString) {
   const geomExtent = geom.getExtent();
@@ -71,7 +72,7 @@ const paths = ref<VecMapProps["multiLineStrings"]["data"]>([]);
 const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature) => {
   const styles: Style[] = [];
   switch (feature.getProperties().props.type as ServerTransport) {
-    case "FOOT":
+    case "FOOT" as ServerTransport.FOOT:
       styles.push(
         new Style({
           stroke: new Stroke({
@@ -86,13 +87,13 @@ const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature
             opacity: 1,
             src:
               "data:image/svg+xml;utf8," +
-              `<svg width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faPersonWalking.icon[0]} ${faPersonWalking.icon[1]}"><path d="${faPersonWalking.icon[4]}"/></svg>`,
+              `<svg width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faPersonWalking.icon[0]} ${faPersonWalking.icon[1]}"><path d="${faPersonWalking.icon[4] as string}"/></svg>`,
           }),
         }),
       );
       break;
 
-    case "TBM":
+    case "TBM" as ServerTransport.TBM:
       styles.push(
         new Style({
           stroke: new Stroke({
@@ -104,13 +105,19 @@ const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature
       );
       if (
         "stageIdx" in feature.getProperties().props &&
-        "line" in currentJourney.value!.stages[feature.getProperties().props.stageIdx].details
+        currentJourney.value &&
+        "line" in currentJourney.value.stages[feature.getProperties().props.stageIdx].details
       )
         styles.push(
           new Style({
             geometry: getClosesPointToMiddle(feature.getGeometry() as MultiLineString),
             text: new Text({
-              text: `${(currentJourney.value!.stages[feature.getProperties().props.stageIdx].details as Extract<Journey["paths"][number][number]["stages"][number]["details"], { line: unknown }>).line}`,
+              text: (
+                currentJourney.value.stages[feature.getProperties().props.stageIdx].details as Extract<
+                  Journey["paths"][number][number]["stages"][number]["details"],
+                  { line: unknown }
+                >
+              ).line,
               fill: new Fill({
                 // Text color
                 color: "black",
@@ -162,36 +169,36 @@ async function displayMap() {
 <template>
   <div
     v-if="expanded"
-    class="bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-4 rounded-lg shadow-xl min-w-[40%]"
+    class="transition-darkmode bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-4 rounded-lg shadow-xl min-w-[40%] h-fit"
   >
     <div class="flex place-content-center">
       <h3 class="mx-auto text-center font-bold text-xl">
         {{ title }}
       </h3>
       <button @click="displayMap()">
-        <font-awesome-icon icon="map" class="text-text-light-primary dark:text-text-dark-primary text-2xl" />
+        <font-awesome-icon
+          icon="map"
+          class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
+        />
       </button>
     </div>
-    <div class="h-[2px] w-full my-3 bg-text-light-primary dark:bg-text-dark-primary" />
+    <div class="h-[2px] w-full my-3 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
     <div class="flex w-full mt-2">
-      <font-awesome-icon
-        icon="clock"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
-      />
+      <font-awesome-icon icon="clock" class="transition-darkmode text-2xl mr-2" />
       <span class="text-left">
         {{ duration(arrival - departure, false, true) || "< 1m" }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
         icon="person-walking"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
     <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
-        class="fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
+        class="transition-darkmode fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
       >
         <!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. -->
         <path
@@ -213,24 +220,26 @@ async function displayMap() {
       </div>
       <font-awesome-icon
         icon="map-pin"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
       <div class="flex items-center w-full">
-        <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
+        <span class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
         <span class="mx-2 text-center text-lg text-semibold">
           {{ from }}
         </span>
-        <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
+        <span class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
       </div>
       <template v-for="(p, i) in path.stages" :key="i">
         <!-- First row - header -->
         <!-- First col : mode icon -->
         <font-awesome-icon
           :icon="transportToIcon('type' in p.details ? p.details.type : p.type)"
-          class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+          class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
         <!-- Second col : linkin el (vertical bar) -->
-        <div class="vertical-link border-text-light-primary dark:border-text-dark-primary" />
+        <div
+          class="vertical-link transition-darkmode border-text-light-primary dark:border-text-dark-primary"
+        />
         <!-- Third col : details -->
         <div class="w-full pb-2">
           <div v-if="p.type === 'SNCF' || p.type === 'TBM'" class="flex items-center">
@@ -254,16 +263,20 @@ async function displayMap() {
         <font-awesome-icon
           v-if="i === path.stages.length - 1"
           icon="flag"
-          class="text-text-light-primary dark:text-text-dark-primary text-2xl"
+          class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
-        <div v-else class="bullet bg-text-light-primary dark:bg-text-dark-primary" />
+        <div v-else class="bullet transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
         <!-- Third col : position -->
         <div class="flex items-center w-full">
-          <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
+          <span
+            class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
+          />
           <span class="mx-2 text-center text-lg text-semibold">
             {{ p.to }}
           </span>
-          <span class="h-px grow min-w-4 bg-text-light-primary dark:bg-text-dark-primary" />
+          <span
+            class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
+          />
         </div>
       </template>
     </div>
@@ -286,16 +299,16 @@ async function displayMap() {
   </div>
   <div
     v-else
-    class="bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-3 rounded-lg shadow-xl"
+    class="transition-darkmode bg-bg-light dark:bg-bg-dark text-text-light-primary dark:text-text-dark-primary p-3 rounded-lg shadow-xl"
   >
     <h3 class="text-center font-bold text-lg">
       {{ title }}
     </h3>
-    <div class="h-[2px] w-full my-3 bg-text-light-primary dark:bg-text-dark-primary" />
+    <div class="h-[2px] w-full my-3 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
     <div class="flex w-full">
       <font-awesome-icon
         icon="clock"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
         {{ duration(arrival - departure, false, true) || "< 1m" }}
@@ -303,14 +316,14 @@ async function displayMap() {
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
         icon="person-walking"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
     <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
-        class="fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
+        class="transition-darkmode fill-text-light-primary dark:fill-text-dark-primary h-[1em] text-2xl mr-2"
       >
         <!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. -->
         <path
@@ -324,7 +337,7 @@ async function displayMap() {
     <div class="flex w-full mt-2">
       <font-awesome-icon
         icon="map-pin"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
         {{ formatDate(departure, new Date(departure).getDate() === new Date().getDate()) }}
@@ -334,16 +347,16 @@ async function displayMap() {
       </span>
       <font-awesome-icon
         icon="flag"
-        class="text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
+        class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
     <div class="mt-2">
-      <div v-for="(e, i) in uniquesTransports" :key="e.mode" class="inline-block mt-1">
+      <div v-for="(e, i) in uniqueTransports" :key="i" class="inline-block mt-1">
         {{ e.times }}×
         <TransportBadge
           :type="e.provider"
-          :mode="e.mode"
-          :class="{ 'mr-2': i < uniquesTransports.length - 1 }"
+          :transport="e.mode"
+          :class="{ 'mr-2': i < uniqueTransports.length - 1 }"
         />
       </div>
     </div>
