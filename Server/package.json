@@ -68,7 +68,7 @@
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@feathersjs/adapter-commons": "^5.0.31",
     "@feathersjs/authentication": "^5.0.31",
-    "@feathersjs/authentication-client": "^5.0.31",
+    "@feathersjs/authentication-client": "^5.0.34",
     "@feathersjs/configuration": "^5.0.31",
     "@feathersjs/errors": "^5.0.31",
     "@feathersjs/feathers": "^5.0.31",
