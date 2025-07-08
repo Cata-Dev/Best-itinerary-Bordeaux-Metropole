@@ -3,12 +3,11 @@
  */
 function formatDate(date: string | number | Date, hourOnly = false): string {
   if (!(date instanceof Date)) date = new Date(date);
-  if (!date) return "?";
-  const h = date.getHours() < 10 ? "0" + date.getHours() : date.getHours().toString();
-  const mi = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes().toString();
+  const h = date.getHours().toString().padStart(2, "0");
+  const mi = date.getMinutes().toString().padStart(2, "0");
   if (!hourOnly) {
-    const d = date.getDate() < 10 ? "0" + date.getDate() : date.getDate().toString();
-    const mo = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : (date.getMonth() + 1).toString();
+    const d = date.getDate().toString().padStart(2, "0");
+    const mo = (date.getMonth() + 1).toString().padStart(2, "0");
     return `${d}/${mo}, ${h}:${mi}`;
   }
   return `${h}:${mi}`;
@@ -82,13 +81,7 @@ function rebaseObject<V extends string | number | boolean>(target: Obj<V>, base:
   for (const k in base) {
     if (!(k in target)) continue;
 
-    if (
-      typeof target[k] === "object" &&
-      target[k] !== null &&
-      typeof base[k] === "object" &&
-      base[k] !== null
-    )
-      return rebaseObject(target[k], base[k]);
+    if (typeof target[k] === "object" && typeof base[k] === "object") return rebaseObject(target[k], base[k]);
 
     if (base[k] != target[k]) target[k] = base[k];
   }
@@ -145,7 +138,7 @@ function getNewTopZIndex() {
 }
 
 Object.defineProperty(String.prototype, "capitalize", {
-  value: function () {
+  value: function (this: string) {
     return this.charAt(0).toUpperCase() + this.slice(1);
   },
   enumerable: false,

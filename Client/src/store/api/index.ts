@@ -54,7 +54,7 @@ function normalizeSearchQuery(): JourneyQuery | null {
     from,
     to,
     ...settings.value,
-    departureTime: new Date(settings.value.departureTime ?? Date.now()).toISOString(),
+    departureTime: new Date(settings.value.departureTime).toISOString(),
     // From km/h to m/s
     walkSpeed: settings.value.walkSpeed / 3.6,
   } satisfies JourneyQuery;
@@ -151,9 +151,7 @@ async function fetchFootpaths(
   index: Extract<PathQuery, { id: unknown }>["index"],
 ) {
   try {
-    return (
-      (await client.service("path").find({ query: { for: "journey", id, index, realShape: true } })) ?? []
-    );
+    return await client.service("path").find({ query: { for: "journey", id, index, realShape: true } });
   } catch (_) {
     return [];
   }

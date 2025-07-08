@@ -19,7 +19,11 @@ const emit = defineEmits<{
 const settings = ref<QuerySettings>(props.modelValue);
 
 const breakpoint =
-  parseInt(/\d+/.exec(getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-xl"))![0]) *
+  parseInt(
+    /\d+/.exec(getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-xl"))?.[0] ??
+      // Defaults to no breakpoint
+      "0",
+  ) *
   // In rem
   16;
 

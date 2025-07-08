@@ -17,6 +17,7 @@ export default defineConfigWithVueTs(
           allowEmptyCatch: true,
         },
       ],
+      "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
     },
   },
   {
@@ -25,7 +26,7 @@ export default defineConfigWithVueTs(
   },
   ...pluginVue.configs["flat/recommended"],
   // https://github.com/vuejs/eslint-config-typescript#readme
-  vueTsConfigs.recommendedTypeChecked,
+  vueTsConfigs.strictTypeChecked,
   vueTsConfigs.stylisticTypeChecked,
   // https://github.com/vuejs/eslint-config-prettier#readme
   prettierConfig,

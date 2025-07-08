@@ -42,6 +42,7 @@ const transports = computed<Transport[]>(() =>
 const uniqueTransports = computed(() =>
   transports.value
     .filter(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       (v, i, arr) => arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode)!) === i,
     )
     .map((t) => ({
@@ -51,6 +52,7 @@ const uniqueTransports = computed(() =>
 );
 
 const departure = computed(() => props.path.stages[0].departure);
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const lastStage = computed(() => props.path.stages.at(-1)!);
 const arrival = computed(() => lastStage.value.departure + lastStage.value.duration * 1000);
 const totalDistance = computed(() =>
@@ -103,13 +105,19 @@ const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature
       );
       if (
         "stageIdx" in feature.getProperties().props &&
-        "line" in currentJourney.value!.stages[feature.getProperties().props.stageIdx].details
+        currentJourney.value &&
+        "line" in currentJourney.value.stages[feature.getProperties().props.stageIdx].details
       )
         styles.push(
           new Style({
             geometry: getClosesPointToMiddle(feature.getGeometry() as MultiLineString),
             text: new Text({
-              text: `${(currentJourney.value!.stages[feature.getProperties().props.stageIdx].details as Extract<Journey["paths"][number][number]["stages"][number]["details"], { line: unknown }>).line}`,
+              text: (
+                currentJourney.value.stages[feature.getProperties().props.stageIdx].details as Extract<
+                  Journey["paths"][number][number]["stages"][number]["details"],
+                  { line: unknown }
+                >
+              ).line,
               fill: new Fill({
                 // Text color
                 color: "black",

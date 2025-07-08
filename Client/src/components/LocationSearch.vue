@@ -118,7 +118,9 @@ defineExpose({
   forceInput,
 });
 
-const popUp = (msg: string) => alert(msg);
+const popUp = (msg: string) => {
+  alert(msg);
+};
 </script>
 
 <template>

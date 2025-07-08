@@ -76,7 +76,9 @@ const map = new Map({
   }),
 });
 
-onMounted(() => map.setTarget("map"));
+onMounted(() => {
+  map.setTarget("map");
+});
 </script>
 
 <template>
