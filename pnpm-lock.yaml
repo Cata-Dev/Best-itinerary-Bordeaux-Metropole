@@ -140,7 +140,7 @@ importers:
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
       '@typegoose/typegoose':
         specifier: ^12.17.0
-        version: 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        version: 12.17.0(mongoose@8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       bullmq:
         specifier: ^5.56.2
         version: 5.56.2
@@ -148,11 +148,11 @@ importers:
         specifier: ^3.44.0
         version: 3.44.0
       mongoose:
-        specifier: ^8.16.2
-        version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.16.3
+        version: 8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/798d22200d4b62bf6ac49a4785708e12e8bb532b
       shx:
         specifier: ^0.4.0
         version: 0.4.0
@@ -189,16 +189,16 @@ importers:
         version: 5.0.31(typescript@5.8.3)
       '@typegoose/typegoose':
         specifier: ^12.17.0
-        version: 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        version: 12.17.0(mongoose@8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       config:
         specifier: ^4.0.0
         version: 4.0.0
       mongoose:
-        specifier: ^8.16.2
-        version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.16.3
+        version: 8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/798d22200d4b62bf6ac49a4785708e12e8bb532b
     devDependencies:
       '@tsconfig/node22':
         specifier: ^22.0.2
@@ -274,7 +274,7 @@ importers:
         version: 5.0.34(typescript@5.8.3)
       '@typegoose/typegoose':
         specifier: ^12.17.0
-        version: 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        version: 12.17.0(mongoose@8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       axios:
         specifier: ^1.10.0
         version: 1.10.0
@@ -285,8 +285,8 @@ importers:
         specifier: ^8.2.1
         version: 8.2.1(@feathersjs/feathers@5.0.34)
       mongoose:
-        specifier: ^8.16.2
-        version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.16.3
+        version: 8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
     devDependencies:
       '@feathersjs/cli':
         specifier: 5.0.34
@@ -3351,8 +3351,8 @@ packages:
       socks:
         optional: true
 
-  mongoose@8.16.2:
-    resolution: {integrity: sha512-52T4XPhDgJL4cqooBsOORzYBH3ddMwABMEF/LV7TgvD2DEKZlnYTc2HF9ch1U2lcKjhE4pQ+WuInfLFJbguGcQ==}
+  mongoose@8.16.3:
+    resolution: {integrity: sha512-p2JOsRQG7j0vXhLpsWw5Slm2VnDeJK8sRyqSyegk5jQujuP9BTOZ1Di9VX/0lYfBhZ2DpAExi51QTd4pIqSgig==}
     engines: {node: '>=16.20.1'}
 
   mpath@0.9.0:
@@ -3665,8 +3665,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/798d22200d4b62bf6ac49a4785708e12e8bb532b:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/798d22200d4b62bf6ac49a4785708e12e8bb532b}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -6048,11 +6048,11 @@ snapshots:
 
   '@tsconfig/node22@22.0.2': {}
 
-  '@typegoose/typegoose@12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
+  '@typegoose/typegoose@12.17.0(mongoose@8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
     dependencies:
       lodash: 4.17.21
       loglevel: 1.9.2
-      mongoose: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+      mongoose: 8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       reflect-metadata: 0.2.2
       semver: 7.7.2
       tslib: 2.8.1
@@ -8038,7 +8038,7 @@ snapshots:
       '@aws-sdk/credential-providers': 3.525.0
       socks: 2.8.1
 
-  mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
+  mongoose@8.16.3(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
     dependencies:
       bson: 6.10.4
       kareem: 2.6.3
@@ -8353,7 +8353,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/798d22200d4b62bf6ac49a4785708e12e8bb532b: {}
 
   raw-body@2.5.2:
     dependencies:
