@@ -34,7 +34,15 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       TBMEndpoints.Sections,
       24 * 3600,
       async () => {
-        const rawSections: Section[] = await getData("fv_tronc_l", ["crs=epsg:2154"]);
+        const rawSections: Section[] = await getData("fv_tronc_l", [
+          "filter=" +
+            JSON.stringify({
+              cat_dig: {
+                $in: [2, 3, 4, 5, 7, 9, 10],
+              },
+            }),
+          "crs=epsg:2154",
+        ]);
 
         const sections: dbSections[] = rawSections
           .filter(
