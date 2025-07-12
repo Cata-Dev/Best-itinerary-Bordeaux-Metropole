@@ -38,7 +38,7 @@ RUN pnpm run compile
 WORKDIR /usr/src/app/Compute
 RUN pnpm run build
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server --ignore-scripts
 
 FROM build_base AS build_client
 COPY Client/ /usr/src/app/Client/
@@ -52,7 +52,7 @@ ENV VITE_API_PATH ${EXTERNAL_API_PATH}
 # Might need https://vite.dev/guide/build#public-base-path
 RUN pnpm run build
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=client --prod /prod/client
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=client --prod /prod/client --ignore-scripts
 
 FROM base AS server
 ENV NODE_ENV=production
