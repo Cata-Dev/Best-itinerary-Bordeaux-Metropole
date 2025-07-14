@@ -4,3 +4,7 @@ packages:
   - Client
   - Compute
   - Common
+injectWorkspacePackages: true
+syncInjectedDepsAfterScripts:
+  - prepare
+  - build

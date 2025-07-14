@@ -5,7 +5,6 @@ RUN apk add --no-cache git
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-RUN corepack prepare pnpm@9 --activate
 
 FROM base AS build_base
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml /usr/src/app/
@@ -52,7 +51,7 @@ ENV VITE_API_PATH ${EXTERNAL_API_PATH}
 # Might need https://vite.dev/guide/build#public-base-path
 RUN pnpm run build
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=client --prod /prod/client --ignore-scripts
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=client --prod /prod/client
 
 FROM base AS server
 ENV NODE_ENV=production
