@@ -7,4 +7,3 @@ packages:
 injectWorkspacePackages: true
 syncInjectedDepsAfterScripts:
   - prepare
-  - build
