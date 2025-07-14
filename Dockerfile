@@ -37,7 +37,7 @@ RUN pnpm run compile
 WORKDIR /usr/src/app/Compute
 RUN pnpm run build
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server --ignore-scripts
 
 FROM build_base AS build_client
 COPY Client/ /usr/src/app/Client/
