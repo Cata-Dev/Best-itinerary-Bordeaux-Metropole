@@ -13,6 +13,27 @@ function formatDate(date: string | number | Date, hourOnly = false): string {
   return `${h}:${mi}`;
 }
 
+/**
+ * Format a string interval.
+ * Keeps only one bound if they are equal, and factorize the common prefix (delimited by whitespace).
+ * @param a First interval bound
+ * @param b Second interval bound
+ */
+function formatInterval(a: string, b: string) {
+  const aParts = a.split(" ");
+  const bParts = b.split(" ");
+  let commonPrefixIdx = -1;
+  while (
+    ++commonPrefixIdx < Math.min(aParts.length, bParts.length) &&
+    aParts[commonPrefixIdx] === bParts[commonPrefixIdx]
+  );
+  commonPrefixIdx--;
+
+  const commonPrefix = aParts.slice(0, commonPrefixIdx + 1).join(" ") + (commonPrefixIdx > -1 ? " " : "");
+
+  return a === b ? a : `${commonPrefix}[${a.slice(commonPrefix.length)}, ${b.slice(commonPrefix.length)}]`;
+}
+
 export type UnknownIcon = "question-circle";
 export type TransportIcon = "walking" | "bus" | "train" | "ship" | "subway";
 
@@ -155,6 +176,7 @@ declare global {
 
 export {
   formatDate,
+  formatInterval,
   transportToIcon,
   transportToType,
   equalObjects,

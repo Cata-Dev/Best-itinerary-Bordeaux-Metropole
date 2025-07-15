@@ -127,9 +127,12 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
                 type: Transport.FOOT,
                 departure:
                   // Arrival of previous step
-                  journey.steps[i].time,
-                // m / m*s-1 = s
-                duration: js.transfer.length / result.settings.walkSpeed,
+                  journey.steps[i].time as [number, number],
+                duration: [
+                  // m / m*s-1 = s
+                  js.transfer.length / result.settings.walkSpeed,
+                  js.transfer.length / result.settings.walkSpeed,
+                ],
                 details: {
                   distance: js.transfer.length,
                 },
@@ -148,13 +151,20 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             if (typeof js.boardedAt === "string")
               throw new GeneralError("Unexpected error while populating journey");
 
-            const departureTime = (
-              await this.TBMSchedulesModel.findById(
-                scheduledRoute.trips[js.tripIndex].schedules[scheduledRoute.stops.indexOf(js.boardedAt)],
-              ).lean()
-            )?.hor_estime.getTime();
-            if (departureTime === undefined)
+            const schedule = await this.TBMSchedulesModel.findById(
+              scheduledRoute.trips[js.tripIndex].schedules[scheduledRoute.stops.indexOf(js.boardedAt)],
+            ).lean();
+            if (schedule === null)
               throw new GeneralError("Unable to retrieve realtime schedule while populating journey");
+
+            let theo = schedule.hor_theo.getTime() || Infinity;
+            let estime = schedule.hor_estime.getTime() || schedule.hor_app.getTime() || Infinity;
+
+            // Prevent upper bound to be MAX_SAFE
+            if (theo < Infinity && estime === Infinity) estime = theo;
+            if (estime < Infinity && theo === Infinity) theo = estime;
+
+            const int: [number, number] = theo < estime ? [theo, estime] : [estime, theo];
 
             const lineRoute = await this.TBMLinesRoutesModel.findById(js.route, undefined, {
               populate: ["rs_sv_ligne_a"],
@@ -166,9 +176,9 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             return {
               to,
               type: Transport.TBM,
-              departure: departureTime,
+              departure: int,
               // Arrival - departure, in sec
-              duration: (js.time - departureTime) / 1e3,
+              duration: [(js.time[0] - int[0]) / 1e3, (js.time[1] - int[1]) / 1e3],
               details: {
                 direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
                 line: lineRoute.rs_sv_ligne_a.libelle,
@@ -177,7 +187,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             } satisfies Journey["paths"][number]["stages"][number];
           },
         ),
-        criteria: journey.criteria.reduce<Record<string, number>>(
+        criteria: journey.criteria.reduce<Record<string, unknown>>(
           (acc, v) => ({ ...acc, [v.name]: v.value }),
           {},
         ),

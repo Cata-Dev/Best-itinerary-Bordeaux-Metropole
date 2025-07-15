@@ -17,7 +17,7 @@ import { deleteModelWithClass, getModelForClass, prop, type Ref } from "@typegoo
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
-import { RAPTORRunSettings } from "raptor";
+import { InternalTimeInt, RAPTORRunSettings } from "raptor";
 import { dbSNCF_Stops } from "../SNCF/SNCF_stops.model";
 import { dbAddresses } from "../TBM/addresses.model";
 import { dbTBM_Stops } from "../TBM/TBM_stops.model";
@@ -51,7 +51,7 @@ export class JourneyStepBase {
   public type!: JourneyStepType;
 
   @prop({ required: true })
-  public time!: number;
+  public time!: InternalTimeInt;
 }
 
 class Transfer {
@@ -94,7 +94,7 @@ export class Criterion {
   public name!: string;
 
   @prop({ required: true })
-  public value!: number;
+  public value!: unknown;
 }
 
 export class Journey {

@@ -14,7 +14,7 @@ import { DocumentType } from "@typegoose/typegoose";
 import { FilterQuery } from "mongoose";
 import { sep } from "node:path";
 import { parentPort } from "node:worker_threads";
-import { MAX_SAFE_TIMESTAMP, SharedRAPTORData } from "raptor";
+import { SharedRAPTORData, sharedTimeIntOrderLow, TimeScal } from "raptor";
 import { preComputeLogger } from ".";
 import { app } from "../../base";
 import { UnpackRefType } from "../../utils";
@@ -23,7 +23,7 @@ import { initDB } from "../../utils/mongoose";
 /** DB Types */
 
 // Schedules
-const dbSchedulesProjection = { /* hor_app: 1, */ hor_estime: 1 } satisfies Partial<
+const dbSchedulesProjection = { hor_theo: 1, hor_estime: 1, hor_app: 1 } satisfies Partial<
   Record<keyof dbTBM_Schedules_rt, 1>
 >;
 type dbScheduleRt = Pick<dbTBM_Schedules_rt, keyof typeof dbSchedulesProjection>;
@@ -121,6 +121,7 @@ if (parentPort) {
       ).map(({ from, to, distance }) => ({ distance, to: to === stopId ? from : to }));
 
     const RAPTORData = SharedRAPTORData.makeFromRawData(
+      sharedTimeIntOrderLow,
       await mapAsync(stops, async ({ id, connectedRoutes }) => ({
         id,
         connectedRoutes,
@@ -144,14 +145,17 @@ if (parentPort) {
             stops,
             trips.map(({ tripId, schedules }) => ({
               id: tripId,
-              times: schedules.map((schedule) =>
-                "hor_estime" in schedule
-                  ? ([
-                      schedule.hor_estime.getTime() || MAX_SAFE_TIMESTAMP,
-                      schedule.hor_estime.getTime() || MAX_SAFE_TIMESTAMP,
-                    ] satisfies [unknown, unknown])
-                  : ([Infinity, Infinity] satisfies [unknown, unknown]),
-              ),
+              times: schedules.map((schedule) => {
+                let theo = schedule.hor_theo.getTime() || TimeScal.MAX_SAFE;
+                let estime = schedule.hor_estime.getTime() || schedule.hor_app.getTime() || TimeScal.MAX_SAFE;
+
+                // Prevent upper bound to be MAX_SAFE
+                if (theo < TimeScal.MAX_SAFE && estime === TimeScal.MAX_SAFE) estime = theo;
+                if (estime < TimeScal.MAX_SAFE && theo === TimeScal.MAX_SAFE) theo = estime;
+
+                const int = theo < estime ? [theo, estime] : [estime, theo];
+                return [[int[0], int[1]] as const, [int[0], int[1]] as const] satisfies [unknown, unknown];
+              }),
             })),
           ] satisfies [unknown, unknown, unknown],
       ),
@@ -165,4 +169,4 @@ if (parentPort) {
   })().catch((err) => logger.warn("During compute job data pre-computation", err));
 }
 
-export type makeComputeData = () => Parameters<typeof SharedRAPTORData.makeFromInternalData>[0];
+export type makeComputeData = () => Parameters<typeof SharedRAPTORData.makeFromInternalData>[1];

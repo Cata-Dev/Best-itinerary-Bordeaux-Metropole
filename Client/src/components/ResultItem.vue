@@ -3,7 +3,13 @@ import BaseModal from "@/components/BaseModal.vue";
 import TransportBadge from "@/components/TransportBadge.vue";
 import type { Props as VecMapProps } from "@/components/VecMap.vue";
 import VecMap from "@/components/VecMap.vue";
-import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
+import {
+  formatDate,
+  formatInterval,
+  transportToIcon,
+  type TransportMode,
+  type TransportProvider,
+} from "@/store/";
 import { currentJourney, fetchFootpaths, result, type Journey } from "@/store/api";
 import { duration } from "@bibm/common/time";
 import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
@@ -54,7 +60,13 @@ const uniqueTransports = computed(() =>
 const departure = computed(() => props.path.stages[0].departure);
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const lastStage = computed(() => props.path.stages.at(-1)!);
-const arrival = computed(() => lastStage.value.departure + lastStage.value.duration * 1000);
+const arrival = computed(
+  () =>
+    [
+      lastStage.value.departure[0] + lastStage.value.duration[0] * 1000,
+      lastStage.value.departure[1] + lastStage.value.duration[1] * 1000,
+    ] satisfies [unknown, unknown],
+);
 const totalDistance = computed(() =>
   props.path.stages.reduce((acc, v) => acc + ("distance" in v.details ? v.details.distance : 0), 0),
 );
@@ -186,7 +198,14 @@ async function displayMap() {
     <div class="flex w-full mt-2">
       <font-awesome-icon icon="clock" class="transition-darkmode text-2xl mr-2" />
       <span class="text-left">
-        {{ duration(arrival - departure, false, true) || "< 1m" }}
+        {{
+          formatInterval(
+            ...(Array.from(
+              { length: 2 },
+              (_, i) => duration(arrival[i] - departure[(i + 1) % 2], false, true) || "< 1m",
+            ) as [string, string]),
+          )
+        }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
@@ -206,7 +225,7 @@ async function displayMap() {
         />
       </svg>
       <span class="text-left">
-        {{ duration(path.criteria.bufferTime, false, true) || "< 1m" }}
+        {{ duration(path.criteria.bufferTime as number, false, true) || "< 1m" }}
       </span>
     </div>
 
@@ -216,7 +235,7 @@ async function displayMap() {
     >
       <!-- First first row - departure -->
       <div class="">
-        {{ formatDate(departure, true) }}
+        {{ formatInterval(...(departure.map((time) => formatDate(time, true)) as [string, string])) }}
       </div>
       <font-awesome-icon
         icon="map-pin"
@@ -251,13 +270,24 @@ async function displayMap() {
             <span class="text-sm"> ➜ {{ "direction" in p.details ? p.details.direction : "unknonw" }} </span>
           </div>
           <div class="text-sm" :class="{ 'mt-1': p.type === 'SNCF' || p.type === 'TBM' }">
-            {{ duration(p.duration * 1000, false, true) || "< 1m" }}
+            {{
+              formatInterval(
+                ...(p.duration.map((d) => duration(d * 1000, false, true) || "< 1m") as [string, string]),
+              )
+            }}
           </div>
         </div>
         <!-- Second row - content -->
         <!-- First col : time -->
         <div class="">
-          {{ formatDate(path.stages[i + 1]?.departure ?? arrival, true) }}
+          {{
+            formatInterval(
+              ...((path.stages[i + 1]?.departure ?? arrival).map((time) => formatDate(time, true)) as [
+                string,
+                string,
+              ]),
+            )
+          }}
         </div>
         <!-- Second col : icon (start/bullet/end) -->
         <font-awesome-icon
@@ -311,7 +341,14 @@ async function displayMap() {
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ duration(arrival - departure, false, true) || "< 1m" }}
+        {{
+          formatInterval(
+            ...(Array.from(
+              { length: 2 },
+              (_, i) => duration(arrival[i] - departure[(i + 1) % 2], false, true) || "< 1m",
+            ) as [string, string]),
+          )
+        }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
@@ -331,7 +368,7 @@ async function displayMap() {
         />
       </svg>
       <span class="text-left">
-        {{ duration(path.criteria.bufferTime, false, true) || "< 1m" }}
+        {{ duration(path.criteria.bufferTime as number, false, true) || "< 1m" }}
       </span>
     </div>
     <div class="flex w-full mt-2">
@@ -340,10 +377,22 @@ async function displayMap() {
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ formatDate(departure, new Date(departure).getDate() === new Date().getDate()) }}
+        {{
+          formatInterval(
+            ...(departure.map((time) =>
+              formatDate(time, new Date(time).getDate() === new Date().getDate()),
+            ) as [string, string]),
+          )
+        }}
       </span>
       <span class="text-right ml-auto">
-        {{ formatDate(arrival, new Date(arrival).getDate() === new Date().getDate()) }}
+        {{
+          formatInterval(
+            ...(arrival.map((time) =>
+              formatDate(time, new Date(time).getDate() === new Date().getDate()),
+            ) as [string, string]),
+          )
+        }}
       </span>
       <font-awesome-icon
         icon="flag"

@@ -153,7 +153,7 @@ importers:
         version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/d27137bf7f7eaafc8d901e632004a7acfb26d5b0
       shx:
         specifier: ^0.4.0
         version: 0.4.0
@@ -199,7 +199,7 @@ importers:
         version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/d27137bf7f7eaafc8d901e632004a7acfb26d5b0
     devDependencies:
       '@tsconfig/node22':
         specifier: ^22.0.2
@@ -3674,8 +3674,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/d27137bf7f7eaafc8d901e632004a7acfb26d5b0:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/d27137bf7f7eaafc8d901e632004a7acfb26d5b0}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -5107,7 +5107,7 @@ snapshots:
       '@typegoose/typegoose': 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       config: 4.0.0
       mongoose: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
-      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/d27137bf7f7eaafc8d901e632004a7acfb26d5b0
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
       - '@mongodb-js/zstd'
@@ -8384,7 +8384,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/d27137bf7f7eaafc8d901e632004a7acfb26d5b0: {}
 
   raw-body@2.5.2:
     dependencies:

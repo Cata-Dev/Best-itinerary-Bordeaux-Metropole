@@ -4,11 +4,11 @@ import { initDB } from "../utils/mongoose";
 import "core-js/features/reflect";
 
 import ResultModelInit, {
-  JourneyStepType,
+  Journey,
   JourneyStepBase,
   JourneyStepFoot,
+  JourneyStepType,
   JourneyStepVehicle,
-  Journey,
   LocationAddress,
   LocationSNCF,
   LocationTBM,
@@ -20,8 +20,17 @@ import stopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
 import { defaultRAPTORRunSettings } from "@bibm/data/values/RAPTOR/index";
 import { JourneyQuery } from "@bibm/server";
 import { DocumentType } from "@typegoose/typegoose";
-import { bufferTime, McSharedRAPTOR, RAPTORRunSettings } from "raptor";
-import { SharedRAPTORData, Stop } from "raptor";
+import {
+  Criterion,
+  InternalTimeInt,
+  McSharedRAPTOR,
+  RAPTORRunSettings,
+  SharedID,
+  SharedRAPTORData,
+  Stop,
+  bufferTime,
+  sharedTimeIntOrderLow,
+} from "raptor";
 import type { JobFn, JobResult } from ".";
 import type { BaseApplication } from "../base";
 import { withDefaults } from "../utils";
@@ -40,8 +49,8 @@ declare module "." {
 type DBJourney = Omit<Journey, "steps"> & {
   steps: (JourneyStepBase | JourneyStepFoot | JourneyStepVehicle)[];
 };
-function journeyDBFormatter<C extends string[]>(
-  journey: NonNullable<ReturnType<McSharedRAPTOR<C>["getBestJourneys"]>[number]>[number],
+function journeyDBFormatter<V, CA extends [V, string][]>(
+  journey: NonNullable<ReturnType<McSharedRAPTOR<InternalTimeInt, V, CA>["getBestJourneys"]>[number]>[number],
 ): DBJourney {
   return {
     steps: journey.map((js) => {
@@ -78,17 +87,21 @@ function journeyDBFormatter<C extends string[]>(
 }
 
 // Acts as a factory
-export default function (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) {
-  let RAPTORData = SharedRAPTORData.makeFromInternalData(data);
-  let McRAPTORInstance = new McSharedRAPTOR<["bufferTime"]>(RAPTORData, [bufferTime]);
+export default function (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[1]) {
+  let RAPTORData = SharedRAPTORData.makeFromInternalData(sharedTimeIntOrderLow, data);
+  let McRAPTORInstance = new McSharedRAPTOR<InternalTimeInt, number, [[number, "bufferTime"]]>(RAPTORData, [
+    bufferTime as Criterion<InternalTimeInt, SharedID, SharedID, number, "bufferTime">,
+  ]);
   let maxStopId = Array.from(RAPTORData.stops).reduce(
     (acc, [id]) => (typeof id === "number" && id > acc ? id : acc),
     0,
   );
 
-  const updateData = (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) => {
-    RAPTORData = SharedRAPTORData.makeFromInternalData(data);
-    McRAPTORInstance = new McSharedRAPTOR<["bufferTime"]>(RAPTORData, [bufferTime]);
+  const updateData = (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[1]) => {
+    RAPTORData = SharedRAPTORData.makeFromInternalData(sharedTimeIntOrderLow, data);
+    McRAPTORInstance = new McSharedRAPTOR<InternalTimeInt, number, [[number, "bufferTime"]]>(RAPTORData, [
+      bufferTime as Criterion<InternalTimeInt, SharedID, SharedID, number, "bufferTime">,
+    ]);
     maxStopId = Array.from(RAPTORData.stops).reduce(
       (acc, [_, stop]) => (typeof stop.id === "number" && stop.id > acc ? stop.id : acc),
       0,
@@ -231,7 +244,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       // String because stringified by Redis
       const departureDate = new Date(departureDateStr);
 
-      McRAPTORInstance.run(psId, ptId, departureDate.getTime(), settings);
+      McRAPTORInstance.run(psId, ptId, [departureDate.getTime(), departureDate.getTime()], settings);
       const bestJourneys = McRAPTORInstance.getBestJourneys(ptId).filter(
         (roundJourneys): roundJourneys is NonNullable<typeof roundJourneys> => !!roundJourneys,
       );
@@ -300,7 +313,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         journeys: bestJourneys
           .flat()
           // Sort by arrival time
-          .sort((a, b) => a.at(-1)!.label.time - b.at(-1)!.label.time)
+          .sort((a, b) => sharedTimeIntOrderLow.order(a.at(-1)!.label.time, b.at(-1)!.label.time))
           .map((journey) => journeyDBFormatter(journey)),
         settings,
       });
