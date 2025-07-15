@@ -11,33 +11,29 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml /usr/src/app/
 
 COPY Common/ /usr/src/app/Common/
 WORKDIR /usr/src/app/Common
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "common" install --frozen-lockfile --ignore-scripts
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "common" install --frozen-lockfile
 RUN pnpm run build
 
 COPY Data/ /usr/src/app/Data/
 WORKDIR /usr/src/app/Data
-# Cannot ignore scripts : RAPTOR build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "data" install --frozen-lockfile
-# 'prepare' script should have already built
-# RUN pnpm run build
+RUN pnpm run build
 
 COPY Compute/ /usr/src/app/Compute/
 WORKDIR /usr/src/app/Compute
-# Cannot ignore scripts : Dijkstra build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile || true
-# 'prepare' script should have already built
-# RUN pnpm run build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile
+RUN pnpm run build || true
 
 COPY Server/ /usr/src/app/Server/
 WORKDIR /usr/src/app/Server
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "server" install --frozen-lockfile --ignore-scripts
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "server" install --frozen-lockfile
 RUN pnpm run compile
 
 # 2nd build try, will work
 WORKDIR /usr/src/app/Compute
 RUN pnpm run build
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server --ignore-scripts
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server --frozen-lockfile
 
 FROM build_base AS build_client
 COPY Client/ /usr/src/app/Client/
@@ -51,7 +47,7 @@ ENV VITE_API_PATH ${EXTERNAL_API_PATH}
 # Might need https://vite.dev/guide/build#public-base-path
 RUN pnpm run build
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=client --prod /prod/client
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=client --prod /prod/client --frozen-lockfile
 
 FROM base AS server
 ENV NODE_ENV=production

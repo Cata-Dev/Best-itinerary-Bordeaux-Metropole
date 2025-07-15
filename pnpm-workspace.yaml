@@ -5,5 +5,3 @@ packages:
   - Compute
   - Common
 injectWorkspacePackages: true
-syncInjectedDepsAfterScripts:
-  - prepare
