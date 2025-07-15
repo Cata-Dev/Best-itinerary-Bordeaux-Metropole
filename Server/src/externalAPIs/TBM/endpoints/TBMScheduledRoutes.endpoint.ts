@@ -78,7 +78,7 @@ export default async (
 
           const formattedTrips = // Find schedules associated to each trip
             (
-              await mapAsync(relevantTrips, async (t: (typeof relevantTrips)[number]) => {
+              await mapAsync(relevantTrips, async (relevantTrip: (typeof relevantTrips)[number]) => {
                 const schedules = await TBM_schedulesRtEndpointInstantiated.model
                   .find<
                     DocumentType<
@@ -87,17 +87,22 @@ export default async (
                         keyof typeof scheduleRtProjection
                       >
                     >
-                  >({ rs_sv_cours_a: t._id, etat: { $ne: RtScheduleState.Annule } }, scheduleRtProjection)
+                  >(
+                    { rs_sv_cours_a: relevantTrip._id, etat: { $ne: RtScheduleState.Annule } },
+                    scheduleRtProjection,
+                  )
                   .lean<
                     Pick<
                       dbTBM_Schedules_rt & mongoose.Require_id<dbTBM_Schedules_rt>,
                       keyof typeof scheduleRtProjection
                     >[]
                   >();
+
                 schedulesCount += schedules.length;
-                if (schedules.length > maxLength[1]) maxLength = [t._id, schedules.length];
+                if (schedules.length > maxLength[1]) maxLength = [relevantTrip._id, schedules.length];
+
                 return {
-                  tripId: t._id,
+                  tripId: relevantTrip._id,
                   schedules: schedules.sort((a, b) => a.hor_estime.valueOf() - b.hor_estime.valueOf()),
                 };
               })
