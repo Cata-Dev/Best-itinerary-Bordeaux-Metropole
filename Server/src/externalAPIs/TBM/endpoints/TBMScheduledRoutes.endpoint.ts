@@ -38,7 +38,7 @@ export default async (
         if (app.get("debug")) logger.debug(`Retrieved ${routes.length} lines routes`);
 
         const fillSchedule =
-          (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
+          (await TBM_schedulesRtEndpointInstantiated.model.findOne({ _id: Infinity })) ??
           (await TBM_schedulesRtEndpointInstantiated.model.create({
             _id: Infinity,
             hor_theo: new Date(0),
