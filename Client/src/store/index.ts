@@ -65,16 +65,7 @@ export {
 };
 export type { colorComm, colorPalette, colorTransports, Location, QuerySettings };
 
-export {
-  compareObjectForEach,
-  equalObjects,
-  formatDate,
-  getNewTopZIndex,
-  parseJSON,
-  rebaseObject,
-  transportToIcon,
-  transportToType,
-} from "./utils";
+export * from "./utils";
 export type {
   Obj,
   TransportIcon,
