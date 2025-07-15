@@ -56,6 +56,7 @@ export default async (
 
         const scheduleRtProjection = {
           _id: 1,
+          hor_theo: 1,
           hor_estime: 1,
           rs_sv_arret_p: 1,
         } satisfies Partial<Record<keyof dbTBM_Schedules_rt, 1>>;
@@ -91,6 +92,7 @@ export default async (
                     { rs_sv_cours_a: relevantTrip._id, etat: { $ne: RtScheduleState.Annule } },
                     scheduleRtProjection,
                   )
+                  .sort({ hor_theo: 1 })
                   .lean<
                     Pick<
                       dbTBM_Schedules_rt & mongoose.Require_id<dbTBM_Schedules_rt>,
@@ -103,15 +105,15 @@ export default async (
 
                 return {
                   tripId: relevantTrip._id,
-                  schedules: schedules.sort((a, b) => a.hor_estime.valueOf() - b.hor_estime.valueOf()),
+                  schedules,
                 };
               })
             )
               .filter((t) => t.schedules.length)
               .sort(
                 (a, b) =>
-                  (a.schedules[a.schedules.length - 1].hor_estime?.valueOf() ?? 0) -
-                  (b.schedules[b.schedules.length - 1].hor_estime?.valueOf() ?? 0),
+                  (a.schedules[a.schedules.length - 1].hor_theo?.valueOf() ?? 0) -
+                  (b.schedules[b.schedules.length - 1].hor_theo?.valueOf() ?? 0),
               )
               // Add time, reduce memory
               .map(({ tripId, schedules }) => {
