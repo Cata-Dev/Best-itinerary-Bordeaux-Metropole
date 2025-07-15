@@ -38,7 +38,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
           "filter=" +
             JSON.stringify({
               cat_dig: {
-                $in: [2, 3, 4, 5, 7, 9, 10],
+                $in: ["2", "3", "4", "5", "7", "9", "10"],
               },
             }),
           "crs=epsg:2154",
