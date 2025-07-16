@@ -40,7 +40,7 @@
     "@typegoose/typegoose": "^12.17.0",
     "@bibm/common": "workspace:*",
     "config": "^4.0.0",
-    "mongoose": "^8.16.2",
+    "mongoose": "^8.16.3",
     "raptor": "github:cata-dev/raptor"
   },
   "devDependencies": {
