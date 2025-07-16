@@ -174,6 +174,8 @@ declare global {
   }
 }
 
+const hasMouse = matchMedia("(pointer:fine)").matches;
+
 export {
   formatDate,
   formatInterval,
@@ -185,5 +187,6 @@ export {
   formatDateToInput,
   parseJSON,
   getNewTopZIndex,
+  hasMouse,
 };
 export type { Obj };
