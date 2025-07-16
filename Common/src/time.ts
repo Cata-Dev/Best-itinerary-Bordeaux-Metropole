@@ -7,6 +7,8 @@
 function duration(ms: number, includeSec = true, short = false) {
   ms = Math.sqrt(ms ** 2);
 
+  if (ms >= Infinity) return "∞";
+
   const y = Math.floor(ms / 31556952000);
   ms -= y * 31556952000;
   const sy = y > 1 ? "s" : "";
