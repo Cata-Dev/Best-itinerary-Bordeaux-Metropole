@@ -61,10 +61,16 @@ function resetPseudoHover() {
   pseudoHover.value = null;
 }
 
-function selectResult(path: Journey["paths"][number][number]) {
+function selectResult(path: Journey["paths"][number][number], stackPosition: number) {
   if (!result.value) return;
 
-  if (!hasMouse && pseudoHover.value === null) {
+  if (
+    !hasMouse &&
+    // Only when stacked & when a background card
+    stackPosition > 1 &&
+    // Only when not already hovered
+    pseudoHover.value === null
+  ) {
     // On mobile, hover first
     pseudoHover.value = path.idx;
 
@@ -208,7 +214,7 @@ watch([result, currentJourney], () => {
                   class="cursor-pointer"
                   @click="
                     (ev: PointerEvent) => {
-                      selectResult(path);
+                      selectResult(path, paths.length - j);
                       ev.stopPropagation();
                     }
                   "
