@@ -177,16 +177,16 @@ declare global {
 const hasMouse = matchMedia("(pointer:fine)").matches;
 
 export {
-  formatDate,
-  formatInterval,
-  transportToIcon,
-  transportToType,
-  equalObjects,
-  rebaseObject,
   compareObjectForEach,
+  equalObjects,
+  formatDate,
   formatDateToInput,
-  parseJSON,
+  formatInterval,
   getNewTopZIndex,
   hasMouse,
+  parseJSON,
+  rebaseObject,
+  transportToIcon,
+  transportToType,
 };
 export type { Obj };
