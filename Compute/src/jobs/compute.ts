@@ -4,11 +4,11 @@ import { initDB } from "../utils/mongoose";
 import "core-js/features/reflect";
 
 import ResultModelInit, {
-  JourneyStepType,
+  Journey,
   JourneyStepBase,
   JourneyStepFoot,
+  JourneyStepType,
   JourneyStepVehicle,
-  Journey,
   LocationAddress,
   LocationSNCF,
   LocationTBM,
@@ -20,8 +20,16 @@ import stopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
 import { defaultRAPTORRunSettings } from "@bibm/data/values/RAPTOR/index";
 import { JourneyQuery } from "@bibm/server";
 import { DocumentType } from "@typegoose/typegoose";
-import { bufferTime, McSharedRAPTOR, RAPTORRunSettings } from "raptor";
-import { SharedRAPTORData, Stop } from "raptor";
+import {
+  Criterion,
+  InternalTimeInt,
+  McSharedRAPTOR,
+  RAPTORRunSettings,
+  SharedID,
+  SharedRAPTORData,
+  bufferTime,
+  sharedTimeIntOrderLow,
+} from "raptor";
 import type { JobFn, JobResult } from ".";
 import type { BaseApplication } from "../base";
 import { withDefaults } from "../utils";
@@ -40,8 +48,8 @@ declare module "." {
 type DBJourney = Omit<Journey, "steps"> & {
   steps: (JourneyStepBase | JourneyStepFoot | JourneyStepVehicle)[];
 };
-function journeyDBFormatter<C extends string[]>(
-  journey: NonNullable<ReturnType<McSharedRAPTOR<C>["getBestJourneys"]>[number]>[number],
+function journeyDBFormatter<V, CA extends [V, string][]>(
+  journey: NonNullable<ReturnType<McSharedRAPTOR<InternalTimeInt, V, CA>["getBestJourneys"]>[number]>[number],
 ): DBJourney {
   return {
     steps: journey.map((js) => {
@@ -78,17 +86,21 @@ function journeyDBFormatter<C extends string[]>(
 }
 
 // Acts as a factory
-export default function (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) {
-  let RAPTORData = SharedRAPTORData.makeFromInternalData(data);
-  let McRAPTORInstance = new McSharedRAPTOR<["bufferTime"]>(RAPTORData, [bufferTime]);
+export default function (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[1]) {
+  let RAPTORData = SharedRAPTORData.makeFromInternalData(sharedTimeIntOrderLow, data);
+  let McRAPTORInstance = new McSharedRAPTOR<InternalTimeInt, number, [[number, "bufferTime"]]>(RAPTORData, [
+    bufferTime as Criterion<InternalTimeInt, SharedID, SharedID, number, "bufferTime">,
+  ]);
   let maxStopId = Array.from(RAPTORData.stops).reduce(
     (acc, [id]) => (typeof id === "number" && id > acc ? id : acc),
     0,
   );
 
-  const updateData = (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[0]) => {
-    RAPTORData = SharedRAPTORData.makeFromInternalData(data);
-    McRAPTORInstance = new McSharedRAPTOR<["bufferTime"]>(RAPTORData, [bufferTime]);
+  const updateData = (data: Parameters<typeof SharedRAPTORData.makeFromInternalData>[1]) => {
+    RAPTORData = SharedRAPTORData.makeFromInternalData(sharedTimeIntOrderLow, data);
+    McRAPTORInstance = new McSharedRAPTOR<InternalTimeInt, number, [[number, "bufferTime"]]>(RAPTORData, [
+      bufferTime as Criterion<InternalTimeInt, SharedID, SharedID, number, "bufferTime">,
+    ]);
     maxStopId = Array.from(RAPTORData.stops).reduce(
       (acc, [_, stop]) => (typeof stop.id === "number" && stop.id > acc ? stop.id : acc),
       0,
@@ -113,16 +125,11 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         | Awaited<ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA" | "computeFp">>>>[string][]
         | null = null;
 
-      const attachStops = new Map<
+      const attachedStops = new Map<
         keyof Awaited<
           ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>
         >[string]["distances"],
-        Stop<
-          keyof Awaited<
-            ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>
-          >[string]["distances"],
-          number
-        >
+        Parameters<SharedRAPTORData<InternalTimeInt>["attachStops"]>[0][number]
       >();
 
       let psId: Parameters<typeof RAPTORData.stops.get>[0] = -1;
@@ -136,24 +143,20 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         )?.distances;
         if (!childrenResultPs) throw new Error("Missing pre-computation for ps");
 
-        attachStops.set(psIdNumber, {
-          id: psIdNumber,
-          connectedRoutes: [],
-          transfers: Object.keys(childrenResultPs).map((k) => {
+        attachedStops.set(psIdNumber, [
+          psIdNumber,
+          [],
+          Object.keys(childrenResultPs).map((k) => {
             const sId = parseInt(k);
 
             return { to: sId, length: childrenResultPs[sId] };
           }),
-        });
+        ]);
 
         Object.keys(childrenResultPs).forEach((k) => {
           const sId = parseInt(k);
 
-          attachStops.set(sId, {
-            id: sId,
-            connectedRoutes: [],
-            transfers: [{ to: psIdNumber, length: childrenResultPs[sId] }],
-          });
+          attachedStops.set(sId, [sId, [], [{ to: psIdNumber, length: childrenResultPs[sId] }]]);
         });
 
         psId = SharedRAPTORData.serializeId(psIdNumber);
@@ -171,29 +174,27 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
           (cr): cr is JobResult<"computeFpOTA"> => "distances" in cr && cr.alias === "pt",
         )?.distances;
         if (!childrenResultPt) throw new Error("Missing pre-computation for pt");
-
-        attachStops.set(ptIdNumber, {
-          id: ptIdNumber,
-          connectedRoutes: [],
-          transfers: Object.keys(childrenResultPt).map((k) => {
+        attachedStops.set(ptIdNumber, [
+          ptIdNumber,
+          [],
+          Object.keys(childrenResultPt).map((k) => {
             const sId = parseInt(k);
 
             return { to: sId, length: childrenResultPt[sId] };
           }),
-        });
+        ]);
 
         Object.keys(childrenResultPt).forEach((k) => {
           const sId = parseInt(k);
 
-          const alreadyAdded = attachStops.get(sId);
+          const alreadyAttached = attachedStops.get(sId);
 
-          attachStops.set(sId, {
-            id: sId,
-            connectedRoutes: [],
-            transfers:
-              // Merge transfers
-              [...(alreadyAdded?.transfers ?? []), { to: ptIdNumber, length: childrenResultPt[sId] }],
-          });
+          attachedStops.set(sId, [
+            sId,
+            [],
+            // Merge transfers
+            [...(alreadyAttached?.[2] ?? []), { to: ptIdNumber, length: childrenResultPt[sId] }],
+          ]);
         });
 
         ptId = SharedRAPTORData.serializeId(ptIdNumber);
@@ -209,29 +210,29 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
 
         if (psToPt < Infinity) {
           // Add foot path directly from ps to pt and vice-versa
-          const attachedToPs = attachStops.get(psIdNumber);
-          attachStops.set(psIdNumber, {
-            id: psIdNumber,
-            connectedRoutes: [],
-            transfers: [...(attachedToPs?.transfers ?? []), { to: ptIdNumber, length: psToPt }],
-          });
+          const attachedToPs = attachedStops.get(psIdNumber);
+          attachedStops.set(psIdNumber, [
+            psIdNumber,
+            [],
+            [...(attachedToPs?.[2] ?? []), { to: ptIdNumber, length: psToPt }],
+          ]);
 
-          const attachedToPt = attachStops.get(ptIdNumber);
-          attachStops.set(ptIdNumber, {
-            id: ptIdNumber,
-            connectedRoutes: [],
-            transfers: [...(attachedToPt?.transfers ?? []), { to: psIdNumber, length: psToPt }],
-          });
+          const attachedToPt = attachedStops.get(ptIdNumber);
+          attachedStops.set(ptIdNumber, [
+            ptIdNumber,
+            [],
+            [...(attachedToPt?.[2] ?? []), { to: psIdNumber, length: psToPt }],
+          ]);
         }
       }
 
-      RAPTORData.attachData(Array.from(attachStops.values()), []);
+      RAPTORData.attachStops(Array.from(attachedStops.values()));
 
       const settings = withDefaults(reqSettings, defaultRAPTORRunSettings);
       // String because stringified by Redis
       const departureDate = new Date(departureDateStr);
 
-      McRAPTORInstance.run(psId, ptId, departureDate.getTime(), settings);
+      McRAPTORInstance.run(psId, ptId, [departureDate.getTime(), departureDate.getTime()], settings);
       const bestJourneys = McRAPTORInstance.getBestJourneys(ptId).filter(
         (roundJourneys): roundJourneys is NonNullable<typeof roundJourneys> => !!roundJourneys,
       );
@@ -300,8 +301,8 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         journeys: bestJourneys
           .flat()
           // Sort by arrival time
-          .sort((a, b) => a.at(-1)!.label.time - b.at(-1)!.label.time)
-          .map((journey) => journeyDBFormatter(journey)),
+          .sort((a, b) => sharedTimeIntOrderLow.order(a.at(-1)!.label.time, b.at(-1)!.label.time))
+          .map(journeyDBFormatter),
         settings,
       });
 

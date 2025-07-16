@@ -9,7 +9,6 @@ import {
 import { dbTBM_Trips } from "@bibm/data/models/TBM/TBM_trips.model";
 import TBM_Scheduled_routes, { dbTBM_ScheduledRoutes } from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
 import { DocumentType, mongoose } from "@typegoose/typegoose";
-import { HydratedDocument } from "mongoose";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
 import { bulkUpsertAndPurge } from "../../../utils";
@@ -34,11 +33,11 @@ export default async (
         } satisfies Partial<Record<keyof dbTBM_Lines_routes, 1>>;
         const routes = await TBM_lines_routesEndpointInstantiated.model
           .find<DocumentType<Pick<dbTBM_Lines_routes, keyof typeof routeProjection>>>({}, routeProjection)
-          .lean();
+          .lean<Pick<dbTBM_Lines_routes, keyof typeof routeProjection>[]>();
         if (app.get("debug")) logger.debug(`Retrieved ${routes.length} lines routes`);
 
         const fillSchedule =
-          (await TBM_schedulesRtEndpointInstantiated.model.findOne({ gid: Infinity })) ??
+          (await TBM_schedulesRtEndpointInstantiated.model.findOne({ _id: Infinity })) ??
           (await TBM_schedulesRtEndpointInstantiated.model.create({
             _id: Infinity,
             hor_theo: new Date(0),
@@ -57,6 +56,7 @@ export default async (
 
         const scheduleRtProjection = {
           _id: 1,
+          hor_theo: 1,
           hor_estime: 1,
           rs_sv_arret_p: 1,
         } satisfies Partial<Record<keyof dbTBM_Schedules_rt, 1>>;
@@ -68,9 +68,9 @@ export default async (
         for (const [i, route] of routes.entries()) {
           const relevantTrips = await TBM_tripsEndpointInstantiated.model
             .find<
-              HydratedDocument<Pick<DocumentType<dbTBM_Trips>, keyof typeof tripProjection>>
+              DocumentType<Pick<DocumentType<dbTBM_Trips>, keyof typeof tripProjection>>
             >({ rs_sv_chem_l: route._id }, tripProjection)
-            .lean();
+            .lean<Pick<DocumentType<dbTBM_Trips>, keyof typeof tripProjection>[]>();
           tripsCount += relevantTrips.length;
 
           /** `[tripId, length of schedules]` */
@@ -79,30 +79,41 @@ export default async (
 
           const formattedTrips = // Find schedules associated to each trip
             (
-              await mapAsync(relevantTrips, async (t: (typeof relevantTrips)[number]) => {
+              await mapAsync(relevantTrips, async (relevantTrip: (typeof relevantTrips)[number]) => {
                 const schedules = await TBM_schedulesRtEndpointInstantiated.model
                   .find<
-                    HydratedDocument<
+                    DocumentType<
                       Pick<
                         dbTBM_Schedules_rt & mongoose.Require_id<dbTBM_Schedules_rt>,
                         keyof typeof scheduleRtProjection
                       >
                     >
-                  >({ rs_sv_cours_a: t._id, etat: { $ne: RtScheduleState.Annule } }, scheduleRtProjection)
-                  .lean();
+                  >(
+                    { rs_sv_cours_a: relevantTrip._id, etat: { $ne: RtScheduleState.Annule } },
+                    scheduleRtProjection,
+                  )
+                  .sort({ hor_theo: 1 })
+                  .lean<
+                    Pick<
+                      dbTBM_Schedules_rt & mongoose.Require_id<dbTBM_Schedules_rt>,
+                      keyof typeof scheduleRtProjection
+                    >[]
+                  >();
+
                 schedulesCount += schedules.length;
-                if (schedules.length > maxLength[1]) maxLength = [t._id, schedules.length];
+                if (schedules.length > maxLength[1]) maxLength = [relevantTrip._id, schedules.length];
+
                 return {
-                  tripId: t._id,
-                  schedules: schedules.sort((a, b) => a.hor_estime.valueOf() - b.hor_estime.valueOf()),
+                  tripId: relevantTrip._id,
+                  schedules,
                 };
               })
             )
               .filter((t) => t.schedules.length)
               .sort(
                 (a, b) =>
-                  (a.schedules[a.schedules.length - 1].hor_estime?.valueOf() ?? 0) -
-                  (b.schedules[b.schedules.length - 1].hor_estime?.valueOf() ?? 0),
+                  (a.schedules[a.schedules.length - 1].hor_theo?.valueOf() ?? 0) -
+                  (b.schedules[b.schedules.length - 1].hor_theo?.valueOf() ?? 0),
               )
               // Add time, reduce memory
               .map(({ tripId, schedules }) => {

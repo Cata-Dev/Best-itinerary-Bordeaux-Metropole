@@ -58,8 +58,7 @@
     "test": "pnpm run mocha",
     "type-check": "tsc -noEmit",
     "lint": "eslint ./src/",
-    "full-lint": "npm run lint && npm run type-check",
-    "prepare": "pnpm run compile"
+    "full-lint": "npm run lint && npm run type-check"
   },
   "dependencies": {
     "@bibm/common": "workspace:*",

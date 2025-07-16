@@ -2,6 +2,7 @@ import { Coords, euclideanDistance } from "@bibm/common/geographics";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import TBM_Sections, { dbSections } from "@bibm/data/models/TBM/sections.model";
 import { BaseTBM } from "..";
+import { EndpointName } from "../..";
 import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
 import { bulkUpsertAndPurge } from "../../../utils";
@@ -34,7 +35,15 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       TBMEndpoints.Sections,
       24 * 3600,
       async () => {
-        const rawSections: Section[] = await getData("fv_tronc_l", ["crs=epsg:2154"]);
+        const rawSections: Section[] = await getData("fv_tronc_l", [
+          "filter=" +
+            JSON.stringify({
+              cat_dig: {
+                $in: ["2", "3", "4", "5", "7", "9", "10"],
+              },
+            }),
+          "crs=epsg:2154",
+        ]);
 
         const sections: dbSections[] = rawSections
           .filter(
@@ -85,11 +94,17 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
   ] as const;
 };
 
-export const makeNSRHook = makeConcurrentHook(
-  (app) =>
-    // Could be effectively awaited (through job.waitUntilFinished(queue))
-    void app
-      .get("computeInstance")
-      .app.queues[3].add("computeNSR", [5_000])
-      .catch((err) => logger.error("Failed to start computing Non Schedules Routes", err)),
+export const makeNSRHook = makeConcurrentHook((app, endpoint) =>
+  sequenceHooksConstructor(
+    () => async () => {
+      try {
+        const job = await app.get("computeInstance").app.queues[3].add("computeNSR", [5_000]);
+        await job.waitUntilFinished(app.get("computeInstance").app.queuesEvents[3]);
+      } catch (err) {
+        logger.error("Failed to compute Non Schedules Routes", err);
+      }
+    },
+    // When non scheduled routes are computed, need to refresh compute data to take them into account
+    () => () => app.get("computeInstance").refreshData(["compute"]),
+  )(app.externalAPIs.endpoints[endpoint] as Endpoint<EndpointName>)(endpoint),
 );
