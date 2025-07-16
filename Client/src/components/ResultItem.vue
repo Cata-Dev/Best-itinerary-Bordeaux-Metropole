@@ -225,7 +225,16 @@ async function displayMap() {
         />
       </svg>
       <span class="text-left">
-        {{ duration(path.criteria.bufferTime as number, false, true) || "< 1m" }}
+        {{
+          duration(
+            (path.criteria.bufferTime as
+              | number
+              // -Infinity serialized as 'null'
+              | null) ?? Infinity,
+            false,
+            true,
+          ) || "< 1m"
+        }}
       </span>
     </div>
 
@@ -368,7 +377,16 @@ async function displayMap() {
         />
       </svg>
       <span class="text-left">
-        {{ duration(path.criteria.bufferTime as number, false, true) || "< 1m" }}
+        {{
+          duration(
+            (path.criteria.bufferTime as
+              | number
+              // -Infinity serialized as 'null'
+              | null) ?? Infinity,
+            false,
+            true,
+          ) || "< 1m"
+        }}
       </span>
     </div>
     <div class="flex w-full mt-2">
