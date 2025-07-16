@@ -122,10 +122,10 @@ if (parentPort) {
 
     const RAPTORData = SharedRAPTORData.makeFromRawData(
       sharedTimeIntOrderLow,
-      await mapAsync(stops, async ({ id, connectedRoutes }) => ({
+      await mapAsync(stops, async ({ id, connectedRoutes }) => [
         id,
         connectedRoutes,
-        transfers: (
+        (
           await dbNonScheduledRoutes(id, {
             distance: {
               $lte:
@@ -137,7 +137,7 @@ if (parentPort) {
           to,
           length: distance,
         })),
-      })),
+      ]),
       dbScheduledRoutes.map(
         ({ _id, stops, trips }) =>
           [

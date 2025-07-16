@@ -27,7 +27,6 @@ import {
   RAPTORRunSettings,
   SharedID,
   SharedRAPTORData,
-  Stop,
   bufferTime,
   sharedTimeIntOrderLow,
 } from "raptor";
@@ -126,16 +125,11 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         | Awaited<ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA" | "computeFp">>>>[string][]
         | null = null;
 
-      const attachStops = new Map<
+      const attachedStops = new Map<
         keyof Awaited<
           ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>
         >[string]["distances"],
-        Stop<
-          keyof Awaited<
-            ReturnType<typeof job.getChildrenValues<JobResult<"computeFpOTA">>>
-          >[string]["distances"],
-          number
-        >
+        Parameters<SharedRAPTORData<InternalTimeInt>["attachStops"]>[0][number]
       >();
 
       let psId: Parameters<typeof RAPTORData.stops.get>[0] = -1;
@@ -149,24 +143,20 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         )?.distances;
         if (!childrenResultPs) throw new Error("Missing pre-computation for ps");
 
-        attachStops.set(psIdNumber, {
-          id: psIdNumber,
-          connectedRoutes: [],
-          transfers: Object.keys(childrenResultPs).map((k) => {
+        attachedStops.set(psIdNumber, [
+          psIdNumber,
+          [],
+          Object.keys(childrenResultPs).map((k) => {
             const sId = parseInt(k);
 
             return { to: sId, length: childrenResultPs[sId] };
           }),
-        });
+        ]);
 
         Object.keys(childrenResultPs).forEach((k) => {
           const sId = parseInt(k);
 
-          attachStops.set(sId, {
-            id: sId,
-            connectedRoutes: [],
-            transfers: [{ to: psIdNumber, length: childrenResultPs[sId] }],
-          });
+          attachedStops.set(sId, [sId, [], [{ to: psIdNumber, length: childrenResultPs[sId] }]]);
         });
 
         psId = SharedRAPTORData.serializeId(psIdNumber);
@@ -184,29 +174,27 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
           (cr): cr is JobResult<"computeFpOTA"> => "distances" in cr && cr.alias === "pt",
         )?.distances;
         if (!childrenResultPt) throw new Error("Missing pre-computation for pt");
-
-        attachStops.set(ptIdNumber, {
-          id: ptIdNumber,
-          connectedRoutes: [],
-          transfers: Object.keys(childrenResultPt).map((k) => {
+        attachedStops.set(ptIdNumber, [
+          ptIdNumber,
+          [],
+          Object.keys(childrenResultPt).map((k) => {
             const sId = parseInt(k);
 
             return { to: sId, length: childrenResultPt[sId] };
           }),
-        });
+        ]);
 
         Object.keys(childrenResultPt).forEach((k) => {
           const sId = parseInt(k);
 
-          const alreadyAdded = attachStops.get(sId);
+          const alreadyAttached = attachedStops.get(sId);
 
-          attachStops.set(sId, {
-            id: sId,
-            connectedRoutes: [],
-            transfers:
-              // Merge transfers
-              [...(alreadyAdded?.transfers ?? []), { to: ptIdNumber, length: childrenResultPt[sId] }],
-          });
+          attachedStops.set(sId, [
+            sId,
+            [],
+            // Merge transfers
+            [...(alreadyAttached?.[2] ?? []), { to: ptIdNumber, length: childrenResultPt[sId] }],
+          ]);
         });
 
         ptId = SharedRAPTORData.serializeId(ptIdNumber);
@@ -222,23 +210,23 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
 
         if (psToPt < Infinity) {
           // Add foot path directly from ps to pt and vice-versa
-          const attachedToPs = attachStops.get(psIdNumber);
-          attachStops.set(psIdNumber, {
-            id: psIdNumber,
-            connectedRoutes: [],
-            transfers: [...(attachedToPs?.transfers ?? []), { to: ptIdNumber, length: psToPt }],
-          });
+          const attachedToPs = attachedStops.get(psIdNumber);
+          attachedStops.set(psIdNumber, [
+            psIdNumber,
+            [],
+            [...(attachedToPs?.[2] ?? []), { to: ptIdNumber, length: psToPt }],
+          ]);
 
-          const attachedToPt = attachStops.get(ptIdNumber);
-          attachStops.set(ptIdNumber, {
-            id: ptIdNumber,
-            connectedRoutes: [],
-            transfers: [...(attachedToPt?.transfers ?? []), { to: psIdNumber, length: psToPt }],
-          });
+          const attachedToPt = attachedStops.get(ptIdNumber);
+          attachedStops.set(ptIdNumber, [
+            ptIdNumber,
+            [],
+            [...(attachedToPt?.[2] ?? []), { to: psIdNumber, length: psToPt }],
+          ]);
         }
       }
 
-      RAPTORData.attachData(Array.from(attachStops.values()), []);
+      RAPTORData.attachStops(Array.from(attachedStops.values()));
 
       const settings = withDefaults(reqSettings, defaultRAPTORRunSettings);
       // String because stringified by Redis
@@ -314,7 +302,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
           .flat()
           // Sort by arrival time
           .sort((a, b) => sharedTimeIntOrderLow.order(a.at(-1)!.label.time, b.at(-1)!.label.time))
-          .map((journey) => journeyDBFormatter(journey)),
+          .map(journeyDBFormatter),
         settings,
       });
 
