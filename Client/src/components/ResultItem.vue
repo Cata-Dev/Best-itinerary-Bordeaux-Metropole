@@ -213,7 +213,7 @@ async function displayMap() {
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
-    <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
+    <div v-if="'bufferTime' in path.criteria || 'successProbaInt' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
@@ -224,18 +224,29 @@ async function displayMap() {
           d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
         />
       </svg>
-      <span class="text-left">
-        {{
-          duration(
-            (path.criteria.bufferTime as
-              | number
-              // -Infinity serialized as 'null'
-              | null) ?? Infinity,
-            false,
-            true,
-          ) || "< 1m"
-        }}
-      </span>
+      <template v-if="'bufferTime' in path.criteria && (path.criteria.bufferTime as number) < 0">
+        <span>
+          {{ (path.criteria.bufferTime as number) > 0 ? "-" : ""
+          }}{{
+            duration(
+              (path.criteria.bufferTime as
+                | number
+                // -Infinity serialized as 'null'
+                | null) ?? Infinity,
+              false,
+              true,
+            ) || "< 1m"
+          }}
+        </span>
+      </template>
+      <template
+        v-if="
+          'successProbaInt' in path.criteria &&
+          (!('bufferTime' in path.criteria) || (path.criteria.bufferTime as number) >= 0)
+        "
+      >
+        <span> &nbsp;{{ Math.round(-(path.criteria.successProbaInt as number) * 100_00) / 100 }}% </span>
+      </template>
     </div>
 
     <div
@@ -365,7 +376,7 @@ async function displayMap() {
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
-    <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
+    <div v-if="'bufferTime' in path.criteria || 'successProbaInt' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
@@ -376,18 +387,29 @@ async function displayMap() {
           d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
         />
       </svg>
-      <span class="text-left">
-        {{
-          duration(
-            (path.criteria.bufferTime as
-              | number
-              // -Infinity serialized as 'null'
-              | null) ?? Infinity,
-            false,
-            true,
-          ) || "< 1m"
-        }}
-      </span>
+      <template v-if="'bufferTime' in path.criteria && (path.criteria.bufferTime as number) < 0">
+        <span>
+          {{ (path.criteria.bufferTime as number) > 0 ? "-" : ""
+          }}{{
+            duration(
+              (path.criteria.bufferTime as
+                | number
+                // -Infinity serialized as 'null'
+                | null) ?? Infinity,
+              false,
+              true,
+            ) || "< 1m"
+          }}
+        </span>
+      </template>
+      <template
+        v-if="
+          'successProbaInt' in path.criteria &&
+          (!('bufferTime' in path.criteria) || (path.criteria.bufferTime as number) >= 0)
+        "
+      >
+        <span> {{ Math.round(-(path.criteria.successProbaInt as number) * 100_00) / 100 }}% </span>
+      </template>
     </div>
     <div class="flex w-full mt-2">
       <font-awesome-icon
