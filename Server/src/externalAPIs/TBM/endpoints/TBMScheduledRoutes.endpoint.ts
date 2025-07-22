@@ -116,11 +116,23 @@ export default async (
               ).schedules,
             }))
             // Sort by last schedule
-            .sort(
-              (a, b) =>
-                (a.schedules[a.schedules.length - 1].hor_theo?.valueOf() ?? 0) -
-                (b.schedules[b.schedules.length - 1].hor_theo?.valueOf() ?? 0),
-            )
+            .sort((a, b) => {
+              let largestNonInfScheduleIdx = -1;
+              // a.schedules.length === b.schedules.length
+              for (let i = a.schedules.length - 1; i >= 0; --i) {
+                if (a.schedules[i]._id !== fillSchedule._id && b.schedules[i]._id !== fillSchedule._id) {
+                  largestNonInfScheduleIdx = i;
+                  break;
+                }
+              }
+
+              return largestNonInfScheduleIdx === -1
+                ? // Schedules ids seems to be sorted... But ugly hack anyway, and might be NaN if Infinity - Infinity...
+                  (a.schedules.find((schedule) => schedule._id !== fillSchedule._id)?._id ?? Infinity) -
+                    (b.schedules.find((schedule) => schedule._id !== fillSchedule._id)?._id ?? Infinity)
+                : a.schedules[largestNonInfScheduleIdx].hor_theo.getTime() -
+                    b.schedules[largestNonInfScheduleIdx].hor_theo.getTime();
+            })
             // End formatting, extract/keep only schedule ID
             .map(({ tripId, schedules }) => ({
               tripId,
