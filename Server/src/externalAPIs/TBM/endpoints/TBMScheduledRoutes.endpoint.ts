@@ -101,7 +101,7 @@ export default async (
               tripId,
               schedules: largestTrip.reduce<{ schedules: typeof schedules; i: number }>(
                 (acc, { rs_sv_arret_p: stopId }, i) => {
-                  if (acc.i < schedules.length - 1 && schedules[acc.i].rs_sv_arret_p === stopId) {
+                  if (acc.i < schedules.length && schedules[acc.i].rs_sv_arret_p === stopId) {
                     // The current schedule stop matches with the stop at the current index, use it & consume it
                     acc.schedules[i] = schedules[acc.i];
                     acc.i++;
