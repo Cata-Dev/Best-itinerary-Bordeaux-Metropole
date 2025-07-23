@@ -152,7 +152,7 @@ importers:
         version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226
       shx:
         specifier: ^0.4.0
         version: 0.4.0
@@ -198,7 +198,7 @@ importers:
         version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226
     devDependencies:
       '@tsconfig/node22':
         specifier: ^22.0.2
@@ -276,8 +276,8 @@ importers:
         specifier: ^12.17.0
         version: 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       axios:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^1.11.0
+        version: 1.11.0
       core-js:
         specifier: ^3.44.0
         version: 3.44.0
@@ -1992,8 +1992,8 @@ packages:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
 
-  axios@1.10.0:
-    resolution: {integrity: sha512-/1xYAC4MP/HEG+3duIhFr4ZQXR4sQXOIe+o6sdqzeykGLx6Upp/1p8MHqhINOvGeP7xyNHe7tsiJByc4SSVUxw==}
+  axios@1.11.0:
+    resolution: {integrity: sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -2632,8 +2632,8 @@ packages:
     resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
     engines: {node: '>=14'}
 
-  form-data@4.0.3:
-    resolution: {integrity: sha512-qsITQPfmvMOSAdeyZ+12I1c+CKSstAFAwu+97zrnWAbIr5u8wfsExUzCesVLC8NgHuRUqNN4Zy6UPWUTRGslcA==}
+  form-data@4.0.4:
+    resolution: {integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow==}
     engines: {node: '>= 6'}
 
   formidable@2.1.2:
@@ -3665,8 +3665,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -6200,7 +6200,7 @@ snapshots:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
       '@types/node': 22.16.0
-      form-data: 4.0.3
+      form-data: 4.0.4
 
   '@types/through@0.0.33':
     dependencies:
@@ -6566,10 +6566,10 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.0.0
 
-  axios@1.10.0:
+  axios@1.11.0:
     dependencies:
       follow-redirects: 1.15.9
-      form-data: 4.0.3
+      form-data: 4.0.4
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
@@ -7330,7 +7330,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  form-data@4.0.3:
+  form-data@4.0.4:
     dependencies:
       asynckit: 0.4.0
       combined-stream: 1.0.8
@@ -8353,7 +8353,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/f6a6b27cbdd864f8398517668e159daac7e2cb73: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226: {}
 
   raw-body@2.5.2:
     dependencies:
