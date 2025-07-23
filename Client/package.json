@@ -26,7 +26,7 @@
     "@bibm/server": "workspace:*",
     "@feathersjs/socketio-client": "^5.0.34",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^7.0.0",
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@tailwindcss/vite": "^4.1.11",
     "core-js": "^3.44.0",
