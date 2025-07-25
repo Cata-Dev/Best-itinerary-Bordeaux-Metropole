@@ -13,6 +13,7 @@ export enum LocationType {
   Address = "A",
 }
 
+import { UnpackRefType } from "@bibm/common/types";
 import { deleteModelWithClass, getModelForClass, prop, type Ref } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
@@ -79,7 +80,7 @@ export class JourneyStepVehicle extends JourneyStepBase {
   public boardedAt!: stopId | string;
 
   @prop({ required: true, ref: () => dbTBM_ScheduledRoutes, type: () => Number })
-  public route!: Ref<dbTBM_ScheduledRoutes>;
+  public route!: Ref<dbTBM_ScheduledRoutes, UnpackRefType<dbTBM_ScheduledRoutes["_id"]>>;
 
   @prop({ required: true })
   public tripIndex!: number;

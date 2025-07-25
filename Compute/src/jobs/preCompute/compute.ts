@@ -34,6 +34,7 @@ const dbScheduledRoutesProjection = { _id: 1, stops: 1, trips: 1 } satisfies Par
 >;
 type dbScheduledRoute = Pick<dbTBM_ScheduledRoutes, keyof typeof dbScheduledRoutesProjection>;
 interface ScheduledRoutesOverwritten /* extends dbTBM_ScheduledRoutes */ {
+  _id: UnpackRefType<dbScheduledRoute["_id"]>;
   stops: UnpackRefType<dbScheduledRoute["stops"]>;
   trips: {
     tripId: dbScheduledRoute["trips"][number]["tripId"];

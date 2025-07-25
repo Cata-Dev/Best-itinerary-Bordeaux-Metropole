@@ -35,15 +35,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@bibm/common": "workspace:*",
     "@feathersjs/schema": "^5.0.31",
     "@feathersjs/typebox": "^5.0.31",
     "@typegoose/typegoose": "^12.17.0",
-    "@bibm/common": "workspace:*",
     "config": "^4.0.0",
     "mongoose": "^8.16.2",
     "raptor": "github:cata-dev/raptor"
   },
   "devDependencies": {
+    "@eslint/js": "^9.31.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/config": "^3.3.5",
     "@types/node": "^22",

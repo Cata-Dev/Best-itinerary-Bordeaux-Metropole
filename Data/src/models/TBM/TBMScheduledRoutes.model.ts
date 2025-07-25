@@ -13,6 +13,7 @@ import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
 import { TBMEndpoints } from ".";
+import { dbTBM_Lines_routes } from "./TBM_lines_routes.model";
 import { dbTBM_Schedules_rt, default as TBMSchedulesRtInit } from "./TBM_schedules.model";
 import { dbTBM_Stops, default as TBMStopsInit } from "./TBM_stops.model";
 
@@ -27,9 +28,8 @@ export class TripOfScheduledRoute {
 
 @modelOptions({ options: { customName: TBMEndpoints.ScheduledRoutes } })
 export class dbTBM_ScheduledRoutes extends TimeStamps {
-  @prop({ required: true })
-  // routeId
-  public _id!: number;
+  @prop({ required: true, ref: () => dbTBM_Lines_routes, type: () => Number })
+  public _id!: Ref<dbTBM_Lines_routes>;
 
   @prop({ required: true, type: () => TripOfScheduledRoute })
   public trips!: TripOfScheduledRoute[];
