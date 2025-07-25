@@ -21,10 +21,10 @@ import { dbTBM_RouteSections } from "./TBM_route_sections.model";
 @modelOptions({ options: { customName: TBMEndpoints.LinkLineRoutesSections } })
 export class dbTBM_LinkLineRoutesSections extends TimeStamps {
   @prop({ required: true, ref: () => dbTBM_Lines_routes, type: () => Number })
-  public rs_sv_chem_l!: Ref<dbTBM_Lines_routes, number>;
+  public rs_sv_chem_l!: Ref<dbTBM_Lines_routes>;
 
   @prop({ required: true, ref: () => dbTBM_RouteSections, type: () => Number })
-  public rs_sv_tronc_l!: Ref<dbTBM_RouteSections, number>;
+  public rs_sv_tronc_l!: Ref<dbTBM_RouteSections>;
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbTBM_LinkLineRoutesSections> {

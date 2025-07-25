@@ -48,8 +48,8 @@ export const transport = Type.Enum(Transport);
 const StageBase = Type.Object(
   {
     to: Type.String(),
-    departure: Type.Integer(),
-    duration: Type.Integer(),
+    departure: Type.Tuple([Type.Integer(), Type.Integer()]),
+    duration: Type.Tuple([Type.Integer(), Type.Integer()]),
   },
   { additionalProperties: false },
 );
@@ -100,7 +100,7 @@ export const journeySchema = Type.Object(
       Type.Object(
         {
           stages: Type.Array(Stage, { uniqueItems: true }),
-          criteria: Type.Record(Type.String(), Type.Number()),
+          criteria: Type.Record(Type.String(), Type.Unknown()),
         },
         { additionalProperties: false },
       ),

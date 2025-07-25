@@ -43,10 +43,10 @@ export class dbTBM_Schedules extends TimeStamps {
   public realtime!: boolean;
 
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public rs_sv_arret_p!: Ref<dbTBM_Stops, number>;
+  public rs_sv_arret_p!: Ref<dbTBM_Stops>;
 
   @prop({ required: true, ref: () => dbTBM_Trips, type: () => Number, index: true })
-  public rs_sv_cours_a!: Ref<dbTBM_Trips, number>;
+  public rs_sv_cours_a!: Ref<dbTBM_Trips>;
 }
 
 @modelOptions({ options: { customName: TBMEndpoints.Schedules_rt } })

@@ -13,11 +13,12 @@ export enum LocationType {
   Address = "A",
 }
 
+import { UnpackRefType } from "@bibm/common/types";
 import { deleteModelWithClass, getModelForClass, prop, type Ref } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
-import { RAPTORRunSettings } from "raptor";
+import { InternalTimeInt, RAPTORRunSettings } from "raptor";
 import { dbSNCF_Stops } from "../SNCF/SNCF_stops.model";
 import { dbAddresses } from "../TBM/addresses.model";
 import { dbTBM_Stops } from "../TBM/TBM_stops.model";
@@ -51,7 +52,7 @@ export class JourneyStepBase {
   public type!: JourneyStepType;
 
   @prop({ required: true })
-  public time!: number;
+  public time!: InternalTimeInt;
 }
 
 class Transfer {
@@ -79,7 +80,7 @@ export class JourneyStepVehicle extends JourneyStepBase {
   public boardedAt!: stopId | string;
 
   @prop({ required: true, ref: () => dbTBM_ScheduledRoutes, type: () => Number })
-  public route!: Ref<dbTBM_ScheduledRoutes>;
+  public route!: Ref<dbTBM_ScheduledRoutes, UnpackRefType<dbTBM_ScheduledRoutes["_id"]>>;
 
   @prop({ required: true })
   public tripIndex!: number;
@@ -94,7 +95,7 @@ export class Criterion {
   public name!: string;
 
   @prop({ required: true })
-  public value!: number;
+  public value!: unknown;
 }
 
 export class Journey {

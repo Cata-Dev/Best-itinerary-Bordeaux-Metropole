@@ -13,8 +13,7 @@
     "type-check": "tsc -noEmit",
     "lint": "eslint ./src/ --fix",
     "full-lint": "npm run lint && npm run type-check",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "pnpm run build"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",

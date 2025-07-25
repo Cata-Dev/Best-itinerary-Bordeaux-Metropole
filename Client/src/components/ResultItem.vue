@@ -3,7 +3,13 @@ import BaseModal from "@/components/BaseModal.vue";
 import TransportBadge from "@/components/TransportBadge.vue";
 import type { Props as VecMapProps } from "@/components/VecMap.vue";
 import VecMap from "@/components/VecMap.vue";
-import { formatDate, transportToIcon, type TransportMode, type TransportProvider } from "@/store/";
+import {
+  formatDate,
+  formatInterval,
+  transportToIcon,
+  type TransportMode,
+  type TransportProvider,
+} from "@/store/";
 import { currentJourney, fetchFootpaths, result, type Journey } from "@/store/api";
 import { duration } from "@bibm/common/time";
 import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
@@ -54,7 +60,13 @@ const uniqueTransports = computed(() =>
 const departure = computed(() => props.path.stages[0].departure);
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const lastStage = computed(() => props.path.stages.at(-1)!);
-const arrival = computed(() => lastStage.value.departure + lastStage.value.duration * 1000);
+const arrival = computed(
+  () =>
+    [
+      lastStage.value.departure[0] + lastStage.value.duration[0] * 1000,
+      lastStage.value.departure[1] + lastStage.value.duration[1] * 1000,
+    ] satisfies [unknown, unknown],
+);
 const totalDistance = computed(() =>
   props.path.stages.reduce((acc, v) => acc + ("distance" in v.details ? v.details.distance : 0), 0),
 );
@@ -186,7 +198,14 @@ async function displayMap() {
     <div class="flex w-full mt-2">
       <font-awesome-icon icon="clock" class="transition-darkmode text-2xl mr-2" />
       <span class="text-left">
-        {{ duration(arrival - departure, false, true) || "< 1m" }}
+        {{
+          formatInterval(
+            ...(Array.from(
+              { length: 2 },
+              (_, i) => duration(arrival[i] - departure[(i + 1) % 2], false, true) || "< 1m",
+            ) as [string, string]),
+          )
+        }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
@@ -194,7 +213,7 @@ async function displayMap() {
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
-    <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
+    <div v-if="'bufferTime' in path.criteria || 'successProbaInt' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
@@ -205,9 +224,29 @@ async function displayMap() {
           d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
         />
       </svg>
-      <span class="text-left">
-        {{ duration(path.criteria.bufferTime, false, true) || "< 1m" }}
-      </span>
+      <template v-if="'bufferTime' in path.criteria && (path.criteria.bufferTime as number) < 0">
+        <span>
+          {{ (path.criteria.bufferTime as number) > 0 ? "-" : ""
+          }}{{
+            duration(
+              (path.criteria.bufferTime as
+                | number
+                // -Infinity serialized as 'null'
+                | null) ?? Infinity,
+              false,
+              true,
+            ) || "< 1m"
+          }}
+        </span>
+      </template>
+      <template
+        v-if="
+          'successProbaInt' in path.criteria &&
+          (!('bufferTime' in path.criteria) || (path.criteria.bufferTime as number) >= 0)
+        "
+      >
+        <span> &nbsp;{{ Math.round(-(path.criteria.successProbaInt as number) * 100_00) / 100 }}% </span>
+      </template>
     </div>
 
     <div
@@ -216,7 +255,7 @@ async function displayMap() {
     >
       <!-- First first row - departure -->
       <div class="">
-        {{ formatDate(departure, true) }}
+        {{ formatInterval(...(departure.map((time) => formatDate(time, true)) as [string, string])) }}
       </div>
       <font-awesome-icon
         icon="map-pin"
@@ -251,13 +290,24 @@ async function displayMap() {
             <span class="text-sm"> ➜ {{ "direction" in p.details ? p.details.direction : "unknonw" }} </span>
           </div>
           <div class="text-sm" :class="{ 'mt-1': p.type === 'SNCF' || p.type === 'TBM' }">
-            {{ duration(p.duration * 1000, false, true) || "< 1m" }}
+            {{
+              formatInterval(
+                ...(p.duration.map((d) => duration(d * 1000, false, true) || "< 1m") as [string, string]),
+              )
+            }}
           </div>
         </div>
         <!-- Second row - content -->
         <!-- First col : time -->
         <div class="">
-          {{ formatDate(path.stages[i + 1]?.departure ?? arrival, true) }}
+          {{
+            formatInterval(
+              ...((path.stages[i + 1]?.departure ?? arrival).map((time) => formatDate(time, true)) as [
+                string,
+                string,
+              ]),
+            )
+          }}
         </div>
         <!-- Second col : icon (start/bullet/end) -->
         <font-awesome-icon
@@ -311,7 +361,14 @@ async function displayMap() {
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ duration(arrival - departure, false, true) || "< 1m" }}
+        {{
+          formatInterval(
+            ...(Array.from(
+              { length: 2 },
+              (_, i) => duration(arrival[i] - departure[(i + 1) % 2], false, true) || "< 1m",
+            ) as [string, string]),
+          )
+        }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
       <font-awesome-icon
@@ -319,7 +376,7 @@ async function displayMap() {
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
-    <div v-if="'bufferTime' in path.criteria" class="flex w-full mt-2">
+    <div v-if="'bufferTime' in path.criteria || 'successProbaInt' in path.criteria" class="flex w-full mt-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
@@ -330,9 +387,29 @@ async function displayMap() {
           d="M269.4 2.9C265.2 1 260.7 0 256 0s-9.2 1-13.4 2.9L54.3 82.8c-22 9.3-38.4 31-38.3 57.2c.5 99.2 41.3 280.7 213.6 363.2c16.7 8 36.1 8 52.8 0C454.7 420.7 495.5 239.2 496 140c.1-26.2-16.3-47.9-38.3-57.2L269.4 2.9zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
         />
       </svg>
-      <span class="text-left">
-        {{ duration(path.criteria.bufferTime, false, true) || "< 1m" }}
-      </span>
+      <template v-if="'bufferTime' in path.criteria && (path.criteria.bufferTime as number) < 0">
+        <span>
+          {{ (path.criteria.bufferTime as number) > 0 ? "-" : ""
+          }}{{
+            duration(
+              (path.criteria.bufferTime as
+                | number
+                // -Infinity serialized as 'null'
+                | null) ?? Infinity,
+              false,
+              true,
+            ) || "< 1m"
+          }}
+        </span>
+      </template>
+      <template
+        v-if="
+          'successProbaInt' in path.criteria &&
+          (!('bufferTime' in path.criteria) || (path.criteria.bufferTime as number) >= 0)
+        "
+      >
+        <span> {{ Math.round(-(path.criteria.successProbaInt as number) * 100_00) / 100 }}% </span>
+      </template>
     </div>
     <div class="flex w-full mt-2">
       <font-awesome-icon
@@ -340,10 +417,22 @@ async function displayMap() {
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
-        {{ formatDate(departure, new Date(departure).getDate() === new Date().getDate()) }}
+        {{
+          formatInterval(
+            ...(departure.map((time) =>
+              formatDate(time, new Date(time).getDate() === new Date().getDate()),
+            ) as [string, string]),
+          )
+        }}
       </span>
       <span class="text-right ml-auto">
-        {{ formatDate(arrival, new Date(arrival).getDate() === new Date().getDate()) }}
+        {{
+          formatInterval(
+            ...(arrival.map((time) =>
+              formatDate(time, new Date(time).getDate() === new Date().getDate()),
+            ) as [string, string]),
+          )
+        }}
       </span>
       <font-awesome-icon
         icon="flag"
