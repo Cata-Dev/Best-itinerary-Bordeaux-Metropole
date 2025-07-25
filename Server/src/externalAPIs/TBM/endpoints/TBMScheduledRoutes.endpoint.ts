@@ -1,4 +1,4 @@
-import { mapAsync } from "@bibm/common/async";
+import { mapAsync, reduceAsync } from "@bibm/common/async";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { dbTBM_Lines_routes } from "@bibm/data/models/TBM/TBM_lines_routes.model";
 import {
@@ -42,7 +42,7 @@ export default async (
       // Manual fetches only
       Infinity,
       async () => {
-        const fillSchedule =
+        const fillScheduleId = (
           (await TBM_schedulesRtEndpointInstantiated.model.findOne({ _id: Infinity })) ??
           (await TBM_schedulesRtEndpointInstantiated.model.create({
             _id: Infinity,
@@ -54,11 +54,18 @@ export default async (
             type: RtScheduleType.Regulier,
             rs_sv_arret_p: Infinity,
             rs_sv_cours_a: Infinity,
-          } as dbTBM_Schedules_rt));
+          } as dbTBM_Schedules_rt))
+        )._id;
 
         let tripsCount = 0;
         let schedulesCount = 0;
 
+        // https://www.mongodb.com/docs/manual/core/aggregation-pipeline-optimization/#-sort----limit-coalescence
+        let maxRouteId =
+          (
+            await TBM_lines_routesEndpointInstantiated.model.find({}, { _id: 1 }).sort({ _id: -1 }).limit(1)
+          )[0]?._id ?? 0;
+        const newSubRoutes: dbTBM_Lines_routes[] = [];
         const scheduledRoutes: dbTBM_ScheduledRoutes[] = [];
         for await (const route of TBM_lines_routesEndpointInstantiated.model
           .find({}, routeProjection)
@@ -73,77 +80,125 @@ export default async (
 
           let largestTrip: Pick<dbTBM_Schedules_rt, keyof typeof scheduleRtProjection>[] = [];
 
-          const formattedTrips = (
-            await mapAsync(relevantTrips, async (relevantTrip) => {
-              const schedules = await TBM_schedulesRtEndpointInstantiated.model
-                .find(
-                  { rs_sv_cours_a: relevantTrip._id, etat: { $ne: RtScheduleState.Annule } },
-                  scheduleRtProjection,
-                )
-                .sort({ hor_theo: 1 })
-                .lean<Pick<dbTBM_Schedules_rt, keyof typeof scheduleRtProjection>[]>();
+          const [trips, newSubScheduledRoutes] = await reduceAsync(
+            (
+              await mapAsync(relevantTrips, async (relevantTrip) => {
+                const schedules = await TBM_schedulesRtEndpointInstantiated.model
+                  .find(
+                    { rs_sv_cours_a: relevantTrip._id, etat: { $ne: RtScheduleState.Annule } },
+                    scheduleRtProjection,
+                  )
+                  .sort({ hor_theo: 1 })
+                  .lean<Pick<dbTBM_Schedules_rt, keyof typeof scheduleRtProjection>[]>();
 
-              // Accumulate max trip in terms of number of stops
-              if (schedules.length > largestTrip.length) largestTrip = schedules;
-              // Stats
-              schedulesCount += schedules.length;
+                // Accumulate max trip in terms of number of stops
+                if (schedules.length > largestTrip.length) largestTrip = schedules;
+                // Stats
+                schedulesCount += schedules.length;
 
-              return {
-                tripId: relevantTrip._id,
-                schedules,
-              };
-            })
-          )
-            // Keep only trips with schedules (non-empty)
-            .filter((t) => t.schedules.length)
-            // Begin formatting & adjust data
-            .map(({ tripId, schedules }) => ({
-              tripId,
-              schedules: largestTrip.reduce<{ schedules: typeof schedules; i: number }>(
-                (acc, { rs_sv_arret_p: stopId }, i) => {
-                  if (acc.i < schedules.length && schedules[acc.i].rs_sv_arret_p === stopId) {
-                    // The current schedule stop matches with the stop at the current index, use it & consume it
-                    acc.schedules[i] = schedules[acc.i];
-                    acc.i++;
-                  } else acc.schedules[i] = fillSchedule;
+                return {
+                  tripId: relevantTrip._id,
+                  schedules,
+                };
+              })
+            )
+              // Keep only trips with schedules (non-empty)
+              .filter((t) => t.schedules.length)
+              // Sort by last schedule
+              .sort(
+                (a, b) => a.schedules.at(-1)!.hor_theo.getTime() - b.schedules.at(-1)!.hor_theo.getTime(),
+              ),
+            // Adjust & format data
+            async (acc, { tripId, schedules }) => {
+              let trips = acc[0];
 
-                  return acc;
-                },
+              const firstCommonStop = largestTrip.findIndex(
+                ({ rs_sv_arret_p: stopId }) => stopId === schedules[0].rs_sv_arret_p,
+              );
+              const schedulesPrefixCntDiff = firstCommonStop < 0 ? 0 : firstCommonStop;
+              const filledSchedules = Array.from<dbTBM_ScheduledRoutes["trips"][number]["schedules"][number]>(
                 {
-                  schedules: Array.from({ length: largestTrip.length }),
-                  i: 0,
+                  length: schedulesPrefixCntDiff,
                 },
-              ).schedules,
-            }))
-            // Sort by last schedule
-            .sort((a, b) => {
-              let largestNonInfScheduleIdx = -1;
-              // a.schedules.length === b.schedules.length
-              for (let i = a.schedules.length - 1; i >= 0; --i) {
-                if (a.schedules[i]._id !== fillSchedule._id && b.schedules[i]._id !== fillSchedule._id) {
-                  largestNonInfScheduleIdx = i;
-                  break;
-                }
+              )
+                .fill(fillScheduleId)
+                .concat(schedules.map(({ _id }) => _id));
+
+              if (filledSchedules.length !== largestTrip.length) {
+                // Need to create a (new) sub route, it may have holes of stops
+                // Its stops, with the prefix added
+                const stops = largestTrip
+                  .slice(0, schedulesPrefixCntDiff)
+                  .map(({ rs_sv_arret_p }) => rs_sv_arret_p)
+                  // Then concat actual stops
+                  .concat(schedules.map((schedule) => schedule.rs_sv_arret_p));
+                // A hash of it: its stops, chained
+                const hashedRoute = stops.reduce(
+                  (acc, stopId) => `${acc}-${(stopId as number).toString()}`,
+                  "",
+                );
+
+                trips = (acc[1][hashedRoute] ??= {
+                  newRoute:
+                    // This new route is essentially the same as the previous one, except its new id and its ends
+                    new TBM_lines_routesEndpointInstantiated.model(
+                      await (async () => {
+                        const fullRoute = (await TBM_lines_routesEndpointInstantiated.model.findById(
+                          route._id,
+                          null,
+                          {
+                            lean: true,
+                            timestamps: false,
+                          },
+                        ))!;
+
+                        return {
+                          ...fullRoute,
+                          _id: ++maxRouteId,
+                          rg_sv_arret_p_nd: stops[0],
+                          rg_sv_arret_p_na: stops.at(-1)!,
+                          libelle: fullRoute.libelle + " (bis)",
+                        } satisfies dbTBM_Lines_routes;
+                      })(),
+                    ),
+                  stops,
+                  trips: [],
+                }).trips;
               }
 
-              return largestNonInfScheduleIdx === -1
-                ? // Schedules ids seems to be sorted... But ugly hack anyway, and might be NaN if Infinity - Infinity...
-                  (a.schedules.find((schedule) => schedule._id !== fillSchedule._id)?._id ?? Infinity) -
-                    (b.schedules.find((schedule) => schedule._id !== fillSchedule._id)?._id ?? Infinity)
-                : a.schedules[largestNonInfScheduleIdx].hor_theo.getTime() -
-                    b.schedules[largestNonInfScheduleIdx].hor_theo.getTime();
-            })
-            // End formatting, extract/keep only schedule ID
-            .map(({ tripId, schedules }) => ({
-              tripId,
-              schedules: schedules.map(({ _id }) => _id),
-            }));
+              trips.push({
+                tripId,
+                schedules: filledSchedules,
+              });
 
-          scheduledRoutes.push({
-            _id: route._id,
-            trips: formattedTrips,
-            stops: largestTrip.map((s) => s.rs_sv_arret_p),
-          });
+              return acc;
+            },
+            [[], {}] as [
+              trips: dbTBM_ScheduledRoutes["trips"],
+              subScheduledRoutes: Record<
+                string,
+                {
+                  newRoute: dbTBM_Lines_routes;
+                  stops: dbTBM_ScheduledRoutes["stops"];
+                  trips: dbTBM_ScheduledRoutes["trips"];
+                }
+              >,
+            ],
+          );
+
+          newSubRoutes.push(...Object.values(newSubScheduledRoutes).map(({ newRoute }) => newRoute));
+          scheduledRoutes.push(
+            {
+              _id: route._id,
+              trips,
+              stops: largestTrip.map((s) => s.rs_sv_arret_p),
+            },
+            ...Object.values(newSubScheduledRoutes).map(({ newRoute, trips, stops }) => ({
+              _id: newRoute._id,
+              trips,
+              stops,
+            })),
+          );
         }
 
         if (app.get("debug")) logger.debug(`Retrieved ${scheduledRoutes.length} lines routes`);
@@ -152,6 +207,14 @@ export default async (
           logger.debug(
             `Retrieved ${tripsCount} trips and ${schedulesCount} realtime schedules during scheduled routes computation`,
           );
+
+        const inserted = await TBM_lines_routesEndpointInstantiated.model.insertMany(newSubRoutes, {
+          // Fasten insert
+          lean: true,
+          rawResult: true,
+        });
+        if (app.get("debug"))
+          logger.debug(`Scheduled routes: inserted ${inserted.length} new sub line routes`);
 
         const [bulked, { deletedCount }] = await bulkUpsertAndPurge(ScheduledRoute, scheduledRoutes, ["_id"]);
         if (app.get("debug"))
