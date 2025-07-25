@@ -22,7 +22,7 @@ export class TripOfScheduledRoute {
   public tripId!: number;
 
   @prop({ required: true, ref: () => dbTBM_Schedules_rt, type: () => Number })
-  public schedules!: Ref<dbTBM_Schedules_rt, number>[];
+  public schedules!: Ref<dbTBM_Schedules_rt>[];
 }
 
 @modelOptions({ options: { customName: TBMEndpoints.ScheduledRoutes } })
@@ -35,7 +35,7 @@ export class dbTBM_ScheduledRoutes extends TimeStamps {
   public trips!: TripOfScheduledRoute[];
 
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public stops!: Ref<dbTBM_Stops, number>[];
+  public stops!: Ref<dbTBM_Stops>[];
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbTBM_ScheduledRoutes> {

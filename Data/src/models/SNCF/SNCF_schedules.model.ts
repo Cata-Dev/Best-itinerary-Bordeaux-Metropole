@@ -24,10 +24,10 @@ export class dbSNCF_Schedules extends TimeStamps {
   public realtime!: Date;
 
   @prop({ required: true })
-  public trip!: number; //iImplicitly includes direction
+  public trip!: number; // Implicitly includes direction
 
   @prop({ required: true, ref: () => dbSNCF_Stops, type: () => Number })
-  public stop_point!: Ref<dbSNCF_Stops, number>;
+  public stop_point!: Ref<dbSNCF_Stops>;
 
   @prop({ required: true })
   public route!: string; // Should be a ref

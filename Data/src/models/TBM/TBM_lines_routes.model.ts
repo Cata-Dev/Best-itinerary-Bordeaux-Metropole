@@ -31,13 +31,13 @@ export class dbTBM_Lines_routes extends TimeStamps {
   public vehicule!: VehicleType;
 
   @prop({ required: true, ref: () => dbTBM_Lines, type: () => Number })
-  public rs_sv_ligne_a!: Ref<dbTBM_Lines, number>;
+  public rs_sv_ligne_a!: Ref<dbTBM_Lines>;
 
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public rg_sv_arret_p_nd!: Ref<dbTBM_Stops, number>;
+  public rg_sv_arret_p_nd!: Ref<dbTBM_Stops>;
 
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public rg_sv_arret_p_na!: Ref<dbTBM_Stops, number>;
+  public rg_sv_arret_p_na!: Ref<dbTBM_Stops>;
 }
 
 // for more of what you can do here.

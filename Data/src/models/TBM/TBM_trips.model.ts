@@ -7,7 +7,7 @@ import {
   getModelForClass,
   prop,
   type Ref,
-  type ReturnModelType
+  type ReturnModelType,
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
@@ -26,16 +26,16 @@ export class dbTBM_Trips extends TimeStamps {
   public etat!: string;
 
   @prop({ required: true, ref: () => dbTBM_Lines, type: () => Number })
-  public rs_sv_ligne_a!: Ref<dbTBM_Lines, number>;
+  public rs_sv_ligne_a!: Ref<dbTBM_Lines>;
 
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public rg_sv_arret_p_nd!: Ref<dbTBM_Stops, number>;
+  public rg_sv_arret_p_nd!: Ref<dbTBM_Stops>;
 
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public rg_sv_arret_p_na!: Ref<dbTBM_Stops, number>;
+  public rg_sv_arret_p_na!: Ref<dbTBM_Stops>;
 
   @prop({ required: true, ref: () => dbTBM_Lines_routes, type: () => Number, index: true })
-  public rs_sv_chem_l!: Ref<dbTBM_Lines_routes, number>;
+  public rs_sv_chem_l!: Ref<dbTBM_Lines_routes>;
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbTBM_Trips> {
