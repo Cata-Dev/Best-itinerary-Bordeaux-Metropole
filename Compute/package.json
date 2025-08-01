@@ -31,7 +31,7 @@
     "@bibm/server": "workspace:*",
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@typegoose/typegoose": "^12.17.0",
-    "bullmq": "^5.56.2",
+    "bullmq": "^5.56.9",
     "core-js": "^3.44.0",
     "mongoose": "^8.16.2",
     "raptor": "github:cata-dev/raptor",
