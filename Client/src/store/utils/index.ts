@@ -104,7 +104,8 @@ function rebaseObject<V extends string | number | boolean>(target: Obj<V>, base:
 
     if (typeof target[k] === "object" && typeof base[k] === "object") return rebaseObject(target[k], base[k]);
 
-    if (base[k] != target[k]) target[k] = base[k];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (base[k] != target[k]) target[k] = base[k]!;
   }
 
   return target;

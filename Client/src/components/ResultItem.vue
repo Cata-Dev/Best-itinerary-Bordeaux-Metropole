@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-non-null-assertion -->
 <script setup lang="ts">
 import BaseModal from "@/components/BaseModal.vue";
 import TransportBadge from "@/components/TransportBadge.vue";
@@ -48,7 +49,6 @@ const transports = computed<Transport[]>(() =>
 const uniqueTransports = computed(() =>
   transports.value
     .filter(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       (v, i, arr) => arr.indexOf(arr.find((t) => t.provider === v.provider && t.mode === v.mode)!) === i,
     )
     .map((t) => ({
@@ -57,8 +57,7 @@ const uniqueTransports = computed(() =>
     })),
 );
 
-const departure = computed(() => props.path.stages[0].departure);
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const departure = computed(() => props.path.stages[0]!.departure);
 const lastStage = computed(() => props.path.stages.at(-1)!);
 const arrival = computed(
   () =>
@@ -76,7 +75,10 @@ const modalMapComp = useTemplateRef("modalMapComp");
 function getClosesPointToMiddle(geom: MultiLineString) {
   const geomExtent = geom.getExtent();
   return new Point(
-    geom.getClosestPoint([(geomExtent[0] + geomExtent[2]) / 2, (geomExtent[1] + geomExtent[3]) / 2]),
+    geom.getClosestPoint([
+      ((geomExtent[0] ?? 0) + (geomExtent[2] ?? 0)) / 2,
+      ((geomExtent[1] ?? 0) + (geomExtent[3] ?? 0)) / 2,
+    ]),
   );
 }
 
@@ -118,14 +120,14 @@ const multiLineStringsStyle: VecMapProps["multiLineStrings"]["style"] = (feature
       if (
         "stageIdx" in feature.getProperties().props &&
         currentJourney.value &&
-        "line" in currentJourney.value.stages[feature.getProperties().props.stageIdx].details
+        "line" in (currentJourney.value.stages[feature.getProperties().props.stageIdx]?.details ?? {})
       )
         styles.push(
           new Style({
             geometry: getClosesPointToMiddle(feature.getGeometry() as MultiLineString),
             text: new Text({
               text: (
-                currentJourney.value.stages[feature.getProperties().props.stageIdx].details as Extract<
+                currentJourney.value.stages[feature.getProperties().props.stageIdx]!.details as Extract<
                   Journey["paths"][number][number]["stages"][number]["details"],
                   { line: unknown }
                 >
@@ -164,7 +166,7 @@ async function displayMap() {
       VecMapProps["multiLineStrings"]["data"]
     >(
       (acc, v, i) =>
-        v.steps[0][0] instanceof Array
+        v.steps[0]![0] instanceof Array
           ? acc.concat([
               {
                 coords: v.steps as VecMapProps["multiLineStrings"]["data"][number]["coords"],
@@ -202,7 +204,7 @@ async function displayMap() {
           formatInterval(
             ...(Array.from(
               { length: 2 },
-              (_, i) => duration(arrival[i] - departure[(i + 1) % 2], false, true) || "< 1m",
+              (_, i) => duration(arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
             ) as [string, string]),
           )
         }}
@@ -365,7 +367,7 @@ async function displayMap() {
           formatInterval(
             ...(Array.from(
               { length: 2 },
-              (_, i) => duration(arrival[i] - departure[(i + 1) % 2], false, true) || "< 1m",
+              (_, i) => duration(arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
             ) as [string, string]),
           )
         }}
