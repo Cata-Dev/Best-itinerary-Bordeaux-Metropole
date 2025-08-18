@@ -29,7 +29,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@tailwindcss/vite": "^4.1.11",
-    "core-js": "^3.44.0",
+    "core-js": "^3.45.0",
     "ol": "^10.6.1",
     "proj4": "^2.19.10",
     "socket.io-client": "^4.8.1",
