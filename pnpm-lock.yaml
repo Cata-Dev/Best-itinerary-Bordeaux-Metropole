@@ -105,8 +105,8 @@ importers:
         specifier: ^5.0.34
         version: 5.0.34(typescript@5.9.2)
       '@typegoose/typegoose':
-        specifier: ^12.17.0
-        version: 12.17.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        specifier: ^12.18.0
+        version: 12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
     devDependencies:
       '@tsconfig/node22':
         specifier: ^22.0.2
@@ -142,8 +142,8 @@ importers:
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
       '@typegoose/typegoose':
-        specifier: ^12.17.0
-        version: 12.17.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        specifier: ^12.18.0
+        version: 12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       bullmq:
         specifier: ^5.58.0
         version: 5.58.0
@@ -191,8 +191,8 @@ importers:
         specifier: ^5.0.31
         version: 5.0.31(typescript@5.9.2)
       '@typegoose/typegoose':
-        specifier: ^12.17.0
-        version: 12.17.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        specifier: ^12.18.0
+        version: 12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       config:
         specifier: ^4.1.1
         version: 4.1.1
@@ -279,8 +279,8 @@ importers:
         specifier: ^5.0.34
         version: 5.0.34(typescript@5.9.2)
       '@typegoose/typegoose':
-        specifier: ^12.17.0
-        version: 12.17.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        specifier: ^12.18.0
+        version: 12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       axios:
         specifier: ^1.11.0
         version: 1.11.0
@@ -1589,11 +1589,11 @@ packages:
   '@tsconfig/node22@22.0.2':
     resolution: {integrity: sha512-Kmwj4u8sDRDrMYRoN9FDEcXD8UpBSaPQQ24Gz+Gamqfm7xxn+GBR7ge/Z7pK8OXNGyUzbSwJj+TH6B+DS/epyA==}
 
-  '@typegoose/typegoose@12.17.0':
-    resolution: {integrity: sha512-oty0KpmURqJBZiBD0DuEhpKaMwB5KDAoosvVB3V2JI630b1WMGSN2IeiiCqEhKAhTCxRwmMM48YrX1Ih6BMg/A==}
+  '@typegoose/typegoose@12.18.0':
+    resolution: {integrity: sha512-b1kXa4j0YZWXgc9B/xAzFbcEpIevf8PQ8LGK6Yl3clWpZKJLGKVMf/kE5mvat3nV1Twdr6OCWvMHFSVB3K5b7g==}
     engines: {node: '>=16.20.1'}
     peerDependencies:
-      mongoose: ~8.16.0
+      mongoose: ~8.17.0
 
   '@types/accepts@1.3.7':
     resolution: {integrity: sha512-Pay9fq2lM2wXPWbteBsRAGiWH2hig4ZE2asK+mm7kUzlxRTfL961rj89I6zV/E3PcIkDqyuBEcMxFT7rccugeQ==}
@@ -6128,7 +6128,7 @@ snapshots:
 
   '@tsconfig/node22@22.0.2': {}
 
-  '@typegoose/typegoose@12.17.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
+  '@typegoose/typegoose@12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
     dependencies:
       lodash: 4.17.21
       loglevel: 1.9.2
