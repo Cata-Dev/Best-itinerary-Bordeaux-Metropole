@@ -155,7 +155,7 @@ importers:
         version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/269cec59bd7236efb0a1eb16277ac9d509ac6942
       shx:
         specifier: ^0.4.0
         version: 0.4.0
@@ -194,14 +194,14 @@ importers:
         specifier: ^12.17.0
         version: 12.17.0(mongoose@8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       config:
-        specifier: ^4.0.0
-        version: 4.0.0
+        specifier: ^4.1.1
+        version: 4.1.1
       mongoose:
         specifier: ^8.16.2
         version: 8.16.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/269cec59bd7236efb0a1eb16277ac9d509ac6942
     devDependencies:
       '@eslint/js':
         specifier: ^9.31.0
@@ -2192,8 +2192,8 @@ packages:
     resolution: {integrity: sha512-Vmx389R/QVM3foxqBzXO8t2tUikYZP64Q6vQxGrsMpREeJc/aWRnPRERXWsYzOHAumx/AOoILWe6nU3ZJL+6Sw==}
     engines: {node: '>= 10.0.0'}
 
-  config@4.0.0:
-    resolution: {integrity: sha512-zOzfDfcpaBUMRvTH+pbj111Gfb+1BMvCy9EcE5ckuugfAcks3FIQMyt8TRA30dhuGnZNBxfbPBUKtuM03ih/nA==}
+  config@4.1.1:
+    resolution: {integrity: sha512-jljfwqNZ7QHwAW9Z9NDZdJARFiu5pjLqQO0K4ooY22iY/bIY78n0afI4ANEawfgQOxri0K/3oTayX8XIauWcLA==}
     engines: {node: '>= 20.0.0'}
 
   content-disposition@0.5.4:
@@ -3714,8 +3714,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/269cec59bd7236efb0a1eb16277ac9d509ac6942:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/269cec59bd7236efb0a1eb16277ac9d509ac6942}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -6824,7 +6824,7 @@ snapshots:
     dependencies:
       json5: 2.2.3
 
-  config@4.0.0:
+  config@4.1.1:
     dependencies:
       json5: 2.2.3
 
@@ -8434,7 +8434,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/9f76b2cac117d29b2332d2166afb31106512c226: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/269cec59bd7236efb0a1eb16277ac9d509ac6942: {}
 
   raw-body@2.5.2:
     dependencies:
