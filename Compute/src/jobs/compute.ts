@@ -301,7 +301,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
         journeys: bestJourneys
           .flat()
           // Sort by arrival time
-          .sort((a, b) => sharedTimeIntOrderLow.order(a.at(-1)!.label.time, b.at(-1)!.label.time))
+          .sort((a, b) => sharedTimeIntOrderLow.strict.order(a.at(-1)!.label.time, b.at(-1)!.label.time))
           .map(journeyDBFormatter),
         settings,
       });
