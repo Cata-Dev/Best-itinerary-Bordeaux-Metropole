@@ -23,7 +23,7 @@
     "eslint": "^9.33.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.39.1"
   },
   "dependencies": {
     "@bibm/common": "workspace:*",
