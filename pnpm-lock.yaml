@@ -41,8 +41,8 @@ importers:
         specifier: ^10.6.1
         version: 10.6.1
       proj4:
-        specifier: ^2.19.5
-        version: 2.19.5
+        specifier: ^2.19.10
+        version: 2.19.10
       socket.io-client:
         specifier: ^4.8.1
         version: 4.8.1
@@ -3670,8 +3670,8 @@ packages:
     resolution: {integrity: sha512-4yf0QO/sllf/1zbZWYnvWw3NxCQwLXKzIj0G849LSufP15BXKM0rbD2Z3wVnkMfjdn/CB0Dpp444gYAACdsplg==}
     engines: {node: '>=18'}
 
-  proj4@2.19.5:
-    resolution: {integrity: sha512-hFn7GJwUZ1YiAAfSfur7VRgiH0swIZFxJb7UZ7C4E9tbqyozSn+SI9ZxFgFKmUldtY3tVTBvylJhwfD+O3pHQw==}
+  proj4@2.19.10:
+    resolution: {integrity: sha512-uL6/C6kA8+ncJAEDmUeV8PmNJcTlRLDZZa4/87CzRpb8My4p+Ame4LhC4G3H/77z2icVqcu3nNL9h5buSdnY+g==}
 
   protocol-buffers-schema@3.6.0:
     resolution: {integrity: sha512-TdDRD+/QNdrCGCE7v8340QyuXd4kIWIgapsE2+n/SaGiSSbomYl4TjHlvIoCWRpE7wFt02EpB35VVA2ImcBVqw==}
@@ -8390,7 +8390,7 @@ snapshots:
     dependencies:
       parse-ms: 4.0.0
 
-  proj4@2.19.5:
+  proj4@2.19.10:
     dependencies:
       mgrs: 1.0.0
       wkt-parser: 1.5.2
