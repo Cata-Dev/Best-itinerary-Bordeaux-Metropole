@@ -30,7 +30,7 @@
     "@bibm/data": "workspace:*",
     "@bibm/server": "workspace:*",
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
-    "@typegoose/typegoose": "^12.17.0",
+    "@typegoose/typegoose": "^12.18.0",
     "bullmq": "^5.58.0",
     "core-js": "^3.44.0",
     "mongoose": "^8.17.1",
