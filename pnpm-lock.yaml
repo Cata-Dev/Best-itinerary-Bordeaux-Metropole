@@ -106,7 +106,7 @@ importers:
         version: 5.0.34(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.18.0
-        version: 12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        version: 12.18.0(mongoose@8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
     devDependencies:
       '@eslint/js':
         specifier: ^9.33.0
@@ -146,7 +146,7 @@ importers:
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
       '@typegoose/typegoose':
         specifier: ^12.18.0
-        version: 12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        version: 12.18.0(mongoose@8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       bullmq:
         specifier: ^5.58.0
         version: 5.58.0
@@ -154,8 +154,8 @@ importers:
         specifier: ^3.45.0
         version: 3.45.0
       mongoose:
-        specifier: ^8.17.1
-        version: 8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.17.2
+        version: 8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
         version: https://codeload.github.com/cata-dev/raptor/tar.gz/269cec59bd7236efb0a1eb16277ac9d509ac6942
@@ -198,13 +198,13 @@ importers:
         version: 5.0.31(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.18.0
-        version: 12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        version: 12.18.0(mongoose@8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       config:
         specifier: ^4.1.1
         version: 4.1.1
       mongoose:
-        specifier: ^8.17.1
-        version: 8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.17.2
+        version: 8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       raptor:
         specifier: github:cata-dev/raptor
         version: https://codeload.github.com/cata-dev/raptor/tar.gz/269cec59bd7236efb0a1eb16277ac9d509ac6942
@@ -286,7 +286,7 @@ importers:
         version: 5.0.34(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.18.0
-        version: 12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
+        version: 12.18.0(mongoose@8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
       axios:
         specifier: ^1.11.0
         version: 1.11.0
@@ -297,8 +297,8 @@ importers:
         specifier: ^8.2.1
         version: 8.2.1(@feathersjs/feathers@5.0.34)
       mongoose:
-        specifier: ^8.17.1
-        version: 8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+        specifier: ^8.17.2
+        version: 8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
     devDependencies:
       '@eslint/js':
         specifier: ^9.33.0
@@ -3445,8 +3445,8 @@ packages:
       socks:
         optional: true
 
-  mongoose@8.17.1:
-    resolution: {integrity: sha512-aodS4cacux5caoxB5ErEwRmrafIUsVRJxHnvP7URnSUnTenr32j1qBVV+KjYxryyLSisQkxglAFF69TNLeZTLg==}
+  mongoose@8.17.2:
+    resolution: {integrity: sha512-zp0xzzphKZrr9azDayn0w08gp0jzeZO8EQKvCKNd6c1I/Y9PRmTKj7x+60IWF3+DKmqWq7WZ4ihDEvOFUtWkSA==}
     engines: {node: '>=16.20.1'}
 
   mpath@0.9.0:
@@ -6133,11 +6133,11 @@ snapshots:
 
   '@tsconfig/node22@22.0.2': {}
 
-  '@typegoose/typegoose@12.18.0(mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
+  '@typegoose/typegoose@12.18.0(mongoose@8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))':
     dependencies:
       lodash: 4.17.21
       loglevel: 1.9.2
-      mongoose: 8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
+      mongoose: 8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
       reflect-metadata: 0.2.2
       semver: 7.7.2
       tslib: 2.8.1
@@ -8297,7 +8297,7 @@ snapshots:
       '@aws-sdk/credential-providers': 3.525.0
       socks: 2.8.1
 
-  mongoose@8.17.1(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
+  mongoose@8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1):
     dependencies:
       bson: 6.10.4
       kareem: 2.6.3
