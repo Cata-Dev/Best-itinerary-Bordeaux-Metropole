@@ -233,9 +233,7 @@ export default function (data: Parameters<typeof SharedRAPTORData.makeFromIntern
       const departureDate = new Date(departureDateStr);
 
       McRAPTORInstance.run(psId, ptId, [departureDate.getTime(), departureDate.getTime()], settings);
-      const bestJourneys = McRAPTORInstance.getBestJourneys(ptId).filter(
-        (roundJourneys): roundJourneys is NonNullable<typeof roundJourneys> => !!roundJourneys,
-      );
+      const bestJourneys = McRAPTORInstance.getBestJourneys(ptId);
       /* bestJourneys.forEach((roundJourneys) =>
         roundJourneys.forEach((j) =>
           // Optimize journey : delay foot transfers at beginning of journey
