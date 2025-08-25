@@ -92,7 +92,7 @@ export async function makeQueue() {
   await queues[3].setGlobalConcurrency(1).catch((err) => logger.error(err));
 
   await mapAsync(queues, (q) => q.waitUntilReady()).catch((err) => logger.error(err));
-  app.logger.log("Queue ready");
+  app.logger.log("Queues ready");
 
   const flowProducer = new FlowProducer({ connection });
 
