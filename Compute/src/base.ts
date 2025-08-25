@@ -92,7 +92,7 @@ export async function makeQueue() {
   await queues[3].setGlobalConcurrency(1).catch((err) => logger.error(err));
 
   await mapAsync(queues, (q) => q.waitUntilReady()).catch((err) => logger.error(err));
-  app.logger.log("Queue ready");
+  app.logger.log("Queues ready");
 
   const flowProducer = new FlowProducer({ connection });
 
@@ -133,18 +133,18 @@ export async function makeQueue() {
                 },
               ]
             : []),
-            ...(from.type === TBMEndpoints.Addresses && to.type === TBMEndpoints.Addresses
-              ? [
-                  {
-                    name: "computeFp" as const,
-                    queueName: "computeFp" as const,
-                    data: [from.coords, to.coords] satisfies [unknown, unknown],
-                    opts: {
-                      failParentOnFailure: false,
-                    },
+          ...(from.type === TBMEndpoints.Addresses && to.type === TBMEndpoints.Addresses
+            ? [
+                {
+                  name: "computeFp" as const,
+                  queueName: "computeFp" as const,
+                  data: [from.coords, to.coords] satisfies [unknown, unknown],
+                  opts: {
+                    failParentOnFailure: false,
                   },
-                ]
-              : []),
+                },
+              ]
+            : []),
         ],
       } satisfies FlowJobBase<"compute">),
   } as Application<"queue">;

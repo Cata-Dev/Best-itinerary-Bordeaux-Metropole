@@ -8,17 +8,25 @@ on:
   push:
     branches: [main, dev]
     paths:
-      - "Client/*"
-      - "Server/*"
+      - "Common/*"
       - "Data/*"
+      - "Compute/*"
+      - "Server/*"
+      - "Client/*"
       - ".github/workflows/*"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
   pull_request:
     branches: [main, dev]
     paths:
-      - "Client/*"
-      - "Server/*"
+      - "Common/*"
       - "Data/*"
+      - "Compute/*"
+      - "Server/*"
+      - "Client/*"
       - ".github/workflows/*"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
 
 jobs:
   build:
@@ -34,7 +42,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -44,38 +52,36 @@ jobs:
           cache-dependency-path: "./pnpm-lock.yaml"
 
       - name: Install Common
-        run: pnpm -F "common" install --ignore-scripts
+        run: pnpm -F "common" install
 
       - name: Build Common
-        run: cd Common/ && pnpm run --if-present build
+        run: cd Common/ && pnpm run build
 
       - name: Install Data
         run: pnpm -F "data" install
 
-      # Not needed since 'prepare' script should build
-      # - name: Build Data
-      #   run: cd Data/ && pnpm run --if-present build
-
-      # Will fail for the 1st time, but still emit required files to continue building
+      - name: Build Data
+        run: cd Data/ && pnpm run build
 
       - name: Install Compute
-        run: pnpm -F "compute" install || true
+        run: pnpm -F "compute" install
 
-      # Not needed since 'prepare' script should build
-      # - name: Build Compute
-      #   run: cd Compute/ && pnpm run --if-present build
+      # Will fail for the 1st time, but still emit required files to continue building
+      - name: Build Compute
+
+        run: cd Compute/ && pnpm run build || true
 
       - name: Install Server
-        run: pnpm -F "server" install --ignore-scripts
+        run: pnpm -F "server" install
 
       - name: Build Server
-        run: cd Server/ && pnpm run --if-present compile
+        run: cd Server/ && pnpm run compile
 
       - name: Build Compute (2)
-        run: cd Compute/ && pnpm run --if-present build
+        run: cd Compute/ && pnpm run build
 
       - name: Install Client
         run: pnpm -F "client" install
 
       - name: Build Client
-        run: cd Client/ && pnpm run --if-present build
+        run: cd Client/ && pnpm run build

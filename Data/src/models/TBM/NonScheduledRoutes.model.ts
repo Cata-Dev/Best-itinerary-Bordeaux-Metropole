@@ -21,10 +21,10 @@ import { dbSections } from "./sections.model";
 @modelOptions({ options: { customName: "NonScheduledRoutes" } })
 export class dbFootPaths {
   @prop({ required: true, index: true, ref: () => dbTBM_Stops, type: () => Number })
-  public from!: Ref<dbTBM_Stops, number>;
+  public from!: Ref<dbTBM_Stops>;
 
   @prop({ required: true, index: true, ref: () => dbTBM_Stops, type: () => Number })
-  public to!: Ref<dbTBM_Stops, number>;
+  public to!: Ref<dbTBM_Stops>;
 
   @prop({ required: true })
   public distance!: number;

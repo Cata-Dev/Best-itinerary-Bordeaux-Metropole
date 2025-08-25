@@ -108,6 +108,6 @@ $RECYCLE.BIN/
 
 # Others
 config/
-lib/
+/lib/
 data/
 .vscode/

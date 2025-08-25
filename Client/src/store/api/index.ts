@@ -186,8 +186,10 @@ async function updateQuery(to = useRoute()) {
 
       if (
         keys.length === 2 &&
-        keys[0] in settings.value &&
-        keys[1] in settings.value[keys[0] as "transports"]
+        // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion, @typescript-eslint/no-non-null-assertion
+        keys[0]! in settings.value &&
+        // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion, @typescript-eslint/no-non-null-assertion
+        keys[1]! in settings.value[keys[0] as "transports"]
       )
         if (typeof parseJSON(to.query[setting] as string) === "boolean")
           settings.value[keys[0] as "transports"][keys[1] as TransportProvider] = parseJSON(

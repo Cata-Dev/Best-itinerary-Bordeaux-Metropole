@@ -1,23 +1,3 @@
-import type { Ref } from "@typegoose/typegoose";
-import type { RefType } from "@typegoose/typegoose/lib/types";
-
-type UnpackRefType<T> =
-  T extends Ref<infer D>
-    ? D extends {
-        _id?: RefType;
-      }
-      ? D["_id"]
-      : never
-    : T extends Ref<infer D>[]
-      ? D extends {
-          _id?: RefType;
-        }
-        ? D["_id"][]
-        : never
-      : never;
-
-type PopulateRef<T> = T extends Ref<infer D> ? D : T extends Ref<infer D>[] ? D[] : never;
-
 type UnionToIntersection<U> = (U extends never ? never : (arg: U) => never) extends (arg: infer I) => void
   ? I
   : never;
@@ -41,4 +21,4 @@ function withDefaults<O extends object>(obj: Partial<O>, defaults: O): O {
 }
 
 export { withDefaults };
-export type { PopulateRef, UnionToTuple, UnpackRefType };
+export type { UnionToTuple };
