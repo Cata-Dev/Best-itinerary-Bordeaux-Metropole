@@ -91,7 +91,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "22",
     "cross-env": "^7.0.3",
-    "eslint": "^9.33.0",
+    "eslint": "^9.34.0",
     "mocha": "^11.7.1",
     "mongodb": "^6.18.0",
     "nodemon": "^3.1.10",
