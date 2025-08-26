@@ -109,8 +109,8 @@ importers:
         version: 12.18.0(mongoose@8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1))
     devDependencies:
       '@eslint/js':
-        specifier: ^9.33.0
-        version: 9.33.0
+        specifier: ^9.34.0
+        version: 9.34.0
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -164,8 +164,8 @@ importers:
         version: 0.4.0
     devDependencies:
       '@eslint/js':
-        specifier: ^9.33.0
-        version: 9.33.0
+        specifier: ^9.34.0
+        version: 9.34.0
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -210,8 +210,8 @@ importers:
         version: https://codeload.github.com/cata-dev/raptor/tar.gz/005705b779e50b69cc638b8d9da940a099115070
     devDependencies:
       '@eslint/js':
-        specifier: ^9.33.0
-        version: 9.33.0
+        specifier: ^9.34.0
+        version: 9.34.0
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -301,8 +301,8 @@ importers:
         version: 8.17.2(@aws-sdk/credential-providers@3.525.0)(socks@2.8.1)
     devDependencies:
       '@eslint/js':
-        specifier: ^9.33.0
-        version: 9.33.0
+        specifier: ^9.34.0
+        version: 9.34.0
       '@feathersjs/cli':
         specifier: 5.0.34
         version: 5.0.34
@@ -961,10 +961,6 @@ packages:
 
   '@eslint/eslintrc@3.3.1':
     resolution: {integrity: sha512-gtF186CXhIl1p4pJNGZw8Yc6RlshoePRvE0X91oPGb3vZ8pM3qOS9W9NGPat9LziaBV7XrJWGylNQXkGcnM3IQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/js@9.33.0':
-    resolution: {integrity: sha512-5K1/mKhWaMfreBGJTwval43JJmkip0RmM+3+IuqupeSKNC/Th2Kc7ucaq5ovTSra/OOKB9c58CGSz3QMVbWt0A==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@9.34.0':
@@ -5382,8 +5378,6 @@ snapshots:
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
       - supports-color
-
-  '@eslint/js@9.33.0': {}
 
   '@eslint/js@9.34.0': {}
 
