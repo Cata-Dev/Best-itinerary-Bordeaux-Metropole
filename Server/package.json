@@ -81,7 +81,7 @@
     "axios": "^1.11.0",
     "core-js": "^3.45.1",
     "feathers-hooks-common": "^8.2.1",
-    "mongoose": "^8.17.2"
+    "mongoose": "^8.18.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
