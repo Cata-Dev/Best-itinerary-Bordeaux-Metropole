@@ -7,6 +7,7 @@ import graphApproachedPointsModelInit, {
   GraphApproachedPoints,
 } from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import { approachedStopName, PathStep } from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+import sectionsModelInit from "@bibm/data/models/TBM/sections.model";
 import stopsModelInit, { dbTBM_Stops } from "@bibm/data/models/TBM/TBM_stops.model";
 import { WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { sep } from "node:path";
@@ -36,6 +37,7 @@ if (parentPort) {
 
     const sourceDataDB = await initDB({ ...app, logger }, app.config.sourceDB);
     const stopsModel = stopsModelInit(sourceDataDB);
+    const sectionsModel = sectionsModelInit(sourceDataDB);
     const graphApproachedPointsModel = graphApproachedPointsModelInit(sourceDataDB);
 
     // Retrieve already computed data
@@ -61,13 +63,15 @@ if (parentPort) {
 
     // Approach stops & insert
     logger.debug("Approaching stops in foot graph...");
+    const sectionsUpdated =
+      (await sectionsModel.find({}).sort({ updatedAt: -1 }).limit(1))[0]?.updatedAt?.getTime() ?? -Infinity;
     const stopsUpdated =
       (await stopsModel.find({}).sort({ updatedAt: -1 }).limit(1))[0]?.updatedAt?.getTime() ?? -Infinity;
     const graphApproachedPointsUpdated =
       (
         await graphApproachedPointsModel.find({ type: "as" }).sort({ updatedAt: -1 }).limit(1)
       )[0]?.updatedAt?.getTime() ?? 0;
-    if (stopsUpdated > graphApproachedPointsUpdated) {
+    if (sectionsUpdated > graphApproachedPointsUpdated || stopsUpdated > graphApproachedPointsUpdated) {
       const approachedPoints: [
         target: ReturnType<typeof approachedStopName>,
         ap: Exclude<ReturnType<typeof approachPoint>, null>,
