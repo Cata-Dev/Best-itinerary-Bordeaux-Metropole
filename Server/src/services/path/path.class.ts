@@ -4,6 +4,7 @@ import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 import { mapAsync } from "@bibm/common/async";
 import { Coords } from "@bibm/common/geographics";
 import { JobResult } from "@bibm/compute/lib/jobs";
+import footGraphEdgeModelInit from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import resultModelInit, {
   dbComputeResult,
   isJourneyStepFoot,
@@ -17,7 +18,6 @@ import AddressesModelInit from "@bibm/data/models/TBM/addresses.model";
 import TBMIntersectionsModelInit from "@bibm/data/models/TBM/intersections.model";
 import TBMSectionsModelInit, { dbSections } from "@bibm/data/models/TBM/sections.model";
 import TBMLinkLineRoutesSectionsInit from "@bibm/data/models/TBM/TBM_link_line_routes_sections.model";
-import footGraphEdgeModelInit from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import TBMRouteSectionsModelInit, {
   dbTBM_RouteSections,
 } from "@bibm/data/models/TBM/TBM_route_sections.model";
