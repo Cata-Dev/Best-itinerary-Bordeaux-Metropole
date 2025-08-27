@@ -27,13 +27,11 @@ interface SectionOverwritten {
 // Equivalent to an Edge
 type Section = Omit<dbSections, keyof SectionOverwritten> & SectionOverwritten;
 
-type FootGraphNode = Section["s"];
-
 /**
  * Makes graph from data, disconnected from data (no relation with shallow/deep copy)
  */
-function makeGraph<N extends node = FootGraphNode>(edges: ReturnType<makeComputeFpData>["edges"]) {
-  const footGraph = new WeightedGraph<FootGraphNode | N>();
+function makeGraph<N extends node = Section["s"]>(edges: ReturnType<makeComputeFpData>["edges"]) {
+  const footGraph = new WeightedGraph<Section["s"] | N>();
 
   for (const { s, t, distance } of edges.values()) {
     footGraph.addEdge(s, t, distance);
