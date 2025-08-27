@@ -44,6 +44,6 @@
   },
   "dependencies": {
     "@feathersjs/typebox": "^5.0.34",
-    "@typegoose/typegoose": "^12.18.0"
+    "@typegoose/typegoose": "^12.19.0"
   }
 }
