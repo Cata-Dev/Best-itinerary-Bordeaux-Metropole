@@ -22,4 +22,8 @@ type UnpackRefType<T> =
 
 type PopulateRef<T> = T extends Ref<infer D> ? D : T extends Ref<infer D>[] ? D[] : never;
 
-export { KeyOfMap, PopulateRef, Satisfy, UnpackRefType };
+type ReadonlyDeep<T> = {
+  readonly [P in keyof T]: ReadonlyDeep<T[P]>;
+};
+
+export { KeyOfMap, PopulateRef, ReadonlyDeep, Satisfy, UnpackRefType };
