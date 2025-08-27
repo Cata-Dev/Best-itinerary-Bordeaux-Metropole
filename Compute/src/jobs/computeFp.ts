@@ -4,6 +4,7 @@ import nonScheduledRoutesModelInit, {
   approachedStopName,
   dbFootPaths,
   dbFootPathsModel,
+  PathStep,
 } from "@bibm/data/models/TBM/NonScheduledRoutes.model";
 import { dbSections } from "@bibm/data/models/TBM/sections.model";
 import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
@@ -125,7 +126,7 @@ export default async function (
     typeof graphData & typeof graphPTNData,
     {
       mappedSegments: MappedSegments;
-      footPTNGraph: WeightedGraph<PTNGraphNode | "aps">;
+      footPTNGraph: WeightedGraph<PathStep | "aps">;
     }
   >(
     (
@@ -182,7 +183,7 @@ export default async function (
       typeof graphPTNData & {
         nonScheduledRoutesModel: dbFootPathsModel;
       },
-    WeightedGraph<PTNGraphNode>
+    WeightedGraph<PathStep>
   >(
     async ({ stops, nonScheduledRoutesModel }, footPTNGraph, job) => {
       const {
