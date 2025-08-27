@@ -6,6 +6,8 @@ export function approachedStopName(_id: number) {
   return `as=${_id}` as const;
 }
 
+export type PathStep = dbSections["rg_fv_graph_nd"] | ReturnType<typeof approachedStopName>;
+
 import {
   deleteModelWithClass,
   getModelForClass,
@@ -30,7 +32,7 @@ export class dbFootPaths {
   public distance!: number;
 
   @prop()
-  public path?: (dbSections["_id"] | ReturnType<typeof approachedStopName>)[]; // Ref[] to intersections | stops
+  public path?: PathStep[]; // Ref[] to intersections | stops
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbFootPaths> {
