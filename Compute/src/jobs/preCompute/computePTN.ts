@@ -5,7 +5,7 @@ import { Logger } from "@bibm/common/logger";
 import { ReadonlyDeep } from "@bibm/common/types";
 import graphApproachedPointsModelInit, {
   GraphApproachedPoints,
-} from "@bibm/data/models/Compute/GraphApproachedPoints";
+} from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import { approachedStopName, PathStep } from "@bibm/data/models/TBM/NonScheduledRoutes.model";
 import stopsModelInit, { dbTBM_Stops } from "@bibm/data/models/TBM/TBM_stops.model";
 import { WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";

@@ -6,7 +6,7 @@ import { Logger } from "@bibm/common/logger";
 import { ReadonlyDeep } from "@bibm/common/types";
 import graphApproachedPointsModelInit, {
   GraphApproachedPoints,
-} from "@bibm/data/models/Compute/GraphApproachedPoints";
+} from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import sectionsModelInit, { dbSections } from "@bibm/data/models/TBM/sections.model";
 import { sep } from "node:path";
 import { parentPort } from "node:worker_threads";
