@@ -87,7 +87,7 @@ export default async function (
         path.length === 0
           ? Infinity
           : path.reduce<number>(
-              (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
+              (acc, node, i, arr) => (i < arr.length - 1 ? acc + footGraph.weight(node, arr[i + 1]) : acc),
               0,
             );
 
