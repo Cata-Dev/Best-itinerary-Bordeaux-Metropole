@@ -32,6 +32,7 @@ import { makeComputePTNData } from "./preCompute/computePTN";
 export interface APDetails {
   sectionId: dbSections["_id"];
   idx: number;
+  approachedPoint: Coords;
 }
 
 declare module "." {
@@ -104,11 +105,13 @@ export default async function (
             {
               sectionId: aps[2],
               idx: aps[3],
+              approachedPoint: aps[1].export() as [number, number],
             },
 
             {
               sectionId: apt[2],
               idx: apt[3],
+              approachedPoint: apt[1].export() as [number, number],
             },
           ],
         }),

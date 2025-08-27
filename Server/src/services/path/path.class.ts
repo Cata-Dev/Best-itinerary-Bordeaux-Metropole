@@ -122,9 +122,17 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                 // <=> nextNode is number
                 // Find in which direction to take fromAps
                 if (fromAps.rg_fv_graph_nd === nextNode) {
-                  return [from, ...fromAps.coords.slice(0, result.apDetails[0].idx + 1).toReversed()];
+                  return [
+                    from,
+                    result.apDetails[0].approachedPoint,
+                    ...fromAps.coords.slice(0, result.apDetails[0].idx + 1).toReversed(),
+                  ];
                 } else if (fromAps.rg_fv_graph_na === nextNode) {
-                  return [from, ...fromAps.coords.slice(result.apDetails[0].idx + 1)];
+                  return [
+                    from,
+                    result.apDetails[0].approachedPoint,
+                    ...fromAps.coords.slice(result.apDetails[0].idx + 1),
+                  ];
                 } else throw new GeneralError("Unexpected path while populating shape");
               }
             }
@@ -138,9 +146,17 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                 // fromAps must be null <=> node is number
                 // Find in which direction to take toApt
                 if (toApt.rg_fv_graph_nd === node) {
-                  return [...toApt.coords.slice(0, result.apDetails[1].idx + 1), to];
+                  return [
+                    ...toApt.coords.slice(0, result.apDetails[1].idx + 1),
+                    result.apDetails[1].approachedPoint,
+                    to,
+                  ];
                 } else if (toApt.rg_fv_graph_na === node) {
-                  return [...toApt.coords.slice(result.apDetails[1].idx + 1).toReversed(), to];
+                  return [
+                    ...toApt.coords.slice(result.apDetails[1].idx + 1).toReversed(),
+                    result.apDetails[1].approachedPoint,
+                    to,
+                  ];
                 } else throw new GeneralError("Unexpected path while populating shape");
               }
             }
@@ -151,15 +167,19 @@ export class PathService<ServiceParams extends PathParams = PathParams>
               if (fromAps.rg_fv_graph_na === toApt.rg_fv_graph_nd)
                 return [
                   from,
+                  result.apDetails[0].approachedPoint,
                   ...fromAps.coords.slice(result.apDetails[0].idx + 1).toReversed(),
                   ...toApt.coords.slice(0, result.apDetails[1].idx + 1),
+                  result.apDetails[1].approachedPoint,
                   to,
                 ];
               else if (fromAps.rg_fv_graph_nd === toApt.rg_fv_graph_na)
                 return [
                   from,
+                  result.apDetails[0].approachedPoint,
                   ...fromAps.coords.slice(0, result.apDetails[0].idx + 1).toReversed(),
                   ...toApt.coords.slice(result.apDetails[1].idx + 1).toReversed(),
+                  result.apDetails[1].approachedPoint,
                   to,
                 ];
               else throw new GeneralError("Unexpected path while populating ");
