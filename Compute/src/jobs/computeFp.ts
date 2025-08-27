@@ -24,7 +24,7 @@ import {
 import { importWGraph } from "../utils/graph";
 import { initDB } from "../utils/mongoose";
 import type { makeComputeFpData } from "./preCompute/computeFp";
-import { makeComputePTNData, PTNGraphNode } from "./preCompute/computePTN";
+import { makeComputePTNData } from "./preCompute/computePTN";
 
 /**
  * Approached point details, to make the link without a graph
@@ -93,8 +93,8 @@ export default async function (
             );
 
       // In reverted order!
-      revertFromApproachedPoint(edges, footGraph, "apt", apt[1]);
-      revertFromApproachedPoint(edges, footGraph, "aps", aps[1]);
+      revertFromApproachedPoint(edges, footGraph, "apt", apt[2]);
+      revertFromApproachedPoint(edges, footGraph, "aps", aps[2]);
 
       return new Promise<JobResult<"computeFp">>((res) =>
         res({
@@ -102,13 +102,13 @@ export default async function (
           path,
           apDetails: [
             {
-              sectionId: aps[1],
-              idx: aps[2],
+              sectionId: aps[2],
+              idx: aps[3],
             },
 
             {
-              sectionId: apt[1],
-              idx: apt[2],
+              sectionId: apt[2],
+              idx: apt[3],
             },
           ],
         }),
@@ -143,7 +143,7 @@ export default async function (
         maxCumulWeight: maxDist,
       });
 
-      revertFromApproachedPoint(edges, footPTNGraph, "aps", aps[1]);
+      revertFromApproachedPoint(edges, footPTNGraph, "aps", aps[2]);
 
       // Keep only distances right target
       const nodeCond = targetPTN

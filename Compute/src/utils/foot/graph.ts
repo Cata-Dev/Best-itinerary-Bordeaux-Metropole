@@ -61,16 +61,14 @@ function importMappedSegments(mappedSegmentsData: ReturnType<makeComputeFpData>[
 function approachPoint(
   mappedSegments: MappedSegments,
   coords: Coords,
-): [stopPoint: Point, edge: Section["s"], segIdx: number] | null {
+  maxDist = 1e3,
+): [stopPoint: Point, approachedPoint: Point, edgeId: dbSectionsRaw["_id"], segIdx: number] | null {
   const point = new Point(...coords);
 
   /**@description [distance to closest point, closest point, edge containing this point, indice of segment composing the edge (i;i+1 in Section coords)] */
-  const closestPoint: [number, Point | null, Section["s"] | null, number | null] = [
-    Infinity,
-    null,
-    null,
-    null,
-  ];
+  const closestPoint = [Infinity, null, null, null] as
+    | [distance: number, closesPoint: null, edgeId: null, segIdx: null]
+    | [distance: number, closesPoint: Point, edgeId: dbSectionsRaw["_id"], segIdx: number];
 
   for (const [edge, segs] of mappedSegments) {
     for (const [n, seg] of segs.entries()) {
@@ -85,47 +83,72 @@ function approachPoint(
     }
   }
 
-  // Max distance to closest segment (section)
-  return closestPoint[0] < 1e3 && closestPoint[2] !== null && closestPoint[3] !== null
-    ? [point, closestPoint[2], closestPoint[3]]
+  return closestPoint[1] !== null && closestPoint[0] < maxDist
+    ? [point, closestPoint[1], closestPoint[2], closestPoint[3]]
     : null;
 }
 
+function distancesThroughAP(
+  edges: ReturnType<makeComputeFpData>["edges"],
+  [point, approachedPoint, edgeId, n]: Exclude<ReturnType<typeof approachPoint>, null>,
+) {
+  const { coords } = edges.get(edgeId)!;
+
+  return [
+    // Compute distance from start edge to approached stop
+    coords
+      .slice(0, n + 1)
+      .reduce(
+        (acc, v, i, arr) => (i < arr.length - 1 ? acc + euclideanDistance(...v, ...arr[i + 1]) : acc),
+        0,
+      ) +
+      // From last segment end to approached stop
+      Point.distance(new Point(...coords[n]), approachedPoint) +
+      // From approached stop to real stop
+      Point.distance(approachedPoint, point),
+    // Compute distance from approached stop to end edge
+    // From real stop to approached stop
+    Point.distance(point, approachedPoint) +
+      // From approached stop to next segment start
+      Point.distance(approachedPoint, new Point(...coords[n + 1])) +
+      coords
+        .slice(n + 1)
+        .reduce(
+          (acc, v, i, arr) => (i < arr.length - 1 ? acc + euclideanDistance(...v, ...arr[i + 1]) : acc),
+          0,
+        ),
+  ];
+}
+
 /**
- * Pushes approached point into graph, just like a proxy on a edge
- * Only reads all parameters
- * @returns Name of point added to graph
+ * Pushes approached point into graph, just like a proxy on an edge.
+ * Only reads all parameters.
+ *
+ * ```
+ *      n, point
+ * .-----^---. edgeId
+ *  ~    |  ~
+ *   ~   |  ~
+ *    ~  | ~  inserted virtual edges
+ *     ~ | ~
+ *       X real stop, coords, inserted node
+ * ```
  */
 function refreshWithApproachedPoint<N extends node>(
   edges: ReturnType<makeComputeFpData>["edges"],
   footGraph: WeightedGraph<FootGraphNode | N>,
   name: N,
-  [point, edgeId, n]: Exclude<ReturnType<typeof approachPoint>, null>,
+  ap: Exclude<ReturnType<typeof approachPoint>, null>,
 ) {
-  const { coords, s, t } = edges.get(edgeId)!;
+  // Compute distance from start edge to approached stop
+  const [toStop, fromStop] = distancesThroughAP(edges, ap);
 
-  // Compute distance from start edge to approachedStop
-  const toStop: number =
-    coords.reduce((acc, v, i, arr) => {
-      if (i < n && i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
-      return acc;
-    }, 0) +
-    // From last segment end to real stop
-    Point.distance(new Point(...coords[n]), point);
-
-  // Compute distance from approachedStop to end edge
-  const fromStop: number =
-    // From real stop to next segment start
-    Point.distance(point, new Point(...coords[n + 1])) +
-    coords.reduce((acc, v, i, arr) => {
-      if (i > n && i < arr.length - 1) return acc + euclideanDistance(...v, ...arr[i + 1]);
-      return acc;
-    }, 0);
+  const { s, t } = edges.get(ap[2])!;
 
   footGraph.addEdge(s, name, toStop);
   footGraph.addEdge(name, t, fromStop);
 
-  return;
+  return [toStop, fromStop];
 }
 
 function revertFromApproachedPoint<N extends node>(
