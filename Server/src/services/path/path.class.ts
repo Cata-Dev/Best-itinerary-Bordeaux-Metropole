@@ -17,6 +17,7 @@ import AddressesModelInit from "@bibm/data/models/TBM/addresses.model";
 import TBMIntersectionsModelInit from "@bibm/data/models/TBM/intersections.model";
 import TBMSectionsModelInit, { dbSections } from "@bibm/data/models/TBM/sections.model";
 import TBMLinkLineRoutesSectionsInit from "@bibm/data/models/TBM/TBM_link_line_routes_sections.model";
+import footGraphEdgeModelInit from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import TBMRouteSectionsModelInit, {
   dbTBM_RouteSections,
 } from "@bibm/data/models/TBM/TBM_route_sections.model";
@@ -51,6 +52,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
   private readonly SNCFStopsModel: ReturnType<typeof SNCFStopsModelInit>;
   private readonly TBMRouteSectionsModel: ReturnType<typeof TBMRouteSectionsModelInit>;
   private readonly TBMLinkLineRoutesSectionsModel: ReturnType<typeof TBMLinkLineRoutesSectionsInit>;
+  private readonly footGraphEdgeModel: ReturnType<typeof footGraphEdgeModelInit>;
 
   constructor(public options: PathServiceOptions) {
     this.app = options.app;
@@ -62,6 +64,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
     this.SNCFStopsModel = SNCFStopsModelInit(this.app.get("sourceDBConn"));
     this.TBMRouteSectionsModel = TBMRouteSectionsModelInit(this.app.get("sourceDBConn"));
     this.TBMLinkLineRoutesSectionsModel = TBMLinkLineRoutesSectionsInit(this.app.get("sourceDBConn"));
+    this.footGraphEdgeModel = footGraphEdgeModelInit(this.app.get("sourceDBConn"));
   }
 
   private async getCoords(loc: dbComputeResult["from"]): Promise<Coords> {
@@ -198,13 +201,82 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                 },
               ],
             });
-            if (!section) throw new GeneralError("Unexpected path while populating shape");
+            if (section) {
+              if (section.rg_fv_graph_nd !== node)
+                // Reversed direction
+                section.coords.reverse();
 
-            if (section.rg_fv_graph_nd !== node)
-              // Reversed direction
-              section.coords.reverse();
+              return section.coords;
+            }
 
-            return section.coords;
+            const connection = await this.footGraphEdgeModel.findOne(
+              {
+                $or: [
+                  {
+                    s: node,
+                    target: nextNode,
+                  },
+
+                  {
+                    s: nextNode,
+                    target: node,
+                  },
+
+                  {
+                    t: node,
+                    target: nextNode,
+                  },
+
+                  {
+                    t: nextNode,
+                    target: node,
+                  },
+                ],
+              },
+              undefined,
+              { populate: ["edge"] },
+            );
+            if (!connection) throw new GeneralError("Unexpected path while populating shape");
+            if (typeof connection.edge === "number")
+              throw new GeneralError("Unexpected unpopulated section while populating shape");
+
+            // Find target coordinates
+            const targetSection = await this.TBMSectionsModel.findOne({
+              $or: [{ rg_fv_graph_nd: connection.target }, { rg_fv_graph_na: connection.target }],
+            });
+            if (!targetSection)
+              throw new GeneralError("Unexpected no section for connecting node while populating shape");
+            const targetCoords =
+              targetSection.rg_fv_graph_nd === connection.target
+                ? targetSection.coords[0]
+                : targetSection.coords.at(-1)!;
+
+            if (connection.s === node && connection.target === nextNode)
+              return [
+                ...connection.edge.coords.slice(0, connection.cutIdx + 1),
+                connection.approachedCoords,
+                targetCoords,
+              ];
+            else if (connection.s === nextNode && connection.target === node)
+              return [
+                targetCoords,
+                connection.approachedCoords,
+                ...connection.edge.coords.slice(0, connection.cutIdx + 1).toReversed(),
+              ];
+            else if (connection.t === node && connection.target === nextNode)
+              return [
+                ...connection.edge.coords.slice(connection.cutIdx + 1).toReversed(),
+                connection.approachedCoords,
+                targetCoords,
+              ];
+            else if (connection.t === nextNode && connection.target === node)
+              return [
+                targetCoords,
+                connection.approachedCoords,
+                ...connection.edge.coords.slice(connection.cutIdx + 1),
+              ];
+
+            return [];
           }
         : async (node): Promise<Coords> => {
             if (node === "aps") return from;
