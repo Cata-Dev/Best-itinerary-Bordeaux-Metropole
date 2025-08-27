@@ -1,5 +1,6 @@
 import { Coords, euclideanDistance } from "@bibm/common/geographics";
 import { dbSections as dbSectionsRaw } from "@bibm/data/models/TBM/sections.model";
+import { Dijkstra } from "@catatomik/dijkstra";
 import { KeyOfMap, node, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { ProjectionType } from "mongoose";
 import type { makeComputeFpData } from "../../jobs/preCompute/computeFp";
@@ -52,9 +53,107 @@ function importMappedSegments(mappedSegmentsData: ReturnType<makeComputeFpData>[
 }
 
 /**
- *
- * @param coords
- * @returns `[closest point, edge containing this point, indice of segment composing the edge]`
+ * Connect the largest component to all other disconnected components
+ * @param footGraph The graph to connect
+ * @param maxDist Maximal distance to connect two components (in meters), defaults to 1 km
+ */
+function connectFootGraph(
+  edges: ReturnType<makeComputeFpData>["edges"],
+  mappedSegments: MappedSegments,
+  nodeCoords: Map<Section["s"], Coords>,
+  footGraph: WeightedGraph<Section["s"]>,
+  maxDist = 1e3,
+) {
+  type Component = Set<Section["s"]>;
+
+  const components: Component[] = [];
+  // Visited nodes
+  const nodes = new Set(footGraph.nodesIterator);
+
+  while (nodes.size > 0) {
+    const node = nodes.values().next().value!;
+    const component = Dijkstra(footGraph, [node])[0]
+      .entries()
+      .reduce<Component>((acc, [node, dist]) => (dist < Infinity ? acc.add(node) : acc), new Set());
+
+    // Remove visited nodes
+    for (const node of component) nodes.delete(node);
+
+    // Add component
+    components.push(component);
+  }
+
+  if (components.length <= 1) return [];
+
+  const [largestComponent, otherComponents] = components
+    .slice(1)
+    .reduce<
+      [Component, Component[]]
+    >(([largestComponent, otherComponents], component) => (component.size > largestComponent.size ? [component, [...otherComponents, largestComponent]] : [largestComponent, [...otherComponents, component]]), [components[0], []]);
+
+  const largestComponentMappedSegments: typeof mappedSegments = new Map(
+    mappedSegments.entries().filter(([k]) => {
+      const section = edges.get(k);
+      if (!section) throw new Error(`Unable to retrieve section of ID ${k}`);
+
+      if (largestComponent.has(section.s) || largestComponent.has(section.t)) return true;
+      return false;
+    }),
+  );
+
+  const connections: [
+    start: Section["s"],
+    end: Section["s"],
+    target: Section["s"],
+    approachedPoint: Exclude<ReturnType<typeof approachPoint>, null>,
+    toTarget: number,
+    fromTarget: number,
+  ][] = [];
+
+  for (const component of otherComponents) {
+    // Get ends of minimal degree from the component
+    // We will try to connect these ends to the largest component
+    const ends = component.values().reduce<[number, Section["s"][]]>(
+      ([minDeg, nodesOfMinDeg], node) => {
+        const deg = footGraph.degree(node);
+
+        return deg < minDeg
+          ? [deg, [node]]
+          : [minDeg, deg === minDeg ? [...nodesOfMinDeg, node] : nodesOfMinDeg];
+      },
+      [Infinity, []],
+    )[1];
+
+    for (const end of ends) {
+      // Get end node coords
+      const endCoords = nodeCoords.get(end);
+      if (!endCoords) throw new Error(`Unable to retrieve coordinates for section end ${end}`);
+
+      // Approach end
+      const ap = approachPoint(largestComponentMappedSegments, endCoords, maxDist);
+      if (!ap) continue;
+
+      const { s, t } = edges.get(ap[2])!;
+
+      const [toEnd, fromEnd] = distancesThroughAP(edges, ap);
+
+      // Insert approached end
+      footGraph.addEdge(s, end, toEnd);
+      footGraph.addEdge(end, t, fromEnd);
+
+      connections.push([s, t, end, ap, toEnd, fromEnd]);
+    }
+  }
+
+  return connections;
+}
+
+type FootGraphNode = KeyOfMap<ReturnType<makeComputeFpData>["footGraphData"][0]>;
+
+/**
+ * Geometrically compute closest point to a set of segments
+ * @param coords Coordinates to approach
+ * @returns `[point, closest point, ID of edge containing this point, index of segment where point is projected]`
  */
 function approachPoint(
   mappedSegments: MappedSegments,
@@ -163,6 +262,7 @@ function revertFromApproachedPoint<N extends node>(
 
 export {
   approachPoint,
+  connectFootGraph,
   importMappedSegments,
   makeGraph,
   refreshWithApproachedPoint,
