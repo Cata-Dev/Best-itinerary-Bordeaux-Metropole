@@ -2,6 +2,11 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
+export enum SNCF_ScheduleFreshness {
+  Base,
+  Realtime,
+}
+
 import {
   deleteModelWithClass,
   getModelForClass,
@@ -21,13 +26,19 @@ export class dbSNCF_Schedules extends TimeStamps {
   public _id!: string;
 
   @prop({ required: true })
-  public realtime!: Date;
+  public arrival!: Date;
 
   @prop({ required: true })
-  public trip!: number; // Implicitly includes direction
+  public departure!: Date;
+
+  @prop({ required: true, enum: () => SNCF_ScheduleFreshness })
+  public freshness!: SNCF_ScheduleFreshness;
+
+  @prop({ required: true })
+  public trip!: number;
 
   @prop({ required: true, ref: () => dbSNCF_Stops, type: () => Number })
-  public stop_point!: Ref<dbSNCF_Stops>;
+  public stop!: Ref<dbSNCF_Stops>;
 
   @prop({ required: true })
   public route!: string; // Should be a ref
