@@ -19,7 +19,7 @@ importers:
         version: link:../Data
       '@bibm/server':
         specifier: workspace:*
-        version: file:Server(mongodb@6.19.0)(typescript@5.9.2)
+        version: link:../Server
       '@feathersjs/socketio-client':
         specifier: ^5.0.34
         version: 5.0.34
@@ -141,7 +141,7 @@ importers:
         version: link:../Data
       '@bibm/server':
         specifier: workspace:*
-        version: file:Server(mongodb@6.19.0)(typescript@5.9.2)
+        version: link:../Server
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -239,13 +239,13 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: file:Common(mongoose@8.18.0)(typescript@5.8.3)
+        version: link:../Common
       '@bibm/compute':
         specifier: workspace:*
-        version: file:Compute(mongodb@6.19.0)(typescript@5.8.3)
+        version: link:../Compute
       '@bibm/data':
         specifier: workspace:*
-        version: file:Data(typescript@5.8.3)
+        version: link:../Data
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -254,13 +254,13 @@ importers:
         version: 5.0.34
       '@feathersjs/authentication':
         specifier: ^5.0.34
-        version: 5.0.34(typescript@5.8.3)
+        version: 5.0.34(typescript@5.9.2)
       '@feathersjs/authentication-client':
         specifier: ^5.0.34
-        version: 5.0.34(typescript@5.8.3)
+        version: 5.0.34(typescript@5.9.2)
       '@feathersjs/configuration':
         specifier: ^5.0.34
-        version: 5.0.34(typescript@5.8.3)
+        version: 5.0.34(typescript@5.9.2)
       '@feathersjs/errors':
         specifier: ^5.0.34
         version: 5.0.34
@@ -269,13 +269,13 @@ importers:
         version: 5.0.34
       '@feathersjs/koa':
         specifier: ^5.0.34
-        version: 5.0.34(typescript@5.8.3)
+        version: 5.0.34(typescript@5.9.2)
       '@feathersjs/mongodb':
         specifier: ^5.0.34
         version: 5.0.34(mongodb@6.19.0)
       '@feathersjs/schema':
         specifier: ^5.0.34
-        version: 5.0.34(typescript@5.8.3)
+        version: 5.0.34(typescript@5.9.2)
       '@feathersjs/socketio':
         specifier: ^5.0.34
         version: 5.0.34
@@ -284,7 +284,7 @@ importers:
         version: 5.0.34
       '@feathersjs/typebox':
         specifier: ^5.0.34
-        version: 5.0.34(typescript@5.8.3)
+        version: 5.0.34(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
         version: 12.19.0(mongoose@8.18.0)
@@ -342,13 +342,13 @@ importers:
         version: 0.4.0
       ts-node:
         specifier: ^10.9.2
-        version: 10.9.2(@types/node@22.18.0)(typescript@5.8.3)
+        version: 10.9.2(@types/node@22.18.0)(typescript@5.9.2)
       typescript:
-        specifier: 5.8.3
-        version: 5.8.3
+        specifier: 5.9.2
+        version: 5.9.2
       typescript-eslint:
         specifier: ^8.41.0
-        version: 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)
+        version: 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)
 
 packages:
 
@@ -499,22 +499,6 @@ packages:
   '@babel/types@7.28.2':
     resolution: {integrity: sha512-ruv7Ae4J5dUYULmeXw1gmb7rYRz57OWCPM57pHojnLq/3Z1CK2lNSLTCVjxVk1F/TZHwOZZrOWi0ur95BbLxNQ==}
     engines: {node: '>=6.9.0'}
-
-  '@bibm/common@file:Common':
-    resolution: {directory: Common, type: directory}
-    engines: {node: '>=22.13.0', pnpm: '>=9'}
-
-  '@bibm/compute@file:Compute':
-    resolution: {directory: Compute, type: directory}
-    engines: {node: '>=22.13.0', pnpm: '>=9'}
-
-  '@bibm/data@file:Data':
-    resolution: {directory: Data, type: directory}
-    engines: {node: '>=22.13.0', pnpm: '>=9'}
-
-  '@bibm/server@file:Server':
-    resolution: {directory: Server, type: directory}
-    engines: {node: '>=22.13.0', pnpm: '>=9'}
 
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     resolution: {tarball: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed}
@@ -3708,11 +3692,6 @@ packages:
       eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <6.0.0'
 
-  typescript@5.8.3:
-    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@5.9.2:
     resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
     engines: {node: '>=14.17'}
@@ -4205,190 +4184,6 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
 
-  '@bibm/common@file:Common(mongoose@8.18.0)(typescript@5.8.3)':
-    dependencies:
-      '@feathersjs/typebox': 5.0.34(typescript@5.8.3)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.0)
-    transitivePeerDependencies:
-      - mongoose
-      - typescript
-
-  '@bibm/common@file:Common(mongoose@8.18.0)(typescript@5.9.2)':
-    dependencies:
-      '@feathersjs/typebox': 5.0.34(typescript@5.9.2)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.0)
-    transitivePeerDependencies:
-      - mongoose
-      - typescript
-
-  '@bibm/compute@file:Compute(mongodb@6.19.0)(typescript@5.8.3)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.0)(typescript@5.8.3)
-      '@bibm/data': file:Data(typescript@5.8.3)
-      '@bibm/server': file:Server(mongodb@6.19.0)(typescript@5.8.3)
-      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.0)
-      bullmq: 5.58.2
-      core-js: 3.45.1
-      mongoose: 8.18.0
-      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/6fe7269bf67d10c1e41442bc1dc7987eeb97f6d2
-      shx: 0.4.0
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - bufferutil
-      - debug
-      - gcp-metadata
-      - kerberos
-      - mongodb
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-      - utf-8-validate
-
-  '@bibm/compute@file:Compute(mongodb@6.19.0)(typescript@5.9.2)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.0)(typescript@5.9.2)
-      '@bibm/data': file:Data(typescript@5.9.2)
-      '@bibm/server': file:Server(mongodb@6.19.0)(typescript@5.9.2)
-      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.0)
-      bullmq: 5.58.2
-      core-js: 3.45.1
-      mongoose: 8.18.0
-      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/6fe7269bf67d10c1e41442bc1dc7987eeb97f6d2
-      shx: 0.4.0
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - bufferutil
-      - debug
-      - gcp-metadata
-      - kerberos
-      - mongodb
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-      - utf-8-validate
-
-  '@bibm/data@file:Data(typescript@5.8.3)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.0)(typescript@5.8.3)
-      '@feathersjs/schema': 5.0.34(typescript@5.8.3)
-      '@feathersjs/typebox': 5.0.34(typescript@5.8.3)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.0)
-      config: 4.1.1
-      mongoose: 8.18.0
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-
-  '@bibm/data@file:Data(typescript@5.9.2)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.0)(typescript@5.9.2)
-      '@feathersjs/schema': 5.0.34(typescript@5.9.2)
-      '@feathersjs/typebox': 5.0.34(typescript@5.9.2)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.0)
-      config: 4.1.1
-      mongoose: 8.18.0
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-
-  '@bibm/server@file:Server(mongodb@6.19.0)(typescript@5.8.3)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.0)(typescript@5.8.3)
-      '@bibm/compute': file:Compute(mongodb@6.19.0)(typescript@5.8.3)
-      '@bibm/data': file:Data(typescript@5.8.3)
-      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
-      '@feathersjs/adapter-commons': 5.0.34
-      '@feathersjs/authentication': 5.0.34(typescript@5.8.3)
-      '@feathersjs/authentication-client': 5.0.34(typescript@5.8.3)
-      '@feathersjs/configuration': 5.0.34(typescript@5.8.3)
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/koa': 5.0.34(typescript@5.8.3)
-      '@feathersjs/mongodb': 5.0.34(mongodb@6.19.0)
-      '@feathersjs/schema': 5.0.34(typescript@5.8.3)
-      '@feathersjs/socketio': 5.0.34
-      '@feathersjs/transport-commons': 5.0.34
-      '@feathersjs/typebox': 5.0.34(typescript@5.8.3)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.0)
-      axios: 1.11.0
-      core-js: 3.45.1
-      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.34)
-      mongoose: 8.18.0
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - bufferutil
-      - debug
-      - gcp-metadata
-      - kerberos
-      - mongodb
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-      - utf-8-validate
-
-  '@bibm/server@file:Server(mongodb@6.19.0)(typescript@5.9.2)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.0)(typescript@5.9.2)
-      '@bibm/compute': file:Compute(mongodb@6.19.0)(typescript@5.9.2)
-      '@bibm/data': file:Data(typescript@5.9.2)
-      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
-      '@feathersjs/adapter-commons': 5.0.34
-      '@feathersjs/authentication': 5.0.34(typescript@5.9.2)
-      '@feathersjs/authentication-client': 5.0.34(typescript@5.9.2)
-      '@feathersjs/configuration': 5.0.34(typescript@5.9.2)
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/koa': 5.0.34(typescript@5.9.2)
-      '@feathersjs/mongodb': 5.0.34(mongodb@6.19.0)
-      '@feathersjs/schema': 5.0.34(typescript@5.9.2)
-      '@feathersjs/socketio': 5.0.34
-      '@feathersjs/transport-commons': 5.0.34
-      '@feathersjs/typebox': 5.0.34(typescript@5.9.2)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.0)
-      axios: 1.11.0
-      core-js: 3.45.1
-      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.34)
-      mongoose: 8.18.0
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - bufferutil
-      - debug
-      - gcp-metadata
-      - kerberos
-      - mongodb
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-      - utf-8-validate
-
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     dependencies:
       '@tyriar/fibonacci-heap': 2.0.9
@@ -4533,37 +4328,12 @@ snapshots:
       '@feathersjs/errors': 5.0.34
       '@feathersjs/feathers': 5.0.34
 
-  '@feathersjs/authentication-client@5.0.34(typescript@5.8.3)':
-    dependencies:
-      '@feathersjs/authentication': 5.0.34(typescript@5.8.3)
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-    transitivePeerDependencies:
-      - typescript
-
   '@feathersjs/authentication-client@5.0.34(typescript@5.9.2)':
     dependencies:
       '@feathersjs/authentication': 5.0.34(typescript@5.9.2)
       '@feathersjs/commons': 5.0.34
       '@feathersjs/errors': 5.0.34
       '@feathersjs/feathers': 5.0.34
-    transitivePeerDependencies:
-      - typescript
-
-  '@feathersjs/authentication@5.0.34(typescript@5.8.3)':
-    dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/hooks': 0.9.0
-      '@feathersjs/schema': 5.0.34(typescript@5.8.3)
-      '@feathersjs/transport-commons': 5.0.34
-      '@types/jsonwebtoken': 9.0.10
-      jsonwebtoken: 9.0.2
-      lodash: 4.17.21
-      long-timeout: 0.1.1
-      uuid: 11.1.0
     transitivePeerDependencies:
       - typescript
 
@@ -4590,16 +4360,6 @@ snapshots:
       commander: 13.1.0
 
   '@feathersjs/commons@5.0.34': {}
-
-  '@feathersjs/configuration@5.0.34(typescript@5.8.3)':
-    dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/schema': 5.0.34(typescript@5.8.3)
-      '@types/config': 3.3.5
-      config: 3.3.12
-    transitivePeerDependencies:
-      - typescript
 
   '@feathersjs/configuration@5.0.34(typescript@5.9.2)':
     dependencies:
@@ -4628,27 +4388,6 @@ snapshots:
       typescript: 5.9.2
 
   '@feathersjs/hooks@0.9.0': {}
-
-  '@feathersjs/koa@5.0.34(typescript@5.8.3)':
-    dependencies:
-      '@feathersjs/authentication': 5.0.34(typescript@5.8.3)
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/transport-commons': 5.0.34
-      '@koa/cors': 5.0.0
-      '@types/koa': 2.15.0
-      '@types/koa-qs': 2.0.3
-      '@types/koa-static': 4.0.4
-      '@types/koa__cors': 5.0.0
-      koa: 3.0.1
-      koa-body: 6.0.1
-      koa-compose: 4.1.0
-      koa-qs: 3.0.0
-      koa-static: 5.0.0
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
 
   '@feathersjs/koa@5.0.34(typescript@5.9.2)':
     dependencies:
@@ -4687,19 +4426,6 @@ snapshots:
       '@types/superagent': 8.1.9
       qs: 6.14.0
 
-  '@feathersjs/schema@5.0.34(typescript@5.8.3)':
-    dependencies:
-      '@feathersjs/adapter-commons': 5.0.34
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/hooks': 0.9.0
-      '@types/json-schema': 7.0.15
-      ajv: 8.17.1
-      ajv-formats: 3.0.1(ajv@8.17.1)
-      json-schema-to-ts: 3.1.1
-      typescript: 5.8.3
-
   '@feathersjs/schema@5.0.34(typescript@5.9.2)':
     dependencies:
       '@feathersjs/adapter-commons': 5.0.34
@@ -4736,13 +4462,6 @@ snapshots:
       '@feathersjs/feathers': 5.0.34
       encodeurl: 2.0.0
       lodash: 4.17.21
-
-  '@feathersjs/typebox@5.0.34(typescript@5.8.3)':
-    dependencies:
-      '@feathersjs/schema': 5.0.34(typescript@5.8.3)
-      '@sinclair/typebox': 0.25.24
-    transitivePeerDependencies:
-      - typescript
 
   '@feathersjs/typebox@5.0.34(typescript@5.9.2)':
     dependencies:
@@ -5185,23 +4904,6 @@ snapshots:
     dependencies:
       '@types/webidl-conversions': 7.0.3
 
-  '@typescript-eslint/eslint-plugin@8.41.0(@typescript-eslint/parser@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)':
-    dependencies:
-      '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)
-      '@typescript-eslint/scope-manager': 8.41.0
-      '@typescript-eslint/type-utils': 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)
-      '@typescript-eslint/visitor-keys': 8.41.0
-      eslint: 9.34.0(jiti@2.5.1)
-      graphemer: 1.4.0
-      ignore: 7.0.5
-      natural-compare: 1.4.0
-      ts-api-utils: 2.1.0(typescript@5.8.3)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@typescript-eslint/eslint-plugin@8.41.0(@typescript-eslint/parser@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
@@ -5219,18 +4921,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)':
-    dependencies:
-      '@typescript-eslint/scope-manager': 8.41.0
-      '@typescript-eslint/types': 8.41.0
-      '@typescript-eslint/typescript-estree': 8.41.0(typescript@5.8.3)
-      '@typescript-eslint/visitor-keys': 8.41.0
-      debug: 4.4.1
-      eslint: 9.34.0(jiti@2.5.1)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@typescript-eslint/parser@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.41.0
@@ -5240,15 +4930,6 @@ snapshots:
       debug: 4.4.1
       eslint: 9.34.0(jiti@2.5.1)
       typescript: 5.9.2
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/project-service@8.41.0(typescript@5.8.3)':
-    dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.41.0(typescript@5.8.3)
-      '@typescript-eslint/types': 8.41.0
-      debug: 4.4.1
-      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
@@ -5266,25 +4947,9 @@ snapshots:
       '@typescript-eslint/types': 8.41.0
       '@typescript-eslint/visitor-keys': 8.41.0
 
-  '@typescript-eslint/tsconfig-utils@8.41.0(typescript@5.8.3)':
-    dependencies:
-      typescript: 5.8.3
-
   '@typescript-eslint/tsconfig-utils@8.41.0(typescript@5.9.2)':
     dependencies:
       typescript: 5.9.2
-
-  '@typescript-eslint/type-utils@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)':
-    dependencies:
-      '@typescript-eslint/types': 8.41.0
-      '@typescript-eslint/typescript-estree': 8.41.0(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)
-      debug: 4.4.1
-      eslint: 9.34.0(jiti@2.5.1)
-      ts-api-utils: 2.1.0(typescript@5.8.3)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - supports-color
 
   '@typescript-eslint/type-utils@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)':
     dependencies:
@@ -5300,22 +4965,6 @@ snapshots:
 
   '@typescript-eslint/types@8.41.0': {}
 
-  '@typescript-eslint/typescript-estree@8.41.0(typescript@5.8.3)':
-    dependencies:
-      '@typescript-eslint/project-service': 8.41.0(typescript@5.8.3)
-      '@typescript-eslint/tsconfig-utils': 8.41.0(typescript@5.8.3)
-      '@typescript-eslint/types': 8.41.0
-      '@typescript-eslint/visitor-keys': 8.41.0
-      debug: 4.4.1
-      fast-glob: 3.3.3
-      is-glob: 4.0.3
-      minimatch: 9.0.5
-      semver: 7.7.2
-      ts-api-utils: 2.1.0(typescript@5.8.3)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@typescript-eslint/typescript-estree@8.41.0(typescript@5.9.2)':
     dependencies:
       '@typescript-eslint/project-service': 8.41.0(typescript@5.9.2)
@@ -5329,17 +4978,6 @@ snapshots:
       semver: 7.7.2
       ts-api-utils: 2.1.0(typescript@5.9.2)
       typescript: 5.9.2
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/utils@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)':
-    dependencies:
-      '@eslint-community/eslint-utils': 4.7.0(eslint@9.34.0(jiti@2.5.1))
-      '@typescript-eslint/scope-manager': 8.41.0
-      '@typescript-eslint/types': 8.41.0
-      '@typescript-eslint/typescript-estree': 8.41.0(typescript@5.8.3)
-      eslint: 9.34.0(jiti@2.5.1)
-      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
@@ -7843,15 +7481,11 @@ snapshots:
 
   ts-algebra@2.0.0: {}
 
-  ts-api-utils@2.1.0(typescript@5.8.3):
-    dependencies:
-      typescript: 5.8.3
-
   ts-api-utils@2.1.0(typescript@5.9.2):
     dependencies:
       typescript: 5.9.2
 
-  ts-node@10.9.2(@types/node@22.18.0)(typescript@5.8.3):
+  ts-node@10.9.2(@types/node@22.18.0)(typescript@5.9.2):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
@@ -7865,7 +7499,7 @@ snapshots:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.8.3
+      typescript: 5.9.2
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
@@ -7930,17 +7564,6 @@ snapshots:
       possible-typed-array-names: 1.1.0
       reflect.getprototypeof: 1.0.10
 
-  typescript-eslint@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3):
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 8.41.0(@typescript-eslint/parser@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3))(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)
-      '@typescript-eslint/parser': 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)
-      '@typescript-eslint/typescript-estree': 8.41.0(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.8.3)
-      eslint: 9.34.0(jiti@2.5.1)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - supports-color
-
   typescript-eslint@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2):
     dependencies:
       '@typescript-eslint/eslint-plugin': 8.41.0(@typescript-eslint/parser@8.41.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)
@@ -7951,8 +7574,6 @@ snapshots:
       typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
-
-  typescript@5.8.3: {}
 
   typescript@5.9.2: {}
 
