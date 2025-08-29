@@ -9,6 +9,8 @@ import SNCF_StopsEndpoint from "./endpoints/SNCF_Stops.endpoint";
 
 import SNCF_SchedulesEndpoint from "./endpoints/SNCF_Schedules.endpoint";
 
+import SNCF_ScheduledRoutesEndpoint from "./endpoints/SNCFScheduledRoutes.endpoint";
+
 declare module "../../declarations" {
   interface ExternalAPIs {
     SNCF: { endpoints: { [EN in SNCFEndpoints]: Endpoint<EN> } };
@@ -16,8 +18,6 @@ declare module "../../declarations" {
 }
 
 export default async (app: Application) => {
-  logger.log(`Initializing SNCF endpoints...`);
-
   /**
    * Fetch data from SNCF API
    * @param {Array} paths
@@ -40,14 +40,21 @@ export default async (app: Application) => {
     return res.data;
   }
 
-  logger.info(`SNCF endpoints initialized.`);
+  logger.log(`Initializing SNCF endpoints...`);
+
+  const SNCF_SchedulesEndpointInstantiated = (await SNCF_SchedulesEndpoint(app, getData))[0];
 
   app.externalAPIs.SNCF = {
     endpoints: {
       [SNCFEndpoints.Stops]: (await SNCF_StopsEndpoint(app, getData))[0],
-      [SNCFEndpoints.Schedules]: (await SNCF_SchedulesEndpoint(app, getData))[0],
+      [SNCFEndpoints.Schedules]: SNCF_SchedulesEndpointInstantiated,
+      [SNCFEndpoints.ScheduledRoutes]: (
+        await SNCF_ScheduledRoutesEndpoint(app, SNCF_SchedulesEndpointInstantiated)
+      )[0],
     },
   };
+
+  logger.info(`SNCF endpoints initialized.`);
 
   app.externalAPIs.endpoints = { ...app.externalAPIs.endpoints, ...app.externalAPIs.SNCF.endpoints };
 };

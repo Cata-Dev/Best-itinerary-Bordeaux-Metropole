@@ -7,6 +7,7 @@ import { Application } from "../../../declarations";
 import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
 import { SNCF_Admin, SNCF_Coords, SNCF_Link, SNCF_Stop, SNCF_StopArea } from "./SNCF_Stops.endpoint";
+import { makeSNCFSRHook } from "./SNCFScheduledRoutes.endpoint";
 
 interface SNCF_Poi {
   id: string; // Identifier of the poi
@@ -268,6 +269,8 @@ export default async (
         return true;
       },
       Schedules,
-    ).init(),
+    )
+      .registerHook(makeSNCFSRHook(app, SNCFEndpoints.Schedules))
+      .init(),
   ] as const;
 };
