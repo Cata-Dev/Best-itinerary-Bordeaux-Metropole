@@ -144,9 +144,8 @@ if (parentPort) {
           [
             _id,
             stops,
-            trips.map(({ tripId, schedules }) => ({
-              id: tripId,
-              times: schedules.map((schedule) => {
+            trips.map(({ schedules }) =>
+              schedules.map((schedule) => {
                 let theo = schedule.hor_theo.getTime() || TimeScal.MAX_SAFE;
                 let estime = schedule.hor_estime.getTime() || schedule.hor_app.getTime() || TimeScal.MAX_SAFE;
 
@@ -157,7 +156,7 @@ if (parentPort) {
                 const int = theo < estime ? [theo, estime] : [estime, theo];
                 return [[int[0], int[1]] as const, [int[0], int[1]] as const] satisfies [unknown, unknown];
               }),
-            })),
+            ),
           ] satisfies [unknown, unknown, unknown],
       ),
     );
