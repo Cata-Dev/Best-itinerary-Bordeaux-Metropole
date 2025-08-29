@@ -34,13 +34,13 @@ export class dbSNCF_Schedules extends TimeStamps {
   @prop({ required: true, enum: () => SNCF_ScheduleFreshness })
   public freshness!: SNCF_ScheduleFreshness;
 
-  @prop({ required: true })
+  @prop({ required: true, index: true })
   public trip!: number;
 
-  @prop({ required: true, ref: () => dbSNCF_Stops, type: () => Number })
+  @prop({ required: true, ref: () => dbSNCF_Stops, type: () => Number, index: true })
   public stop!: Ref<dbSNCF_Stops>;
 
-  @prop({ required: true })
+  @prop({ required: true, index: true })
   public route!: string; // Should be a ref
 }
 
