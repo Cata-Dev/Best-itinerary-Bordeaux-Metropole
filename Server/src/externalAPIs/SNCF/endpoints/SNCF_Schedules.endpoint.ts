@@ -165,16 +165,26 @@ function parseSNCFdate(string: string): Date {
   return date;
 }
 
+function isSNCFPlaceStopArea(s: SNCF_Place<SNCF_Place_Type>): s is SNCF_Place<SNCF_Place_Type.StopArea> {
+  return s.embedded_type === SNCF_Place_Type.StopArea;
+}
+
 function SNCFStopDateTimeToDBSchedule(stopDateTime: SNCF_StopDateTime): dbSNCF_Schedules {
   const tripId = parseInt(stopDateTime.display_informations.trip_short_name);
   if (isNaN(tripId)) throw new Error("Invalid tripId");
   const stopId = parseInt(stopDateTime.stop_point.id.substring(16, 24));
   if (isNaN(stopId)) throw new Error("Invalid stopId");
 
-  const id = `${tripId}:${stopId}`;
+  // stopDateTime.route.direction_type always "forward"... Computing attribute
+  if (!isSNCFPlaceStopArea(stopDateTime.route.direction)) throw new Error("Invalid route direction type");
+  const terminusFromLink = stopDateTime.stop_date_time.links.find(
+    (link) => (link as SNCF_Link & { category: string }).category === "terminus",
+  );
+  if (!terminusFromLink) throw new Error("No terminus link found");
+  const backward = stopDateTime.route.direction.stop_area.id !== terminusFromLink.id;
 
   return {
-    _id: id,
+    _id: `${tripId}:${stopId}`,
     arrival: parseSNCFdate(stopDateTime.stop_date_time.arrival_date_time),
     departure: parseSNCFdate(stopDateTime.stop_date_time.departure_date_time),
     freshness:
@@ -183,7 +193,7 @@ function SNCFStopDateTimeToDBSchedule(stopDateTime: SNCF_StopDateTime): dbSNCF_S
         : SNCF_ScheduleFreshness.Base,
     trip: tripId,
     stop: stopId,
-    route: stopDateTime.route.id,
+    route: stopDateTime.route.id + (backward ? "-R" : ""),
   };
 }
 
