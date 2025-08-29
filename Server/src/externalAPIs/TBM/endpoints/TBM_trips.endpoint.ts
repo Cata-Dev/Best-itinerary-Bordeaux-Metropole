@@ -5,7 +5,7 @@ import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
 import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
+import { makeTBMSRHook } from "./TBMScheduledRoutes.endpoint";
 
 export type TBM_Trip = BaseTBM<{
   gid: string;
@@ -57,7 +57,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       },
       Trip,
     )
-      .registerHook(makeSRHook(app, TBMEndpoints.Trips))
+      .registerHook(makeTBMSRHook(app, TBMEndpoints.Trips))
       .init(),
   ] as const;
 };

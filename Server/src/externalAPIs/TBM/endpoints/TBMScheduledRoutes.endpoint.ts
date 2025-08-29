@@ -231,7 +231,7 @@ export default async (
   ] as const;
 };
 
-export const makeSRHook = makeConcurrentHook<
+export const makeTBMSRHook = makeConcurrentHook<
   TBMEndpoints.Lines_routes | TBMEndpoints.Schedules_rt | TBMEndpoints.Stops | TBMEndpoints.Trips
 >(
   (app) =>
