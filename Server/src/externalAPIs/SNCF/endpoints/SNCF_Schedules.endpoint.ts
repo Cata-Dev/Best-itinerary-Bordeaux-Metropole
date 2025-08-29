@@ -41,11 +41,11 @@ interface SNCF_Address {
 }
 
 enum SNCF_Place_Type {
-  administrative_region, // a city, a district, a neighborhood
-  stop_area, // a nameable zone, where there are some stop points
-  stop_point, // a location where vehicles can pickup or drop off passengers
-  address, // a point located in a street
-  poi, // a point of interest
+  AdministrativeRegion = "administrative_region", // a city, a district, a neighborhood
+  StopArea = "stop_area", // a nameable zone, where there are some stop points
+  StopPoint = "stop_point", // a location where vehicles can pickup or drop off passengers
+  Address = "address", // a point located in a street
+  Poi = "poi", // a point of interest
 }
 
 /** https://doc.navitia.io/#place */
@@ -54,15 +54,15 @@ type SNCF_Place<T extends SNCF_Place_Type> = {
   name: string; // The name of the embedded object
   quality: number; // The quality of the place
   embedded_type: T; // The type of the embedded object
-} & (T extends SNCF_Place_Type.address
+} & (T extends SNCF_Place_Type.Address
   ? { address: SNCF_Address }
-  : T extends SNCF_Place_Type.administrative_region
+  : T extends SNCF_Place_Type.AdministrativeRegion
     ? { administrative_region: SNCF_Admin }
-    : T extends SNCF_Place_Type.poi
+    : T extends SNCF_Place_Type.Poi
       ? { poi: SNCF_Poi }
-      : T extends SNCF_Place_Type.stop_area
+      : T extends SNCF_Place_Type.StopArea
         ? { stop_area: SNCF_StopArea }
-        : T extends SNCF_Place_Type.stop_point
+        : T extends SNCF_Place_Type.StopPoint
           ? { stop_point: SNCF_Stop }
           : never);
 
