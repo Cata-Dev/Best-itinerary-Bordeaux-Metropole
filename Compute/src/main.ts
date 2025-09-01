@@ -99,6 +99,7 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
      * Should NOT be called multiple times in parallel, i.e., wait for the previous refresh to resolve
      */
     refreshData: async (which: (keyof Message<"dataUpdate">["data"])[] = allDataUpdates) => {
+      app.logger.debug(`Refreshing data for ${which.join(", ")}`);
       const data = await preComputeDataFor(which);
 
       // Wait for all workers to have ack data before resolving
