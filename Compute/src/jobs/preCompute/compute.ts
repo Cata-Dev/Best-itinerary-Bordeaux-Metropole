@@ -10,7 +10,6 @@ import TBMScheduledRoutesModelInit, {
 import TBMSchedulesInit, { dbTBM_Schedules_rt } from "@bibm/data/models/TBM/TBM_schedules.model";
 import TBMStopsModelInit, { dbTBM_Stops } from "@bibm/data/models/TBM/TBM_stops.model";
 import { DocumentType } from "@typegoose/typegoose";
-import { writeFileSync } from "node:fs";
 import { sep } from "node:path";
 import { parentPort } from "node:worker_threads";
 import { RAPTORData as RAPTORDataClass, SharedRAPTORData, sharedTimeIntOrderLow, TimeScal } from "raptor";
