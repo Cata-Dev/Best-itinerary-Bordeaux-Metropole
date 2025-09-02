@@ -4,11 +4,14 @@ import "core-js/features/reflect";
 import { Logger } from "@bibm/common/logger";
 import { ReadonlyDeep } from "@bibm/common/types";
 import graphApproachedPointsModelInit, {
+  approachedStopName,
   GraphApproachedPoints,
+  PathStep,
+  Providers,
 } from "@bibm/data/models/Compute/GraphApproachedPoints.model";
-import { approachedStopName, PathStep } from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+import SNCFStopsModelInit, { dbSNCF_Stops } from "@bibm/data/models/SNCF/SNCF_stops.model";
 import sectionsModelInit from "@bibm/data/models/TBM/sections.model";
-import stopsModelInit, { dbTBM_Stops } from "@bibm/data/models/TBM/TBM_stops.model";
+import TBMStopsModelInit, { dbTBM_Stops } from "@bibm/data/models/TBM/TBM_stops.model";
 import { WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
 import { sep } from "node:path";
 import { parentPort, workerData } from "node:worker_threads";
@@ -20,8 +23,9 @@ import { exportWGraph, importWGraph } from "../../utils/graph";
 import { initDB } from "../../utils/mongoose";
 import { makeComputeFpData } from "./computeFp";
 
-const stopProjection = { _id: 1, coords: 1 } satisfies Partial<Record<keyof dbTBM_Stops, 1>>;
-type dbStops = Pick<dbTBM_Stops, keyof typeof stopProjection>;
+const stopProjection = { _id: 1, coords: 1 } satisfies Partial<Record<keyof dbTBM_Stops, 1>> &
+  Partial<Record<keyof dbSNCF_Stops, 1>>;
+type dbStops = Pick<dbTBM_Stops | dbSNCF_Stops, keyof typeof stopProjection>;
 interface StopOverwritten {
   // Remove it
   _id?: never;
@@ -36,7 +40,8 @@ if (parentPort) {
     logger.log("Making pre-computed computePTN job data...");
 
     const sourceDataDB = await initDB({ ...app, logger }, app.config.sourceDB);
-    const stopsModel = stopsModelInit(sourceDataDB);
+    const TBMStopsModel = TBMStopsModelInit(sourceDataDB);
+    const SNCFStopsModel = SNCFStopsModelInit(sourceDataDB);
     const sectionsModel = sectionsModelInit(sourceDataDB);
     const graphApproachedPointsModel = graphApproachedPointsModelInit(sourceDataDB);
 
@@ -45,18 +50,24 @@ if (parentPort) {
     const mappedSegments = importMappedSegments(mappedSegmentsData);
 
     // Make required data
-    const stops = new Map<dbStops["_id"], Stop>(
-      (
-        await stopsModel
-          .find(
-            {
-              $and: [{ coords: { $not: { $elemMatch: { $eq: Infinity } } } }],
-            },
-            stopProjection,
-          )
-          .lean()
-      ).map((s) => [s._id, { coords: s.coords }]),
-    );
+    const stops = new Map<ReturnType<typeof approachedStopName<dbStops["_id"]>>, Stop>([
+      ...(
+        await TBMStopsModel.find(
+          {
+            $and: [{ coords: { $not: { $elemMatch: { $eq: Infinity } } } }],
+          },
+          stopProjection,
+        ).lean()
+      ).map((s) => [approachedStopName(Providers.TBM, s._id), { coords: s.coords }] as const),
+      ...(
+        await SNCFStopsModel.find(
+          {
+            $and: [{ coords: { $not: { $elemMatch: { $eq: Infinity } } } }],
+          },
+          stopProjection,
+        ).lean()
+      ).map((s) => [approachedStopName(Providers.SNCF, s._id), { coords: s.coords }] as const),
+    ]);
 
     // Make graph
     const graph = importWGraph(footGraphData) as WeightedGraph<PathStep>;
@@ -65,8 +76,10 @@ if (parentPort) {
     logger.debug("Approaching stops in foot graph...");
     const sectionsUpdated =
       (await sectionsModel.find({}).sort({ updatedAt: -1 }).limit(1))[0]?.updatedAt?.getTime() ?? -Infinity;
-    const stopsUpdated =
-      (await stopsModel.find({}).sort({ updatedAt: -1 }).limit(1))[0]?.updatedAt?.getTime() ?? -Infinity;
+    const stopsUpdated = Math.max(
+      (await TBMStopsModel.find({}).sort({ updatedAt: -1 }).limit(1))[0]?.updatedAt?.getTime() ?? -Infinity,
+      (await SNCFStopsModel.find({}).sort({ updatedAt: -1 }).limit(1))[0]?.updatedAt?.getTime() ?? -Infinity,
+    );
     const graphApproachedPointsUpdated =
       (
         await graphApproachedPointsModel.find({ type: "as" }).sort({ updatedAt: -1 }).limit(1)
@@ -78,18 +91,12 @@ if (parentPort) {
         toTarget: number,
         fromTarget: number,
       ][] = [];
-      for (const [stopId, { coords }] of stops) {
+      for (const [asName, { coords }] of stops) {
         const ap = approachPoint(mappedSegments, coords);
         if (!ap) continue;
 
-        const newNodeName = approachedStopName(stopId);
-        const [distanceToTarget, distanceFromTarget] = refreshWithApproachedPoint(
-          edges,
-          graph,
-          newNodeName,
-          ap,
-        );
-        approachedPoints.push([newNodeName, ap, distanceToTarget, distanceFromTarget]);
+        const [distanceToTarget, distanceFromTarget] = refreshWithApproachedPoint(edges, graph, asName, ap);
+        approachedPoints.push([asName, ap, distanceToTarget, distanceFromTarget]);
       }
 
       await graphApproachedPointsModel.deleteMany({ type: "as" });
@@ -118,8 +125,7 @@ if (parentPort) {
       for await (const connection of graphApproachedPointsModel.find({ type: "as" }).cursor())
         refreshWithApproachedPoint(edges, graph, connection.target, [
           Point.import(
-            stops.get(parseInt((connection.target as ReturnType<typeof approachedStopName>).substring(3)))!
-              .coords,
+            stops.get(connection.target as ReturnType<typeof approachedStopName<dbStops["_id"]>>)!.coords,
           ),
           Point.import(connection.approachedCoords),
           connection.edge as Exclude<ReturnType<typeof approachPoint>, null>[2],
@@ -140,6 +146,6 @@ if (parentPort) {
 }
 
 export type makeComputePTNData = (computeFpData: ReturnType<makeComputeFpData>) => {
-  stops: Map<dbStops["_id"], Stop>;
+  stops: Map<ReturnType<typeof approachedStopName<dbStops["_id"]>>, Stop>;
   footPTNGraphData: ReturnType<typeof exportWGraph<PathStep>>;
 };

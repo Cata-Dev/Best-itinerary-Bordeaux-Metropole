@@ -1,11 +1,10 @@
 import { Duration } from "@bibm/common/benchmark";
 import { Coords } from "@bibm/common/geographics";
+import { approachedStopName, PathStep } from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import nonScheduledRoutesModelInit, {
-  approachedStopName,
   dbFootPaths,
   dbFootPathsModel,
-  PathStep,
-} from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+} from "@bibm/data/models/Compute/NonScheduledRoutes.model";
 import { dbSections } from "@bibm/data/models/TBM/sections.model";
 import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
 import { unpackGraphNode, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
@@ -205,28 +204,22 @@ export default async function (
       let stopsTreatedCount = 0;
       let NSRInsertedCount = 0;
       let lastChunkInsertLogTime = Date.now();
-
-      for (const stopId of stops.keys()) {
-        const [dist, prev] = Dijkstra(
-          footPTNGraph,
-          [approachedStopName(stopId) as unpackGraphNode<typeof footPTNGraph>],
-          {
-            maxCumulWeight: maxDist,
-          },
-        );
+      for (const asName of stops.keys()) {
+        const [dist, prev] = Dijkstra(footPTNGraph, [asName as PathStep], {
+          maxCumulWeight: maxDist,
+        });
 
         const toInsert = Array.from(stops.keys()).reduce<dbFootPaths[]>((acc, to) => {
-          if (to === stopId) return acc;
+          if (to === asName) return acc;
 
-          const stopNode = approachedStopName(to);
-          const distance = dist.get(stopNode);
+          const distance = dist.get(to);
           if (distance === undefined || distance === Infinity) return acc;
 
           acc.push({
-            from: stopId,
+            from: asName,
             to,
             distance,
-            path: getFullPaths ? tracePath(prev, stopNode) : undefined,
+            path: getFullPaths ? tracePath(prev, to) : undefined,
           });
 
           return acc;
