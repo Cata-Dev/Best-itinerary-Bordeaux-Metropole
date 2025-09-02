@@ -92,7 +92,7 @@
     "@types/node": "22",
     "cross-env": "^7.0.3",
     "eslint": "^9.34.0",
-    "mocha": "^11.7.1",
+    "mocha": "^11.7.2",
     "mongodb": "^6.18.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
