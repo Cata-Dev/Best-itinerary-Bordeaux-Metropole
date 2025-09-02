@@ -418,3 +418,5 @@ export default function (data: ReturnType<makeComputeData>) {
 
   return { init, updateData };
 }
+
+export { journeyDBFormatter, unmapRAPTORStop };
