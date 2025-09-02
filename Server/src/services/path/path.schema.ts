@@ -32,6 +32,9 @@ export const pathSchema = Type.Union([
   Type.Intersect([pathSchemaBase, Type.Object({ type: Type.Literal(Transport.TBM), line: Type.Number() })], {
     additionalProperties: false,
   }),
+  Type.Intersect([pathSchemaBase, Type.Object({ type: Type.Literal(Transport.SNCF), line: Type.String() })], {
+    additionalProperties: false,
+  }),
 ]);
 export type Path = Static<typeof pathSchema>;
 export const pathValidator = getValidator(pathSchema, dataValidator);
@@ -79,7 +82,7 @@ export const pathQuerySchema = Type.Union([
     Type.Object(
       {
         // Line route ID
-        line: Type.Number(),
+        line: Type.Union([Type.Number(), Type.String()]),
         // Stop IDs
         from: Type.Number(),
         to: Type.Number(),

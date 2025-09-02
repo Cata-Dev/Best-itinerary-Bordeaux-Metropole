@@ -28,6 +28,7 @@ function hasData(obj: unknown): obj is { data: unknown } {
 
 import { mapAsync } from "@bibm/common/async";
 import { JobData } from "@bibm/compute/lib/jobs";
+import NonScheduledRoutesModelInit from "@bibm/data/models/Compute/NonScheduledRoutes.model";
 import resultModelInit, {
   dbComputeResult,
   isJourneyStepFoot,
@@ -35,20 +36,36 @@ import resultModelInit, {
   isLocationAddress,
   isLocationSNCF,
   isLocationTBM,
+  isPointAddress,
+  isPointSNCFStop,
+  isPointTBMStop,
+  isRouteSNCF,
+  isRouteTBM,
   JourneyStepFoot,
   JourneyStepVehicle,
+  PointBase,
+  SNCFRoute,
+  SNCFStopPoint,
+  TBMRoute,
+  TBMStopPoint,
 } from "@bibm/data/models/Compute/result.model";
 import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
+import SNCFScheduledRoutesModelInit, {
+  dbSNCF_ScheduledRoutes,
+} from "@bibm/data/models/SNCF/SNCFScheduledRoutes.model";
 import AddressesModelInit, { dbAddresses } from "@bibm/data/models/TBM/addresses.model";
-import NonScheduledRoutesModelInit from "@bibm/data/models/TBM/NonScheduledRoutes.model";
 import TBMLinesModelInit from "@bibm/data/models/TBM/TBM_lines.model";
 import TBMLinesRoutesModelInit from "@bibm/data/models/TBM/TBM_lines_routes.model";
-import TBMSchedulesModelInit from "@bibm/data/models/TBM/TBM_schedules.model";
+import TBMSchedulesModelInit, { dbTBM_Schedules_rt } from "@bibm/data/models/TBM/TBM_schedules.model";
 import TBMStopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
-import TBMScheduledRoutesModelInit from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
-import { isDocument } from "@typegoose/typegoose";
+import TBMScheduledRoutesModelInit, {
+  dbTBM_ScheduledRoutes,
+} from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
+import { isDocument, ReturnModelType } from "@typegoose/typegoose";
 // To force TypeScript detect "compute" as a JobName
+import { UnpackRefType } from "@bibm/common/types";
 import "@bibm/compute/lib/jobs/compute";
+import { dbSNCF_Schedules } from "@bibm/data/models/SNCF/SNCF_schedules.model";
 
 function formatAddress(addressDoc: dbAddresses) {
   return `${addressDoc.numero} ${"rep" in addressDoc ? addressDoc.rep + " " : ""}${addressDoc.nom_voie} ${addressDoc.commune}`;
@@ -68,6 +85,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
   private readonly SNCFStopsModel: ReturnType<typeof SNCFStopsModelInit>;
   private readonly NonScheduledRoutesModel: ReturnType<typeof NonScheduledRoutesModelInit>;
   private readonly TBMScheduledRoutesModel: ReturnType<typeof TBMScheduledRoutesModelInit>;
+  private readonly SNCFScheduledRoutesModel: ReturnType<typeof SNCFScheduledRoutesModelInit>;
 
   constructor(public options: JourneyServiceOptions) {
     this.app = options.app;
@@ -80,6 +98,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
     this.SNCFStopsModel = SNCFStopsModelInit(this.app.get("sourceDBConn"));
     this.NonScheduledRoutesModel = NonScheduledRoutesModelInit(this.app.get("sourceDBConn"));
     this.TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(this.app.get("sourceDBConn"));
+    this.SNCFScheduledRoutesModel = SNCFScheduledRoutesModelInit(this.app.get("sourceDBConn"));
   }
 
   private async populateLocation(loc: dbComputeResult["from"]) {
@@ -91,9 +110,23 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
           ? (await this.SNCFStopsModel.findById(loc.id).lean())?.name
           : undefined;
 
-    if (populatedLoc === undefined) throw new GeneralError("Could not populate journey.");
+    if (populatedLoc === undefined) throw new GeneralError("Could not populate location.");
 
     return populatedLoc;
+  }
+
+  private async populatePoint(point: PointBase) {
+    const populatedPoint = isPointAddress(point)
+      ? formatAddress((await this.AddressesModel.findById(point.id).lean())!)
+      : isPointTBMStop(point)
+        ? (await this.TBMStopsModel.findById(point.id).lean())?.libelle
+        : isPointSNCFStop(point)
+          ? (await this.SNCFStopsModel.findById(point.id).lean())?.name
+          : undefined;
+
+    if (populatedPoint === undefined) throw new GeneralError("Could not populate point.");
+
+    return populatedPoint;
   }
 
   private populateResult(result: dbComputeResult): Promise<Journey["paths"]> {
@@ -112,12 +145,8 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
               i === arr.length - 1
                 ? await this.populateLocation(result.to)
                 : isJourneyStepFoot(js)
-                  ? typeof js.transfer.to === "number"
-                    ? (await this.TBMStopsModel.findById(js.transfer.to).lean())?.libelle
-                    : js.transfer.to
-                  : typeof arr[i + 1].boardedAt === "number"
-                    ? (await this.TBMStopsModel.findById(arr[i + 1].boardedAt).lean())?.libelle
-                    : arr[i + 1].boardedAt.toString();
+                  ? await this.populatePoint(js.transfer.to)
+                  : await this.populatePoint(arr[i + 1].boardedAt);
 
             if (!to) throw new GeneralError("Could not populate journey.");
 
@@ -143,32 +172,55 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             if (!isJourneyStepVehicle(js))
               throw new GeneralError("Unexpected error while populating journey");
 
-            const scheduledRoute = await this.TBMScheduledRoutesModel.findById(js.route).lean();
+            const scheduledRouteModel = isRouteTBM(js.route)
+              ? this.TBMScheduledRoutesModel
+              : isRouteSNCF(js.route)
+                ? this.SNCFScheduledRoutesModel
+                : null;
+            if (!scheduledRouteModel) throw new GeneralError("Unexpected error while populating journey");
+
+            const scheduledRoute = await (
+              scheduledRouteModel as ReturnModelType<
+                typeof dbTBM_ScheduledRoutes | typeof dbSNCF_ScheduledRoutes
+              >
+            )
+              .findById((js.route as TBMRoute | SNCFRoute).id)
+              .lean();
             if (!scheduledRoute)
               throw new GeneralError("Unable to retrieve scheduled route while populating journey");
 
-            // Can only be first journey step of journey, ignored in `arr` by `slice(1)`
-            if (typeof js.boardedAt === "string")
-              throw new GeneralError("Unexpected error while populating journey");
+            const scheduleModel = isPointTBMStop(js.boardedAt)
+              ? this.TBMSchedulesModel
+              : isPointSNCFStop(js.boardedAt)
+                ? this.SNCFScheduledRoutesModel
+                : null;
+            if (!scheduleModel) throw new GeneralError("Unexpected error while populating journey");
 
-            const schedule = await this.TBMSchedulesModel.findById(
-              scheduledRoute.trips[js.tripIndex].schedules[scheduledRoute.stops.indexOf(js.boardedAt)],
-            ).lean();
+            const schedule = await (
+              scheduleModel as ReturnModelType<typeof dbTBM_Schedules_rt | typeof dbSNCF_Schedules>
+            )
+              .findById(
+                scheduledRoute.trips[js.tripIndex].schedules[
+                  scheduledRoute.stops.indexOf(
+                    (js.boardedAt as TBMStopPoint | SNCFStopPoint).id as UnpackRefType<
+                      (TBMStopPoint | SNCFStopPoint)["id"]
+                    >,
+                  )
+                ],
+              )
+              .lean();
             if (schedule === null)
               throw new GeneralError("Unable to retrieve realtime schedule while populating journey");
 
-            let theo = schedule.hor_theo.getTime() || Infinity;
-            let estime = schedule.hor_estime.getTime() || schedule.hor_app.getTime() || Infinity;
+            const dep_int = schedule.dep_int_hor.map((d) => d.getTime()) as [number, number];
 
-            // Prevent upper bound to be MAX_SAFE
-            if (theo < Infinity && estime === Infinity) estime = theo;
-            if (estime < Infinity && theo === Infinity) theo = estime;
-
-            const int: [number, number] = theo < estime ? [theo, estime] : [estime, theo];
-
-            const lineRoute = await this.TBMLinesRoutesModel.findById(js.route, undefined, {
-              populate: ["rs_sv_ligne_a"],
-            });
+            const lineRoute = await this.TBMLinesRoutesModel.findById(
+              (js.route as TBMRoute | SNCFRoute).id,
+              undefined,
+              {
+                populate: ["rs_sv_ligne_a"],
+              },
+            );
             if (!lineRoute) throw new GeneralError("Unable to retrieve line route while populating journey");
             if (!isDocument(lineRoute.rs_sv_ligne_a))
               throw new GeneralError("Unable to retrieve line while populating journey");
@@ -176,9 +228,9 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             return {
               to,
               type: Transport.TBM,
-              departure: int,
+              departure: dep_int,
               // Arrival - departure, in sec
-              duration: [(js.time[0] - int[0]) / 1e3, (js.time[1] - int[1]) / 1e3],
+              duration: [(js.time[0] - dep_int[0]) / 1e3, (js.time[1] - dep_int[1]) / 1e3],
               details: {
                 direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
                 line: lineRoute.rs_sv_ligne_a.libelle,

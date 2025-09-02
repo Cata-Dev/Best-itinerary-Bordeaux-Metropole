@@ -3,6 +3,7 @@ import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import { mapAsync } from "@bibm/common/async";
 import { Coords } from "@bibm/common/geographics";
+import { UnpackRefType } from "@bibm/common/types";
 import { JobResult } from "@bibm/compute/lib/jobs";
 import footGraphEdgeModelInit from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import resultModelInit, {
@@ -12,6 +13,10 @@ import resultModelInit, {
   isLocationAddress,
   isLocationSNCF,
   isLocationTBM,
+  isPointSNCFStop,
+  isPointTBMStop,
+  isRouteSNCF,
+  isRouteTBM,
 } from "@bibm/data/models/Compute/result.model";
 import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
 import AddressesModelInit from "@bibm/data/models/TBM/addresses.model";
@@ -319,10 +324,12 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                         i === 1
                           ? // First effective journey step (very first is a base journey step), source comes from "from"
                             await this.getCoords(journey.from)
-                          : // Source comes from "boardedAt", must be a stop id by construction
-                            // because it's a string <=> it's source or target
-                            (await this.TBMStopsModel.findById(journeyStep.boardedAt as number).lean())
-                              ?.coords;
+                          : // Source comes from "boardedAt", must be a stop by construction
+                            isPointTBMStop(journeyStep.boardedAt)
+                            ? (await this.TBMStopsModel.findById(journeyStep.boardedAt.id).lean())?.coords
+                            : isPointSNCFStop(journeyStep.boardedAt)
+                              ? (await this.SNCFStopsModel.findById(journeyStep.boardedAt.id).lean())?.coords
+                              : null;
 
                       if (!from) throw new GeneralError("Unable to retrieve journey foot path source.");
 
@@ -330,10 +337,13 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                         i === arr.length - 1
                           ? // Last journey step, target comes from "to"
                             await this.getCoords(journey.to)
-                          : // Target comes from "to", must be a stop id by construction
-                            // because it's a string <=> it's source or target
-                            (await this.TBMStopsModel.findById(journeyStep.transfer.to as number).lean())
-                              ?.coords;
+                          : // Target comes from "to", must be a stop  by construction
+                            isPointTBMStop(journeyStep.transfer.to)
+                            ? (await this.TBMStopsModel.findById(journeyStep.transfer.to.id).lean())?.coords
+                            : isPointSNCFStop(journeyStep.transfer.to)
+                              ? (await this.SNCFStopsModel.findById(journeyStep.transfer.to.id).lean())
+                                  ?.coords
+                              : null;
 
                       if (!to) throw new GeneralError("Unable to retrieve journey foot path destination.");
 
@@ -345,8 +355,13 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                       ...acc,
                       (async () => {
                         const from =
-                          // Must come from stop <=> stop id <=> number
-                          journeyStep.boardedAt as number;
+                          // Must come from stop <=> stop id
+                          isPointTBMStop(journeyStep.boardedAt)
+                            ? (journeyStep.boardedAt.id as UnpackRefType<typeof journeyStep.boardedAt.id>)
+                            : isPointSNCFStop(journeyStep.boardedAt)
+                              ? (journeyStep.boardedAt.id as UnpackRefType<typeof journeyStep.boardedAt.id>)
+                              : null;
+                        if (!from) throw new GeneralError("Unexpected address vehicle source stop.");
 
                         let to: number;
                         if (i < arr.length - 1) {
@@ -358,18 +373,35 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                             // Must go to stop <=> stop id <=> number
                             nextJourneyStep?.boardedAt as number;
                         } else {
-                          if (!isLocationTBM(journey.to))
+                          if (isLocationTBM(journey.to))
+                            to = journey.to.id as UnpackRefType<typeof journey.to.id>;
+                          else if (isLocationSNCF(journey.to))
+                            to = journey.to.id as UnpackRefType<typeof journey.to.id>;
+                          else if (isLocationAddress(journey.to))
                             throw new GeneralError("Unexpected journey construction.");
-
-                          to = journey.to.id as number;
+                          else
+                            throw new GeneralError(
+                              "Unexpected journey construction (unknown location type).",
+                            );
                         }
 
-                        if (isDocument(journeyStep.route))
-                          throw new GeneralError("Unexpected populated journey step.");
-
-                        return await this.get("tbm", {
-                          query: { from, to, line: journeyStep.route } satisfies PathParams["query"],
-                        } as ServiceParams);
+                        if (isRouteTBM(journeyStep.route))
+                          return await this.get("tbm", {
+                            query: {
+                              from,
+                              to,
+                              line: journeyStep.route.id as UnpackRefType<typeof journeyStep.route.id>,
+                            } satisfies PathParams["query"],
+                          } as ServiceParams);
+                        else if (isRouteSNCF(journeyStep.route))
+                          return await this.get("sncf", {
+                            query: {
+                              from,
+                              to,
+                              line: journeyStep.route.id as UnpackRefType<typeof journeyStep.route.id>,
+                            } satisfies PathParams["query"],
+                          } as ServiceParams);
+                        else throw new GeneralError("Unexpected journey construction (unknown route type).");
                       })(),
                     ]
                   : acc,
@@ -398,6 +430,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
       case "tbm": {
         if (!("line" in params.query)) throw new BadRequest(`Missing required parameter(s).`);
         const { line, from, to } = params.query;
+        if (typeof line !== "number") throw new BadRequest("SNCF line must be a string.");
 
         const links = await this.TBMLinkLineRoutesSectionsModel.find({ rs_sv_chem_l: line }, undefined, {
           populate: { path: "rs_sv_tronc_l", model: this.TBMRouteSectionsModel },
@@ -435,6 +468,20 @@ export class PathService<ServiceParams extends PathParams = PathParams>
 
             return acc.concat([section.rs_sv_tronc_l.coords]);
           }, []),
+        };
+      }
+
+      case "sncf": {
+        if (!("line" in params.query)) throw new BadRequest(`Missing required parameter(s).`);
+        const { line } = params.query;
+        if (typeof line !== "string") throw new BadRequest("SNCF line must be a string.");
+
+        return {
+          type: Transport.SNCF,
+          line,
+          steps:
+            // Not storing SNCF routes paths for now
+            [],
         };
       }
 
