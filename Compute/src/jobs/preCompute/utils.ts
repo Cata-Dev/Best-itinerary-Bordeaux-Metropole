@@ -14,7 +14,10 @@ function makeMapId<Id extends string | number>(
       let mappedId = idsMappingF.get(fullId);
       if (mappedId !== undefined) return mappedId;
 
-      mappedId = idsRanges[provider][0] + idsRanges[provider][2]++;
+      if (idsRanges[provider][2] > idsRanges[provider][1] - idsRanges[provider][0])
+        throw new Error(`ID mapping out of range for provider ${provider}`);
+
+      mappedId = idsRanges[provider][0] + ++idsRanges[provider][2];
       idsMappingF.set(fullId, mappedId);
       idsMappingB.set(mappedId, [id, provider]);
 
