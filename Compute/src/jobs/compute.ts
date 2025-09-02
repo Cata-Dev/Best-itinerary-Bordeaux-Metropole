@@ -4,6 +4,7 @@ import { initDB } from "../utils/mongoose";
 import "core-js/features/reflect";
 
 import ResultModelInit, {
+  AddressPoint,
   Journey,
   JourneyStepBase,
   JourneyStepFoot,
@@ -12,11 +13,18 @@ import ResultModelInit, {
   LocationAddress,
   LocationSNCF,
   LocationTBM,
-  LocationType,
+  PointType,
+  RouteType,
+  SNCFRoute,
+  SNCFStopPoint,
+  TBMRoute,
+  TBMStopPoint,
   dbComputeResult,
 } from "@bibm/data/models/Compute/result.model";
+import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
+import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
-import stopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
+import TBMStopsModelInit from "@bibm/data/models/TBM/TBM_stops.model";
 import { defaultRAPTORRunSettings } from "@bibm/data/values/RAPTOR/index";
 import { JourneyQuery } from "@bibm/server";
 import { DocumentType } from "@typegoose/typegoose";
@@ -51,19 +59,37 @@ function unmapRAPTORStop(
   ps: [number, JobData<"compute">[0]["id"]],
   pt: [number, JobData<"compute">[1]["id"]],
   unmapStopId: ReturnType<typeof makeMapId<ProviderStopId>>[1],
-  stopId: Extract<
+  mappedPointId: Extract<
     ReturnType<McSharedRAPTOR<InternalTimeInt, never, never>["getBestJourneys"]>[number][number][number],
     { boardedAt: unknown }
   >["boardedAt"],
 ) {
-  // If stopId is a string, it must have been ps or pt (which have been serialized)
-  let stop = null;
-  if (typeof stopId === "string") {
-    const stopInt = parseInt(stopId.substring(3));
-    stop = stopInt === ps[0] ? ps[1] : stopInt === pt[0] ? pt[1] : null;
-  } else stop = unmapStopId(stopId)?.[0] ?? null;
+  // If mappedPointId is a string, it must have been ps or pt (which have been serialized)
+  if (typeof mappedPointId === "string") {
+    const stopInt = parseInt(mappedPointId.substring(3));
+    const addressId = stopInt === ps[0] ? ps[1] : stopInt === pt[0] ? pt[1] : null;
+    return addressId === null
+      ? null
+      : ({
+          type: PointType.Address,
+          id: addressId,
+        } satisfies AddressPoint);
+  }
 
-  return stop;
+  const stop = unmapStopId(mappedPointId);
+  if (!stop) return null;
+
+  return stop[1] === Providers.TBM
+    ? ({
+        type: PointType.TBMStop,
+        id: stop[0],
+      } satisfies TBMStopPoint)
+    : stop[1] === Providers.SNCF
+      ? ({
+          type: PointType.SNCFStop,
+          id: stop[0],
+        } satisfies SNCFStopPoint)
+      : null;
 }
 
 type DBJourney = Omit<Journey, "steps"> & {
@@ -98,14 +124,28 @@ function journeyDBFormatter<V, CA extends [V, string][]>(
 
         if ("route" in js) {
           if (typeof js.route.id === "string") throw new Error("Invalid route to retrieve.");
-          const route = unmapRouteId(js.route.id);
-          if (route === null) throw new Error(`Unable to unmap RAPTOR route with ID ${js.route.id}`);
+          const unmappedRoute = unmapRouteId(js.route.id);
+          if (unmappedRoute === null) throw new Error(`Unable to unmap RAPTOR route with ID ${js.route.id}`);
+
+          const route =
+            unmappedRoute[1] === Providers.TBM
+              ? ({
+                  type: RouteType.TBM,
+                  id: unmappedRoute[0] as number,
+                } satisfies TBMRoute)
+              : unmappedRoute[1] === Providers.SNCF
+                ? ({
+                    type: RouteType.SNCF,
+                    id: unmappedRoute[0] as string,
+                  } satisfies SNCFRoute)
+                : null;
+          if (!route) throw new Error(`Unexpected route provider ${unmappedRoute[1]}`);
 
           return {
             boardedAt,
             time: js.label.time,
             tripIndex: js.tripIndex,
-            route: route[0],
+            route,
             type: JourneyStepType.Vehicle,
           } satisfies JourneyStepVehicle;
         }
@@ -160,7 +200,8 @@ export default function (data: ReturnType<makeComputeData>) {
     const resultModel = ResultModelInit(dataDB);
 
     const sourceDataDB = await initDB(app, app.config.sourceDB);
-    const stops = stopsModelInit(sourceDataDB);
+    const TBMStopsModel = TBMStopsModelInit(sourceDataDB);
+    const SNCFStopsModel = SNCFStopsModelInit(sourceDataDB);
 
     return async (job) => {
       const {
@@ -213,12 +254,17 @@ export default function (data: ReturnType<makeComputeData>) {
         });
 
         psId = SharedRAPTORData.serializeId(psIdNumber);
-      } else {
-        const stopId = (await stops.findOne({ coords: ps.coords }))?._id ?? -1;
+      } else if (ps.type === TBMEndpoints.Stops) {
+        const stopId = (await TBMStopsModel.findOne({ coords: ps.coords }))?._id ?? -1;
         if (stopId === -1) throw new Error("Cannot find ps");
 
         psId = mapStopId(Providers.TBM, stopId);
-      }
+      } else if (ps.type === SNCFEndpoints.Stops) {
+        const stopId = (await SNCFStopsModel.findOne({ coords: ps.coords }))?._id ?? -1;
+        if (stopId === -1) throw new Error("Cannot find ps");
+
+        psId = mapStopId(Providers.SNCF, stopId);
+      } else throw new Error(`Unknown location type ${JSON.stringify(ps)}`);
 
       // Target point ID generation
       let ptId: Parameters<typeof RAPTORData.stops.get>[0] = -1;
@@ -255,13 +301,17 @@ export default function (data: ReturnType<makeComputeData>) {
         });
 
         ptId = SharedRAPTORData.serializeId(ptIdNumber);
-      } else {
-        const stopId = (await stops.findOne({ coords: pt.coords }))?._id ?? -1;
+      } else if (pt.type === TBMEndpoints.Stops) {
+        const stopId = (await TBMStopsModel.findOne({ coords: pt.coords }))?._id ?? -1;
         if (stopId === -1) throw new Error("Cannot find pt");
 
         ptId = mapStopId(Providers.TBM, stopId);
-      }
-      if (ptId === -1) throw new Error("Cannot find pt");
+      } else if (pt.type === SNCFEndpoints.Stops) {
+        const stopId = (await SNCFStopsModel.findOne({ coords: pt.coords }))?._id ?? -1;
+        if (stopId === -1) throw new Error("Cannot find pt");
+
+        ptId = mapStopId(Providers.SNCF, stopId);
+      } else throw new Error(`Unknown location type ${JSON.stringify(pt)}`);
 
       if (ps.type === TBMEndpoints.Addresses && pt.type === TBMEndpoints.Addresses) {
         // Must have been computed inside children jobs
@@ -336,21 +386,21 @@ export default function (data: ReturnType<makeComputeData>) {
         from:
           ps.type === TBMEndpoints.Addresses
             ? ({
-                type: LocationType.Address,
+                type: PointType.Address,
                 id: ps.id,
               } satisfies LocationAddress)
             : ps.type === TBMEndpoints.Stops
-              ? ({ type: LocationType.TBM, id: ps.id } satisfies LocationTBM)
-              : ({ type: LocationType.SNCF, id: ps.id } satisfies LocationSNCF),
+              ? ({ type: PointType.TBMStop, id: ps.id } satisfies LocationTBM)
+              : ({ type: PointType.SNCFStop, id: ps.id } satisfies LocationSNCF),
         to:
           pt.type === TBMEndpoints.Addresses
             ? ({
-                type: LocationType.Address,
+                type: PointType.Address,
                 id: pt.id,
               } satisfies LocationAddress)
             : pt.type === TBMEndpoints.Stops
-              ? ({ type: LocationType.TBM, id: pt.id } satisfies LocationTBM)
-              : ({ type: LocationType.SNCF, id: pt.id } satisfies LocationSNCF),
+              ? ({ type: PointType.TBMStop, id: pt.id } satisfies LocationTBM)
+              : ({ type: PointType.SNCFStop, id: pt.id } satisfies LocationSNCF),
         departureTime: departureDate,
         journeys: bestJourneys
           .flat()
