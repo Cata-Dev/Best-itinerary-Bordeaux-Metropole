@@ -6,19 +6,23 @@ type KeyOfMap<M extends Map<unknown, unknown>> = M extends Map<infer K, unknown>
 type Satisfy<B, T extends B> = T;
 
 type UnpackRefType<T> =
-  T extends Ref<infer D>
-    ? D extends {
-        _id?: RefType;
-      }
-      ? D["_id"]
-      : never
-    : T extends Ref<infer D>[]
-      ? D extends {
-          _id?: RefType;
-        }
-        ? D["_id"][]
-        : never
-      : never;
+  T extends Ref<unknown, infer RT>
+    ? RT
+    : T extends Ref<unknown, infer RT>[]
+      ? RT
+      : T extends Ref<infer D>
+        ? D extends {
+            _id?: RefType;
+          }
+          ? D["_id"]
+          : never
+        : T extends Ref<infer D>[]
+          ? D extends {
+              _id?: RefType;
+            }
+            ? D["_id"][]
+            : never
+          : never;
 
 type PopulateRef<T> = T extends Ref<infer D> ? D : T extends Ref<infer D>[] ? D[] : never;
 
