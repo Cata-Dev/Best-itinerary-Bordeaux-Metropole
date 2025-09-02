@@ -1,4 +1,4 @@
-import { main } from "@bibm/compute/lib/main";
+import { main } from "@bibm/compute/main";
 import { HookContext, NextFunction } from "./declarations";
 import { logger } from "./logger";
 import { cpus } from "node:os";

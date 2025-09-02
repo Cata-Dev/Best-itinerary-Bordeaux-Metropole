@@ -4,7 +4,7 @@ import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 import { mapAsync } from "@bibm/common/async";
 import { Coords } from "@bibm/common/geographics";
 import { UnpackRefType } from "@bibm/common/types";
-import { JobResult } from "@bibm/compute/lib/jobs";
+import { JobResult } from "@bibm/compute/jobs/index";
 import footGraphEdgeModelInit from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import resultModelInit, {
   dbComputeResult,

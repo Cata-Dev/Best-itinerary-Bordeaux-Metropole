@@ -27,7 +27,7 @@ function hasData(obj: unknown): obj is { data: unknown } {
 }
 
 import { mapAsync } from "@bibm/common/async";
-import { JobData } from "@bibm/compute/lib/jobs";
+import { JobData } from "@bibm/compute/jobs/index";
 import NonScheduledRoutesModelInit from "@bibm/data/models/Compute/NonScheduledRoutes.model";
 import resultModelInit, {
   dbComputeResult,
@@ -64,7 +64,7 @@ import TBMScheduledRoutesModelInit, {
 import { isDocument, ReturnModelType } from "@typegoose/typegoose";
 // To force TypeScript detect "compute" as a JobName
 import { UnpackRefType } from "@bibm/common/types";
-import "@bibm/compute/lib/jobs/compute";
+import "@bibm/compute/jobs/compute";
 import { dbSNCF_Schedules } from "@bibm/data/models/SNCF/SNCF_schedules.model";
 
 function formatAddress(addressDoc: dbAddresses) {

@@ -7,6 +7,21 @@
     "pnpm": ">=9"
   },
   "main": "lib/main.js",
+  "exports": {
+    ".": {
+      "types": "./lib/base.d.ts",
+      "require": "./lib/base.js",
+      "default": "./lib/base.js"
+    },
+    "./*": {
+      "types": "./lib/*.d.ts",
+      "require": "./lib/*.js",
+      "default": "./lib/*.js"
+    }
+  },
+  "files": [
+    "lib/"
+  ],
   "scripts": {
     "build": "shx rm -rf lib/ && tsc -b",
     "prettier": "prettier \"**/*.ts\" --write --config ../.prettierrc",
