@@ -5,7 +5,9 @@ import SNCF_Stops, { dbSNCF_Stops } from "@bibm/data/models/SNCF/SNCF_stops.mode
 import { normalize } from "path";
 import { Application } from "../../../declarations";
 import { bulkUpsertAndPurge } from "../../../utils";
-import { Endpoint } from "../../endpoint";
+import { Endpoint, parallelHooksConstructor, sequenceHooksConstructor } from "../../endpoint";
+import { makeNSRHook } from "../../TBM/endpoints/sections.endpoint";
+import { makeSNCFSRHook } from "./SNCFScheduledRoutes.endpoint";
 
 interface SNCF_Link {
   id: string;
@@ -89,7 +91,17 @@ export default async (
         return true;
       },
       Stops,
-    ).init(),
+    )
+      .registerHook(
+        sequenceHooksConstructor(
+          () => () => app.get("computeInstance").refreshData(["compute", "computePTN"]),
+          parallelHooksConstructor(
+            makeSNCFSRHook(app, SNCFEndpoints.Stops),
+            makeNSRHook(app, SNCFEndpoints.Stops),
+          ),
+        ),
+      )
+      .init(),
   ] as const;
 };
 

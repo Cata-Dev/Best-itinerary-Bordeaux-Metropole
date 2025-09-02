@@ -180,7 +180,7 @@ export default async (
   ] as const;
 };
 
-export const makeSNCFSRHook = makeConcurrentHook<SNCFEndpoints.Schedules>(
+export const makeSNCFSRHook = makeConcurrentHook<SNCFEndpoints.Schedules | SNCFEndpoints.Stops>(
   (app) =>
     void app.externalAPIs.SNCF.endpoints[SNCFEndpoints.ScheduledRoutes]
       .fetch(true, app.get("debug"))
