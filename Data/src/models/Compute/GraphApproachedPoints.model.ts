@@ -1,13 +1,31 @@
+/* eslint-disable @typescript-eslint/no-duplicate-type-constituents */
 // ComputeResult-model.js - A mongoose model
 //
 // See http://mongoosejs.com/docs/models.html
+
+export enum Providers {
+  TBM,
+  SNCF,
+}
+
+type StopId = dbTBM_Stops["_id"] | dbSNCF_Stops["_id"];
+
+export function approachedStopName<Id extends StopId>(provider: Providers, _id: Id) {
+  return `as=${provider}-${_id}` as const;
+}
+
+export type PathStep =
+  | dbSections["rg_fv_graph_nd"]
+  | dbSections["rg_fv_graph_na"]
+  | ReturnType<typeof approachedStopName>;
 
 import { Coords } from "@bibm/common/geographics";
 import { deleteModelWithClass, getModelForClass, index, prop, Ref } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { Connection } from "mongoose";
-import { PathStep } from "../TBM/NonScheduledRoutes.model";
+import { dbSNCF_Stops } from "../SNCF/SNCF_stops.model";
 import { dbSections } from "../TBM/sections.model";
+import { dbTBM_Stops } from "../TBM/TBM_stops.model";
 
 @index({ s: 1, target: 1 }, { unique: true })
 @index({ t: 1, target: 1 }, { unique: true })

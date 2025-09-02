@@ -2,31 +2,20 @@
 //
 // See http://mongoosejs.com/docs/models.html
 
-export function approachedStopName(_id: number) {
-  return `as=${_id}` as const;
-}
-
-export type PathStep = dbSections["rg_fv_graph_nd"] | ReturnType<typeof approachedStopName>;
-
-import {
-  deleteModelWithClass,
-  getModelForClass,
-  prop,
-  type Ref,
-  type ReturnModelType,
-} from "@typegoose/typegoose";
+import { deleteModelWithClass, getModelForClass, prop, type ReturnModelType } from "@typegoose/typegoose";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
-import { dbTBM_Stops } from "./TBM_stops.model";
-import { dbSections } from "./sections.model";
+import { approachedStopName, PathStep } from "./GraphApproachedPoints.model";
 
 @modelOptions({ options: { customName: "NonScheduledRoutes" } })
 export class dbFootPaths {
-  @prop({ required: true, index: true, ref: () => dbTBM_Stops, type: () => Number })
-  public from!: Ref<dbTBM_Stops>;
+  /** It's a ref to a stop, but might be TBM, SNCF... Depends on its name */
+  @prop({ required: true, index: true, type: () => String })
+  public from!: ReturnType<typeof approachedStopName>;
 
-  @prop({ required: true, index: true, ref: () => dbTBM_Stops, type: () => Number })
-  public to!: Ref<dbTBM_Stops>;
+  /** It's a ref to a stop, but might be TBM, SNCF... Depends on its name */
+  @prop({ required: true, index: true, type: () => String })
+  public to!: ReturnType<typeof approachedStopName>;
 
   @prop({ required: true })
   public distance!: number;
