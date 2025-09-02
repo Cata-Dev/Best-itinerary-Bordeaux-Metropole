@@ -1,6 +1,4 @@
-enum Providers {
-  TBM,
-}
+import { Providers } from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 
 function makeMapId<Id extends string | number>(
   idsRanges: Record<Providers, [number, number, number]>,
