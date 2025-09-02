@@ -49,12 +49,14 @@ export default async (
             hor_theo: new Date(0),
             hor_app: new Date(0),
             hor_estime: new Date(0),
+            arr_int_hor: [new Date(0), new Date(0)],
+            dep_int_hor: [new Date(0), new Date(0)],
             realtime: true,
             etat: RtScheduleState.Realise,
             type: RtScheduleType.Regulier,
             rs_sv_arret_p: Infinity,
             rs_sv_cours_a: Infinity,
-          } as dbTBM_Schedules_rt))
+          } satisfies dbTBM_Schedules_rt))
         )._id;
 
         let tripsCount = 0;

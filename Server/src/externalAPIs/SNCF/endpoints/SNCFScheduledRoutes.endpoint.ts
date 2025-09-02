@@ -29,11 +29,15 @@ export default async (
       Infinity,
       async () => {
         const fillScheduleId = (
-          (await SNCF_SchedulesEndpointInstantiated.model.findOne({ _id: Infinity })) ??
+          (await SNCF_SchedulesEndpointInstantiated.model.findOne({ _id: `${Infinity}:${Infinity}` })) ??
           (await SNCF_SchedulesEndpointInstantiated.model.create({
             _id: `${Infinity}:${Infinity}`,
             arrival: new Date(0),
+            baseArrival: new Date(0),
             departure: new Date(0),
+            baseDeparture: new Date(0),
+            arr_int_hor: [new Date(0), new Date(0)],
+            dep_int_hor: [new Date(0), new Date(0)],
             freshness: SNCF_ScheduleFreshness.Base,
             trip: Infinity,
             stop: Infinity,
