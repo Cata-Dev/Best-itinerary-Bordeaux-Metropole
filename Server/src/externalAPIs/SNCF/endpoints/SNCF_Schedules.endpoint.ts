@@ -140,9 +140,9 @@ interface SNCF_StopDateTime {
     // Does not correspond to API doc!
     data_freshness: "realtime" | "base_schedule";
     // iso-date-times
-    base_arrival_date_time: string;
+    base_arrival_date_time?: string;
     arrival_date_time: string;
-    base_departure_date_time: string;
+    base_departure_date_time?: string;
     departure_date_time: string;
     links: SNCF_Link[];
   };
@@ -184,10 +184,31 @@ function SNCFStopDateTimeToDBSchedule(stopDateTime: SNCF_StopDateTime): dbSNCF_S
   if (!terminusFromLink) throw new Error("No terminus link found");
   const backward = stopDateTime.route.direction.stop_area.id !== terminusFromLink.id;
 
+  const arrival = parseSNCFdate(stopDateTime.stop_date_time.arrival_date_time);
+  const baseArrival = stopDateTime.stop_date_time.base_arrival_date_time
+    ? parseSNCFdate(stopDateTime.stop_date_time.base_arrival_date_time)
+    : arrival;
+  const departure = parseSNCFdate(stopDateTime.stop_date_time.departure_date_time);
+  const baseDeparture = stopDateTime.stop_date_time.base_departure_date_time
+    ? parseSNCFdate(stopDateTime.stop_date_time.base_departure_date_time)
+    : departure;
+
+  const arr_int = (baseArrival < arrival ? [baseArrival, arrival] : [arrival, baseArrival]) satisfies [
+    Date,
+    Date,
+  ];
+  const dep_int = (
+    baseDeparture < departure ? [baseDeparture, departure] : [departure, baseDeparture]
+  ) satisfies [Date, Date];
+
   return {
     _id: `${tripId}:${stopId}`,
-    arrival: parseSNCFdate(stopDateTime.stop_date_time.arrival_date_time),
-    departure: parseSNCFdate(stopDateTime.stop_date_time.departure_date_time),
+    baseArrival,
+    baseDeparture,
+    arrival,
+    departure,
+    arr_int_hor: arr_int,
+    dep_int_hor: dep_int,
     freshness:
       stopDateTime.stop_date_time.data_freshness === "realtime"
         ? SNCF_ScheduleFreshness.Realtime

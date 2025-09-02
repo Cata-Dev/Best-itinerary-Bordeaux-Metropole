@@ -27,6 +27,7 @@ import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
 import { TBMEndpoints } from ".";
+import { Schedule } from "../Compute/types";
 import { dbTBM_Stops } from "./TBM_stops.model";
 import { dbTBM_Trips } from "./TBM_trips.model";
 
@@ -50,12 +51,18 @@ export class dbTBM_Schedules extends TimeStamps {
 }
 
 @modelOptions({ options: { customName: TBMEndpoints.Schedules_rt } })
-export class dbTBM_Schedules_rt extends dbTBM_Schedules {
+export class dbTBM_Schedules_rt extends dbTBM_Schedules implements Schedule {
   @prop({ required: true })
   public hor_app!: Date;
 
   @prop({ required: true })
   public hor_estime!: Date;
+
+  @prop({ required: true })
+  public arr_int_hor!: [Date, Date];
+
+  @prop({ required: true })
+  public dep_int_hor!: [Date, Date];
 
   @prop({ required: true, enum: RtScheduleState })
   public etat!: RtScheduleState;

@@ -27,6 +27,9 @@ export type TBM_Schedule_rt = TBM_Schedule &
     tempsarret: number;
   }>;
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_epoch_timestamps_and_invalid_date
+const MAX_SAFE_DATE = new Date(8_640_000_000_000_000);
+
 export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
   const [Schedule, ScheduleRt] = TBM_Schedules(app.get("sourceDBConn"));
 
@@ -56,12 +59,28 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
         ]);
 
         const schedulesRt: dbTBM_Schedules_rt[] = rawSchedulesRt.map((scheduleRt) => {
+          const hor_theo = new Date(scheduleRt.properties.hor_theo);
+          const hor_app = new Date(scheduleRt.properties.hor_app);
+          const hor_estime = new Date(scheduleRt.properties.hor_estime);
+
+          let theo = hor_theo.getTime() !== 0 ? hor_theo : MAX_SAFE_DATE;
+          let estime =
+            hor_estime.getTime() !== 0 ? hor_estime : hor_app.getTime() !== 0 ? hor_app : MAX_SAFE_DATE;
+
+          // Prevent upper bound to be MAX_SAFE_DATE
+          if (theo.getTime() < MAX_SAFE_DATE.getTime() && estime === MAX_SAFE_DATE) estime = theo;
+          if (estime.getTime() < MAX_SAFE_DATE.getTime() && theo === MAX_SAFE_DATE) theo = estime;
+
+          const int = (theo < estime ? [theo, estime] : [estime, theo]) satisfies [Date, Date];
+
           return {
             _id: parseInt(scheduleRt.properties.gid),
             realtime: true,
-            hor_theo: new Date(scheduleRt.properties.hor_theo),
-            hor_app: new Date(scheduleRt.properties.hor_app),
-            hor_estime: new Date(scheduleRt.properties.hor_estime),
+            hor_theo,
+            hor_app,
+            hor_estime,
+            arr_int_hor: int,
+            dep_int_hor: int,
             etat: scheduleRt.properties.etat,
             type: scheduleRt.properties.type,
             rs_sv_arret_p: scheduleRt.properties.rs_sv_arret_p,

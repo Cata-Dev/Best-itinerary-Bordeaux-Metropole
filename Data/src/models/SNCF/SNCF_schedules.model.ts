@@ -18,18 +18,31 @@ import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
 import { SNCFEndpoints } from ".";
+import { Schedule } from "../Compute/types";
 import { dbSNCF_Stops } from "./SNCF_stops.model";
 
 @modelOptions({ options: { customName: SNCFEndpoints.Schedules } })
-export class dbSNCF_Schedules extends TimeStamps {
+export class dbSNCF_Schedules extends TimeStamps implements Schedule {
   @prop({ required: true })
   public _id!: string;
+
+  @prop({ required: true })
+  public baseArrival!: Date;
 
   @prop({ required: true })
   public arrival!: Date;
 
   @prop({ required: true })
+  public baseDeparture!: Date;
+
+  @prop({ required: true })
   public departure!: Date;
+
+  @prop({ required: true })
+  public arr_int_hor!: [Date, Date];
+
+  @prop({ required: true })
+  public dep_int_hor!: [Date, Date];
 
   @prop({ required: true, enum: () => SNCF_ScheduleFreshness })
   public freshness!: SNCF_ScheduleFreshness;
