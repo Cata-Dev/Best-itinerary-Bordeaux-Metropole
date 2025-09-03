@@ -13,7 +13,7 @@
     }
   },
   "dbAddress": "mongodb://0.0.0.0:27017/",
-  "sourceDB": "",
-  "computeDB": "",
+  "sourceDB": "bibm",
+  "computeDB": "bibm-compute",
   "debug": false
 }
