@@ -38,7 +38,7 @@ services:
     networks:
       - mongodb
     volumes:
-      - mongodb-data:/data/db
+      - ./data/mongodb:/data/db
     command: --quiet --logpath /dev/null
 
   redis:
@@ -47,7 +47,7 @@ services:
     networks:
       - redis
     volumes:
-      - redis-data:/data
+      - ./data/redis:/data
     environment:
       REDIS_ARGS: "--save 60 1 --loglevel warning"
 
@@ -60,7 +60,3 @@ networks:
     name: bibm-mongodb
   # Private network for redis
   redis:
-
-volumes:
-  mongodb-data:
-  redis-data:
