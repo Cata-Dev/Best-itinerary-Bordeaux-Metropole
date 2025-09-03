@@ -53,7 +53,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
             JSON.stringify({
               // ],
               etat: {
-                $neq: "REALISE",
+                $nin: ["NON_RENSEIGNE", "ANNULE"],
               },
             }),
         ]);
