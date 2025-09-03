@@ -21,7 +21,7 @@ export type TBM_Schedule = BaseTBM<{
 export type TBM_Schedule_rt = TBM_Schedule &
   BaseTBM<{
     hor_app: string;
-    hor_estime: string;
+    hor_estime?: string;
     etat: RtScheduleState;
     type: RtScheduleType;
     tempsarret: number;
@@ -61,7 +61,10 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
         const schedulesRt: dbTBM_Schedules_rt[] = rawSchedulesRt.map((scheduleRt) => {
           const hor_theo = new Date(scheduleRt.properties.hor_theo);
           const hor_app = new Date(scheduleRt.properties.hor_app);
-          const hor_estime = new Date(scheduleRt.properties.hor_estime);
+          const hor_estime =
+            scheduleRt.properties.hor_estime !== undefined
+              ? new Date(scheduleRt.properties.hor_estime)
+              : hor_theo;
 
           let theo = hor_theo.getTime() !== 0 ? hor_theo : MAX_SAFE_DATE;
           let estime =
