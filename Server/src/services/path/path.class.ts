@@ -17,6 +17,8 @@ import resultModelInit, {
   isPointTBMStop,
   isRouteSNCF,
   isRouteTBM,
+  SNCFStopPoint,
+  TBMStopPoint,
 } from "@bibm/data/models/Compute/result.model";
 import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
 import AddressesModelInit from "@bibm/data/models/TBM/addresses.model";
@@ -370,8 +372,10 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                             throw new GeneralError("Unexpected journey construction.");
 
                           to =
-                            // Must go to stop <=> stop id <=> number
-                            nextJourneyStep?.boardedAt as number;
+                            // Must go to stop <=> stop id
+                            (nextJourneyStep.boardedAt as TBMStopPoint | SNCFStopPoint).id as UnpackRefType<
+                              Pick<TBMStopPoint | SNCFStopPoint, "id">
+                            >;
                         } else {
                           if (isLocationTBM(journey.to))
                             to = journey.to.id as UnpackRefType<typeof journey.to.id>;
