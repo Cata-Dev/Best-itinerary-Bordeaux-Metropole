@@ -430,7 +430,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
       case "tbm": {
         if (!("line" in params.query)) throw new BadRequest(`Missing required parameter(s).`);
         const { line, from, to } = params.query;
-        if (typeof line !== "number") throw new BadRequest("SNCF line must be a string.");
+        if (typeof line !== "number") throw new BadRequest("TBM line must be a number.");
 
         const links = await this.TBMLinkLineRoutesSectionsModel.find({ rs_sv_chem_l: line }, undefined, {
           populate: { path: "rs_sv_tronc_l", model: this.TBMRouteSectionsModel },
