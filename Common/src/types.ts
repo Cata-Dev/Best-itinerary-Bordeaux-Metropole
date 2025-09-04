@@ -30,4 +30,9 @@ type ReadonlyDeep<T> = {
   readonly [P in keyof T]: ReadonlyDeep<T[P]>;
 };
 
-export { KeyOfMap, PopulateRef, ReadonlyDeep, Satisfy, UnpackRefType };
+/**
+ * Override props in type B with props in type O
+ */
+type Override<B, O> = Omit<B, keyof O> & O;
+
+export { KeyOfMap, Override, PopulateRef, ReadonlyDeep, Satisfy, UnpackRefType };
