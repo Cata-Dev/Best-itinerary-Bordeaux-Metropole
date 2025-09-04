@@ -361,7 +361,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                             : isPointSNCFStop(journeyStep.boardedAt)
                               ? (journeyStep.boardedAt.id as UnpackRefType<typeof journeyStep.boardedAt.id>)
                               : null;
-                        if (!from) throw new GeneralError("Unexpected address vehicle source stop.");
+                        if (from === null) throw new GeneralError("Unexpected address vehicle source stop.");
 
                         let to: number;
                         if (i < arr.length - 1) {
