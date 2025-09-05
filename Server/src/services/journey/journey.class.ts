@@ -49,6 +49,7 @@ import resultModelInit, {
   TBMRoute,
   TBMStopPoint,
 } from "@bibm/data/models/Compute/result.model";
+import SNCFSchedulesModelInit, { dbSNCF_Schedules } from "@bibm/data/models/SNCF/SNCF_schedules.model";
 import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
 import SNCFScheduledRoutesModelInit, {
   dbSNCF_ScheduledRoutes,
@@ -65,7 +66,6 @@ import { isDocument, ReturnModelType } from "@typegoose/typegoose";
 // To force TypeScript detect "compute" as a JobName
 import { UnpackRefType } from "@bibm/common/types";
 import "@bibm/compute/jobs/compute";
-import { dbSNCF_Schedules } from "@bibm/data/models/SNCF/SNCF_schedules.model";
 
 function formatAddress(addressDoc: dbAddresses) {
   return `${addressDoc.numero} ${"rep" in addressDoc ? addressDoc.rep + " " : ""}${addressDoc.nom_voie} ${addressDoc.commune}`;
@@ -78,6 +78,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
   private readonly app: Application;
   private readonly resultModel: ReturnType<typeof resultModelInit>;
   private readonly TBMStopsModel: ReturnType<typeof TBMStopsModelInit>;
+  private readonly SNCFSchedulesModel: ReturnType<typeof SNCFSchedulesModelInit>;
   private readonly TBMSchedulesModel: ReturnType<typeof TBMSchedulesModelInit>[1];
   private readonly TBMLinesRoutesModel: ReturnType<typeof TBMLinesRoutesModelInit>;
   private readonly TBMLinesModel: ReturnType<typeof TBMLinesModelInit>;
@@ -93,6 +94,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
     this.AddressesModel = AddressesModelInit(this.app.get("sourceDBConn"));
     this.TBMStopsModel = TBMStopsModelInit(this.app.get("sourceDBConn"));
     this.TBMSchedulesModel = TBMSchedulesModelInit(this.app.get("sourceDBConn"))[1];
+    this.SNCFSchedulesModel = SNCFSchedulesModelInit(this.app.get("sourceDBConn"));
     this.TBMLinesRoutesModel = TBMLinesRoutesModelInit(this.app.get("sourceDBConn"));
     this.TBMLinesModel = TBMLinesModelInit(this.app.get("sourceDBConn"));
     this.SNCFStopsModel = SNCFStopsModelInit(this.app.get("sourceDBConn"));
@@ -192,7 +194,7 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             const scheduleModel = isPointTBMStop(js.boardedAt)
               ? this.TBMSchedulesModel
               : isPointSNCFStop(js.boardedAt)
-                ? this.SNCFScheduledRoutesModel
+                ? this.SNCFSchedulesModel
                 : null;
             if (!scheduleModel) throw new GeneralError("Unexpected error while populating journey");
 
