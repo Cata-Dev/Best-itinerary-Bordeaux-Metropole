@@ -216,29 +216,45 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
 
             const dep_int = schedule.dep_int_hor.map((d) => d.getTime()) as [number, number];
 
-            const lineRoute = await this.TBMLinesRoutesModel.findById(
-              (js.route as TBMRoute | SNCFRoute).id,
-              undefined,
-              {
-                populate: ["rs_sv_ligne_a"],
-              },
-            );
-            if (!lineRoute) throw new GeneralError("Unable to retrieve line route while populating journey");
-            if (!isDocument(lineRoute.rs_sv_ligne_a))
-              throw new GeneralError("Unable to retrieve line while populating journey");
+            if (isRouteTBM(js.route)) {
+              const lineRoute = await this.TBMLinesRoutesModel.findById(
+                (js.route as TBMRoute | SNCFRoute).id,
+                undefined,
+                {
+                  populate: ["rs_sv_ligne_a"],
+                },
+              );
+              if (!lineRoute)
+                throw new GeneralError("Unable to retrieve line route while populating journey");
+              if (!isDocument(lineRoute.rs_sv_ligne_a))
+                throw new GeneralError("Unable to retrieve line while populating journey");
 
-            return {
-              to,
-              type: Transport.TBM,
-              departure: dep_int,
-              // Arrival - departure, in sec
-              duration: [(js.time[0] - dep_int[0]) / 1e3, (js.time[1] - dep_int[1]) / 1e3],
-              details: {
-                direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
-                line: lineRoute.rs_sv_ligne_a.libelle,
-                type: lineRoute.vehicule,
-              },
-            } satisfies Journey["paths"][number]["stages"][number];
+              return {
+                to,
+                type: Transport.TBM,
+                departure: dep_int,
+                // Arrival - departure, in sec
+                duration: [(js.time[0] - dep_int[0]) / 1e3, (js.time[1] - dep_int[1]) / 1e3],
+                details: {
+                  direction: `${lineRoute.libelle} - ${lineRoute.sens}`,
+                  line: lineRoute.rs_sv_ligne_a.libelle,
+                  type: lineRoute.vehicule,
+                },
+              } satisfies Journey["paths"][number]["stages"][number];
+            } else if (isRouteSNCF(js.route)) {
+              return {
+                to,
+                type: Transport.SNCF,
+                departure: dep_int,
+                // Arrival - departure, in sec
+                duration: [(js.time[0] - dep_int[0]) / 1e3, (js.time[1] - dep_int[1]) / 1e3],
+                details: {
+                  direction: `?`,
+                  line: `${js.route.id as UnpackRefType<typeof js.route.id>}`,
+                  type: "TRAIN",
+                },
+              } satisfies Journey["paths"][number]["stages"][number];
+            } else throw new Error("Unexpected route type");
           },
         ),
         criteria: journey.criteria.reduce<Record<string, unknown>>(
