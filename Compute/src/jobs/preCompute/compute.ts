@@ -12,7 +12,7 @@ import SNCFStopsModelInit, { dbSNCF_Stops } from "@bibm/data/models/SNCF/SNCF_st
 import TBMScheduledRoutesModelInit, {
   dbTBM_ScheduledRoutes,
 } from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
-import TBMSchedulesInit from "@bibm/data/models/TBM/TBM_schedules.model";
+import TBMSchedulesModelInit from "@bibm/data/models/TBM/TBM_schedules.model";
 import TBMStopsModelInit, { dbTBM_Stops } from "@bibm/data/models/TBM/TBM_stops.model";
 import { DocumentType } from "@typegoose/typegoose";
 import { sep } from "node:path";
@@ -93,7 +93,7 @@ if (parentPort) {
     const sourceDataDB = await initDB({ ...app, logger }, app.config.sourceDB);
     const TBMStopsModel = TBMStopsModelInit(sourceDataDB);
     const SNCFStopsModel = SNCFStopsModelInit(sourceDataDB);
-    TBMSchedulesInit(sourceDataDB);
+    TBMSchedulesModelInit(sourceDataDB);
     const TBMScheduledRoutesModel = TBMScheduledRoutesModelInit(sourceDataDB);
     const SNCFScheduledRoutesModel = SNCFScheduledRoutesModelInit(sourceDataDB);
     const NonScheduledRoutesModel = NonScheduledRoutesModelInit(sourceDataDB);
