@@ -37,7 +37,9 @@ services:
     image: mongo:latest
     networks:
       - mongodb
+    user: mongodb:mongodb
     volumes:
+      # Permissions have to be 777 in order for rootless docker/podman to bind-mount folder
       - ./data/mongodb:/data/db
     command: --quiet --logpath /dev/null
 
