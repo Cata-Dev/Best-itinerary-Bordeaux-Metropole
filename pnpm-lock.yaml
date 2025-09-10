@@ -3,7 +3,6 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
-  injectWorkspacePackages: true
 
 importers:
 
@@ -305,8 +304,8 @@ importers:
         specifier: ^9.35.0
         version: 9.35.0
       '@feathersjs/cli':
-        specifier: 5.0.34
-        version: 5.0.34
+        specifier: 5.0.35
+        version: 5.0.35
       '@feathersjs/rest-client':
         specifier: ^5.0.34
         version: 5.0.34
@@ -725,8 +724,8 @@ packages:
     resolution: {integrity: sha512-JnOoYJKx60SQDCj/JJAH9wzAL0EFFMaOjBN5Vh8JVTj1L4IrxUfy7uGathBumQc5vB2BqtyCy4BG8+/L49oQbA==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/cli@5.0.34':
-    resolution: {integrity: sha512-1L/EXfRimdxfeb6fchSVyTB0BDvkiMj8K9v/x257jJaXZxr5+7moGU3KQm58VNHZzsPzBzU9k36qnO5BcqwBCw==}
+  '@feathersjs/cli@5.0.35':
+    resolution: {integrity: sha512-NCRfd1q65/pSyfvTDWEdCl4VcRSgMBmD0+zAxo/LnFVO27uPZiEKCg5fHFvONzDn+st1s4yj3prVUqkFQbapAA==}
     engines: {node: '>= 14'}
     hasBin: true
 
@@ -746,8 +745,8 @@ packages:
     resolution: {integrity: sha512-jgeqKq/Uhsfeld42F8uimqzPv/uhtohkenpaWeD+NudJp2YZNYfA6gDZAL5UTpAvrTJFmK3QR1q1CnuL1mJdHg==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/generators@5.0.34':
-    resolution: {integrity: sha512-cKNrNnBj5G1csFM2HJpK8Ic+BkCcsktvxP3a1jpThJSPUWvzkcaS9QyOKTBLrhqNZArwxO7FYO6WpI+LrfyTuQ==}
+  '@feathersjs/generators@5.0.35':
+    resolution: {integrity: sha512-QwY8eFYPk1cZtWgh75U2G/5/KqbQcysaB5FBoQjTUK1cABVV0DLVdQs7CxFU63rzlxX9l4RhK144NCUBudLX6A==}
     engines: {node: '>= 16'}
 
   '@feathersjs/hooks@0.9.0':
@@ -1706,8 +1705,8 @@ packages:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
 
-  chalk@5.6.0:
-    resolution: {integrity: sha512-46QrSQFyVSEyYAgQ22hQ+zDa60YHA4fBstHmtSApj1Y5vKtG27fWowW03jCk5KcbXEWPZUIR894aARCA/G1kfQ==}
+  chalk@5.6.2:
+    resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
   chardet@0.7.0:
@@ -4395,7 +4394,7 @@ snapshots:
   '@featherscloud/pinion@0.5.5':
     dependencies:
       '@types/inquirer': 9.0.9
-      chalk: 5.6.0
+      chalk: 5.6.2
       commander: 12.1.0
       inquirer: 9.3.7
       tsx: 4.20.5
@@ -4431,10 +4430,10 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@feathersjs/cli@5.0.34':
+  '@feathersjs/cli@5.0.35':
     dependencies:
-      '@feathersjs/generators': 5.0.34
-      chalk: 5.6.0
+      '@feathersjs/generators': 5.0.35
+      chalk: 5.6.2
       commander: 13.1.0
 
   '@feathersjs/commons@5.0.34': {}
@@ -4457,10 +4456,10 @@ snapshots:
       '@feathersjs/hooks': 0.9.0
       events: 3.3.0
 
-  '@feathersjs/generators@5.0.34':
+  '@feathersjs/generators@5.0.35':
     dependencies:
       '@featherscloud/pinion': 0.5.5
-      chalk: 5.6.0
+      chalk: 5.6.2
       lodash: 4.17.21
       prettier: 3.6.2
       typescript: 5.9.2
@@ -5543,7 +5542,7 @@ snapshots:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  chalk@5.6.0: {}
+  chalk@5.6.2: {}
 
   chardet@0.7.0: {}
 

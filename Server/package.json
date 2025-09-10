@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
-    "@feathersjs/cli": "5.0.34",
+    "@feathersjs/cli": "5.0.35",
     "@feathersjs/rest-client": "^5.0.34",
     "@tsconfig/node22": "^22.0.2",
     "@types/mocha": "^10.0.10",
