@@ -1,6 +1,7 @@
 import { mapAsync, reduceAsync } from "@bibm/common/async";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { dbTBM_Lines_routes } from "@bibm/data/models/TBM/TBM_lines_routes.model";
+import { dbTBM_LinkLineRoutesSections } from "@bibm/data/models/TBM/TBM_link_line_routes_sections.model";
 import {
   RtScheduleState,
   RtScheduleType,
@@ -18,6 +19,7 @@ export default async (
   TBM_lines_routesEndpointInstantiated: Endpoint<TBMEndpoints.Lines_routes>,
   TBM_schedulesRtEndpointInstantiated: Endpoint<TBMEndpoints.Schedules_rt>,
   TBM_tripsEndpointInstantiated: Endpoint<TBMEndpoints.Trips>,
+  TBM_link_line_routes_sectionsEndpointInstantiated: Endpoint<TBMEndpoints.LinkLineRoutesSections>,
 ) => {
   const ScheduledRoute = TBM_Scheduled_routes(app.get("sourceDBConn"));
 
@@ -67,7 +69,8 @@ export default async (
           (
             await TBM_lines_routesEndpointInstantiated.model.find({}, { _id: 1 }).sort({ _id: -1 }).limit(1)
           )[0]?._id ?? 0;
-        const newSubRoutes: dbTBM_Lines_routes[] = [];
+        /** Map<parentRouteId, newSubRoutes[]> */
+        const newSubRoutes = new Map<dbTBM_Lines_routes["_id"], dbTBM_Lines_routes[]>();
         const scheduledRoutes: dbTBM_ScheduledRoutes[] = [];
         for await (const route of TBM_lines_routesEndpointInstantiated.model
           .find({}, routeProjection)
@@ -188,7 +191,10 @@ export default async (
             ],
           );
 
-          newSubRoutes.push(...Object.values(newSubScheduledRoutes).map(({ newRoute }) => newRoute));
+          newSubRoutes.set(
+            route._id,
+            Object.values(newSubScheduledRoutes).map(({ newRoute }) => newRoute),
+          );
           scheduledRoutes.push(
             {
               _id: route._id,
@@ -210,13 +216,49 @@ export default async (
             `Retrieved ${tripsCount} trips and ${schedulesCount} realtime schedules during scheduled routes computation`,
           );
 
-        const inserted = await TBM_lines_routesEndpointInstantiated.model.insertMany(newSubRoutes, {
-          // Fasten insert
-          lean: true,
-          rawResult: true,
-        });
+        const insertedLinesRoutes = await TBM_lines_routesEndpointInstantiated.model.insertMany(
+          newSubRoutes.values().toArray().flat() satisfies dbTBM_Lines_routes[],
+          // https://github.com/Automattic/mongoose/issues/15626
+          {
+            // Fasten insert
+            lean: true,
+            rawResult: true,
+          },
+        );
         if (app.get("debug"))
-          logger.debug(`Scheduled routes: inserted ${inserted.length} new sub line routes`);
+          logger.debug(`Scheduled routes: inserted ${insertedLinesRoutes.length} new sub line routes`);
+        // Duplicate links to route sections for new sub routes in order to be able to retrieve shape of those sub routes
+        const insertedLinks = await TBM_link_line_routes_sectionsEndpointInstantiated.model.insertMany(
+          (
+            await mapAsync(
+              newSubRoutes.entries().toArray(),
+              async ([parentRouteId, newSubRoute]) =>
+                await mapAsync(newSubRoute, async ({ _id }) =>
+                  (
+                    await TBM_link_line_routes_sectionsEndpointInstantiated.model.find<
+                      Pick<dbTBM_LinkLineRoutesSections, "rs_sv_tronc_l">
+                    >(
+                      {
+                        rs_sv_chem_l: parentRouteId,
+                      },
+                      { rs_sv_tronc_l: 1 },
+                      { lean: true },
+                    )
+                  ).map(({ rs_sv_tronc_l }) => ({
+                    rs_sv_chem_l: _id,
+                    rs_sv_tronc_l,
+                  })),
+                ),
+            )
+          ).flat(2) satisfies dbTBM_LinkLineRoutesSections[],
+          {
+            // Fasten insert
+            lean: true,
+            rawResult: true,
+          },
+        );
+        if (app.get("debug"))
+          logger.debug(`Scheduled routes: duplicated ${insertedLinks.length} links to line route sections`);
 
         const [bulked, { deletedCount }] = await bulkUpsertAndPurge(ScheduledRoute, scheduledRoutes, ["_id"]);
         if (app.get("debug"))

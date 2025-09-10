@@ -75,6 +75,9 @@ export default async (app: Application) => {
   const [TBM_schedulesEndpointInstantiated, TBM_schedulesRtEndpointInstantiated] =
     await TBM_schedulesEndpoints(app, getData);
   const TBM_tripsEndpointInstantiated = (await TBM_tripsEndpoint(app, getData))[0];
+  const TBM_link_line_routes_sectionsEndpointInstantiated = (
+    await TBM_link_line_routes_sections(app, getRelationData)
+  )[0];
 
   app.externalAPIs.TBM = {
     endpoints: {
@@ -93,10 +96,11 @@ export default async (app: Application) => {
           TBM_lines_routesEndpointInstantiated,
           TBM_schedulesRtEndpointInstantiated,
           TBM_tripsEndpointInstantiated,
+          TBM_link_line_routes_sectionsEndpointInstantiated,
         )
       )[0],
       [TBMEndpoints.RouteSections]: (await TBM_route_sections(app, getData))[0],
-      [TBMEndpoints.LinkLineRoutesSections]: (await TBM_link_line_routes_sections(app, getRelationData))[0],
+      [TBMEndpoints.LinkLineRoutesSections]: TBM_link_line_routes_sectionsEndpointInstantiated,
     },
   };
   logger.info(`TBM models & endpoints initialized.`);
