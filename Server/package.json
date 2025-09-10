@@ -72,7 +72,7 @@
     "@feathersjs/errors": "^5.0.34",
     "@feathersjs/feathers": "^5.0.34",
     "@feathersjs/koa": "^5.0.34",
-    "@feathersjs/mongodb": "^5.0.34",
+    "@feathersjs/mongodb": "^5.0.35",
     "@feathersjs/schema": "^5.0.34",
     "@feathersjs/socketio": "^5.0.34",
     "@feathersjs/transport-commons": "^5.0.34",

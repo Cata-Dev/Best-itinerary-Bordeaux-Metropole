@@ -3,7 +3,6 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
-  injectWorkspacePackages: true
 
 importers:
 
@@ -271,8 +270,8 @@ importers:
         specifier: ^5.0.34
         version: 5.0.34(typescript@5.9.2)
       '@feathersjs/mongodb':
-        specifier: ^5.0.34
-        version: 5.0.34(mongodb@6.19.0)
+        specifier: ^5.0.35
+        version: 5.0.35(mongodb@6.19.0)
       '@feathersjs/schema':
         specifier: ^5.0.34
         version: 5.0.34(typescript@5.9.2)
@@ -717,6 +716,10 @@ packages:
     resolution: {integrity: sha512-wc0HAZ0uov68p1ytBR5npyAePdNbFrRqr1fINSpLvIkrUkKDEcC6I/lOpk1TBpoI8so5IO/seZhkl25pqKM43A==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/adapter-commons@5.0.35':
+    resolution: {integrity: sha512-pQ0hR2scLpOm2cti5XMTgubrhLEZWIlchODrO2sPOwMS6FNpsbm7aOxKXtaFfMKHBVAyTJN1yjmfgbCT96Xb5w==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/authentication-client@5.0.34':
     resolution: {integrity: sha512-j+p88bnyZmOHelpiL3AbTee0gsEDF5G3/vyJm0x157Q3Y3vXsI4LU7n7Go3cbrjNkCpdqV0pn8CiaxFgQ2lteA==}
     engines: {node: '>= 12'}
@@ -734,6 +737,10 @@ packages:
     resolution: {integrity: sha512-UfHzq7taVJx++TXxX5pmDSR72xRp+h5nler4xcUlcJWLLykCOYo8YCeW03S7T1p1NuFdy0qBmU+B+G89bjyGmg==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/commons@5.0.35':
+    resolution: {integrity: sha512-YYk3SRLGcM9TPHsd2mGmTdFeZORmv5wa1MRCvmEUwzcsFIPWbq4F6ddFgqKUely216RvPumwyjV9U+MasROesQ==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/configuration@5.0.34':
     resolution: {integrity: sha512-5mn9k9ueJOpcl4x54h5ZBf5WtaIdKplc/rqxntolObw1dF/V0BvOX7S6cVypkPH0tQnf1GLvc1ag/rk015eSQw==}
     engines: {node: '>= 12'}
@@ -742,8 +749,16 @@ packages:
     resolution: {integrity: sha512-C0t+pONnMvwlDW6iczcYmxaHzGvaGn3+BLhwlySEVYRciWOURIO8Eo5JVdN7cSM3Z7AxS3Dpk4DEhyFU/D2w6w==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/errors@5.0.35':
+    resolution: {integrity: sha512-J8ulAndEPUFTcPiGR0zO3VfnZqw1nL5BBEmFERRMlxYRCvBVwXPruOGpSEA/x2BY463UYTHD9j9Rj5lfGT62OQ==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/feathers@5.0.34':
     resolution: {integrity: sha512-jgeqKq/Uhsfeld42F8uimqzPv/uhtohkenpaWeD+NudJp2YZNYfA6gDZAL5UTpAvrTJFmK3QR1q1CnuL1mJdHg==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/feathers@5.0.35':
+    resolution: {integrity: sha512-1T6DSQ97LJGmgS5NTu1Oe/Ef1zLgoqYDNAdj67UMNC5Vk7I0F8rohgQcaOOUp8DlKNkXPFWX/z+AXJM4DhkCHQ==}
     engines: {node: '>= 12'}
 
   '@feathersjs/generators@5.0.34':
@@ -758,11 +773,11 @@ packages:
     resolution: {integrity: sha512-KjuFZP6jmtRPJtWO5XaJpvLHRVmnSISIYM70YIhNWc6g7PGCp5n5RyljJclUau2N/aTCMBFhH2jqLYFcUQ/vQQ==}
     engines: {node: '>= 14'}
 
-  '@feathersjs/mongodb@5.0.34':
-    resolution: {integrity: sha512-gY5hr25fDCIDsRucWSx9hUgzZfZGdBHkdF639aMc8TSfj+baE9HVTWIyzpY4TvVJWiaWxxQv4trPXQZeCwdR3A==}
+  '@feathersjs/mongodb@5.0.35':
+    resolution: {integrity: sha512-0/wT5CLRAEs2qJ5QxPST1PYhs5jFEKgGwQrWtraFgGj7jvkwGAquckAjpeAMvb8MBa2cFSdXitPdZOIL41oVvQ==}
     engines: {node: '>= 14'}
     peerDependencies:
-      mongodb: ^6.16.0
+      mongodb: ^6.19.0
 
   '@feathersjs/rest-client@5.0.34':
     resolution: {integrity: sha512-rWn47ZVLJ6igqbJeKyy6QleZceEjfPtmjR/DI+S1Ph7CAep0Ax2rqkwhSIWIoRnp4A7jFay1M3Jy3tA3Eyk7MQ==}
@@ -4406,6 +4421,12 @@ snapshots:
       '@feathersjs/errors': 5.0.34
       '@feathersjs/feathers': 5.0.34
 
+  '@feathersjs/adapter-commons@5.0.35':
+    dependencies:
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+
   '@feathersjs/authentication-client@5.0.34(typescript@5.9.2)':
     dependencies:
       '@feathersjs/authentication': 5.0.34(typescript@5.9.2)
@@ -4439,6 +4460,8 @@ snapshots:
 
   '@feathersjs/commons@5.0.34': {}
 
+  '@feathersjs/commons@5.0.35': {}
+
   '@feathersjs/configuration@5.0.34(typescript@5.9.2)':
     dependencies:
       '@feathersjs/commons': 5.0.34
@@ -4451,9 +4474,17 @@ snapshots:
 
   '@feathersjs/errors@5.0.34': {}
 
+  '@feathersjs/errors@5.0.35': {}
+
   '@feathersjs/feathers@5.0.34':
     dependencies:
       '@feathersjs/commons': 5.0.34
+      '@feathersjs/hooks': 0.9.0
+      events: 3.3.0
+
+  '@feathersjs/feathers@5.0.35':
+    dependencies:
+      '@feathersjs/commons': 5.0.35
       '@feathersjs/hooks': 0.9.0
       events: 3.3.0
 
@@ -4488,12 +4519,12 @@ snapshots:
       - supports-color
       - typescript
 
-  '@feathersjs/mongodb@5.0.34(mongodb@6.19.0)':
+  '@feathersjs/mongodb@5.0.35(mongodb@6.19.0)':
     dependencies:
-      '@feathersjs/adapter-commons': 5.0.34
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
       mongodb: 6.19.0
 
   '@feathersjs/rest-client@5.0.34':
