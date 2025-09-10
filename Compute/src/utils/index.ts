@@ -1,12 +1,3 @@
-type UnionToIntersection<U> = (U extends never ? never : (arg: U) => never) extends (arg: infer I) => void
-  ? I
-  : never;
-
-type UnionToTuple<T> =
-  UnionToIntersection<T extends never ? never : (t: T) => T> extends (_: never) => infer W
-    ? [...UnionToTuple<Exclude<T, W>>, W]
-    : [];
-
 /**
  * Initialize every property of {@link obj} defined in {@link defaults}.
  * @param obj Object to initialize its properties
@@ -21,4 +12,3 @@ function withDefaults<O extends object>(obj: Partial<O>, defaults: O): O {
 }
 
 export { withDefaults };
-export type { UnionToTuple };

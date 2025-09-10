@@ -2,6 +2,7 @@ import "core-js/features/reflect";
 
 import { AwaitableProps, Deferred, reduceAsync } from "@bibm/common/async";
 import { Logger } from "@bibm/common/logger";
+import { UnionToTuple } from "@bibm/common/types";
 import { singleUseWorker } from "@bibm/common/workers";
 import { Worker } from "node:worker_threads";
 import { join } from "path";
@@ -9,7 +10,6 @@ import { askShutdown, app as bApp, makeQueue } from "./base";
 import { makeComputeData } from "./jobs/preCompute/compute";
 import { makeComputeFpData } from "./jobs/preCompute/computeFp";
 import { makeComputePTNData } from "./jobs/preCompute/computePTN";
-import { UnionToTuple } from "./utils";
 import { isMessage, makeMessage, Message } from "./utils/para";
 
 declare module "./utils/para" {
