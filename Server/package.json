@@ -69,7 +69,7 @@
     "@feathersjs/authentication": "^5.0.34",
     "@feathersjs/authentication-client": "^5.0.34",
     "@feathersjs/configuration": "^5.0.34",
-    "@feathersjs/errors": "^5.0.34",
+    "@feathersjs/errors": "^5.0.35",
     "@feathersjs/feathers": "^5.0.34",
     "@feathersjs/koa": "^5.0.34",
     "@feathersjs/mongodb": "^5.0.34",
