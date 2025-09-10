@@ -91,8 +91,9 @@ export async function makeQueue() {
   // Enforce NSR to be done at most 1 by 1
   await queues[3].setGlobalConcurrency(1).catch((err) => logger.error(err));
 
-  await mapAsync(queues, (q) => q.waitUntilReady()).catch((err) => logger.error(err));
-  app.logger.log("Queues ready");
+  mapAsync(queues, (q) => q.waitUntilReady())
+    .then(() => app.logger.log("Queues ready"))
+    .catch((err) => app.logger.error(err));
 
   const flowProducer = new FlowProducer({ connection });
 
@@ -165,7 +166,7 @@ export function makeWorker(processors: Instances<typeof jobNames, "processor">) 
 
   mapAsync(workers, (w) => w.waitUntilReady())
     .then(() => app.logger.log("Workers ready"))
-    .catch((err) => logger.error(err));
+    .catch((err) => app.logger.error(err));
 
   return { ...app, workers } satisfies Application<"worker">;
 }

@@ -30,19 +30,19 @@ async function start(data: Message<"data">["data"]) {
 
   app.workers.forEach((worker) => {
     worker.on("active", (job) => {
-      bApp.logger.log(`Job ${job.name} starting`);
+      bApp.logger.log(`Job ${job.name} ${job.id} starting`);
     });
     worker.on("completed", (job) => {
-      bApp.logger.info(`Job ${job.name} finished`);
+      bApp.logger.info(`Job ${job.name} ${job.id} finished`);
+    });
+    worker.on("failed", (job, err) => {
+      bApp.logger.error(`Job ${job ? `${job.name} ${job.id}` : "UNKNOWN"} failed`, err);
     });
     worker.on("stalled", (jobId) => {
       bApp.logger.warn(`Job ${jobId} stalled`);
     });
-    worker.on("failed", (job, err) => {
-      bApp.logger.error(`Job ${job?.name ?? "UNKNOWN"} failed`, err);
-    });
     worker.on("closing", (msg) => {
-      bApp.logger.log(`Worker ${worker.name} closing`, msg);
+      bApp.logger.log(`Worker ${worker.name} closing: ${msg}`);
     });
     worker.on("closed", () => {
       bApp.logger.log(`Worker ${worker.name} closed`);
