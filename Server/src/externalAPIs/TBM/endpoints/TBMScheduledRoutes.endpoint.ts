@@ -1,4 +1,5 @@
 import { mapAsync, reduceAsync } from "@bibm/common/async";
+import { getOrAsyncDefault } from "@bibm/common/map";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { dbTBM_Lines_routes } from "@bibm/data/models/TBM/TBM_lines_routes.model";
 import { dbTBM_LinkLineRoutesSections } from "@bibm/data/models/TBM/TBM_link_line_routes_sections.model";
@@ -143,32 +144,34 @@ export default async (
                   "",
                 );
 
-                trips = (acc[1][hashedRoute] ??= {
-                  newRoute:
-                    // This new route is essentially the same as the previous one, except its new id and its ends
-                    new TBM_lines_routesEndpointInstantiated.model(
-                      await (async () => {
-                        const fullRoute = (await TBM_lines_routesEndpointInstantiated.model.findById(
-                          route._id,
-                          null,
-                          {
-                            lean: true,
-                            timestamps: false,
-                          },
-                        ))!;
+                trips = (
+                  await getOrAsyncDefault(acc[1], hashedRoute, async () => ({
+                    newRoute:
+                      // This new route is essentially the same as the previous one, except its new id and its ends
+                      new TBM_lines_routesEndpointInstantiated.model(
+                        await (async () => {
+                          const fullRoute = (await TBM_lines_routesEndpointInstantiated.model.findById(
+                            route._id,
+                            null,
+                            {
+                              lean: true,
+                              timestamps: false,
+                            },
+                          ))!;
 
-                        return {
-                          ...fullRoute,
-                          _id: ++maxRouteId,
-                          rg_sv_arret_p_nd: stops[0],
-                          rg_sv_arret_p_na: stops.at(-1)!,
-                          libelle: fullRoute.libelle + " (bis)",
-                        } satisfies dbTBM_Lines_routes;
-                      })(),
-                    ),
-                  stops,
-                  trips: [],
-                }).trips;
+                          return {
+                            ...fullRoute,
+                            _id: ++maxRouteId,
+                            rg_sv_arret_p_nd: stops[0],
+                            rg_sv_arret_p_na: stops.at(-1)!,
+                            libelle: fullRoute.libelle + " (bis)",
+                          } satisfies dbTBM_Lines_routes;
+                        })(),
+                      ),
+                    stops,
+                    trips: [],
+                  }))
+                ).trips;
               }
 
               trips.push({
@@ -178,30 +181,34 @@ export default async (
 
               return acc;
             },
-            [[], {}] as [
-              trips: dbTBM_ScheduledRoutes["trips"],
-              subScheduledRoutes: Record<
+            [
+              [] as dbTBM_ScheduledRoutes["trips"],
+              new Map<
                 string,
                 {
                   newRoute: dbTBM_Lines_routes;
                   stops: dbTBM_ScheduledRoutes["stops"];
                   trips: dbTBM_ScheduledRoutes["trips"];
                 }
-              >,
+              >(),
             ],
           );
 
-          newSubRoutes.set(
-            route._id,
-            Object.values(newSubScheduledRoutes).map(({ newRoute }) => newRoute),
-          );
+          if (newSubScheduledRoutes.size)
+            newSubRoutes.set(
+              route._id,
+              newSubScheduledRoutes
+                .values()
+                .map(({ newRoute }) => newRoute)
+                .toArray(),
+            );
           scheduledRoutes.push(
             {
               _id: route._id,
               trips,
               stops: largestTrip.map((s) => s.rs_sv_arret_p),
             },
-            ...Object.values(newSubScheduledRoutes).map(({ newRoute, trips, stops }) => ({
+            ...newSubScheduledRoutes.values().map(({ newRoute, trips, stops }) => ({
               _id: newRoute._id,
               trips,
               stops,
