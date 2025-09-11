@@ -230,7 +230,7 @@ export default async (
         // Duplicate links to route sections for new sub routes in order to be able to retrieve shape of those sub routes
         // Clear orphan links first
         const deletedLinks = await TBM_link_line_routes_sectionsEndpointInstantiated.model.deleteMany({
-          rs_sv_chem_l: { $gt: maxRouteId - newSubRoutes.size },
+          rs_sv_chem_l: { $gt: maxRouteId - newSubRoutes.values().reduce((acc, v) => acc + v.length, 0) },
         });
         if (app.get("debug"))
           logger.debug(
