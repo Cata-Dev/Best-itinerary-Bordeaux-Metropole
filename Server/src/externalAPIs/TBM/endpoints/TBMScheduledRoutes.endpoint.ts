@@ -228,6 +228,14 @@ export default async (
         if (app.get("debug"))
           logger.debug(`Scheduled routes: inserted ${insertedLinesRoutes.length} new sub line routes`);
         // Duplicate links to route sections for new sub routes in order to be able to retrieve shape of those sub routes
+        // Clear orphan links first
+        const deletedLinks = await TBM_link_line_routes_sectionsEndpointInstantiated.model.deleteMany({
+          rs_sv_chem_l: { $gt: maxRouteId - newSubRoutes.size },
+        });
+        if (app.get("debug"))
+          logger.debug(
+            `Scheduled routes: removed ${deletedLinks.deletedCount} orphan links to line route sections`,
+          );
         const insertedLinks = await TBM_link_line_routes_sectionsEndpointInstantiated.model.insertMany(
           (
             await mapAsync(
