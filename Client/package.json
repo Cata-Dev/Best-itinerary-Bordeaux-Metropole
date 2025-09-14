@@ -24,7 +24,7 @@
     "@bibm/common": "workspace:*",
     "@bibm/data": "workspace:*",
     "@bibm/server": "workspace:*",
-    "@feathersjs/socketio-client": "^5.0.34",
+    "@feathersjs/socketio-client": "^5.0.35",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.1.1",

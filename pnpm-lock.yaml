@@ -3,6 +3,7 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
+  injectWorkspacePackages: true
 
 importers:
 
@@ -18,10 +19,10 @@ importers:
         version: link:../Data
       '@bibm/server':
         specifier: workspace:*
-        version: link:../Server
+        version: file:Server(mongodb@6.19.0)(typescript@5.9.2)
       '@feathersjs/socketio-client':
-        specifier: ^5.0.34
-        version: 5.0.34
+        specifier: ^5.0.35
+        version: 5.0.35
       '@fortawesome/fontawesome-svg-core':
         specifier: ^6.7.2
         version: 6.7.2
@@ -102,8 +103,8 @@ importers:
   Common:
     dependencies:
       '@feathersjs/typebox':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
         version: 12.19.0(mongoose@8.18.1)
@@ -140,7 +141,7 @@ importers:
         version: link:../Data
       '@bibm/server':
         specifier: workspace:*
-        version: link:../Server
+        version: file:Server(mongodb@6.19.0)(typescript@5.9.2)
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -191,11 +192,11 @@ importers:
         specifier: workspace:*
         version: link:../Common
       '@feathersjs/schema':
-        specifier: ^5.0.31
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@feathersjs/typebox':
-        specifier: ^5.0.31
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
         version: 12.19.0(mongoose@8.18.1)
@@ -249,41 +250,41 @@ importers:
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
       '@feathersjs/adapter-commons':
-        specifier: ^5.0.34
-        version: 5.0.34
+        specifier: ^5.0.35
+        version: 5.0.35
       '@feathersjs/authentication':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@feathersjs/authentication-client':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@feathersjs/configuration':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@feathersjs/errors':
-        specifier: ^5.0.34
-        version: 5.0.34
+        specifier: ^5.0.35
+        version: 5.0.35
       '@feathersjs/feathers':
-        specifier: ^5.0.34
-        version: 5.0.34
+        specifier: ^5.0.35
+        version: 5.0.35
       '@feathersjs/koa':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@feathersjs/mongodb':
-        specifier: ^5.0.34
-        version: 5.0.34(mongodb@6.19.0)
+        specifier: ^5.0.35
+        version: 5.0.35(mongodb@6.19.0)
       '@feathersjs/schema':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@feathersjs/socketio':
-        specifier: ^5.0.34
-        version: 5.0.34
+        specifier: ^5.0.35
+        version: 5.0.35
       '@feathersjs/transport-commons':
-        specifier: ^5.0.34
-        version: 5.0.34
+        specifier: ^5.0.35
+        version: 5.0.35
       '@feathersjs/typebox':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
         version: 12.19.0(mongoose@8.18.1)
@@ -295,7 +296,7 @@ importers:
         version: 3.45.1
       feathers-hooks-common:
         specifier: ^8.2.1
-        version: 8.2.1(@feathersjs/feathers@5.0.34)
+        version: 8.2.1(@feathersjs/feathers@5.0.35)
       mongoose:
         specifier: ^8.18.1
         version: 8.18.1
@@ -307,8 +308,8 @@ importers:
         specifier: 5.0.34
         version: 5.0.34
       '@feathersjs/rest-client':
-        specifier: ^5.0.34
-        version: 5.0.34
+        specifier: ^5.0.35
+        version: 5.0.35
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -498,6 +499,22 @@ packages:
   '@babel/types@7.28.2':
     resolution: {integrity: sha512-ruv7Ae4J5dUYULmeXw1gmb7rYRz57OWCPM57pHojnLq/3Z1CK2lNSLTCVjxVk1F/TZHwOZZrOWi0ur95BbLxNQ==}
     engines: {node: '>=6.9.0'}
+
+  '@bibm/common@file:Common':
+    resolution: {directory: Common, type: directory}
+    engines: {node: '>=22.18.0', pnpm: '>=10'}
+
+  '@bibm/compute@file:Compute':
+    resolution: {directory: Compute, type: directory}
+    engines: {node: '>=22.18.0', pnpm: '>=10'}
+
+  '@bibm/data@file:Data':
+    resolution: {directory: Data, type: directory}
+    engines: {node: '>=22.18.0', pnpm: '>=10'}
+
+  '@bibm/server@file:Server':
+    resolution: {directory: Server, type: directory}
+    engines: {node: '>=22.18.0', pnpm: '>=10'}
 
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     resolution: {tarball: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed}
@@ -712,16 +729,16 @@ packages:
     engines: {node: '>= 20'}
     hasBin: true
 
-  '@feathersjs/adapter-commons@5.0.34':
-    resolution: {integrity: sha512-wc0HAZ0uov68p1ytBR5npyAePdNbFrRqr1fINSpLvIkrUkKDEcC6I/lOpk1TBpoI8so5IO/seZhkl25pqKM43A==}
+  '@feathersjs/adapter-commons@5.0.35':
+    resolution: {integrity: sha512-pQ0hR2scLpOm2cti5XMTgubrhLEZWIlchODrO2sPOwMS6FNpsbm7aOxKXtaFfMKHBVAyTJN1yjmfgbCT96Xb5w==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/authentication-client@5.0.34':
-    resolution: {integrity: sha512-j+p88bnyZmOHelpiL3AbTee0gsEDF5G3/vyJm0x157Q3Y3vXsI4LU7n7Go3cbrjNkCpdqV0pn8CiaxFgQ2lteA==}
+  '@feathersjs/authentication-client@5.0.35':
+    resolution: {integrity: sha512-Ho3Gse+xw1xPo++9b5ydL+3qvnEcgrfi2k3V43BNKe8pe6lell+e+ZJv7agyZTw53MwHEQSEi2SQjEadDvmMgw==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/authentication@5.0.34':
-    resolution: {integrity: sha512-JnOoYJKx60SQDCj/JJAH9wzAL0EFFMaOjBN5Vh8JVTj1L4IrxUfy7uGathBumQc5vB2BqtyCy4BG8+/L49oQbA==}
+  '@feathersjs/authentication@5.0.35':
+    resolution: {integrity: sha512-1Vh2//qAZVNClBLNiBknTxaynkEaz1tY5x7jkGUnevAvxGTxiBcIUNZosGNBW8go25ZKwe9/D7XrfGKlbSkOkg==}
     engines: {node: '>= 12'}
 
   '@feathersjs/cli@5.0.34':
@@ -729,64 +746,64 @@ packages:
     engines: {node: '>= 14'}
     hasBin: true
 
-  '@feathersjs/commons@5.0.34':
-    resolution: {integrity: sha512-UfHzq7taVJx++TXxX5pmDSR72xRp+h5nler4xcUlcJWLLykCOYo8YCeW03S7T1p1NuFdy0qBmU+B+G89bjyGmg==}
+  '@feathersjs/commons@5.0.35':
+    resolution: {integrity: sha512-YYk3SRLGcM9TPHsd2mGmTdFeZORmv5wa1MRCvmEUwzcsFIPWbq4F6ddFgqKUely216RvPumwyjV9U+MasROesQ==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/configuration@5.0.34':
-    resolution: {integrity: sha512-5mn9k9ueJOpcl4x54h5ZBf5WtaIdKplc/rqxntolObw1dF/V0BvOX7S6cVypkPH0tQnf1GLvc1ag/rk015eSQw==}
+  '@feathersjs/configuration@5.0.35':
+    resolution: {integrity: sha512-6moxx1f+5ODlC1FOGD5pb5J0vipCM669H7Jawk5wZABpflrQeGWN9HlNwNEn4kIygy/l1xEB0bSkKgE8TJGxqw==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/errors@5.0.34':
-    resolution: {integrity: sha512-C0t+pONnMvwlDW6iczcYmxaHzGvaGn3+BLhwlySEVYRciWOURIO8Eo5JVdN7cSM3Z7AxS3Dpk4DEhyFU/D2w6w==}
+  '@feathersjs/errors@5.0.35':
+    resolution: {integrity: sha512-J8ulAndEPUFTcPiGR0zO3VfnZqw1nL5BBEmFERRMlxYRCvBVwXPruOGpSEA/x2BY463UYTHD9j9Rj5lfGT62OQ==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/feathers@5.0.34':
-    resolution: {integrity: sha512-jgeqKq/Uhsfeld42F8uimqzPv/uhtohkenpaWeD+NudJp2YZNYfA6gDZAL5UTpAvrTJFmK3QR1q1CnuL1mJdHg==}
+  '@feathersjs/feathers@5.0.35':
+    resolution: {integrity: sha512-1T6DSQ97LJGmgS5NTu1Oe/Ef1zLgoqYDNAdj67UMNC5Vk7I0F8rohgQcaOOUp8DlKNkXPFWX/z+AXJM4DhkCHQ==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/generators@5.0.34':
-    resolution: {integrity: sha512-cKNrNnBj5G1csFM2HJpK8Ic+BkCcsktvxP3a1jpThJSPUWvzkcaS9QyOKTBLrhqNZArwxO7FYO6WpI+LrfyTuQ==}
+  '@feathersjs/generators@5.0.35':
+    resolution: {integrity: sha512-QwY8eFYPk1cZtWgh75U2G/5/KqbQcysaB5FBoQjTUK1cABVV0DLVdQs7CxFU63rzlxX9l4RhK144NCUBudLX6A==}
     engines: {node: '>= 16'}
 
   '@feathersjs/hooks@0.9.0':
     resolution: {integrity: sha512-kLfWnuhbC25CPkR1/TDcVs0rSiv0JLNxrpUivLwc7FUnkyeciRi5VOmC1SOzL2SOagcozu3+m4VQiONyzgfY7w==}
     engines: {node: '>= 14'}
 
-  '@feathersjs/koa@5.0.34':
-    resolution: {integrity: sha512-KjuFZP6jmtRPJtWO5XaJpvLHRVmnSISIYM70YIhNWc6g7PGCp5n5RyljJclUau2N/aTCMBFhH2jqLYFcUQ/vQQ==}
+  '@feathersjs/koa@5.0.35':
+    resolution: {integrity: sha512-dQnwdl/tIQfYlUAvunbX+7SyvJP8GLv81qoC4rtsZGovUImF/UAf+n0CIJXJGwCkDwQuxt52HSTnlLDeXzyY1Q==}
     engines: {node: '>= 14'}
 
-  '@feathersjs/mongodb@5.0.34':
-    resolution: {integrity: sha512-gY5hr25fDCIDsRucWSx9hUgzZfZGdBHkdF639aMc8TSfj+baE9HVTWIyzpY4TvVJWiaWxxQv4trPXQZeCwdR3A==}
+  '@feathersjs/mongodb@5.0.35':
+    resolution: {integrity: sha512-0/wT5CLRAEs2qJ5QxPST1PYhs5jFEKgGwQrWtraFgGj7jvkwGAquckAjpeAMvb8MBa2cFSdXitPdZOIL41oVvQ==}
     engines: {node: '>= 14'}
     peerDependencies:
-      mongodb: ^6.16.0
+      mongodb: ^6.19.0
 
-  '@feathersjs/rest-client@5.0.34':
-    resolution: {integrity: sha512-rWn47ZVLJ6igqbJeKyy6QleZceEjfPtmjR/DI+S1Ph7CAep0Ax2rqkwhSIWIoRnp4A7jFay1M3Jy3tA3Eyk7MQ==}
+  '@feathersjs/rest-client@5.0.35':
+    resolution: {integrity: sha512-q2CRqmnrhV9klvVppLo72QSRmiCapd+qJEVm1Lty4BgRaFhyalUZnvdHyAlAUG8jP8Cz9PqEQFaPrl9dRlcmbg==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/schema@5.0.34':
-    resolution: {integrity: sha512-BpQxp46Vp0tH7l9jW4HIAGQerql7aJBeRXRggCVhBuqK48KoD1UhvYCWBmWwEouaYUnZ77HjQIMn9c1fK+dF2w==}
+  '@feathersjs/schema@5.0.35':
+    resolution: {integrity: sha512-EmetZPKG76fPV2vMYlCqYTEarNGh6KURMrX7gNUmUSJDq7ERliqURx//yBeQQc0imPriOxEx51sZpdoH4Sl19Q==}
     engines: {node: '>= 12'}
     peerDependencies:
-      typescript: '>=5.8'
+      typescript: '>=5.9'
 
-  '@feathersjs/socketio-client@5.0.34':
-    resolution: {integrity: sha512-7mejzCX/lotsKFZaRrL1KA/lIuI/m1iPxy+5I7Fb+PLpRQUWAdNcCJPk/TutyXm+ksFNliPe2hB6qiXpKeqg3Q==}
+  '@feathersjs/socketio-client@5.0.35':
+    resolution: {integrity: sha512-oM73AKSqli+priqRBHmrclf3vKoAeB54d4U2uTwkgicjIWd4G0d3EiRHfWtMhxo80bjxWnaQEeqdjBx9Spy5hQ==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/socketio@5.0.34':
-    resolution: {integrity: sha512-uT94CeSRcnhOIThjiFg/wU30koVPoPrJUHyiQia3Q9sSB5wcaoWaJAIUcOEIZmGrgW2FNLPRw9THpAUTIgd4/w==}
+  '@feathersjs/socketio@5.0.35':
+    resolution: {integrity: sha512-0P+YE7ZJgaozULxmnBiF7oQaXg6jwgsW2l9gHD3tyTsHZt/RSoGxvM4yba+0JawNcHWCgXRVB0imsXxvGkZvYQ==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/transport-commons@5.0.34':
-    resolution: {integrity: sha512-l+oQm1oIvfrxNUlidcqCtKfdWdKn1zHXGhEa13xIKiU5m2LFz1EYeMuq5vh/1pU0iECq3Oi+KdW53YnGl446cw==}
+  '@feathersjs/transport-commons@5.0.35':
+    resolution: {integrity: sha512-ev9RdxXB/LTrLHX73tsyVEbylP7lr3KAu6IWnKMYd4kweUUNYw2yzmALD9eMH9rf3P/oZA0NJGhe7pE7fuhcuA==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/typebox@5.0.34':
-    resolution: {integrity: sha512-+xBQa4/cPqb1ozcfFk5/1PLJ7lVGYvnnfqSm5sTTxygsZUwZaBgKC23DRQ/tGL8p4dKdMSjgGEZYjuj1uWjbig==}
+  '@feathersjs/typebox@5.0.35':
+    resolution: {integrity: sha512-EadBjjrcllHHpRVdB04L/NsIbCPE6HcnADE1XmCxDRg0S6FxN/X7/9taqnOaA7ggZHSwbb00Hpl4zW7+40tAaA==}
     engines: {node: '>= 12'}
 
   '@fortawesome/fontawesome-common-types@6.7.2':
@@ -1612,6 +1629,9 @@ packages:
   axios@1.12.0:
     resolution: {integrity: sha512-oXTDccv8PcfjZmPGlWsPSwtOJCZ/b6W5jAMCNcfwJbCzDckwG0jrYJFaWH1yvivfCXjVzV/SPDEhMB3Q+DSurg==}
 
+  axios@1.12.2:
+    resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
+
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
@@ -1709,6 +1729,10 @@ packages:
     resolution: {integrity: sha512-46QrSQFyVSEyYAgQ22hQ+zDa60YHA4fBstHmtSApj1Y5vKtG27fWowW03jCk5KcbXEWPZUIR894aARCA/G1kfQ==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
+  chalk@5.6.2:
+    resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
+    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
+
   chardet@0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
 
@@ -1779,10 +1803,6 @@ packages:
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
-
-  config@3.3.12:
-    resolution: {integrity: sha512-Vmx389R/QVM3foxqBzXO8t2tUikYZP64Q6vQxGrsMpREeJc/aWRnPRERXWsYzOHAumx/AOoILWe6nU3ZJL+6Sw==}
-    engines: {node: '>= 10.0.0'}
 
   config@4.1.1:
     resolution: {integrity: sha512-jljfwqNZ7QHwAW9Z9NDZdJARFiu5pjLqQO0K4ooY22iY/bIY78n0afI4ANEawfgQOxri0K/3oTayX8XIauWcLA==}
@@ -4256,6 +4276,99 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
 
+  '@bibm/common@file:Common(mongoose@8.18.1)(typescript@5.9.2)':
+    dependencies:
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+    transitivePeerDependencies:
+      - mongoose
+      - typescript
+
+  '@bibm/compute@file:Compute(mongodb@6.19.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@bibm/server': file:Server(mongodb@6.19.0)(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      bullmq: 5.58.5
+      core-js: 3.45.1
+      mongoose: 8.18.1
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
+      shx: 0.4.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@bibm/data@file:Data(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      config: 4.1.1
+      mongoose: 8.18.1
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+
+  '@bibm/server@file:Server(mongodb@6.19.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@bibm/compute': file:Compute(mongodb@6.19.0)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
+      '@feathersjs/authentication-client': 5.0.35(typescript@5.9.2)
+      '@feathersjs/configuration': 5.0.35(typescript@5.9.2)
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/koa': 5.0.35(typescript@5.9.2)
+      '@feathersjs/mongodb': 5.0.35(mongodb@6.19.0)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/socketio': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      axios: 1.12.2
+      core-js: 3.45.1
+      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.35)
+      mongoose: 8.18.1
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     dependencies:
       '@tyriar/fibonacci-heap': 2.0.9
@@ -4394,34 +4507,34 @@ snapshots:
   '@featherscloud/pinion@0.5.5':
     dependencies:
       '@types/inquirer': 9.0.9
-      chalk: 5.6.0
+      chalk: 5.6.2
       commander: 12.1.0
       inquirer: 9.3.7
       tsx: 4.20.5
 
-  '@feathersjs/adapter-commons@5.0.34':
+  '@feathersjs/adapter-commons@5.0.35':
     dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
 
-  '@feathersjs/authentication-client@5.0.34(typescript@5.9.2)':
+  '@feathersjs/authentication-client@5.0.35(typescript@5.9.2)':
     dependencies:
-      '@feathersjs/authentication': 5.0.34(typescript@5.9.2)
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
     transitivePeerDependencies:
       - typescript
 
-  '@feathersjs/authentication@5.0.34(typescript@5.9.2)':
+  '@feathersjs/authentication@5.0.35(typescript@5.9.2)':
     dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
       '@feathersjs/hooks': 0.9.0
-      '@feathersjs/schema': 5.0.34(typescript@5.9.2)
-      '@feathersjs/transport-commons': 5.0.34
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/transport-commons': 5.0.35
       '@types/jsonwebtoken': 9.0.10
       jsonwebtoken: 9.0.2
       lodash: 4.17.21
@@ -4432,47 +4545,47 @@ snapshots:
 
   '@feathersjs/cli@5.0.34':
     dependencies:
-      '@feathersjs/generators': 5.0.34
+      '@feathersjs/generators': 5.0.35
       chalk: 5.6.0
       commander: 13.1.0
 
-  '@feathersjs/commons@5.0.34': {}
+  '@feathersjs/commons@5.0.35': {}
 
-  '@feathersjs/configuration@5.0.34(typescript@5.9.2)':
+  '@feathersjs/configuration@5.0.35(typescript@5.9.2)':
     dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/schema': 5.0.34(typescript@5.9.2)
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
       '@types/config': 3.3.5
-      config: 3.3.12
+      config: 4.1.1
     transitivePeerDependencies:
       - typescript
 
-  '@feathersjs/errors@5.0.34': {}
+  '@feathersjs/errors@5.0.35': {}
 
-  '@feathersjs/feathers@5.0.34':
+  '@feathersjs/feathers@5.0.35':
     dependencies:
-      '@feathersjs/commons': 5.0.34
+      '@feathersjs/commons': 5.0.35
       '@feathersjs/hooks': 0.9.0
       events: 3.3.0
 
-  '@feathersjs/generators@5.0.34':
+  '@feathersjs/generators@5.0.35':
     dependencies:
       '@featherscloud/pinion': 0.5.5
-      chalk: 5.6.0
+      chalk: 5.6.2
       lodash: 4.17.21
       prettier: 3.6.2
       typescript: 5.9.2
 
   '@feathersjs/hooks@0.9.0': {}
 
-  '@feathersjs/koa@5.0.34(typescript@5.9.2)':
+  '@feathersjs/koa@5.0.35(typescript@5.9.2)':
     dependencies:
-      '@feathersjs/authentication': 5.0.34(typescript@5.9.2)
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/transport-commons': 5.0.34
+      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
       '@koa/cors': 5.0.0
       '@types/koa': 2.15.0
       '@types/koa-qs': 2.0.3
@@ -4487,28 +4600,28 @@ snapshots:
       - supports-color
       - typescript
 
-  '@feathersjs/mongodb@5.0.34(mongodb@6.19.0)':
+  '@feathersjs/mongodb@5.0.35(mongodb@6.19.0)':
     dependencies:
-      '@feathersjs/adapter-commons': 5.0.34
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
       mongodb: 6.19.0
 
-  '@feathersjs/rest-client@5.0.34':
+  '@feathersjs/rest-client@5.0.35':
     dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
       '@types/superagent': 8.1.9
       qs: 6.14.0
 
-  '@feathersjs/schema@5.0.34(typescript@5.9.2)':
+  '@feathersjs/schema@5.0.35(typescript@5.9.2)':
     dependencies:
-      '@feathersjs/adapter-commons': 5.0.34
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
       '@feathersjs/hooks': 0.9.0
       '@types/json-schema': 7.0.15
       ajv: 8.17.1
@@ -4516,33 +4629,33 @@ snapshots:
       json-schema-to-ts: 3.1.1
       typescript: 5.9.2
 
-  '@feathersjs/socketio-client@5.0.34':
+  '@feathersjs/socketio-client@5.0.35':
     dependencies:
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/transport-commons': 5.0.34
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
 
-  '@feathersjs/socketio@5.0.34':
+  '@feathersjs/socketio@5.0.35':
     dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/feathers': 5.0.34
-      '@feathersjs/transport-commons': 5.0.34
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
       socket.io: 4.8.1
     transitivePeerDependencies:
       - bufferutil
       - supports-color
       - utf-8-validate
 
-  '@feathersjs/transport-commons@5.0.34':
+  '@feathersjs/transport-commons@5.0.35':
     dependencies:
-      '@feathersjs/commons': 5.0.34
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
       encodeurl: 2.0.0
       lodash: 4.17.21
 
-  '@feathersjs/typebox@5.0.34(typescript@5.9.2)':
+  '@feathersjs/typebox@5.0.35(typescript@5.9.2)':
     dependencies:
-      '@feathersjs/schema': 5.0.34(typescript@5.9.2)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
       '@sinclair/typebox': 0.25.24
     transitivePeerDependencies:
       - typescript
@@ -5441,6 +5554,14 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  axios@1.12.2:
+    dependencies:
+      follow-redirects: 1.15.11
+      form-data: 4.0.4
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
   balanced-match@1.0.2: {}
 
   base64-js@1.5.1: {}
@@ -5544,6 +5665,8 @@ snapshots:
 
   chalk@5.6.0: {}
 
+  chalk@5.6.2: {}
+
   chardet@0.7.0: {}
 
   chokidar@3.6.0:
@@ -5611,10 +5734,6 @@ snapshots:
   commander@13.1.0: {}
 
   concat-map@0.0.1: {}
-
-  config@3.3.12:
-    dependencies:
-      json5: 2.2.3
 
   config@4.1.1:
     dependencies:
@@ -6114,10 +6233,10 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.3
 
-  feathers-hooks-common@8.2.1(@feathersjs/feathers@5.0.34):
+  feathers-hooks-common@8.2.1(@feathersjs/feathers@5.0.35):
     dependencies:
-      '@feathersjs/errors': 5.0.34
-      '@feathersjs/feathers': 5.0.34
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
       ajv: 6.12.6
       debug: 4.4.1
       graphql: 16.11.0

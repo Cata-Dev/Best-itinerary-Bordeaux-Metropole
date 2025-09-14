@@ -36,8 +36,8 @@
   "license": "ISC",
   "dependencies": {
     "@bibm/common": "workspace:*",
-    "@feathersjs/schema": "^5.0.31",
-    "@feathersjs/typebox": "^5.0.31",
+    "@feathersjs/schema": "^5.0.35",
+    "@feathersjs/typebox": "^5.0.35",
     "@typegoose/typegoose": "^12.19.0",
     "config": "^4.1.1",
     "mongoose": "^8.18.1",
