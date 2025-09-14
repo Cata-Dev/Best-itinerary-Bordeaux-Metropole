@@ -63,9 +63,7 @@ import TBMScheduledRoutesModelInit, {
   dbTBM_ScheduledRoutes,
 } from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
 import { isDocument, ReturnModelType } from "@typegoose/typegoose";
-// To force TypeScript detect "compute" as a JobName
 import { UnpackRefType } from "@bibm/common/types";
-import "@bibm/compute/jobs/compute";
 
 function formatAddress(addressDoc: dbAddresses) {
   return `${addressDoc.numero} ${"rep" in addressDoc ? addressDoc.rep + " " : ""}${addressDoc.nom_voie} ${addressDoc.commune}`;

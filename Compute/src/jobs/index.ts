@@ -1,5 +1,8 @@
 import { Processor as BullProcessor } from "bullmq";
 import { BaseApplication } from "../base";
+// Force import to resolve Jobs type
+import "./compute";
+import "./computeFp";
 
 /** `JobName: JobData` */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
