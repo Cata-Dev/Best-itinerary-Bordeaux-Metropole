@@ -14,7 +14,8 @@ import {
 import { currentJourney, fetchFootpaths, result, type Journey } from "@/store/api";
 import { duration } from "@bibm/common/time";
 import type { Transport as ServerTransport } from "@bibm/server/services/journey/journey.schema";
-import { faPersonWalking } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faFlag, faMap, faMapPin, faPersonWalking } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { MultiLineString, Point } from "ol/geom";
 import Fill from "ol/style/Fill";
 import Icon from "ol/style/Icon";
@@ -190,15 +191,15 @@ async function displayMap() {
         {{ title }}
       </h3>
       <button @click="displayMap()">
-        <font-awesome-icon
-          icon="map"
+        <FontAwesomeIcon
+          :icon="faMap"
           class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
       </button>
     </div>
     <div class="h-[2px] w-full my-3 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
     <div class="flex w-full mt-2">
-      <font-awesome-icon icon="clock" class="transition-darkmode text-2xl mr-2" />
+      <FontAwesomeIcon :icon="faClock" class="transition-darkmode text-2xl mr-2" />
       <span class="text-left">
         {{
           formatInterval(
@@ -210,8 +211,8 @@ async function displayMap() {
         }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
-      <font-awesome-icon
-        icon="person-walking"
+      <FontAwesomeIcon
+        :icon="faPersonWalking"
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
@@ -259,8 +260,8 @@ async function displayMap() {
       <div class="">
         {{ formatInterval(...(departure.map((time) => formatDate(time, true)) as [string, string])) }}
       </div>
-      <font-awesome-icon
-        icon="map-pin"
+      <FontAwesomeIcon
+        :icon="faMapPin"
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
       <div class="flex items-center w-full">
@@ -273,7 +274,7 @@ async function displayMap() {
       <template v-for="(p, i) in path.stages" :key="i">
         <!-- First row - header -->
         <!-- First col : mode icon -->
-        <font-awesome-icon
+        <FontAwesomeIcon
           :icon="transportToIcon('type' in p.details ? p.details.type : p.type)"
           class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
@@ -312,9 +313,9 @@ async function displayMap() {
           }}
         </div>
         <!-- Second col : icon (start/bullet/end) -->
-        <font-awesome-icon
+        <FontAwesomeIcon
           v-if="i === path.stages.length - 1"
-          icon="flag"
+          :icon="faFlag"
           class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
         <div v-else class="bullet transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
@@ -358,8 +359,8 @@ async function displayMap() {
     </h3>
     <div class="h-[2px] w-full my-3 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
     <div class="flex w-full">
-      <font-awesome-icon
-        icon="clock"
+      <FontAwesomeIcon
+        :icon="faClock"
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
@@ -373,8 +374,8 @@ async function displayMap() {
         }}
       </span>
       <span class="text-right ml-auto"> {{ numberFormat(Math.round(totalDistance / 10) / 100) }} km </span>
-      <font-awesome-icon
-        icon="person-walking"
+      <FontAwesomeIcon
+        :icon="faPersonWalking"
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>
@@ -414,8 +415,8 @@ async function displayMap() {
       </template>
     </div>
     <div class="flex w-full mt-2">
-      <font-awesome-icon
-        icon="map-pin"
+      <FontAwesomeIcon
+        :icon="faMapPin"
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl mr-2"
       />
       <span class="text-left">
@@ -436,8 +437,8 @@ async function displayMap() {
           )
         }}
       </span>
-      <font-awesome-icon
-        icon="flag"
+      <FontAwesomeIcon
+        :icon="faFlag"
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-2"
       />
     </div>

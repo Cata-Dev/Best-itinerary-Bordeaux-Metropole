@@ -1,3 +1,13 @@
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import {
+  faBus,
+  faQuestionCircle,
+  faShip,
+  faSubway,
+  faTrain,
+  faWalking,
+} from "@fortawesome/free-solid-svg-icons";
+
 /**
  * @returns {string} Une date au format "DD/MoMo, HH:MiMi"
  */
@@ -34,23 +44,16 @@ function formatInterval(a: string, b: string) {
   return a === b ? a : `${commonPrefix}[${a.slice(commonPrefix.length)}, ${b.slice(commonPrefix.length)}]`;
 }
 
-export type UnknownIcon = "question-circle";
-export type TransportIcon = "walking" | "bus" | "train" | "ship" | "subway";
-
-const icons: Record<TransportMode | UnknownLiteral, TransportIcon | UnknownIcon> = {
-  FOOT: "walking",
-  BUS: "bus",
-  TRAM: "train",
-  BATEAU: "ship",
-  TRAIN: "subway",
-  UNKNOWN: "question-circle",
+const icons: Record<TransportMode | UnknownLiteral, IconDefinition> = {
+  FOOT: faWalking,
+  BUS: faBus,
+  TRAM: faTrain,
+  BATEAU: faShip,
+  TRAIN: faSubway,
+  UNKNOWN: faQuestionCircle,
 };
 
-/**
- * @param {String} transport
- * @returns {String}
- */
-function transportToIcon(transport: string) {
+function transportToIcon(transport: string): IconDefinition {
   transport = transport.toUpperCase();
   return transport in icons ? icons[transport as keyof typeof icons] : icons.UNKNOWN;
 }

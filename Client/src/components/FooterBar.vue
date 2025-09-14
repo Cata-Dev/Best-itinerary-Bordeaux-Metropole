@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { toggleDarkMode, theme, APIRefresh } from "@/store";
 import DynamicBadge from "@/components/DynamicBadge.vue";
+import { APIRefresh, ClientStatus, clientStatus, theme, toggleDarkMode } from "@/store";
+import { faCheckCircle, faCircleHalfStroke, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { ref } from "vue";
 
-const text = ref("Realtime");
-const APIStatus = ref();
+const realtimeDetails = ref("fetching...");
 
 APIRefresh.promise
   .then((r) => {
-    APIStatus.value = "ready";
-    text.value = `Realtime (${new Date(r.lastActualization).toLocaleTimeString()})`;
+    realtimeDetails.value = `(${new Date(r.lastActualization).toLocaleTimeString()})`;
   })
   .catch(() => {
-    APIStatus.value = "dead";
+    realtimeDetails.value = ` unavailable`;
   });
 </script>
 
@@ -20,10 +20,20 @@ APIRefresh.promise
   <div class="flex gap-2 sm:gap-3 items-center">
     <div class="flex w-fit my-[0.33rem] ml-2 sm:ml-4 justify-start">
       <DynamicBadge
-        :text="text"
-        :color="APIStatus === 'ready' ? 'success' : APIStatus === 'dead' ? 'alert' : 'info'"
+        :text="`Realtime ${realtimeDetails}`"
+        :color="
+          clientStatus === ClientStatus.Connected
+            ? 'success'
+            : clientStatus === ClientStatus.ConnectionError
+              ? 'alert'
+              : 'info'
+        "
         :icon="
-          APIStatus === 'ready' ? 'check-circle' : APIStatus === 'dead' ? 'exclamation-triangle' : 'loading'
+          clientStatus === ClientStatus.Connected
+            ? faCheckCircle
+            : clientStatus === ClientStatus.ConnectionError
+              ? faExclamationTriangle
+              : 'loading'
         "
         :bg="false"
       />
@@ -39,8 +49,8 @@ APIRefresh.promise
       }"
       @click="toggleDarkMode"
     >
-      <font-awesome-icon
-        icon="circle-half-stroke"
+      <FontAwesomeIcon
+        :icon="faCircleHalfStroke"
         class="text-xl transition-transform duration-darkmode text-text-light-primary dark:text-text-dark-primary"
       />
     </button>

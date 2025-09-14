@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { transportToIcon } from "@/store";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 defineProps<{ type: string; transport?: string; customText?: string }>();
 </script>
@@ -17,7 +18,7 @@ defineProps<{ type: string; transport?: string; customText?: string }>();
             : 'bg-slate-700'
     "
   >
-    <font-awesome-icon
+    <FontAwesomeIcon
       v-if="transport !== undefined"
       :icon="transportToIcon(transport)"
       class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-size-inherit mr-2"

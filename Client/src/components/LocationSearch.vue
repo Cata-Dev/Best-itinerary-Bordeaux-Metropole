@@ -4,6 +4,8 @@ import { wait } from "@bibm/common/async";
 import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import type { Geocode } from "@bibm/server";
+import { faCrosshairs, faFlag, faMapPin } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, useTemplateRef, watch } from "vue";
 import { client, defaultLocation, equalObjects } from "../store/";
 import DatalistInput from "./DatalistInput.vue";
@@ -129,8 +131,8 @@ const popUp = (msg: string) => {
     class="flex w-full items-stretch relative px-3 py-2 transition-darkmode bg-bg-light dark:bg-bg-dark rounded-full shadow-xl"
   >
     <button class="flex mr-1 items-center" @click="popUp('Not yet :(')">
-      <font-awesome-icon
-        icon="crosshairs"
+      <FontAwesomeIcon
+        :icon="faCrosshairs"
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
       />
     </button>
@@ -143,8 +145,8 @@ const popUp = (msg: string) => {
       @input="refreshSuggestions($event)"
     />
     <span class="flex mr-1 items-center">
-      <font-awesome-icon
-        :icon="name == 'destination' ? 'flag' : 'map-pin'"
+      <FontAwesomeIcon
+        :icon="name == 'destination' ? faFlag : faMapPin"
         class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl ml-1"
       />
     </span>

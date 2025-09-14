@@ -18,6 +18,8 @@ import {
   updateRoute,
   type Journey,
 } from "@/store/api";
+import { faSearchLocation, faSliders } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { onMounted, ref, useTemplateRef, watch } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
 
@@ -145,8 +147,8 @@ watch([result, currentJourney], () => {
                 :class="{ 'rotate-180': settingsCompo?.shown }"
                 @click="(settingsCompo?.show(), showSettingsButton?.blur())"
               >
-                <font-awesome-icon
-                  icon="sliders-h"
+                <FontAwesomeIcon
+                  :icon="faSliders"
                   class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
                 />
               </button>
@@ -155,8 +157,8 @@ watch([result, currentJourney], () => {
                 class="flex hover:scale-[120%] pulse-scale-focus transition-darkmode-transform items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
                 @click="(fetchResult(), searchElem?.blur())"
               >
-                <font-awesome-icon
-                  icon="search-location"
+                <FontAwesomeIcon
+                  :icon="faSearchLocation"
                   class="text-2xl transition-colors duration-200"
                   :class="{
                     'text-success-t': status.state === SearchResultStatus.SUCCESS,
@@ -229,7 +231,7 @@ watch([result, currentJourney], () => {
     <BaseModal ref="modalCompo" :main-classes="modal.colors">
       <template #title>
         <h1 class="text-2xl text-center">
-          <font-awesome-icon :icon="modal.icon || 'spinner'" class="mr-1" />
+          <FontAwesomeIcon :icon="modal.icon || 'spinner'" class="mr-1" />
           {{ modal.title }}
         </h1>
       </template>

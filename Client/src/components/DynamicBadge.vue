@@ -1,23 +1,13 @@
 <script setup lang="ts">
-defineProps({
-  text: {
-    type: String,
-    required: true,
-  },
-  icon: {
-    type: String,
-    required: true,
-  },
-  color: {
-    type: String,
-    required: true,
-  },
-  bg: {
-    type: Boolean,
-    required: false,
-    default: true,
-  },
-});
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+defineProps<{
+  text: string;
+  icon: "loading" | IconDefinition;
+  color: "success" | "info" | "alert";
+  bg?: boolean;
+}>();
 </script>
 
 <template>
@@ -44,7 +34,7 @@ defineProps({
       class="spinner-border animate-spin inline-block w-4 h-4 squared border-2 rounded-full border-info-t"
       role="status"
     />
-    <font-awesome-icon v-else :icon="icon" class="text-xl" :class="`text-${color}-t`" />
+    <FontAwesomeIcon v-else :icon="icon" class="text-xl" :class="`text-${color}-t`" />
   </div>
 </template>
 
