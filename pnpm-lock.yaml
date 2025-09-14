@@ -158,7 +158,7 @@ importers:
         version: 8.18.1
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
       shx:
         specifier: ^0.4.0
         version: 0.4.0
@@ -207,7 +207,7 @@ importers:
         version: 8.18.1
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
     devDependencies:
       '@eslint/js':
         specifier: ^9.35.0
@@ -3289,8 +3289,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -7192,7 +7192,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb: {}
 
   raw-body@2.5.2:
     dependencies:
