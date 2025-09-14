@@ -1,3 +1,13 @@
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import {
+  faBus,
+  faQuestionCircle,
+  faShip,
+  faSubway,
+  faTrain,
+  faWalking,
+} from "@fortawesome/free-solid-svg-icons";
+
 /**
  * @returns {string} Une date au format "DD/MoMo, HH:MiMi"
  */
@@ -13,23 +23,37 @@ function formatDate(date: string | number | Date, hourOnly = false): string {
   return `${h}:${mi}`;
 }
 
-export type UnknownIcon = "question-circle";
-export type TransportIcon = "walking" | "bus" | "train" | "ship" | "subway";
+/**
+ * Format a string interval.
+ * Keeps only one bound if they are equal, and factorize the common prefix (delimited by whitespace).
+ * @param a First interval bound
+ * @param b Second interval bound
+ */
+function formatInterval(a: string, b: string) {
+  const aParts = a.split(" ");
+  const bParts = b.split(" ");
+  let commonPrefixIdx = -1;
+  while (
+    ++commonPrefixIdx < Math.min(aParts.length, bParts.length) &&
+    aParts[commonPrefixIdx] === bParts[commonPrefixIdx]
+  );
+  commonPrefixIdx--;
 
-const icons: Record<TransportMode | UnknownLiteral, TransportIcon | UnknownIcon> = {
-  FOOT: "walking",
-  BUS: "bus",
-  TRAM: "train",
-  BATEAU: "ship",
-  TRAIN: "subway",
-  UNKNOWN: "question-circle",
+  const commonPrefix = aParts.slice(0, commonPrefixIdx + 1).join(" ") + (commonPrefixIdx > -1 ? " " : "");
+
+  return a === b ? a : `${commonPrefix}[${a.slice(commonPrefix.length)}, ${b.slice(commonPrefix.length)}]`;
+}
+
+const icons: Record<TransportMode | UnknownLiteral, IconDefinition> = {
+  FOOT: faWalking,
+  BUS: faBus,
+  TRAM: faTrain,
+  BATEAU: faShip,
+  TRAIN: faSubway,
+  UNKNOWN: faQuestionCircle,
 };
 
-/**
- * @param {String} transport
- * @returns {String}
- */
-function transportToIcon(transport: string) {
+function transportToIcon(transport: string): IconDefinition {
   transport = transport.toUpperCase();
   return transport in icons ? icons[transport as keyof typeof icons] : icons.UNKNOWN;
 }
@@ -83,7 +107,8 @@ function rebaseObject<V extends string | number | boolean>(target: Obj<V>, base:
 
     if (typeof target[k] === "object" && typeof base[k] === "object") return rebaseObject(target[k], base[k]);
 
-    if (base[k] != target[k]) target[k] = base[k];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (base[k] != target[k]) target[k] = base[k]!;
   }
 
   return target;
@@ -153,15 +178,19 @@ declare global {
   }
 }
 
+const hasMouse = matchMedia("(pointer:fine)").matches;
+
 export {
+  compareObjectForEach,
+  equalObjects,
   formatDate,
+  formatDateToInput,
+  formatInterval,
+  getNewTopZIndex,
+  hasMouse,
+  parseJSON,
+  rebaseObject,
   transportToIcon,
   transportToType,
-  equalObjects,
-  rebaseObject,
-  compareObjectForEach,
-  formatDateToInput,
-  parseJSON,
-  getNewTopZIndex,
 };
 export type { Obj };

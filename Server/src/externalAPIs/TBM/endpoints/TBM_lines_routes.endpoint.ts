@@ -5,7 +5,7 @@ import { BaseTBM } from "..";
 import { Application } from "../../../declarations";
 import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
+import { makeTBMSRHook } from "./TBMScheduledRoutes.endpoint";
 import { makeLinkLineRoutesHook } from "./TBM_link_line_routes_sections.endpoint";
 
 export type TBM_Lines_route = BaseTBM<{
@@ -58,7 +58,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       LinesRoute,
     )
       .registerHook(
-        makeSRHook(app, TBMEndpoints.Lines_routes),
+        makeTBMSRHook(app, TBMEndpoints.Lines_routes),
         makeLinkLineRoutesHook(app, TBMEndpoints.Lines_routes),
       )
       .init(),

@@ -1,7 +1,7 @@
 import { ReturnModelType } from "@typegoose/typegoose";
 import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
-import type { BulkWriteResult, DeleteResult } from "mongodb";
-import { FilterQuery } from "mongoose";
+import type { DeleteResult } from "mongodb";
+import { FilterQuery, MongooseBulkWriteResult } from "mongoose";
 
 type SupportedBulkOp = "updateOne" | "deleteOne";
 export function formatDocToBulkOps<K extends string | number | symbol, D extends Record<K, unknown>>(
@@ -58,7 +58,7 @@ export function bulkUpsertAndPurge<
   K extends string | number | symbol,
   // Documents
   D extends InstanceType<S> & Record<K, unknown>,
->(model: ReturnModelType<S>, docs: D[], keys: K[]): Promise<[BulkWriteResult, DeleteResult]> {
+>(model: ReturnModelType<S>, docs: D[], keys: K[]): Promise<[MongooseBulkWriteResult, DeleteResult]> {
   return Promise.all([
     model.bulkWrite(bulkOps("updateOne", docs, keys)),
     model.deleteMany(

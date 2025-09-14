@@ -3,7 +3,9 @@ import type { Id, Params, ServiceInterface } from "@feathersjs/feathers";
 
 import { mapAsync } from "@bibm/common/async";
 import { Coords } from "@bibm/common/geographics";
-import { JobResult } from "@bibm/compute/lib/jobs";
+import { UnpackRefType } from "@bibm/common/types";
+import { JobResult } from "@bibm/compute/jobs/index";
+import footGraphEdgeModelInit from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import resultModelInit, {
   dbComputeResult,
   isJourneyStepFoot,
@@ -11,6 +13,12 @@ import resultModelInit, {
   isLocationAddress,
   isLocationSNCF,
   isLocationTBM,
+  isPointSNCFStop,
+  isPointTBMStop,
+  isRouteSNCF,
+  isRouteTBM,
+  SNCFStopPoint,
+  TBMStopPoint,
 } from "@bibm/data/models/Compute/result.model";
 import SNCFStopsModelInit from "@bibm/data/models/SNCF/SNCF_stops.model";
 import AddressesModelInit from "@bibm/data/models/TBM/addresses.model";
@@ -51,6 +59,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
   private readonly SNCFStopsModel: ReturnType<typeof SNCFStopsModelInit>;
   private readonly TBMRouteSectionsModel: ReturnType<typeof TBMRouteSectionsModelInit>;
   private readonly TBMLinkLineRoutesSectionsModel: ReturnType<typeof TBMLinkLineRoutesSectionsInit>;
+  private readonly footGraphEdgeModel: ReturnType<typeof footGraphEdgeModelInit>;
 
   constructor(public options: PathServiceOptions) {
     this.app = options.app;
@@ -62,6 +71,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
     this.SNCFStopsModel = SNCFStopsModelInit(this.app.get("sourceDBConn"));
     this.TBMRouteSectionsModel = TBMRouteSectionsModelInit(this.app.get("sourceDBConn"));
     this.TBMLinkLineRoutesSectionsModel = TBMLinkLineRoutesSectionsInit(this.app.get("sourceDBConn"));
+    this.footGraphEdgeModel = footGraphEdgeModelInit(this.app.get("sourceDBConn"));
   }
 
   private async getCoords(loc: dbComputeResult["from"]): Promise<Coords> {
@@ -122,9 +132,17 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                 // <=> nextNode is number
                 // Find in which direction to take fromAps
                 if (fromAps.rg_fv_graph_nd === nextNode) {
-                  return [from, ...fromAps.coords.slice(0, result.apDetails[0].idx + 1).toReversed()];
+                  return [
+                    from,
+                    result.apDetails[0].approachedPoint,
+                    ...fromAps.coords.slice(0, result.apDetails[0].idx + 1).toReversed(),
+                  ];
                 } else if (fromAps.rg_fv_graph_na === nextNode) {
-                  return [from, ...fromAps.coords.slice(result.apDetails[0].idx + 1)];
+                  return [
+                    from,
+                    result.apDetails[0].approachedPoint,
+                    ...fromAps.coords.slice(result.apDetails[0].idx + 1),
+                  ];
                 } else throw new GeneralError("Unexpected path while populating shape");
               }
             }
@@ -138,9 +156,17 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                 // fromAps must be null <=> node is number
                 // Find in which direction to take toApt
                 if (toApt.rg_fv_graph_nd === node) {
-                  return [...toApt.coords.slice(0, result.apDetails[1].idx + 1), to];
+                  return [
+                    ...toApt.coords.slice(0, result.apDetails[1].idx + 1),
+                    result.apDetails[1].approachedPoint,
+                    to,
+                  ];
                 } else if (toApt.rg_fv_graph_na === node) {
-                  return [...toApt.coords.slice(result.apDetails[1].idx + 1).toReversed(), to];
+                  return [
+                    ...toApt.coords.slice(result.apDetails[1].idx + 1).toReversed(),
+                    result.apDetails[1].approachedPoint,
+                    to,
+                  ];
                 } else throw new GeneralError("Unexpected path while populating shape");
               }
             }
@@ -151,15 +177,19 @@ export class PathService<ServiceParams extends PathParams = PathParams>
               if (fromAps.rg_fv_graph_na === toApt.rg_fv_graph_nd)
                 return [
                   from,
+                  result.apDetails[0].approachedPoint,
                   ...fromAps.coords.slice(result.apDetails[0].idx + 1).toReversed(),
                   ...toApt.coords.slice(0, result.apDetails[1].idx + 1),
+                  result.apDetails[1].approachedPoint,
                   to,
                 ];
               else if (fromAps.rg_fv_graph_nd === toApt.rg_fv_graph_na)
                 return [
                   from,
+                  result.apDetails[0].approachedPoint,
                   ...fromAps.coords.slice(0, result.apDetails[0].idx + 1).toReversed(),
                   ...toApt.coords.slice(result.apDetails[1].idx + 1).toReversed(),
+                  result.apDetails[1].approachedPoint,
                   to,
                 ];
               else throw new GeneralError("Unexpected path while populating ");
@@ -178,13 +208,82 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                 },
               ],
             });
-            if (!section) throw new GeneralError("Unexpected path while populating shape");
+            if (section) {
+              if (section.rg_fv_graph_nd !== node)
+                // Reversed direction
+                section.coords.reverse();
 
-            if (section.rg_fv_graph_nd !== node)
-              // Reversed direction
-              section.coords.reverse();
+              return section.coords;
+            }
 
-            return section.coords;
+            const connection = await this.footGraphEdgeModel.findOne(
+              {
+                $or: [
+                  {
+                    s: node,
+                    target: nextNode,
+                  },
+
+                  {
+                    s: nextNode,
+                    target: node,
+                  },
+
+                  {
+                    t: node,
+                    target: nextNode,
+                  },
+
+                  {
+                    t: nextNode,
+                    target: node,
+                  },
+                ],
+              },
+              undefined,
+              { populate: ["edge"] },
+            );
+            if (!connection) throw new GeneralError("Unexpected path while populating shape");
+            if (typeof connection.edge === "number")
+              throw new GeneralError("Unexpected unpopulated section while populating shape");
+
+            // Find target coordinates
+            const targetSection = await this.TBMSectionsModel.findOne({
+              $or: [{ rg_fv_graph_nd: connection.target }, { rg_fv_graph_na: connection.target }],
+            });
+            if (!targetSection)
+              throw new GeneralError("Unexpected no section for connecting node while populating shape");
+            const targetCoords =
+              targetSection.rg_fv_graph_nd === connection.target
+                ? targetSection.coords[0]
+                : targetSection.coords.at(-1)!;
+
+            if (connection.s === node && connection.target === nextNode)
+              return [
+                ...connection.edge.coords.slice(0, connection.cutIdx + 1),
+                connection.approachedCoords,
+                targetCoords,
+              ];
+            else if (connection.s === nextNode && connection.target === node)
+              return [
+                targetCoords,
+                connection.approachedCoords,
+                ...connection.edge.coords.slice(0, connection.cutIdx + 1).toReversed(),
+              ];
+            else if (connection.t === node && connection.target === nextNode)
+              return [
+                ...connection.edge.coords.slice(connection.cutIdx + 1).toReversed(),
+                connection.approachedCoords,
+                targetCoords,
+              ];
+            else if (connection.t === nextNode && connection.target === node)
+              return [
+                targetCoords,
+                connection.approachedCoords,
+                ...connection.edge.coords.slice(connection.cutIdx + 1),
+              ];
+
+            return [];
           }
         : async (node): Promise<Coords> => {
             if (node === "aps") return from;
@@ -227,10 +326,12 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                         i === 1
                           ? // First effective journey step (very first is a base journey step), source comes from "from"
                             await this.getCoords(journey.from)
-                          : // Source comes from "boardedAt", must be a stop id by construction
-                            // because it's a string <=> it's source or target
-                            (await this.TBMStopsModel.findById(journeyStep.boardedAt as number).lean())
-                              ?.coords;
+                          : // Source comes from "boardedAt", must be a stop by construction
+                            isPointTBMStop(journeyStep.boardedAt)
+                            ? (await this.TBMStopsModel.findById(journeyStep.boardedAt.id).lean())?.coords
+                            : isPointSNCFStop(journeyStep.boardedAt)
+                              ? (await this.SNCFStopsModel.findById(journeyStep.boardedAt.id).lean())?.coords
+                              : null;
 
                       if (!from) throw new GeneralError("Unable to retrieve journey foot path source.");
 
@@ -238,10 +339,13 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                         i === arr.length - 1
                           ? // Last journey step, target comes from "to"
                             await this.getCoords(journey.to)
-                          : // Target comes from "to", must be a stop id by construction
-                            // because it's a string <=> it's source or target
-                            (await this.TBMStopsModel.findById(journeyStep.transfer.to as number).lean())
-                              ?.coords;
+                          : // Target comes from "to", must be a stop  by construction
+                            isPointTBMStop(journeyStep.transfer.to)
+                            ? (await this.TBMStopsModel.findById(journeyStep.transfer.to.id).lean())?.coords
+                            : isPointSNCFStop(journeyStep.transfer.to)
+                              ? (await this.SNCFStopsModel.findById(journeyStep.transfer.to.id).lean())
+                                  ?.coords
+                              : null;
 
                       if (!to) throw new GeneralError("Unable to retrieve journey foot path destination.");
 
@@ -253,8 +357,13 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                       ...acc,
                       (async () => {
                         const from =
-                          // Must come from stop <=> stop id <=> number
-                          journeyStep.boardedAt as number;
+                          // Must come from stop <=> stop id
+                          isPointTBMStop(journeyStep.boardedAt)
+                            ? (journeyStep.boardedAt.id as UnpackRefType<typeof journeyStep.boardedAt.id>)
+                            : isPointSNCFStop(journeyStep.boardedAt)
+                              ? (journeyStep.boardedAt.id as UnpackRefType<typeof journeyStep.boardedAt.id>)
+                              : null;
+                        if (from === null) throw new GeneralError("Unexpected address vehicle source stop.");
 
                         let to: number;
                         if (i < arr.length - 1) {
@@ -263,21 +372,40 @@ export class PathService<ServiceParams extends PathParams = PathParams>
                             throw new GeneralError("Unexpected journey construction.");
 
                           to =
-                            // Must go to stop <=> stop id <=> number
-                            nextJourneyStep?.boardedAt as number;
+                            // Must go to stop <=> stop id
+                            (nextJourneyStep.boardedAt as TBMStopPoint | SNCFStopPoint).id as UnpackRefType<
+                              Pick<TBMStopPoint | SNCFStopPoint, "id">
+                            >;
                         } else {
-                          if (!isLocationTBM(journey.to))
+                          if (isLocationTBM(journey.to))
+                            to = journey.to.id as UnpackRefType<typeof journey.to.id>;
+                          else if (isLocationSNCF(journey.to))
+                            to = journey.to.id as UnpackRefType<typeof journey.to.id>;
+                          else if (isLocationAddress(journey.to))
                             throw new GeneralError("Unexpected journey construction.");
-
-                          to = journey.to.id as number;
+                          else
+                            throw new GeneralError(
+                              "Unexpected journey construction (unknown location type).",
+                            );
                         }
 
-                        if (isDocument(journeyStep.route))
-                          throw new GeneralError("Unexpected populated journey step.");
-
-                        return await this.get("tbm", {
-                          query: { from, to, line: journeyStep.route } satisfies PathParams["query"],
-                        } as ServiceParams);
+                        if (isRouteTBM(journeyStep.route))
+                          return await this.get("tbm", {
+                            query: {
+                              from,
+                              to,
+                              line: journeyStep.route.id as UnpackRefType<typeof journeyStep.route.id>,
+                            } satisfies PathParams["query"],
+                          } as ServiceParams);
+                        else if (isRouteSNCF(journeyStep.route))
+                          return await this.get("sncf", {
+                            query: {
+                              from,
+                              to,
+                              line: journeyStep.route.id as UnpackRefType<typeof journeyStep.route.id>,
+                            } satisfies PathParams["query"],
+                          } as ServiceParams);
+                        else throw new GeneralError("Unexpected journey construction (unknown route type).");
                       })(),
                     ]
                   : acc,
@@ -306,6 +434,7 @@ export class PathService<ServiceParams extends PathParams = PathParams>
       case "tbm": {
         if (!("line" in params.query)) throw new BadRequest(`Missing required parameter(s).`);
         const { line, from, to } = params.query;
+        if (typeof line !== "number") throw new BadRequest("TBM line must be a number.");
 
         const links = await this.TBMLinkLineRoutesSectionsModel.find({ rs_sv_chem_l: line }, undefined, {
           populate: { path: "rs_sv_tronc_l", model: this.TBMRouteSectionsModel },
@@ -343,6 +472,20 @@ export class PathService<ServiceParams extends PathParams = PathParams>
 
             return acc.concat([section.rs_sv_tronc_l.coords]);
           }, []),
+        };
+      }
+
+      case "sncf": {
+        if (!("line" in params.query)) throw new BadRequest(`Missing required parameter(s).`);
+        const { line } = params.query;
+        if (typeof line !== "string") throw new BadRequest("SNCF line must be a string.");
+
+        return {
+          type: Transport.SNCF,
+          line,
+          steps:
+            // Not storing SNCF routes paths for now
+            [],
         };
       }
 

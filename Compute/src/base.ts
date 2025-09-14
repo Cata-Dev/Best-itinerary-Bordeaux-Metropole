@@ -1,9 +1,10 @@
 import { mapAsync } from "@bibm/common/async";
 import { Logger } from "@bibm/common/logger";
+import { UnionToTuple } from "@bibm/common/types";
 import { config } from "@bibm/data/config/index";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import { JourneyQuery } from "@bibm/server";
-import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker } from "bullmq";
+import { FlowJob, FlowProducer, Queue, QueueBaseOptions, QueueEvents, Worker, WorkerOptions } from "bullmq";
 import { RAPTORRunSettings } from "raptor";
 import { JobData, JobName, JobResult, Processor } from "./jobs";
 
@@ -33,7 +34,25 @@ type Instances<
           : never;
 };
 
-const jobNames = ["compute", "computeFp", "computeFpOTA", "computeNSR"] as const satisfies JobName[];
+interface JobSettings<J extends JobName> {
+  name: J;
+  settings: Omit<WorkerOptions, "connection">;
+}
+type DistributeJobSettings<J extends JobName> = J extends JobName ? JobSettings<J> : never;
+
+// TODO: add to config ?
+// 30 minutes
+const MAX_STALL_TIME = 30 * 60 * 1_000;
+
+const jobs = [
+  { name: "compute", settings: {} },
+  {
+    name: "computeFp",
+    settings: {},
+  },
+  { name: "computeFpOTA", settings: {} },
+  { name: "computeNSR", settings: { stalledInterval: MAX_STALL_TIME, lockDuration: MAX_STALL_TIME } },
+] as const satisfies UnionToTuple<DistributeJobSettings<JobName>>;
 
 export interface BaseApplication {
   readonly config: Config;
@@ -46,8 +65,8 @@ export interface BaseApplication {
 export type Application<T extends SchedulerInstanceType = SchedulerInstanceType> = BaseApplication &
   (T extends "queue"
     ? {
-        queues: Instances<typeof jobNames, "queue">;
-        queuesEvents: Instances<typeof jobNames, "queuesEvents">;
+        queues: Instances<UnionToTuple<JobName>, "queue">;
+        queuesEvents: Instances<UnionToTuple<JobName>, "queuesEvents">;
         computeFullJourney: (
           from: Extract<JourneyQuery, { from: unknown }>["from"],
           to: Extract<JourneyQuery, { to: unknown }>["to"],
@@ -55,12 +74,12 @@ export type Application<T extends SchedulerInstanceType = SchedulerInstanceType>
           settings: Partial<RAPTORRunSettings>,
         ) => Promise<
           Omit<Awaited<ReturnType<InstanceType<typeof FlowProducer>["add"]>>, "job"> & {
-            job: Awaited<ReturnType<Instances<typeof jobNames, "queue">["0"]["add"]>>;
+            job: Awaited<ReturnType<Instances<UnionToTuple<JobName>, "queue">["0"]["add"]>>;
           }
         >;
       }
     : T extends "worker"
-      ? { workers: Instances<typeof jobNames, "worker"> }
+      ? { workers: Instances<UnionToTuple<JobName>, "worker"> }
       : never);
 
 const logger = new Logger("[COMPUTE]");
@@ -87,12 +106,16 @@ interface FlowJobBase<N extends JobName> extends FlowJob {
 }
 
 export async function makeQueue() {
-  const queues = jobNames.map((j) => new Queue(j, { connection })) as Instances<typeof jobNames, "queue">;
+  const queues = jobs.map((j) => new Queue(j.name, { connection })) as Instances<
+    UnionToTuple<JobName>,
+    "queue"
+  >;
   // Enforce NSR to be done at most 1 by 1
   await queues[3].setGlobalConcurrency(1).catch((err) => logger.error(err));
 
-  await mapAsync(queues, (q) => q.waitUntilReady()).catch((err) => logger.error(err));
-  app.logger.log("Queue ready");
+  mapAsync(queues, (q) => q.waitUntilReady())
+    .then(() => app.logger.log("Queues ready"))
+    .catch((err) => app.logger.error(err));
 
   const flowProducer = new FlowProducer({ connection });
 
@@ -100,7 +123,7 @@ export async function makeQueue() {
     ...app,
     queues,
     queuesEvents: queues.map((q) => new QueueEvents(q.name, { connection })) as Instances<
-      typeof jobNames,
+      UnionToTuple<JobName>,
       "queuesEvents"
     >,
     computeFullJourney: (from, to, departureTime, settings) =>
@@ -133,39 +156,35 @@ export async function makeQueue() {
                 },
               ]
             : []),
-            ...(from.type === TBMEndpoints.Addresses && to.type === TBMEndpoints.Addresses
-              ? [
-                  {
-                    name: "computeFp" as const,
-                    queueName: "computeFp" as const,
-                    data: [from.coords, to.coords] satisfies [unknown, unknown],
-                    opts: {
-                      failParentOnFailure: false,
-                    },
+          ...(from.type === TBMEndpoints.Addresses && to.type === TBMEndpoints.Addresses
+            ? [
+                {
+                  name: "computeFp" as const,
+                  queueName: "computeFp" as const,
+                  data: [from.coords, to.coords] satisfies [unknown, unknown],
+                  opts: {
+                    failParentOnFailure: false,
                   },
-                ]
-              : []),
+                },
+              ]
+            : []),
         ],
       } satisfies FlowJobBase<"compute">),
   } as Application<"queue">;
 }
 
-// TODO: add to config ?
-// 30 minutes
-const MAX_STALL_TIME = 30 * 60 * 1_000;
-
-export function makeWorker(processors: Instances<typeof jobNames, "processor">) {
-  const workers = jobNames.map(
-    (n, i) =>
-      new Worker(n, (processors as Processor<JobName>[])[i], {
+export function makeWorker(processors: Instances<UnionToTuple<JobName>, "processor">) {
+  const workers = jobs.map(
+    (j, i) =>
+      new Worker(j.name, (processors as Processor<JobName>[])[i], {
         connection,
-        ...(n === "computeNSR" ? { stalledInterval: MAX_STALL_TIME, lockDuration: MAX_STALL_TIME } : {}),
+        ...j.settings,
       }),
-  ) as Instances<typeof jobNames, "worker">;
+  ) as Instances<UnionToTuple<JobName>, "worker">;
 
   mapAsync(workers, (w) => w.waitUntilReady())
     .then(() => app.logger.log("Workers ready"))
-    .catch((err) => logger.error(err));
+    .catch((err) => app.logger.error(err));
 
   return { ...app, workers } satisfies Application<"worker">;
 }
@@ -173,7 +192,7 @@ export function makeWorker(processors: Instances<typeof jobNames, "processor">) 
 export function askShutdown(app: Application) {
   return new Promise<string>((res, rej) => {
     mapAsync(
-      "queues" in app ? app.queues : (app.workers as Instances<typeof jobNames, SchedulerInstanceType>),
+      "queues" in app ? app.queues : (app.workers as Instances<UnionToTuple<JobName>, SchedulerInstanceType>),
       (i) => i.close(),
     )
       .then(() => {

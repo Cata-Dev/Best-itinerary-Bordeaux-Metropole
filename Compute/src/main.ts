@@ -2,6 +2,7 @@ import "core-js/features/reflect";
 
 import { AwaitableProps, Deferred, reduceAsync } from "@bibm/common/async";
 import { Logger } from "@bibm/common/logger";
+import { UnionToTuple } from "@bibm/common/types";
 import { singleUseWorker } from "@bibm/common/workers";
 import { Worker } from "node:worker_threads";
 import { join } from "path";
@@ -9,7 +10,6 @@ import { askShutdown, app as bApp, makeQueue } from "./base";
 import { makeComputeData } from "./jobs/preCompute/compute";
 import { makeComputeFpData } from "./jobs/preCompute/computeFp";
 import { makeComputePTNData } from "./jobs/preCompute/computePTN";
-import { UnionToTuple } from "./utils";
 import { isMessage, makeMessage, Message } from "./utils/para";
 
 declare module "./utils/para" {
@@ -99,6 +99,7 @@ export async function main(workersCount: number, data?: Message<"data">["data"])
      * Should NOT be called multiple times in parallel, i.e., wait for the previous refresh to resolve
      */
     refreshData: async (which: (keyof Message<"dataUpdate">["data"])[] = allDataUpdates) => {
+      app.logger.debug(`Refreshing data for ${which.join(", ")}`);
       const data = await preComputeDataFor(which);
 
       // Wait for all workers to have ack data before resolving

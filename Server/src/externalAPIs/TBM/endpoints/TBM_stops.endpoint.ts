@@ -7,7 +7,7 @@ import { Application } from "../../../declarations";
 import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint, parallelHooksConstructor, sequenceHooksConstructor } from "../../endpoint";
 import { makeNSRHook } from "./sections.endpoint";
-import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
+import { makeTBMSRHook } from "./TBMScheduledRoutes.endpoint";
 
 export type TBM_Stop = BaseTBM<{
   gid: string;
@@ -50,7 +50,10 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       .registerHook(
         sequenceHooksConstructor(
           () => () => app.get("computeInstance").refreshData(["compute", "computePTN"]),
-          parallelHooksConstructor(makeSRHook(app, TBMEndpoints.Stops), makeNSRHook(app, TBMEndpoints.Stops)),
+          parallelHooksConstructor(
+            makeTBMSRHook(app, TBMEndpoints.Stops),
+            makeNSRHook(app, TBMEndpoints.Stops),
+          ),
         ),
       )
       .init(),

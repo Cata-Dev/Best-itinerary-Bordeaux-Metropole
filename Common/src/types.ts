@@ -1,5 +1,56 @@
+import type { Ref } from "@typegoose/typegoose";
+import type { RefType } from "@typegoose/typegoose/lib/types";
+
 type KeyOfMap<M extends Map<unknown, unknown>> = M extends Map<infer K, unknown> ? K : never;
 
 type Satisfy<B, T extends B> = T;
 
-export { KeyOfMap, Satisfy };
+type UnpackRefType<T> =
+  T extends Ref<unknown, infer RT>
+    ? RT
+    : T extends Ref<unknown, infer RT>[]
+      ? RT
+      : T extends Ref<infer D>
+        ? D extends {
+            _id?: RefType;
+          }
+          ? D["_id"]
+          : never
+        : T extends Ref<infer D>[]
+          ? D extends {
+              _id?: RefType;
+            }
+            ? D["_id"][]
+            : never
+          : never;
+
+type PopulateRef<T> = T extends Ref<infer D> ? D : T extends Ref<infer D>[] ? D[] : never;
+
+type ReadonlyDeep<T> = {
+  readonly [P in keyof T]: ReadonlyDeep<T[P]>;
+};
+
+/**
+ * Override props in type B with props in type O
+ */
+type Override<B, O> = Omit<B, keyof O> & O;
+
+type UnionToIntersection<U> = (U extends never ? never : (arg: U) => never) extends (arg: infer I) => void
+  ? I
+  : never;
+
+type UnionToTuple<T> =
+  UnionToIntersection<T extends never ? never : (t: T) => T> extends (_: never) => infer W
+    ? [...UnionToTuple<Exclude<T, W>>, W]
+    : [];
+
+export {
+  KeyOfMap,
+  Override,
+  PopulateRef,
+  ReadonlyDeep,
+  Satisfy,
+  UnionToIntersection,
+  UnionToTuple,
+  UnpackRefType,
+};

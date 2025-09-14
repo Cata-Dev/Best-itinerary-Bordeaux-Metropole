@@ -118,4 +118,4 @@ dist
 .pnp.*
 .sqlite
 
-lib/
+/lib/

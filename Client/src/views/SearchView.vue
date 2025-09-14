@@ -3,7 +3,7 @@ import BaseModal from "@/components/BaseModal.vue";
 import ExtraSettings from "@/components/ExtraSettings.vue";
 import LocationSearch from "@/components/LocationSearch.vue";
 import ResultItem from "@/components/ResultItem.vue";
-import { APIRefresh, client, type colorComm, type colorPalette } from "@/store";
+import { APIRefresh, client, hasMouse, type colorComm, type colorPalette } from "@/store";
 import {
   actualRoute,
   currentJourney,
@@ -18,7 +18,9 @@ import {
   updateRoute,
   type Journey,
 } from "@/store/api";
-import { onMounted, ref, useTemplateRef } from "vue";
+import { faSearchLocation, faSliders } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { onMounted, ref, useTemplateRef, watch } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
 
 const sourceCompo = useTemplateRef("sourceCompo");
@@ -55,17 +57,41 @@ if (client.io?.io)
 onMounted(updateQuery);
 onBeforeRouteUpdate(updateQuery);
 
-function selectResult(path: Journey["paths"][number][number]) {
+const pseudoHover = ref<number | null>(null);
+
+function resetPseudoHover() {
+  pseudoHover.value = null;
+}
+
+function selectResult(path: Journey["paths"][number][number], stackPosition: number) {
   if (!result.value) return;
 
+  if (
+    !hasMouse &&
+    // Only when stacked & when a background card
+    stackPosition > 1 &&
+    // Only when not already hovered
+    pseudoHover.value === null
+  ) {
+    // On mobile, hover first
+    pseudoHover.value = path.idx;
+
+    return;
+  }
+
   currentJourney.value = path;
+  resetPseudoHover();
 
   return updateRoute();
 }
+
+watch([result, currentJourney], () => {
+  resetPseudoHover();
+});
 </script>
 
 <template>
-  <div class="h-full">
+  <div class="h-full" @click="resetPseudoHover">
     <div class="h-full flex flex-col">
       <div
         class="w-full flex justify-center relative h-fit transition-top p-2 pb-1"
@@ -121,8 +147,8 @@ function selectResult(path: Journey["paths"][number][number]) {
                 :class="{ 'rotate-180': settingsCompo?.shown }"
                 @click="(settingsCompo?.show(), showSettingsButton?.blur())"
               >
-                <font-awesome-icon
-                  icon="sliders-h"
+                <FontAwesomeIcon
+                  :icon="faSliders"
                   class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
                 />
               </button>
@@ -131,8 +157,8 @@ function selectResult(path: Journey["paths"][number][number]) {
                 class="flex hover:scale-[120%] pulse-scale-focus transition-darkmode-transform items-center p-2 mt-2 w-fit bg-bg-light dark:bg-bg-dark rounded-md"
                 @click="(fetchResult(), searchElem?.blur())"
               >
-                <font-awesome-icon
-                  icon="search-location"
+                <FontAwesomeIcon
+                  :icon="faSearchLocation"
                   class="text-2xl transition-colors duration-200"
                   :class="{
                     'text-success-t': status.state === SearchResultStatus.SUCCESS,
@@ -179,6 +205,7 @@ function selectResult(path: Journey["paths"][number][number]) {
                 :class="[
                   `scale-${100 - 5 * Math.min(paths.length - 1 - j, 6)}`,
                   ...(j > 0 ? [`mt-${8 * j}`] : []),
+                  ...(pseudoHover === path.idx ? ['-translate-y-10', 'scale-105', 'z-50'] : []),
                   ...(j < paths.length - 1 ? ['hover:-translate-y-10', 'hover:scale-105', 'hover:z-50'] : []),
                 ]"
               >
@@ -187,7 +214,12 @@ function selectResult(path: Journey["paths"][number][number]) {
                   :from="result.from"
                   :path="path"
                   class="cursor-pointer"
-                  @click="selectResult(path)"
+                  @click="
+                    (ev: PointerEvent) => {
+                      selectResult(path, paths.length - j);
+                      ev.stopPropagation();
+                    }
+                  "
                 />
               </div>
             </template>
@@ -199,7 +231,7 @@ function selectResult(path: Journey["paths"][number][number]) {
     <BaseModal ref="modalCompo" :main-classes="modal.colors">
       <template #title>
         <h1 class="text-2xl text-center">
-          <font-awesome-icon :icon="modal.icon || 'spinner'" class="mr-1" />
+          <FontAwesomeIcon :icon="modal.icon || 'spinner'" class="mr-1" />
           {{ modal.title }}
         </h1>
       </template>

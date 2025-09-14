@@ -14,8 +14,8 @@
   "contributors": [],
   "bugs": {},
   "engines": {
-    "node": ">=22.13.0",
-    "pnpm": ">=9"
+    "node": "^22.18.0",
+    "pnpm": "^10"
   },
   "feathers": {
     "language": "ts",
@@ -58,47 +58,47 @@
     "test": "pnpm run mocha",
     "type-check": "tsc -noEmit",
     "lint": "eslint ./src/",
-    "full-lint": "npm run lint && npm run type-check",
-    "prepare": "pnpm run compile"
+    "full-lint": "npm run lint && npm run type-check"
   },
   "dependencies": {
     "@bibm/common": "workspace:*",
     "@bibm/compute": "workspace:*",
     "@bibm/data": "workspace:*",
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
-    "@feathersjs/adapter-commons": "^5.0.34",
-    "@feathersjs/authentication": "^5.0.34",
-    "@feathersjs/authentication-client": "^5.0.34",
-    "@feathersjs/configuration": "^5.0.34",
-    "@feathersjs/errors": "^5.0.34",
-    "@feathersjs/feathers": "^5.0.34",
-    "@feathersjs/koa": "^5.0.34",
-    "@feathersjs/mongodb": "^5.0.34",
-    "@feathersjs/schema": "^5.0.34",
-    "@feathersjs/socketio": "^5.0.34",
-    "@feathersjs/transport-commons": "^5.0.34",
-    "@feathersjs/typebox": "^5.0.34",
-    "@typegoose/typegoose": "^12.17.0",
-    "axios": "^1.11.0",
-    "core-js": "^3.44.0",
+    "@feathersjs/adapter-commons": "^5.0.35",
+    "@feathersjs/authentication": "^5.0.35",
+    "@feathersjs/authentication-client": "^5.0.35",
+    "@feathersjs/configuration": "^5.0.35",
+    "@feathersjs/errors": "^5.0.35",
+    "@feathersjs/feathers": "^5.0.35",
+    "@feathersjs/koa": "^5.0.35",
+    "@feathersjs/mongodb": "^5.0.35",
+    "@feathersjs/schema": "^5.0.35",
+    "@feathersjs/socketio": "^5.0.35",
+    "@feathersjs/transport-commons": "^5.0.35",
+    "@feathersjs/typebox": "^5.0.35",
+    "@typegoose/typegoose": "^12.19.0",
+    "axios": "^1.12.0",
+    "core-js": "^3.45.1",
     "feathers-hooks-common": "^8.2.1",
-    "mongoose": "^8.16.2"
+    "mongoose": "^8.18.1"
   },
   "devDependencies": {
-    "@feathersjs/cli": "5.0.34",
-    "@feathersjs/rest-client": "^5.0.34",
+    "@eslint/js": "^9.35.0",
+    "@feathersjs/cli": "5.0.35",
+    "@feathersjs/rest-client": "^5.0.35",
     "@tsconfig/node22": "^22.0.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "22",
     "cross-env": "^7.0.3",
-    "eslint": "^9.30.1",
-    "mocha": "^11.7.1",
-    "mongodb": "^6.17.0",
+    "eslint": "^9.35.0",
+    "mocha": "^11.7.2",
+    "mongodb": "^6.18.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "shx": "^0.4.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.36.0"
+    "typescript": "5.9.2",
+    "typescript-eslint": "^8.43.0"
   }
 }

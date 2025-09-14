@@ -1,7 +1,6 @@
 import { SNCFEndpoints } from "@bibm/data/models/SNCF/index";
 import { TBMEndpoints } from "@bibm/data/models/TBM/index";
 import type { JourneyQuery } from "@bibm/server";
-import { APIRefresh, client } from "./feathers/feathers";
 import { theme, toggleDarkMode } from "./theme/theme";
 import { formatDateToInput, type TransportMode, type TransportProvider } from "./utils";
 
@@ -54,32 +53,9 @@ type colorComm = "info" | "alert" | "success";
 type colorType = "bg" | "t";
 type colorPalette<Base extends string> = `${Base}-${colorType}`;
 
-export {
-  APIRefresh,
-  client,
-  defaultLocation,
-  defaultQuerySettings,
-  normalizeLocationForQuery,
-  theme,
-  toggleDarkMode,
-};
+export { defaultLocation, defaultQuerySettings, normalizeLocationForQuery, theme, toggleDarkMode };
 export type { colorComm, colorPalette, colorTransports, Location, QuerySettings };
 
-export {
-  compareObjectForEach,
-  equalObjects,
-  formatDate,
-  getNewTopZIndex,
-  parseJSON,
-  rebaseObject,
-  transportToIcon,
-  transportToType,
-} from "./utils";
-export type {
-  Obj,
-  TransportIcon,
-  TransportMode,
-  TransportProvider,
-  UnknownIcon,
-  UnknownLiteral,
-} from "./utils";
+export * from "./feathers/feathers";
+export * from "./utils";
+export type { Obj, TransportMode, TransportProvider, UnknownLiteral } from "./utils";

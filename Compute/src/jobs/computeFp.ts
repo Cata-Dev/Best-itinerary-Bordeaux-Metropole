@@ -1,10 +1,10 @@
 import { Duration } from "@bibm/common/benchmark";
 import { Coords } from "@bibm/common/geographics";
+import { approachedStopName, PathStep } from "@bibm/data/models/Compute/GraphApproachedPoints.model";
 import nonScheduledRoutesModelInit, {
-  approachedStopName,
   dbFootPaths,
   dbFootPathsModel,
-} from "@bibm/data/models/TBM/NonScheduledRoutes.model";
+} from "@bibm/data/models/Compute/NonScheduledRoutes.model";
 import { dbSections } from "@bibm/data/models/TBM/sections.model";
 import { Dijkstra, path, tracePath } from "@catatomik/dijkstra";
 import { unpackGraphNode, WeightedGraph } from "@catatomik/dijkstra/lib/utils/Graph";
@@ -23,7 +23,7 @@ import {
 import { importWGraph } from "../utils/graph";
 import { initDB } from "../utils/mongoose";
 import type { makeComputeFpData } from "./preCompute/computeFp";
-import { makeComputePTNData, PTNGraphNode } from "./preCompute/computePTN";
+import { makeComputePTNData } from "./preCompute/computePTN";
 
 /**
  * Approached point details, to make the link without a graph
@@ -31,6 +31,7 @@ import { makeComputePTNData, PTNGraphNode } from "./preCompute/computePTN";
 export interface APDetails {
   sectionId: dbSections["_id"];
   idx: number;
+  approachedPoint: Coords;
 }
 
 declare module "." {
@@ -87,13 +88,13 @@ export default async function (
         path.length === 0
           ? Infinity
           : path.reduce<number>(
-              (acc, node, i, arr) => (i === arr.length - 1 ? acc : acc + footGraph.weight(node, arr[i + 1])),
+              (acc, node, i, arr) => (i < arr.length - 1 ? acc + footGraph.weight(node, arr[i + 1]) : acc),
               0,
             );
 
       // In reverted order!
-      revertFromApproachedPoint(edges, footGraph, "apt", apt[1]);
-      revertFromApproachedPoint(edges, footGraph, "aps", aps[1]);
+      revertFromApproachedPoint(edges, footGraph, "apt", apt[2]);
+      revertFromApproachedPoint(edges, footGraph, "aps", aps[2]);
 
       return new Promise<JobResult<"computeFp">>((res) =>
         res({
@@ -101,13 +102,15 @@ export default async function (
           path,
           apDetails: [
             {
-              sectionId: aps[1],
-              idx: aps[2],
+              sectionId: aps[2],
+              idx: aps[3],
+              approachedPoint: aps[1].export() as [number, number],
             },
 
             {
-              sectionId: apt[1],
-              idx: apt[2],
+              sectionId: apt[2],
+              idx: apt[3],
+              approachedPoint: apt[1].export() as [number, number],
             },
           ],
         }),
@@ -125,7 +128,7 @@ export default async function (
     typeof graphData & typeof graphPTNData,
     {
       mappedSegments: MappedSegments;
-      footPTNGraph: WeightedGraph<PTNGraphNode | "aps">;
+      footPTNGraph: WeightedGraph<PathStep | "aps">;
     }
   >(
     (
@@ -142,7 +145,7 @@ export default async function (
         maxCumulWeight: maxDist,
       });
 
-      revertFromApproachedPoint(edges, footPTNGraph, "aps", aps[1]);
+      revertFromApproachedPoint(edges, footPTNGraph, "aps", aps[2]);
 
       // Keep only distances right target
       const nodeCond = targetPTN
@@ -182,7 +185,7 @@ export default async function (
       typeof graphPTNData & {
         nonScheduledRoutesModel: dbFootPathsModel;
       },
-    WeightedGraph<PTNGraphNode>
+    WeightedGraph<PathStep>
   >(
     async ({ stops, nonScheduledRoutesModel }, footPTNGraph, job) => {
       const {
@@ -201,28 +204,22 @@ export default async function (
       let stopsTreatedCount = 0;
       let NSRInsertedCount = 0;
       let lastChunkInsertLogTime = Date.now();
-
-      for (const stopId of stops.keys()) {
-        const [dist, prev] = Dijkstra(
-          footPTNGraph,
-          [approachedStopName(stopId) as unpackGraphNode<typeof footPTNGraph>],
-          {
-            maxCumulWeight: maxDist,
-          },
-        );
+      for (const asName of stops.keys()) {
+        const [dist, prev] = Dijkstra(footPTNGraph, [asName as PathStep], {
+          maxCumulWeight: maxDist,
+        });
 
         const toInsert = Array.from(stops.keys()).reduce<dbFootPaths[]>((acc, to) => {
-          if (to === stopId) return acc;
+          if (to === asName) return acc;
 
-          const stopNode = approachedStopName(to);
-          const distance = dist.get(stopNode);
+          const distance = dist.get(to);
           if (distance === undefined || distance === Infinity) return acc;
 
           acc.push({
-            from: stopId,
+            from: asName,
             to,
             distance,
-            path: getFullPaths ? tracePath(prev, stopNode) : undefined,
+            path: getFullPaths ? tracePath(prev, to) : undefined,
           });
 
           return acc;

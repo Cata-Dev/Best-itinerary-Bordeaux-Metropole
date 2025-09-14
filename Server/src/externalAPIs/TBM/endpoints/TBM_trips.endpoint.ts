@@ -5,7 +5,7 @@ import { Application } from "../../../declarations";
 import { logger } from "../../../logger";
 import { bulkUpsertAndPurge } from "../../../utils";
 import { Endpoint } from "../../endpoint";
-import { makeSRHook } from "./TBMScheduledRoutes.endpoint";
+import { makeTBMSRHook } from "./TBMScheduledRoutes.endpoint";
 
 export type TBM_Trip = BaseTBM<{
   gid: string;
@@ -13,7 +13,8 @@ export type TBM_Trip = BaseTBM<{
   rg_sv_arret_p_nd: number;
   rg_sv_arret_p_na: number;
   rs_sv_ligne_a: number;
-  rs_sv_chem_l: number;
+  // Got null once, on 25/07/2025 16:30
+  rs_sv_chem_l: number | null;
 }>;
 
 export default async (app: Application, getData: <T>(id: string, queries?: string[]) => Promise<T>) => {
@@ -42,7 +43,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
             rg_sv_arret_p_nd: trip.properties.rg_sv_arret_p_nd,
             rg_sv_arret_p_na: trip.properties.rg_sv_arret_p_na,
             rs_sv_ligne_a: trip.properties.rs_sv_ligne_a,
-            rs_sv_chem_l: trip.properties.rs_sv_chem_l,
+            rs_sv_chem_l: trip.properties.rs_sv_chem_l ?? -1,
           };
         });
 
@@ -56,7 +57,7 @@ export default async (app: Application, getData: <T>(id: string, queries?: strin
       },
       Trip,
     )
-      .registerHook(makeSRHook(app, TBMEndpoints.Trips))
+      .registerHook(makeTBMSRHook(app, TBMEndpoints.Trips))
       .init(),
   ] as const;
 };

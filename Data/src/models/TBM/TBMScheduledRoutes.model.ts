@@ -13,6 +13,7 @@ import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { modelOptions } from "@typegoose/typegoose/lib/modelOptions";
 import { Connection } from "mongoose";
 import { TBMEndpoints } from ".";
+import { dbTBM_Lines_routes } from "./TBM_lines_routes.model";
 import { dbTBM_Schedules_rt, default as TBMSchedulesRtInit } from "./TBM_schedules.model";
 import { dbTBM_Stops, default as TBMStopsInit } from "./TBM_stops.model";
 
@@ -22,20 +23,19 @@ export class TripOfScheduledRoute {
   public tripId!: number;
 
   @prop({ required: true, ref: () => dbTBM_Schedules_rt, type: () => Number })
-  public schedules!: Ref<dbTBM_Schedules_rt, number>[];
+  public schedules!: Ref<dbTBM_Schedules_rt>[];
 }
 
 @modelOptions({ options: { customName: TBMEndpoints.ScheduledRoutes } })
 export class dbTBM_ScheduledRoutes extends TimeStamps {
-  @prop({ required: true })
-  // routeId
-  public _id!: number;
+  @prop({ required: true, ref: () => dbTBM_Lines_routes, type: () => Number })
+  public _id!: Ref<dbTBM_Lines_routes>;
 
   @prop({ required: true, type: () => TripOfScheduledRoute })
   public trips!: TripOfScheduledRoute[];
 
   @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
-  public stops!: Ref<dbTBM_Stops, number>[];
+  public stops!: Ref<dbTBM_Stops>[];
 }
 
 export default function init(db: Connection): ReturnModelType<typeof dbTBM_ScheduledRoutes> {
