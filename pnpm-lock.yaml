@@ -102,8 +102,8 @@ importers:
   Common:
     dependencies:
       '@feathersjs/typebox':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
         version: 12.19.0(mongoose@8.18.1)
@@ -158,7 +158,7 @@ importers:
         version: 8.18.1
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
       shx:
         specifier: ^0.4.0
         version: 0.4.0
@@ -194,8 +194,8 @@ importers:
         specifier: ^5.0.31
         version: 5.0.34(typescript@5.9.2)
       '@feathersjs/typebox':
-        specifier: ^5.0.31
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
         version: 12.19.0(mongoose@8.18.1)
@@ -207,7 +207,7 @@ importers:
         version: 8.18.1
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
     devDependencies:
       '@eslint/js':
         specifier: ^9.35.0
@@ -282,8 +282,8 @@ importers:
         specifier: ^5.0.34
         version: 5.0.34
       '@feathersjs/typebox':
-        specifier: ^5.0.34
-        version: 5.0.34(typescript@5.9.2)
+        specifier: ^5.0.35
+        version: 5.0.35(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
         version: 12.19.0(mongoose@8.18.1)
@@ -716,6 +716,10 @@ packages:
     resolution: {integrity: sha512-wc0HAZ0uov68p1ytBR5npyAePdNbFrRqr1fINSpLvIkrUkKDEcC6I/lOpk1TBpoI8so5IO/seZhkl25pqKM43A==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/adapter-commons@5.0.35':
+    resolution: {integrity: sha512-pQ0hR2scLpOm2cti5XMTgubrhLEZWIlchODrO2sPOwMS6FNpsbm7aOxKXtaFfMKHBVAyTJN1yjmfgbCT96Xb5w==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/authentication-client@5.0.34':
     resolution: {integrity: sha512-j+p88bnyZmOHelpiL3AbTee0gsEDF5G3/vyJm0x157Q3Y3vXsI4LU7n7Go3cbrjNkCpdqV0pn8CiaxFgQ2lteA==}
     engines: {node: '>= 12'}
@@ -733,6 +737,10 @@ packages:
     resolution: {integrity: sha512-UfHzq7taVJx++TXxX5pmDSR72xRp+h5nler4xcUlcJWLLykCOYo8YCeW03S7T1p1NuFdy0qBmU+B+G89bjyGmg==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/commons@5.0.35':
+    resolution: {integrity: sha512-YYk3SRLGcM9TPHsd2mGmTdFeZORmv5wa1MRCvmEUwzcsFIPWbq4F6ddFgqKUely216RvPumwyjV9U+MasROesQ==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/configuration@5.0.34':
     resolution: {integrity: sha512-5mn9k9ueJOpcl4x54h5ZBf5WtaIdKplc/rqxntolObw1dF/V0BvOX7S6cVypkPH0tQnf1GLvc1ag/rk015eSQw==}
     engines: {node: '>= 12'}
@@ -741,8 +749,16 @@ packages:
     resolution: {integrity: sha512-C0t+pONnMvwlDW6iczcYmxaHzGvaGn3+BLhwlySEVYRciWOURIO8Eo5JVdN7cSM3Z7AxS3Dpk4DEhyFU/D2w6w==}
     engines: {node: '>= 12'}
 
+  '@feathersjs/errors@5.0.35':
+    resolution: {integrity: sha512-J8ulAndEPUFTcPiGR0zO3VfnZqw1nL5BBEmFERRMlxYRCvBVwXPruOGpSEA/x2BY463UYTHD9j9Rj5lfGT62OQ==}
+    engines: {node: '>= 12'}
+
   '@feathersjs/feathers@5.0.34':
     resolution: {integrity: sha512-jgeqKq/Uhsfeld42F8uimqzPv/uhtohkenpaWeD+NudJp2YZNYfA6gDZAL5UTpAvrTJFmK3QR1q1CnuL1mJdHg==}
+    engines: {node: '>= 12'}
+
+  '@feathersjs/feathers@5.0.35':
+    resolution: {integrity: sha512-1T6DSQ97LJGmgS5NTu1Oe/Ef1zLgoqYDNAdj67UMNC5Vk7I0F8rohgQcaOOUp8DlKNkXPFWX/z+AXJM4DhkCHQ==}
     engines: {node: '>= 12'}
 
   '@feathersjs/generators@5.0.34':
@@ -773,6 +789,12 @@ packages:
     peerDependencies:
       typescript: '>=5.8'
 
+  '@feathersjs/schema@5.0.35':
+    resolution: {integrity: sha512-EmetZPKG76fPV2vMYlCqYTEarNGh6KURMrX7gNUmUSJDq7ERliqURx//yBeQQc0imPriOxEx51sZpdoH4Sl19Q==}
+    engines: {node: '>= 12'}
+    peerDependencies:
+      typescript: '>=5.9'
+
   '@feathersjs/socketio-client@5.0.34':
     resolution: {integrity: sha512-7mejzCX/lotsKFZaRrL1KA/lIuI/m1iPxy+5I7Fb+PLpRQUWAdNcCJPk/TutyXm+ksFNliPe2hB6qiXpKeqg3Q==}
     engines: {node: '>= 12'}
@@ -785,8 +807,8 @@ packages:
     resolution: {integrity: sha512-l+oQm1oIvfrxNUlidcqCtKfdWdKn1zHXGhEa13xIKiU5m2LFz1EYeMuq5vh/1pU0iECq3Oi+KdW53YnGl446cw==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/typebox@5.0.34':
-    resolution: {integrity: sha512-+xBQa4/cPqb1ozcfFk5/1PLJ7lVGYvnnfqSm5sTTxygsZUwZaBgKC23DRQ/tGL8p4dKdMSjgGEZYjuj1uWjbig==}
+  '@feathersjs/typebox@5.0.35':
+    resolution: {integrity: sha512-EadBjjrcllHHpRVdB04L/NsIbCPE6HcnADE1XmCxDRg0S6FxN/X7/9taqnOaA7ggZHSwbb00Hpl4zW7+40tAaA==}
     engines: {node: '>= 12'}
 
   '@fortawesome/fontawesome-common-types@6.7.2':
@@ -3289,8 +3311,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -4405,6 +4427,12 @@ snapshots:
       '@feathersjs/errors': 5.0.34
       '@feathersjs/feathers': 5.0.34
 
+  '@feathersjs/adapter-commons@5.0.35':
+    dependencies:
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+
   '@feathersjs/authentication-client@5.0.34(typescript@5.9.2)':
     dependencies:
       '@feathersjs/authentication': 5.0.34(typescript@5.9.2)
@@ -4438,6 +4466,8 @@ snapshots:
 
   '@feathersjs/commons@5.0.34': {}
 
+  '@feathersjs/commons@5.0.35': {}
+
   '@feathersjs/configuration@5.0.34(typescript@5.9.2)':
     dependencies:
       '@feathersjs/commons': 5.0.34
@@ -4450,9 +4480,17 @@ snapshots:
 
   '@feathersjs/errors@5.0.34': {}
 
+  '@feathersjs/errors@5.0.35': {}
+
   '@feathersjs/feathers@5.0.34':
     dependencies:
       '@feathersjs/commons': 5.0.34
+      '@feathersjs/hooks': 0.9.0
+      events: 3.3.0
+
+  '@feathersjs/feathers@5.0.35':
+    dependencies:
+      '@feathersjs/commons': 5.0.35
       '@feathersjs/hooks': 0.9.0
       events: 3.3.0
 
@@ -4516,6 +4554,19 @@ snapshots:
       json-schema-to-ts: 3.1.1
       typescript: 5.9.2
 
+  '@feathersjs/schema@5.0.35(typescript@5.9.2)':
+    dependencies:
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/hooks': 0.9.0
+      '@types/json-schema': 7.0.15
+      ajv: 8.17.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
+      json-schema-to-ts: 3.1.1
+      typescript: 5.9.2
+
   '@feathersjs/socketio-client@5.0.34':
     dependencies:
       '@feathersjs/feathers': 5.0.34
@@ -4540,9 +4591,9 @@ snapshots:
       encodeurl: 2.0.0
       lodash: 4.17.21
 
-  '@feathersjs/typebox@5.0.34(typescript@5.9.2)':
+  '@feathersjs/typebox@5.0.35(typescript@5.9.2)':
     dependencies:
-      '@feathersjs/schema': 5.0.34(typescript@5.9.2)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
       '@sinclair/typebox': 0.25.24
     transitivePeerDependencies:
       - typescript
@@ -7192,7 +7243,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/3afa79927fa591a9f59089df7a336b032bd911c5: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb: {}
 
   raw-body@2.5.2:
     dependencies:
