@@ -305,8 +305,8 @@ importers:
         specifier: ^9.35.0
         version: 9.35.0
       '@feathersjs/cli':
-        specifier: 5.0.34
-        version: 5.0.34
+        specifier: 5.0.35
+        version: 5.0.35
       '@feathersjs/rest-client':
         specifier: ^5.0.35
         version: 5.0.35
@@ -741,8 +741,8 @@ packages:
     resolution: {integrity: sha512-1Vh2//qAZVNClBLNiBknTxaynkEaz1tY5x7jkGUnevAvxGTxiBcIUNZosGNBW8go25ZKwe9/D7XrfGKlbSkOkg==}
     engines: {node: '>= 12'}
 
-  '@feathersjs/cli@5.0.34':
-    resolution: {integrity: sha512-1L/EXfRimdxfeb6fchSVyTB0BDvkiMj8K9v/x257jJaXZxr5+7moGU3KQm58VNHZzsPzBzU9k36qnO5BcqwBCw==}
+  '@feathersjs/cli@5.0.35':
+    resolution: {integrity: sha512-NCRfd1q65/pSyfvTDWEdCl4VcRSgMBmD0+zAxo/LnFVO27uPZiEKCg5fHFvONzDn+st1s4yj3prVUqkFQbapAA==}
     engines: {node: '>= 14'}
     hasBin: true
 
@@ -1724,10 +1724,6 @@ packages:
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
-
-  chalk@5.6.0:
-    resolution: {integrity: sha512-46QrSQFyVSEyYAgQ22hQ+zDa60YHA4fBstHmtSApj1Y5vKtG27fWowW03jCk5KcbXEWPZUIR894aARCA/G1kfQ==}
-    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
   chalk@5.6.2:
     resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
@@ -4543,10 +4539,10 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@feathersjs/cli@5.0.34':
+  '@feathersjs/cli@5.0.35':
     dependencies:
       '@feathersjs/generators': 5.0.35
-      chalk: 5.6.0
+      chalk: 5.6.2
       commander: 13.1.0
 
   '@feathersjs/commons@5.0.35': {}
@@ -5662,8 +5658,6 @@ snapshots:
     dependencies:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
-
-  chalk@5.6.0: {}
 
   chalk@5.6.2: {}
 
