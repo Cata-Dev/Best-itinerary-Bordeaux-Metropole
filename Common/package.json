@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Common files for BIBM",
   "engines": {
-    "node": ">=22.18.0",
-    "pnpm": ">=10"
+    "node": "^22.18.0",
+    "pnpm": "^10"
   },
   "exports": {
     ".": {
