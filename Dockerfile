@@ -9,34 +9,38 @@ RUN corepack enable
 FROM base AS build_base
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml /usr/src/app/
 
-COPY Common/ /usr/src/app/Common/
+COPY Common/ /usr/src/app/Common
 WORKDIR /usr/src/app/Common
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "common" install --frozen-lockfile
 RUN pnpm run build
 
-COPY Data/ /usr/src/app/Data/
+COPY Data/ /usr/src/app/Data
 WORKDIR /usr/src/app/Data
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "data" install --frozen-lockfile
 RUN pnpm run build
 
-COPY Compute/ /usr/src/app/Compute/
+COPY Compute/ /usr/src/app/Compute
 WORKDIR /usr/src/app/Compute
+# Fake Server dependency
+RUN mkdir /usr/src/app/Server
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile
 RUN pnpm run build || true
 
-COPY Server/ /usr/src/app/Server/
+COPY Server/ /usr/src/app/Server
 WORKDIR /usr/src/app/Server
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "server" install --frozen-lockfile
 RUN pnpm run compile
 
-# 2nd build try, will work
+# 2nd try, will work
 WORKDIR /usr/src/app/Compute
+# Install right Server dependency (link again)
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "compute" install --frozen-lockfile
 RUN pnpm run build
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm deploy --filter=server --prod /prod/server --frozen-lockfile
 
 FROM build_base AS build_client
-COPY Client/ /usr/src/app/Client/
+COPY Client/ /usr/src/app/Client
 WORKDIR /usr/src/app/Client
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm -F "client" install --frozen-lockfile
 # Set API URL/path, alias
