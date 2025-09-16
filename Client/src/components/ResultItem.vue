@@ -255,7 +255,7 @@ async function displayMap() {
       :class="`grid-rows-${stages.length * 2 + 1}`"
     >
       <!-- First first row - departure -->
-      <div class="">
+      <div>
         {{ formatInterval(...(departure.map((time) => formatDate(time, true)) as [string, string])) }}
       </div>
       <FontAwesomeIcon
