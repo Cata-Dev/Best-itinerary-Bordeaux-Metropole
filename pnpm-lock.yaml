@@ -19,7 +19,7 @@ importers:
         version: link:../Data
       '@bibm/server':
         specifier: workspace:*
-        version: file:Server(mongodb@6.19.0)(typescript@5.9.2)
+        version: link:../Server
       '@feathersjs/socketio-client':
         specifier: ^5.0.35
         version: 5.0.35
@@ -97,8 +97,8 @@ importers:
         specifier: ^8.0.2
         version: 8.0.2(vite@7.1.5(@types/node@22.18.0)(jiti@2.5.1)(lightningcss@1.30.1)(tsx@4.20.5))(vue@3.5.21(typescript@5.9.2))
       vue-tsc:
-        specifier: ^3.0.6
-        version: 3.0.6(typescript@5.9.2)
+        specifier: ^3.0.7
+        version: 3.0.7(typescript@5.9.2)
 
   Common:
     dependencies:
@@ -141,7 +141,7 @@ importers:
         version: link:../Data
       '@bibm/server':
         specifier: workspace:*
-        version: file:Server(mongodb@6.19.0)(typescript@5.9.2)
+        version: link:../Server
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -289,8 +289,8 @@ importers:
         specifier: ^12.19.0
         version: 12.19.0(mongoose@8.18.1)
       axios:
-        specifier: ^1.12.0
-        version: 1.12.0
+        specifier: ^1.12.2
+        version: 1.12.2
       core-js:
         specifier: ^3.45.1
         version: 3.45.1
@@ -504,22 +504,6 @@ packages:
   '@babel/types@7.28.4':
     resolution: {integrity: sha512-bkFqkLhh3pMBUQQkpVgWDWq/lqzc2678eUyDlTBhRqhCHFguYYGM0Efga7tYk4TogG/3x0EEl66/OQ+WGbWB/Q==}
     engines: {node: '>=6.9.0'}
-
-  '@bibm/common@file:Common':
-    resolution: {directory: Common, type: directory}
-    engines: {node: ^22.18.0, pnpm: ^10}
-
-  '@bibm/compute@file:Compute':
-    resolution: {directory: Compute, type: directory}
-    engines: {node: ^22.18.0, pnpm: ^10}
-
-  '@bibm/data@file:Data':
-    resolution: {directory: Data, type: directory}
-    engines: {node: ^22.18.0, pnpm: ^10}
-
-  '@bibm/server@file:Server':
-    resolution: {directory: Server, type: directory}
-    engines: {node: ^22.18.0, pnpm: ^10}
 
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     resolution: {tarball: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed}
@@ -1503,8 +1487,8 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@3.0.6':
-    resolution: {integrity: sha512-e2RRzYWm+qGm8apUHW1wA5RQxzNhkqbbKdbKhiDUcmMrNAZGyM8aTiL3UrTqkaFI5s7wJRGGrp4u3jgusuBp2A==}
+  '@vue/language-core@3.0.7':
+    resolution: {integrity: sha512-0sqqyqJ0Gn33JH3TdIsZLCZZ8Gr4kwlg8iYOnOrDDkJKSjFurlQY/bEFQx5zs7SX2C/bjMkmPYq/NiyY1fTOkw==}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
@@ -1633,9 +1617,6 @@ packages:
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
-
-  axios@1.12.0:
-    resolution: {integrity: sha512-oXTDccv8PcfjZmPGlWsPSwtOJCZ/b6W5jAMCNcfwJbCzDckwG0jrYJFaWH1yvivfCXjVzV/SPDEhMB3Q+DSurg==}
 
   axios@1.12.2:
     resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
@@ -3943,8 +3924,8 @@ packages:
     peerDependencies:
       vue: ^3.2.0
 
-  vue-tsc@3.0.6:
-    resolution: {integrity: sha512-Tbs8Whd43R2e2nxez4WXPvvdjGbW24rOSgRhLOHXzWiT4pcP4G7KeWh0YCn18rF4bVwv7tggLLZ6MJnO6jXPBg==}
+  vue-tsc@3.0.7:
+    resolution: {integrity: sha512-BSMmW8GGEgHykrv7mRk6zfTdK+tw4MBZY/x6fFa7IkdXK3s/8hQRacPjG9/8YKFDIWGhBocwi6PlkQQ/93OgIQ==}
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
@@ -4296,99 +4277,6 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
-
-  '@bibm/common@file:Common(mongoose@8.18.1)(typescript@5.9.2)':
-    dependencies:
-      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
-    transitivePeerDependencies:
-      - mongoose
-      - typescript
-
-  '@bibm/compute@file:Compute(mongodb@6.19.0)(typescript@5.9.2)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
-      '@bibm/data': file:Data(typescript@5.9.2)
-      '@bibm/server': file:Server(mongodb@6.19.0)(typescript@5.9.2)
-      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
-      bullmq: 5.58.5
-      core-js: 3.45.1
-      mongoose: 8.18.1
-      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
-      shx: 0.4.0
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - bufferutil
-      - debug
-      - gcp-metadata
-      - kerberos
-      - mongodb
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-      - utf-8-validate
-
-  '@bibm/data@file:Data(typescript@5.9.2)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
-      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
-      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
-      config: 4.1.1
-      mongoose: 8.18.1
-      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-
-  '@bibm/server@file:Server(mongodb@6.19.0)(typescript@5.9.2)':
-    dependencies:
-      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
-      '@bibm/compute': file:Compute(mongodb@6.19.0)(typescript@5.9.2)
-      '@bibm/data': file:Data(typescript@5.9.2)
-      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
-      '@feathersjs/adapter-commons': 5.0.35
-      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
-      '@feathersjs/authentication-client': 5.0.35(typescript@5.9.2)
-      '@feathersjs/configuration': 5.0.35(typescript@5.9.2)
-      '@feathersjs/errors': 5.0.35
-      '@feathersjs/feathers': 5.0.35
-      '@feathersjs/koa': 5.0.35(typescript@5.9.2)
-      '@feathersjs/mongodb': 5.0.35(mongodb@6.19.0)
-      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
-      '@feathersjs/socketio': 5.0.35
-      '@feathersjs/transport-commons': 5.0.35
-      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
-      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
-      axios: 1.12.2
-      core-js: 3.45.1
-      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.35)
-      mongoose: 8.18.1
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - bufferutil
-      - debug
-      - gcp-metadata
-      - kerberos
-      - mongodb
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
-      - typescript
-      - utf-8-validate
 
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     dependencies:
@@ -5441,7 +5329,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vue/language-core@3.0.6(typescript@5.9.2)':
+  '@vue/language-core@3.0.7(typescript@5.9.2)':
     dependencies:
       '@volar/language-core': 2.4.23
       '@vue/compiler-dom': 3.5.21
@@ -5571,14 +5459,6 @@ snapshots:
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
-
-  axios@1.12.0:
-    dependencies:
-      follow-redirects: 1.15.11
-      form-data: 4.0.4
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
 
   axios@1.12.2:
     dependencies:
@@ -8046,10 +7926,10 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.21(typescript@5.9.2)
 
-  vue-tsc@3.0.6(typescript@5.9.2):
+  vue-tsc@3.0.7(typescript@5.9.2):
     dependencies:
       '@volar/typescript': 2.4.23
-      '@vue/language-core': 3.0.6(typescript@5.9.2)
+      '@vue/language-core': 3.0.7(typescript@5.9.2)
       typescript: 5.9.2
 
   vue@3.5.21(typescript@5.9.2):
