@@ -37,6 +37,7 @@ import {
   SharedRAPTORData,
   bufferTime,
   sharedTimeIntOrderLow,
+  successProbaInt,
 } from "raptor";
 import type { JobData, JobFn, JobResult } from ".";
 import type { BaseApplication } from "../base";
@@ -166,8 +167,13 @@ function journeyDBFormatter<V, CA extends [V, string][]>(
 // Acts as a factory
 export default function (data: ReturnType<makeComputeData>) {
   let RAPTORData = SharedRAPTORData.makeFromInternalData(sharedTimeIntOrderLow, data.RAPTORInternalData);
-  let McRAPTORInstance = new McSharedRAPTOR<InternalTimeInt, number, [[number, "bufferTime"]]>(RAPTORData, [
+  let McRAPTORInstance = new McSharedRAPTOR<
+    InternalTimeInt,
+    number,
+    [[number, (typeof bufferTime)["name"]], [number, (typeof successProbaInt)["name"]]]
+  >(RAPTORData, [
     bufferTime as Criterion<InternalTimeInt, SharedID, SharedID, number, "bufferTime">,
+    successProbaInt,
   ]);
   let stopsMapping = data.stopsMapping;
   let routesMapping = data.routesMapping;
@@ -180,8 +186,13 @@ export default function (data: ReturnType<makeComputeData>) {
 
   const updateData = (data: ReturnType<makeComputeData>) => {
     RAPTORData = SharedRAPTORData.makeFromInternalData(sharedTimeIntOrderLow, data.RAPTORInternalData);
-    McRAPTORInstance = new McSharedRAPTOR<InternalTimeInt, number, [[number, "bufferTime"]]>(RAPTORData, [
+    McRAPTORInstance = new McSharedRAPTOR<
+      InternalTimeInt,
+      number,
+      [[number, (typeof bufferTime)["name"]], [number, (typeof successProbaInt)["name"]]]
+    >(RAPTORData, [
       bufferTime as Criterion<InternalTimeInt, SharedID, SharedID, number, "bufferTime">,
+      successProbaInt,
     ]);
     stopsMapping = data.stopsMapping;
     routesMapping = data.routesMapping;
