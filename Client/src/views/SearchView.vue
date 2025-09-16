@@ -188,7 +188,7 @@ watch([result, currentJourney], () => {
       <div v-if="currentJourney" class="fade-in flex px-4 pt-1 pb-4">
         <ResultItem
           :title="`Alternative #${currentJourney.idx + 1}`"
-          :from="(result as Journey).from"
+          :from="result!.from"
           :path="currentJourney"
           :criteria="currentJourney.criteria"
           :expanded="true"
