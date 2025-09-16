@@ -58,15 +58,13 @@ const uniqueTransports = computed(() =>
     })),
 );
 
-const departure = computed(() => props.path.stages[0]!.departure);
-const lastStage = computed(() => props.path.stages.at(-1)!);
-const arrival = computed(
-  () =>
-    [
-      lastStage.value.departure[0] + lastStage.value.duration[0] * 1000,
-      lastStage.value.departure[1] + lastStage.value.duration[1] * 1000,
-    ] satisfies [unknown, unknown],
+const stages = computed<(Props["path"]["stages"][number] & { arrival: [number, number] })[]>(() =>
+  props.path.stages.map((stage) => ({
+    ...stage,
+    arrival: [stage.departure[0] + stage.duration[0] * 1000, stage.departure[1] + stage.duration[1] * 1000],
+  })),
 );
+const departure = computed(() => props.path.stages[0]!.departure);
 const totalDistance = computed(() =>
   props.path.stages.reduce((acc, v) => acc + ("distance" in v.details ? v.details.distance : 0), 0),
 );
@@ -205,7 +203,7 @@ async function displayMap() {
           formatInterval(
             ...(Array.from(
               { length: 2 },
-              (_, i) => duration(arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
+              (_, i) => duration(stages.at(-1)!.arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
             ) as [string, string]),
           )
         }}
@@ -254,7 +252,7 @@ async function displayMap() {
 
     <div
       class="grid gap-3 grid-cols-3-auto justify-items-center items-center mt-3"
-      :class="`grid-rows-${path.stages.length * 2 + 1}`"
+      :class="`grid-rows-${stages.length * 2 + 1}`"
     >
       <!-- First first row - departure -->
       <div class="">
@@ -307,16 +305,15 @@ async function displayMap() {
         <div class="">
           {{
             formatInterval(
-              ...((path.stages[i + 1]?.departure ?? arrival).map((time) => formatDate(time, true)) as [
-                string,
-                string,
-              ]),
+              ...((stages[i + 1]?.departure ?? stages.at(-1)!.arrival).map((time) =>
+                formatDate(time, true),
+              ) as [string, string]),
             )
           }}
         </div>
         <!-- Second col : icon (start/bullet/end) -->
         <FontAwesomeIcon
-          v-if="i === path.stages.length - 1"
+          v-if="i === stages.length - 1"
           :icon="faFlag"
           class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
@@ -370,7 +367,7 @@ async function displayMap() {
           formatInterval(
             ...(Array.from(
               { length: 2 },
-              (_, i) => duration(arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
+              (_, i) => duration(stages.at(-1)!.arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
             ) as [string, string]),
           )
         }}
@@ -433,9 +430,12 @@ async function displayMap() {
       <span class="text-right ml-auto">
         {{
           formatInterval(
-            ...(arrival.map((time) =>
-              formatDate(time, new Date(time).getDate() === new Date().getDate()),
-            ) as [string, string]),
+            ...(stages
+              .at(-1)!
+              .arrival.map((time) => formatDate(time, new Date(time).getDate() === new Date().getDate())) as [
+              string,
+              string,
+            ]),
           )
         }}
       </span>
