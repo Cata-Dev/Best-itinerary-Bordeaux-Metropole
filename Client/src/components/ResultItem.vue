@@ -41,9 +41,9 @@ interface Transport {
 }
 
 const transports = computed<Transport[]>(() =>
-  props.path.stages.map((p) => ({
-    provider: p.type,
-    mode: "type" in p.details ? p.details.type : "FOOT",
+  props.path.stages.map((stage) => ({
+    provider: stage.type,
+    mode: "type" in stage.details ? stage.details.type : "FOOT",
   })),
 );
 
@@ -271,11 +271,11 @@ async function displayMap() {
         </span>
         <span class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
       </div>
-      <template v-for="(p, i) in path.stages" :key="i">
+      <template v-for="(stage, i) in stages" :key="i">
         <!-- First row - content (mode, details) -->
         <!-- First col : mode icon -->
         <FontAwesomeIcon
-          :icon="transportToIcon('type' in p.details ? p.details.type : p.type)"
+          :icon="transportToIcon('type' in stage.details ? stage.details.type : stage.type)"
           class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
         <!-- Second col : linkin el (vertical bar) -->
@@ -284,18 +284,20 @@ async function displayMap() {
         />
         <!-- Third col : details -->
         <div class="w-full pb-2">
-          <div v-if="p.type === 'SNCF' || p.type === 'TBM'" class="flex items-center">
+          <div v-if="stage.type === 'SNCF' || stage.type === 'TBM'" class="flex items-center">
             <TransportBadge
-              :type="p.type"
-              :custom-text="'line' in p.details ? p.details.line : 'unknown'"
+              :type="stage.type"
+              :custom-text="'line' in stage.details ? stage.details.line : 'unknown'"
               class="mr-2"
             />
-            <span class="text-sm"> ➜ {{ "direction" in p.details ? p.details.direction : "unknonw" }} </span>
+            <span class="text-sm">
+              ➜ {{ "direction" in stage.details ? stage.details.direction : "unknown" }}
+            </span>
           </div>
-          <div class="text-sm" :class="{ 'mt-1': p.type === 'SNCF' || p.type === 'TBM' }">
+          <div class="text-sm" :class="{ 'mt-1': stage.type === 'SNCF' || stage.type === 'TBM' }">
             {{
               formatInterval(
-                ...(p.duration.map((d) => duration(d * 1000, false, true) || "< 1m") as [string, string]),
+                ...(stage.duration.map((d) => duration(d * 1000, false, true) || "< 1m") as [string, string]),
               )
             }}
           </div>
@@ -325,7 +327,7 @@ async function displayMap() {
             class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
           />
           <span class="mx-2 text-center text-lg text-semibold">
-            {{ p.to }}
+            {{ stage.to }}
           </span>
           <span
             class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
