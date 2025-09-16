@@ -272,7 +272,7 @@ async function displayMap() {
         <span class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
       </div>
       <template v-for="(p, i) in path.stages" :key="i">
-        <!-- First row - header -->
+        <!-- First row - content (mode, details) -->
         <!-- First col : mode icon -->
         <FontAwesomeIcon
           :icon="transportToIcon('type' in p.details ? p.details.type : p.type)"
@@ -300,7 +300,7 @@ async function displayMap() {
             }}
           </div>
         </div>
-        <!-- Second row - content -->
+        <!-- Second row - header (time, location) -->
         <!-- First col : time -->
         <div class="">
           {{
