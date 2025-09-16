@@ -7,6 +7,7 @@ import VecMap from "@/components/VecMap.vue";
 import {
   formatDate,
   formatInterval,
+  maxWith0,
   transportToIcon,
   type TransportMode,
   type TransportProvider,
@@ -300,6 +301,58 @@ async function displayMap() {
             }}
           </div>
         </div>
+        <template
+          v-if="
+            i < stages.length - 1 &&
+            stages[i + 1]!.type !== 'FOOT' &&
+            stages[i + 1]!.departure[1] - stage.arrival[0] > 60 * 1000
+          "
+        >
+          <!-- (optional) Pre-second rows (2) - waiting -->
+          <!-- (optional) row 1 - arrival -->
+          <!-- First col : time -->
+          <div>
+            {{ formatInterval(...(stage.arrival.map((time) => formatDate(time, true)) as [string, string])) }}
+          </div>
+          <!-- Second col : icon (start/bullet/end) -->
+          <FontAwesomeIcon
+            v-if="i === stages.length - 1"
+            :icon="faFlag"
+            class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
+          />
+          <div v-else class="bullet transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
+          <!-- Third col : position -->
+          <div class="flex items-center w-full">
+            <span
+              class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
+            />
+            <span class="mx-2 text-center text-lg text-semibold">
+              {{ stage.to }}
+            </span>
+            <span
+              class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
+            />
+          </div>
+          <!-- (optional) row 2 - waiting details -->
+          <!-- First col : mode icon -->
+          <FontAwesomeIcon
+            :icon="faClock"
+            class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
+          />
+          <!-- Second col : linkin el (vertical bar) -->
+          <div
+            class="vertical-link transition-darkmode border-text-light-primary dark:border-text-dark-primary"
+          />
+          <!-- Third col : details -->
+          <div class="w-full pb-2">
+            {{
+              formatInterval(
+                duration(maxWith0(stages[i + 1]!.departure[0] - stage.arrival[1]), false, true) || "< 1m",
+                duration(maxWith0(stages[i + 1]!.departure[1] - stage.arrival[0]), false, true) || "< 1m",
+              )
+            }}
+          </div>
+        </template>
         <!-- Second row - header (time, location) -->
         <!-- First col : time -->
         <div class="">
