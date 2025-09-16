@@ -18,7 +18,13 @@ import {
   updateRoute,
   type Journey,
 } from "@/store/api";
-import { faSearchLocation, faSliders } from "@fortawesome/free-solid-svg-icons";
+import {
+  faExclamationTriangle,
+  faSearchLocation,
+  faSliders,
+  faSpinner,
+  type IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { onMounted, ref, useTemplateRef, watch } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
@@ -34,13 +40,13 @@ const showSettingsButton = useTemplateRef("showSettingsButton");
 interface CustomModal {
   title: string;
   content: string;
-  icon: string;
+  icon: IconDefinition | null;
   colors: `${string}-${colorPalette<colorComm>}`[];
 }
 const modal = ref<CustomModal>({
   title: "",
   content: "",
-  icon: "",
+  icon: null,
   colors: [],
 });
 
@@ -48,7 +54,7 @@ if (client.io?.io)
   client.io.io?.on("error", () => {
     modal.value.title = "Erreur";
     modal.value.content = "Impossible de se connecter à l'API.";
-    modal.value.icon = "exclamation-triangle";
+    modal.value.icon = faExclamationTriangle;
     modal.value.colors = ["bg-alert-bg", "border-alert-t", "text-alert-t"];
     modalCompo.value?.show(true);
     APIRefresh.reject({ code: 504 }); //generate a fake answer to ensure failure
@@ -231,7 +237,7 @@ watch([result, currentJourney], () => {
     <BaseModal ref="modalCompo" :main-classes="modal.colors">
       <template #title>
         <h1 class="text-2xl text-center">
-          <FontAwesomeIcon :icon="modal.icon || 'spinner'" class="mr-1" />
+          <FontAwesomeIcon :icon="modal.icon ?? faSpinner" class="mr-1" />
           {{ modal.title }}
         </h1>
       </template>
