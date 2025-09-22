@@ -110,8 +110,8 @@ importers:
         version: 12.19.0(mongoose@8.18.1)
     devDependencies:
       '@eslint/js':
-        specifier: ^9.35.0
-        version: 9.35.0
+        specifier: ^9.36.0
+        version: 9.36.0
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -165,8 +165,8 @@ importers:
         version: 0.4.0
     devDependencies:
       '@eslint/js':
-        specifier: ^9.35.0
-        version: 9.35.0
+        specifier: ^9.36.0
+        version: 9.36.0
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -211,8 +211,8 @@ importers:
         version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
     devDependencies:
       '@eslint/js':
-        specifier: ^9.35.0
-        version: 9.35.0
+        specifier: ^9.36.0
+        version: 9.36.0
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
@@ -242,7 +242,7 @@ importers:
         version: link:../Common
       '@bibm/compute':
         specifier: workspace:*
-        version: link:../Compute
+        version: file:Compute(mongodb@6.19.0)(typescript@5.9.2)
       '@bibm/data':
         specifier: workspace:*
         version: link:../Data
@@ -302,8 +302,8 @@ importers:
         version: 8.18.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.35.0
-        version: 9.35.0
+        specifier: ^9.36.0
+        version: 9.36.0
       '@feathersjs/cli':
         specifier: 5.0.35
         version: 5.0.35
@@ -505,6 +505,22 @@ packages:
     resolution: {integrity: sha512-bkFqkLhh3pMBUQQkpVgWDWq/lqzc2678eUyDlTBhRqhCHFguYYGM0Efga7tYk4TogG/3x0EEl66/OQ+WGbWB/Q==}
     engines: {node: '>=6.9.0'}
 
+  '@bibm/common@file:Common':
+    resolution: {directory: Common, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/compute@file:Compute':
+    resolution: {directory: Compute, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/data@file:Data':
+    resolution: {directory: Data, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/server@file:Server':
+    resolution: {directory: Server, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     resolution: {tarball: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed}
     version: 1.0.0
@@ -703,6 +719,10 @@ packages:
 
   '@eslint/js@9.35.0':
     resolution: {integrity: sha512-30iXE9whjlILfWobBkNerJo+TXYsgVM5ERQwMcMKCHckHflCmf7wXDAHlARoWnh0s1U72WqlbeyE7iAcCzuCPw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@eslint/js@9.36.0':
+    resolution: {integrity: sha512-uhCbYtYynH30iZErszX78U+nR3pJU3RHGQ57NXy5QupD4SBVwDeU8TNBy+MjMngc1UyIW9noKqsRqfjQTBU2dw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/object-schema@2.1.6':
@@ -1678,6 +1698,9 @@ packages:
 
   bullmq@5.58.5:
     resolution: {integrity: sha512-0A6Qjxdn8j7aOcxfRZY798vO/aMuwvoZwfE6a9EOXHb1pzpBVAogsc/OfRWeUf+5wMBoYB5nthstnJo/zrQOeQ==}
+
+  bullmq@5.58.7:
+    resolution: {integrity: sha512-rqsKV/ip76wU90q7Cxpr1vS/6PYIVbhuzqr3wgILgjS6XbsnJtWyYrK23jqWHs9+m6/NXM4+62hyf8CSBpufAw==}
 
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
@@ -4278,6 +4301,99 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
 
+  '@bibm/common@file:Common(mongoose@8.18.1)(typescript@5.9.2)':
+    dependencies:
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+    transitivePeerDependencies:
+      - mongoose
+      - typescript
+
+  '@bibm/compute@file:Compute(mongodb@6.19.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@bibm/server': file:Server(mongodb@6.19.0)(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      bullmq: 5.58.7
+      core-js: 3.45.1
+      mongoose: 8.18.1
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
+      shx: 0.4.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@bibm/data@file:Data(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      config: 4.1.1
+      mongoose: 8.18.1
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+
+  '@bibm/server@file:Server(mongodb@6.19.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@bibm/compute': file:Compute(mongodb@6.19.0)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
+      '@feathersjs/authentication-client': 5.0.35(typescript@5.9.2)
+      '@feathersjs/configuration': 5.0.35(typescript@5.9.2)
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/koa': 5.0.35(typescript@5.9.2)
+      '@feathersjs/mongodb': 5.0.35(mongodb@6.19.0)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/socketio': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      axios: 1.12.2
+      core-js: 3.45.1
+      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.35)
+      mongoose: 8.18.1
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     dependencies:
       '@tyriar/fibonacci-heap': 2.0.9
@@ -4405,6 +4521,8 @@ snapshots:
       - supports-color
 
   '@eslint/js@9.35.0': {}
+
+  '@eslint/js@9.36.0': {}
 
   '@eslint/object-schema@2.1.6': {}
 
@@ -5529,6 +5647,18 @@ snapshots:
       semver: 7.7.2
       tslib: 2.8.1
       uuid: 9.0.1
+    transitivePeerDependencies:
+      - supports-color
+
+  bullmq@5.58.7:
+    dependencies:
+      cron-parser: 4.9.0
+      ioredis: 5.7.0
+      msgpackr: 1.11.5
+      node-abort-controller: 3.1.1
+      semver: 7.7.2
+      tslib: 2.8.1
+      uuid: 11.1.0
     transitivePeerDependencies:
       - supports-color
 
