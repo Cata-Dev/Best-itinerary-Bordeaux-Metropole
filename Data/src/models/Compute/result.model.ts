@@ -23,7 +23,7 @@ import { dbTBM_ScheduledRoutes } from "../TBM/TBMScheduledRoutes.model";
     _id: false,
   },
 })
-class RunSettings implements RAPTORRunSettings {
+export class RunSettings implements RAPTORRunSettings {
   @prop({ required: true })
   public maxTransferLength!: number;
 
@@ -90,7 +90,7 @@ export function isPointSNCFStop(point: PointBase): point is SNCFStopPoint {
   return point.type === PointType.SNCFStop;
 }
 
-class Transfer {
+export class Transfer {
   @prop({
     required: true,
     type: PointBase,
@@ -220,7 +220,7 @@ export class Journey {
     _id: false,
   },
 })
-class LocationBase {
+export class LocationBase {
   @prop({ required: true })
   public type!: PointType;
 }
