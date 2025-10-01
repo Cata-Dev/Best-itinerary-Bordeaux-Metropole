@@ -158,7 +158,13 @@ function journeyDBFormatter<V extends number, CA extends [V, string][]>(
       } satisfies JourneyStepBase;
     }),
     criteria: journey[0].label.criteria.reduce<Map<string, number>>(
-      (acc, { name }) => acc.set(name, journey.at(-1)!.label.value(name)),
+      (acc, { name }) =>
+        acc.set(
+          name
+            // Dots are not forbidden but unusable in a field name
+            .replaceAll(".", ""),
+          journey.at(-1)!.label.value(name),
+        ),
       new Map(),
     ),
   };
