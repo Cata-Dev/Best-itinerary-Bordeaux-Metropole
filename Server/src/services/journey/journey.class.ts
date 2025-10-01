@@ -27,6 +27,7 @@ function hasData(obj: unknown): obj is { data: unknown } {
 }
 
 import { mapAsync } from "@bibm/common/async";
+import { UnpackRefType } from "@bibm/common/types";
 import { JobData } from "@bibm/compute/jobs/index";
 import NonScheduledRoutesModelInit from "@bibm/data/models/Compute/NonScheduledRoutes.model";
 import resultModelInit, {
@@ -63,7 +64,6 @@ import TBMScheduledRoutesModelInit, {
   dbTBM_ScheduledRoutes,
 } from "@bibm/data/models/TBM/TBMScheduledRoutes.model";
 import { isDocument, ReturnModelType } from "@typegoose/typegoose";
-import { UnpackRefType } from "@bibm/common/types";
 
 function formatAddress(addressDoc: dbAddresses) {
   return `${addressDoc.numero} ${"rep" in addressDoc ? addressDoc.rep + " " : ""}${addressDoc.nom_voie} ${addressDoc.commune}`;
