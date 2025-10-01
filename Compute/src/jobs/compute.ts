@@ -96,7 +96,7 @@ function unmapRAPTORStop(
 type DBJourney = Omit<Journey, "steps"> & {
   steps: (JourneyStepBase | JourneyStepFoot | JourneyStepVehicle)[];
 };
-function journeyDBFormatter<V, CA extends [V, string][]>(
+function journeyDBFormatter<V extends number, CA extends [V, string][]>(
   ps: [number, JobData<"compute">[0]["id"]],
   pt: [number, JobData<"compute">[1]["id"]],
   unmapStopId: ReturnType<typeof makeMapId<ProviderStopId>>[1],
@@ -157,10 +157,10 @@ function journeyDBFormatter<V, CA extends [V, string][]>(
         type: JourneyStepType.Base,
       } satisfies JourneyStepBase;
     }),
-    criteria: journey[0].label.criteria.map(({ name }) => ({
-      name,
-      value: journey.at(-1)!.label.value(name),
-    })),
+    criteria: journey[0].label.criteria.reduce<Map<string, number>>(
+      (acc, { name }) => acc.set(name, journey.at(-1)!.label.value(name)),
+      new Map(),
+    ),
   };
 }
 

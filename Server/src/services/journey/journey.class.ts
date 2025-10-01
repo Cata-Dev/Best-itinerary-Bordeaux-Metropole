@@ -255,10 +255,11 @@ export class JourneyService<ServiceParams extends JourneyParams = JourneyParams>
             } else throw new Error("Unexpected route type");
           },
         ),
-        criteria: journey.criteria.reduce<Record<string, unknown>>(
-          (acc, v) => ({ ...acc, [v.name]: v.value }),
-          {},
-        ),
+        criteria: journey.criteria
+          .entries()
+          .reduce<
+            Record<string, unknown>
+          >((acc, [criterionName, criterionValue]) => ({ ...acc, [criterionName]: criterionValue }), {}),
       };
     });
   }

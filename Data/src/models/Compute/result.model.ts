@@ -190,14 +190,6 @@ export function isJourneyStepVehicle(js: JourneyStepBase): js is JourneyStepVehi
   return js.type === JourneyStepType.Vehicle;
 }
 
-export class Criterion {
-  @prop({ required: true })
-  public name!: string;
-
-  @prop({ required: true })
-  public value!: unknown;
-}
-
 export class Journey {
   @prop({
     required: true,
@@ -210,8 +202,10 @@ export class Journey {
   })
   public steps!: JourneyStepBase[];
 
-  @prop({ required: true })
-  public criteria!: Criterion[];
+  // https://mongoosejs.com/docs/schematypes.html#maps
+  // https://typegoose.github.io/typegoose/docs/api/decorators/prop/#map-options
+  @prop({ required: true, type: () => Number })
+  public criteria!: Map<string, number>;
 }
 
 @modelOptions({
