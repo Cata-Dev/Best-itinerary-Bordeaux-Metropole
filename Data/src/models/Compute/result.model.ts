@@ -152,7 +152,7 @@ export function isRouteTBM(route: RouteBase): route is TBMRoute {
 }
 
 export class SNCFRoute extends RouteBase {
-  @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
+  @prop({ required: true, ref: () => dbTBM_Stops, type: () => String })
   public id!: Ref<dbSNCF_ScheduledRoutes>;
 }
 
