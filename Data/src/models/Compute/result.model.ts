@@ -42,7 +42,7 @@ export class JourneyStepBase {
   /** @description JourneyStep type */
   public type!: JourneyStepType;
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => [Number, Number] })
   public time!: InternalTimeInt;
 }
 
@@ -274,7 +274,7 @@ export class dbComputeResult extends TimeStamps {
   @prop({ required: true, type: () => RunSettings })
   settings!: RunSettings;
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => [Journey] })
   journeys!: Journey[];
 }
 
