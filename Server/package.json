@@ -79,7 +79,7 @@
     "@feathersjs/typebox": "^5.0.35",
     "@typegoose/typegoose": "^12.19.0",
     "axios": "^1.12.2",
-    "core-js": "^3.45.1",
+    "core-js": "^3.46.0",
     "feathers-hooks-common": "^8.2.1",
     "mongoose": "^8.18.1"
   },
