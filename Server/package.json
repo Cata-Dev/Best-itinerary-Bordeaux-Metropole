@@ -84,7 +84,7 @@
     "mongoose": "^8.18.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
+    "@eslint/js": "^9.38.0",
     "@feathersjs/cli": "5.0.35",
     "@feathersjs/rest-client": "^5.0.35",
     "@tsconfig/node22": "^22.0.2",
