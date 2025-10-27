@@ -13,13 +13,13 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: link:../Common
+        version: file:Common(mongoose@8.19.2)(typescript@5.9.2)
       '@bibm/data':
         specifier: workspace:*
-        version: link:../Data
+        version: file:Data(typescript@5.9.2)
       '@bibm/server':
         specifier: workspace:*
-        version: link:../Server
+        version: file:Server(mongodb@6.20.0)(typescript@5.9.2)
       '@feathersjs/socketio-client':
         specifier: ^5.0.35
         version: 5.0.35
@@ -97,8 +97,8 @@ importers:
         specifier: ^8.0.2
         version: 8.0.2(vite@7.1.5(@types/node@22.18.0)(jiti@2.5.1)(lightningcss@1.30.1)(tsx@4.20.5))(vue@3.5.21(typescript@5.9.2))
       vue-tsc:
-        specifier: ^3.0.7
-        version: 3.0.7(typescript@5.9.2)
+        specifier: ^3.1.2
+        version: 3.1.2(typescript@5.9.2)
 
   Common:
     dependencies:
@@ -107,7 +107,7 @@ importers:
         version: 5.0.35(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
-        version: 12.19.0(mongoose@8.18.1)
+        version: 12.19.0(mongoose@8.19.2)
     devDependencies:
       '@eslint/js':
         specifier: ^9.35.0
@@ -135,13 +135,13 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: link:../Common
+        version: file:Common(mongoose@8.18.1)(typescript@5.9.2)
       '@bibm/data':
         specifier: workspace:*
-        version: link:../Data
+        version: file:Data(typescript@5.9.2)
       '@bibm/server':
         specifier: workspace:*
-        version: link:../Server
+        version: file:Server(mongodb@6.20.0)(typescript@5.9.2)
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -159,7 +159,7 @@ importers:
         version: 8.18.1
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
       shx:
         specifier: ^0.4.0
         version: 0.4.0
@@ -190,7 +190,7 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: link:../Common
+        version: file:Common(mongoose@8.18.1)(typescript@5.9.2)
       '@feathersjs/schema':
         specifier: ^5.0.35
         version: 5.0.35(typescript@5.9.2)
@@ -208,7 +208,7 @@ importers:
         version: 8.18.1
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
     devDependencies:
       '@eslint/js':
         specifier: ^9.35.0
@@ -239,13 +239,13 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: link:../Common
+        version: file:Common(mongoose@8.18.1)(typescript@5.9.2)
       '@bibm/compute':
         specifier: workspace:*
-        version: link:../Compute
+        version: file:Compute(mongodb@6.19.0)(typescript@5.9.2)
       '@bibm/data':
         specifier: workspace:*
-        version: link:../Data
+        version: file:Data(typescript@5.9.2)
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -426,6 +426,10 @@ packages:
     resolution: {integrity: sha512-D2hP9eA+Sqx1kBZgzxZh0y1trbuU+JoDkiEwqhQ36nodYqJwyEIhPSdMNd7lOm/4io72luTPWH20Yda0xOuUow==}
     engines: {node: '>=6.9.0'}
 
+  '@babel/helper-validator-identifier@7.28.5':
+    resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
+    engines: {node: '>=6.9.0'}
+
   '@babel/helper-validator-option@7.27.1':
     resolution: {integrity: sha512-YvjJow9FxbhFFKDSuFnVCe2WxXk1zWc22fFePVNEaWJEu8IrZVlda6N0uHwzZrUM1il7NC9Mlp4MaJYbYd9JSg==}
     engines: {node: '>=6.9.0'}
@@ -441,6 +445,11 @@ packages:
 
   '@babel/parser@7.28.4':
     resolution: {integrity: sha512-yZbBqeM6TkpP9du/I2pUZnJsRMGGvOuIrhjzC1AwHwW+6he4mni6Bp/m8ijn0iOuZuPI2BfkCoSRunpyjnrQKg==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  '@babel/parser@7.28.5':
+    resolution: {integrity: sha512-KKBU1VGYR7ORr3At5HAtUQ+TV3SzRCXmA/8OdDZiLDBIZxVyzXuztPjfLd3BV1PRAQGCMWWSHYhL0F8d5uHBDQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -504,6 +513,26 @@ packages:
   '@babel/types@7.28.4':
     resolution: {integrity: sha512-bkFqkLhh3pMBUQQkpVgWDWq/lqzc2678eUyDlTBhRqhCHFguYYGM0Efga7tYk4TogG/3x0EEl66/OQ+WGbWB/Q==}
     engines: {node: '>=6.9.0'}
+
+  '@babel/types@7.28.5':
+    resolution: {integrity: sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA==}
+    engines: {node: '>=6.9.0'}
+
+  '@bibm/common@file:Common':
+    resolution: {directory: Common, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/compute@file:Compute':
+    resolution: {directory: Compute, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/data@file:Data':
+    resolution: {directory: Data, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/server@file:Server':
+    resolution: {directory: Server, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
 
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     resolution: {tarball: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed}
@@ -839,6 +868,9 @@ packages:
   '@ioredis/commands@1.3.1':
     resolution: {integrity: sha512-bYtU8avhGIcje3IhvF9aSjsa5URMZBHnwKtOvXsT4sfYy9gppW11gLPT/9oNqlJZD47yPKveQFTAFWpHjKvUoQ==}
 
+  '@ioredis/commands@1.4.0':
+    resolution: {integrity: sha512-aFT2yemJJo+TZCmieA7qnYGQooOS7QfNmYrzGtsYd3g9j5iDP8AimYYAesf79ohjbLG12XxC4nG5DyEnC88AsQ==}
+
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
@@ -875,6 +907,9 @@ packages:
 
   '@mongodb-js/saslprep@1.3.0':
     resolution: {integrity: sha512-zlayKCsIjYb7/IdfqxorK5+xUMyi4vOKcFy10wKJYc63NSdKI8mNME+uJqfatkPmOSMMUiojrL58IePKBm3gvQ==}
+
+  '@mongodb-js/saslprep@1.3.2':
+    resolution: {integrity: sha512-QgA5AySqB27cGTXBFmnpifAi7HxoGUeezwo6p9dI03MuDB6Pp33zgclqVb6oVK3j6I9Vesg0+oojW2XxB59SGg==}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
     resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
@@ -1171,6 +1206,12 @@ packages:
     peerDependencies:
       mongoose: ~8.18.0
 
+  '@typegoose/typegoose@12.20.0':
+    resolution: {integrity: sha512-xto62e4iHDj71il+nOSDutW1O3/sA4ItPUM6sesnKsoPqVIdKg6T76Kafc7fTin8QrknYeo2/UthcDhLBBm1iA==}
+    engines: {node: '>=16.20.1'}
+    peerDependencies:
+      mongoose: ~8.19.1
+
   '@types/accepts@1.3.7':
     resolution: {integrity: sha512-Pay9fq2lM2wXPWbteBsRAGiWH2hig4ZE2asK+mm7kUzlxRTfL961rj89I6zV/E3PcIkDqyuBEcMxFT7rccugeQ==}
 
@@ -1444,17 +1485,20 @@ packages:
   '@vue/compiler-core@3.5.21':
     resolution: {integrity: sha512-8i+LZ0vf6ZgII5Z9XmUvrCyEzocvWT+TeR2VBUVlzIH6Tyv57E20mPZ1bCS+tbejgUgmjrEh7q/0F0bibskAmw==}
 
+  '@vue/compiler-core@3.5.22':
+    resolution: {integrity: sha512-jQ0pFPmZwTEiRNSb+i9Ow/I/cHv2tXYqsnHKKyCQ08irI2kdF5qmYedmF8si8mA7zepUFmJ2hqzS8CQmNOWOkQ==}
+
   '@vue/compiler-dom@3.5.21':
     resolution: {integrity: sha512-jNtbu/u97wiyEBJlJ9kmdw7tAr5Vy0Aj5CgQmo+6pxWNQhXZDPsRr1UWPN4v3Zf82s2H3kF51IbzZ4jMWAgPlQ==}
+
+  '@vue/compiler-dom@3.5.22':
+    resolution: {integrity: sha512-W8RknzUM1BLkypvdz10OVsGxnMAuSIZs9Wdx1vzA3mL5fNMN15rhrSCLiTm6blWeACwUwizzPVqGJgOGBEN/hA==}
 
   '@vue/compiler-sfc@3.5.21':
     resolution: {integrity: sha512-SXlyk6I5eUGBd2v8Ie7tF6ADHE9kCR6mBEuPyH1nUZ0h6Xx6nZI29i12sJKQmzbDyr2tUHMhhTt51Z6blbkTTQ==}
 
   '@vue/compiler-ssr@3.5.21':
     resolution: {integrity: sha512-vKQ5olH5edFZdf5ZrlEgSO1j1DMA4u23TVK5XR1uMhvwnYvVdDF0nHXJUblL/GvzlShQbjhZZ2uvYmDlAbgo9w==}
-
-  '@vue/compiler-vue2@2.7.16':
-    resolution: {integrity: sha512-qYC3Psj9S/mfu9uVi5WvNZIzq+xnXMhOwbTFKKDD7b1lhpnn71jXSFdTQ+WsIEk0ONCd7VV2IMm7ONl6tbQ86A==}
 
   '@vue/devtools-api@6.6.4':
     resolution: {integrity: sha512-sGhTPMuXqZ1rVOk32RylztWkfXTRhuS7vgAKv0zjqk8gbsHkJ7xfFf+jbySxt7tWObEJwyKaHMikV/WGDiQm8g==}
@@ -1487,8 +1531,8 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@3.0.7':
-    resolution: {integrity: sha512-0sqqyqJ0Gn33JH3TdIsZLCZZ8Gr4kwlg8iYOnOrDDkJKSjFurlQY/bEFQx5zs7SX2C/bjMkmPYq/NiyY1fTOkw==}
+  '@vue/language-core@3.1.2':
+    resolution: {integrity: sha512-PyFDCqpdfYUT+oMLqcc61oHfJlC6yjhybaefwQjRdkchIihToOEpJ2Wu/Ebq2yrnJdd1EsaAvZaXVAqcxtnDxQ==}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
@@ -1511,6 +1555,9 @@ packages:
 
   '@vue/shared@3.5.21':
     resolution: {integrity: sha512-+2k1EQpnYuVuu3N7atWyG3/xoFWIVJZq4Mz8XNOdScFI0etES75fbny/oU4lKWk/577P1zmg0ioYvpGEDZ3DLw==}
+
+  '@vue/shared@3.5.22':
+    resolution: {integrity: sha512-F4yc6palwq3TT0u+FYf0Ns4Tfl9GRFURDN2gWG7L1ecIaS/4fCIuFOjMTnCyjsu/OK6vaDKLCrGAa+KvvH+h4w==}
 
   '@vue/tsconfig@0.8.1':
     resolution: {integrity: sha512-aK7feIWPXFSUhsCP9PFqPyFOcz4ENkb8hZ2pneL6m2UjCkccvaOhC/5KCKluuBufvp2KzkbdA2W2pk20vLzu3g==}
@@ -1555,8 +1602,8 @@ packages:
   ajv@8.17.1:
     resolution: {integrity: sha512-B/gBuNg5SiMTrPkC+A2+cW0RszwxYmn6VYxB/inlBStS5nx6xHIt/ehKRhIMhqusl7a8LjQoZnjCs5vhwxOQ1g==}
 
-  alien-signals@2.0.7:
-    resolution: {integrity: sha512-wE7y3jmYeb0+h6mr5BOovuqhFv22O/MV9j5p0ndJsa7z1zJNPGQ4ph5pQk/kTTCWRC3xsA4SmtwmkzQO+7NCNg==}
+  alien-signals@3.0.3:
+    resolution: {integrity: sha512-2JXjom6R7ZwrISpUphLhf4htUq1aKRCennTJ6u9kFfr3sLmC9+I4CxxVi+McoFnIg+p1HnVrfLT/iCt4Dlz//Q==}
 
   ansi-escapes@4.3.2:
     resolution: {integrity: sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ==}
@@ -1678,6 +1725,9 @@ packages:
 
   bullmq@5.58.5:
     resolution: {integrity: sha512-0A6Qjxdn8j7aOcxfRZY798vO/aMuwvoZwfE6a9EOXHb1pzpBVAogsc/OfRWeUf+5wMBoYB5nthstnJo/zrQOeQ==}
+
+  bullmq@5.61.2:
+    resolution: {integrity: sha512-b39hbiq/xXpOTT/OfmKpQYD+4VE4+XUlvdZ6GjbGl9asmRk8cSvUaQWD18jVCn1I0SzIfbrgOf+RAkqjXDUhJg==}
 
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
@@ -1866,9 +1916,6 @@ packages:
   data-view-byte-offset@1.0.1:
     resolution: {integrity: sha512-BS8PfmtDGnrgYdOonGZQdLZslWIeCGFP9tpan0hi1Co2Zr2NKADsvGYA8XxuG/4UWgJ6Cjtv+YJnB6MM69QGlQ==}
     engines: {node: '>= 0.4'}
-
-  de-indent@1.0.2:
-    resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
 
   debug@3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
@@ -2458,6 +2505,10 @@ packages:
     resolution: {integrity: sha512-NUcA93i1lukyXU+riqEyPtSEkyFq8tX90uL659J+qpCZ3rEdViB/APC58oAhIh3+bJln2hzdlZbBZsGNrlsR8g==}
     engines: {node: '>=12.22.0'}
 
+  ioredis@5.8.2:
+    resolution: {integrity: sha512-C6uC+kleiIMmjViJINWk80sOQw5lEzse1ZmvD+S/s8p8CWapftSaC+kocGTx6xrbrJ4WmYQGC08ffHLr6ToR6Q==}
+    engines: {node: '>=12.22.0'}
+
   is-array-buffer@3.0.5:
     resolution: {integrity: sha512-DDfANUiiG2wC1qawP66qlTugJeL5HyzMpfr8lLK+jMQirGzNod0B12cFB/9q838Ru27sBwfw78/rdoU7RERz6A==}
     engines: {node: '>= 0.4'}
@@ -2993,8 +3044,39 @@ packages:
       socks:
         optional: true
 
+  mongodb@6.20.0:
+    resolution: {integrity: sha512-Tl6MEIU3K4Rq3TSHd+sZQqRBoGlFsOgNrH5ltAcFBV62Re3Fd+FcaVf8uSEQFOJ51SDowDVttBTONMfoYWrWlQ==}
+    engines: {node: '>=16.20.1'}
+    peerDependencies:
+      '@aws-sdk/credential-providers': ^3.188.0
+      '@mongodb-js/zstd': ^1.1.0 || ^2.0.0
+      gcp-metadata: ^5.2.0
+      kerberos: ^2.0.1
+      mongodb-client-encryption: '>=6.0.0 <7'
+      snappy: ^7.3.2
+      socks: ^2.7.1
+    peerDependenciesMeta:
+      '@aws-sdk/credential-providers':
+        optional: true
+      '@mongodb-js/zstd':
+        optional: true
+      gcp-metadata:
+        optional: true
+      kerberos:
+        optional: true
+      mongodb-client-encryption:
+        optional: true
+      snappy:
+        optional: true
+      socks:
+        optional: true
+
   mongoose@8.18.1:
     resolution: {integrity: sha512-K0RfrUXXufqNRZZjvAGdyjydB91SnbWxlwFYi5t7zN2DxVWFD3c6puia0/7xfBwZm6RCpYOVdYFlRFpoDWiC+w==}
+    engines: {node: '>=16.20.1'}
+
+  mongoose@8.19.2:
+    resolution: {integrity: sha512-ww2T4dBV+suCbOfG5YPwj9pLCfUVyj8FEA1D3Ux1HHqutpLxGyOYEPU06iPRBW4cKr3PJfOSYsIpHWPTkz5zig==}
     engines: {node: '>=16.20.1'}
 
   mpath@0.9.0:
@@ -3307,8 +3389,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -3442,6 +3524,11 @@ packages:
 
   semver@7.7.2:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  semver@7.7.3:
+    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -3924,8 +4011,8 @@ packages:
     peerDependencies:
       vue: ^3.2.0
 
-  vue-tsc@3.0.7:
-    resolution: {integrity: sha512-BSMmW8GGEgHykrv7mRk6zfTdK+tw4MBZY/x6fFa7IkdXK3s/8hQRacPjG9/8YKFDIWGhBocwi6PlkQQ/93OgIQ==}
+  vue-tsc@3.1.2:
+    resolution: {integrity: sha512-3fd4DY0rFczs5f+VB3OhcLU83V6+3Puj2yLBe0Ak65k7ERk+STVNKaOAi0EBo6Lc15UiJB6LzU6Mxy4+h/pKew==}
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
@@ -4188,6 +4275,8 @@ snapshots:
 
   '@babel/helper-validator-identifier@7.27.1': {}
 
+  '@babel/helper-validator-identifier@7.28.5': {}
+
   '@babel/helper-validator-option@7.27.1': {}
 
   '@babel/helpers@7.28.4':
@@ -4202,6 +4291,10 @@ snapshots:
   '@babel/parser@7.28.4':
     dependencies:
       '@babel/types': 7.28.4
+
+  '@babel/parser@7.28.5':
+    dependencies:
+      '@babel/types': 7.28.5
 
   '@babel/plugin-proposal-decorators@7.28.0(@babel/core@7.28.4)':
     dependencies:
@@ -4277,6 +4370,177 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
+
+  '@babel/types@7.28.5':
+    dependencies:
+      '@babel/helper-string-parser': 7.27.1
+      '@babel/helper-validator-identifier': 7.28.5
+
+  '@bibm/common@file:Common(mongoose@8.18.1)(typescript@5.9.2)':
+    dependencies:
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.18.1)
+    transitivePeerDependencies:
+      - mongoose
+      - typescript
+
+  '@bibm/common@file:Common(mongoose@8.19.2)(typescript@5.9.2)':
+    dependencies:
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.19.2)
+    transitivePeerDependencies:
+      - mongoose
+      - typescript
+
+  '@bibm/compute@file:Compute(mongodb@6.19.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@bibm/server': file:Server(mongodb@6.19.0)(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      bullmq: 5.61.2
+      core-js: 3.45.1
+      mongoose: 8.18.1
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
+      shx: 0.4.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@bibm/compute@file:Compute(mongodb@6.20.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@bibm/server': file:Server(mongodb@6.20.0)(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      bullmq: 5.61.2
+      core-js: 3.45.1
+      mongoose: 8.18.1
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
+      shx: 0.4.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@bibm/data@file:Data(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.19.2)(typescript@5.9.2)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.19.2)
+      config: 4.1.1
+      mongoose: 8.19.2
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+
+  '@bibm/server@file:Server(mongodb@6.19.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.19.2)(typescript@5.9.2)
+      '@bibm/compute': file:Compute(mongodb@6.19.0)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
+      '@feathersjs/authentication-client': 5.0.35(typescript@5.9.2)
+      '@feathersjs/configuration': 5.0.35(typescript@5.9.2)
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/koa': 5.0.35(typescript@5.9.2)
+      '@feathersjs/mongodb': 5.0.35(mongodb@6.19.0)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/socketio': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.19.2)
+      axios: 1.12.2
+      core-js: 3.45.1
+      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.35)
+      mongoose: 8.19.2
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@bibm/server@file:Server(mongodb@6.20.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.19.2)(typescript@5.9.2)
+      '@bibm/compute': file:Compute(mongodb@6.20.0)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
+      '@feathersjs/authentication-client': 5.0.35(typescript@5.9.2)
+      '@feathersjs/configuration': 5.0.35(typescript@5.9.2)
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/koa': 5.0.35(typescript@5.9.2)
+      '@feathersjs/mongodb': 5.0.35(mongodb@6.20.0)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/socketio': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.19.2)
+      axios: 1.12.2
+      core-js: 3.45.1
+      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.35)
+      mongoose: 8.19.2
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
 
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     dependencies:
@@ -4517,6 +4781,14 @@ snapshots:
       '@feathersjs/feathers': 5.0.35
       mongodb: 6.19.0
 
+  '@feathersjs/mongodb@5.0.35(mongodb@6.20.0)':
+    dependencies:
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      mongodb: 6.20.0
+
   '@feathersjs/rest-client@5.0.35':
     dependencies:
       '@feathersjs/commons': 5.0.35
@@ -4601,6 +4873,8 @@ snapshots:
 
   '@ioredis/commands@1.3.1': {}
 
+  '@ioredis/commands@1.4.0': {}
+
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -4648,6 +4922,10 @@ snapshots:
       vary: 1.1.2
 
   '@mongodb-js/saslprep@1.3.0':
+    dependencies:
+      sparse-bitfield: 3.0.3
+
+  '@mongodb-js/saslprep@1.3.2':
     dependencies:
       sparse-bitfield: 3.0.3
 
@@ -4857,6 +5135,33 @@ snapshots:
       mongoose: 8.18.1
       reflect-metadata: 0.2.2
       semver: 7.7.2
+      tslib: 2.8.1
+
+  '@typegoose/typegoose@12.19.0(mongoose@8.19.2)':
+    dependencies:
+      lodash: 4.17.21
+      loglevel: 1.9.2
+      mongoose: 8.19.2
+      reflect-metadata: 0.2.2
+      semver: 7.7.2
+      tslib: 2.8.1
+
+  '@typegoose/typegoose@12.20.0(mongoose@8.18.1)':
+    dependencies:
+      lodash: 4.17.21
+      loglevel: 1.9.2
+      mongoose: 8.18.1
+      reflect-metadata: 0.2.2
+      semver: 7.7.3
+      tslib: 2.8.1
+
+  '@typegoose/typegoose@12.20.0(mongoose@8.19.2)':
+    dependencies:
+      lodash: 4.17.21
+      loglevel: 1.9.2
+      mongoose: 8.19.2
+      reflect-metadata: 0.2.2
+      semver: 7.7.3
       tslib: 2.8.1
 
   '@types/accepts@1.3.7':
@@ -5141,7 +5446,7 @@ snapshots:
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.7.2
+      semver: 7.7.3
       ts-api-utils: 2.1.0(typescript@5.9.2)
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -5227,7 +5532,7 @@ snapshots:
       '@babel/types': 7.28.4
       '@vue/babel-helper-vue-transform-on': 1.5.0
       '@vue/babel-plugin-resolve-type': 1.5.0(@babel/core@7.28.4)
-      '@vue/shared': 3.5.21
+      '@vue/shared': 3.5.22
     optionalDependencies:
       '@babel/core': 7.28.4
     transitivePeerDependencies:
@@ -5252,10 +5557,23 @@ snapshots:
       estree-walker: 2.0.2
       source-map-js: 1.2.1
 
+  '@vue/compiler-core@3.5.22':
+    dependencies:
+      '@babel/parser': 7.28.5
+      '@vue/shared': 3.5.22
+      entities: 4.5.0
+      estree-walker: 2.0.2
+      source-map-js: 1.2.1
+
   '@vue/compiler-dom@3.5.21':
     dependencies:
       '@vue/compiler-core': 3.5.21
       '@vue/shared': 3.5.21
+
+  '@vue/compiler-dom@3.5.22':
+    dependencies:
+      '@vue/compiler-core': 3.5.22
+      '@vue/shared': 3.5.22
 
   '@vue/compiler-sfc@3.5.21':
     dependencies:
@@ -5273,11 +5591,6 @@ snapshots:
     dependencies:
       '@vue/compiler-dom': 3.5.21
       '@vue/shared': 3.5.21
-
-  '@vue/compiler-vue2@2.7.16':
-    dependencies:
-      de-indent: 1.0.2
-      he: 1.2.0
 
   '@vue/devtools-api@6.6.4': {}
 
@@ -5329,13 +5642,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vue/language-core@3.0.7(typescript@5.9.2)':
+  '@vue/language-core@3.1.2(typescript@5.9.2)':
     dependencies:
       '@volar/language-core': 2.4.23
-      '@vue/compiler-dom': 3.5.21
-      '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.21
-      alien-signals: 2.0.7
+      '@vue/compiler-dom': 3.5.22
+      '@vue/shared': 3.5.22
+      alien-signals: 3.0.3
       muggle-string: 0.4.1
       path-browserify: 1.0.1
       picomatch: 4.0.3
@@ -5365,6 +5677,8 @@ snapshots:
       vue: 3.5.21(typescript@5.9.2)
 
   '@vue/shared@3.5.21': {}
+
+  '@vue/shared@3.5.22': {}
 
   '@vue/tsconfig@0.8.1(typescript@5.9.2)(vue@3.5.21(typescript@5.9.2))':
     optionalDependencies:
@@ -5404,7 +5718,7 @@ snapshots:
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
-  alien-signals@2.0.7: {}
+  alien-signals@3.0.3: {}
 
   ansi-escapes@4.3.2:
     dependencies:
@@ -5529,6 +5843,18 @@ snapshots:
       semver: 7.7.2
       tslib: 2.8.1
       uuid: 9.0.1
+    transitivePeerDependencies:
+      - supports-color
+
+  bullmq@5.61.2:
+    dependencies:
+      cron-parser: 4.9.0
+      ioredis: 5.8.2
+      msgpackr: 1.11.5
+      node-abort-controller: 3.1.1
+      semver: 7.7.3
+      tslib: 2.8.1
+      uuid: 11.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -5717,8 +6043,6 @@ snapshots:
       call-bound: 1.0.4
       es-errors: 1.3.0
       is-data-view: 1.0.2
-
-  de-indent@1.0.2: {}
 
   debug@3.2.7:
     dependencies:
@@ -6432,6 +6756,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  ioredis@5.8.2:
+    dependencies:
+      '@ioredis/commands': 1.4.0
+      cluster-key-slot: 1.1.2
+      debug: 4.4.3
+      denque: 2.1.0
+      lodash.defaults: 4.2.0
+      lodash.isarguments: 3.1.0
+      redis-errors: 1.2.0
+      redis-parser: 3.0.0
+      standard-as-callback: 2.1.0
+    transitivePeerDependencies:
+      - supports-color
+
   is-array-buffer@3.0.5:
     dependencies:
       call-bind: 1.0.8
@@ -6905,11 +7243,36 @@ snapshots:
       bson: 6.10.4
       mongodb-connection-string-url: 3.0.2
 
+  mongodb@6.20.0:
+    dependencies:
+      '@mongodb-js/saslprep': 1.3.2
+      bson: 6.10.4
+      mongodb-connection-string-url: 3.0.2
+
   mongoose@8.18.1:
     dependencies:
       bson: 6.10.4
       kareem: 2.6.3
       mongodb: 6.18.0
+      mpath: 0.9.0
+      mquery: 5.0.0
+      ms: 2.1.3
+      sift: 17.1.3
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+
+  mongoose@8.19.2:
+    dependencies:
+      bson: 6.10.4
+      kareem: 2.6.3
+      mongodb: 6.20.0
       mpath: 0.9.0
       mquery: 5.0.0
       ms: 2.1.3
@@ -7224,7 +7587,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8: {}
 
   raw-body@2.5.2:
     dependencies:
@@ -7386,6 +7749,8 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.7.2: {}
+
+  semver@7.7.3: {}
 
   serialize-javascript@6.0.2:
     dependencies:
@@ -7926,10 +8291,10 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.21(typescript@5.9.2)
 
-  vue-tsc@3.0.7(typescript@5.9.2):
+  vue-tsc@3.1.2(typescript@5.9.2):
     dependencies:
       '@volar/typescript': 2.4.23
-      '@vue/language-core': 3.0.7(typescript@5.9.2)
+      '@vue/language-core': 3.1.2(typescript@5.9.2)
       typescript: 5.9.2
 
   vue@3.5.21(typescript@5.9.2):
