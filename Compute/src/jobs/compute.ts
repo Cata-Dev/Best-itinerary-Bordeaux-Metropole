@@ -355,7 +355,12 @@ export default function (data: ReturnType<makeComputeData>) {
       // String because stringified by Redis
       const departureDate = new Date(departureDateStr);
 
+      app.logger.debug(`Starting RAPTOR`, job.id);
+
       McRAPTORInstance.run(psId, ptId, [departureDate.getTime(), departureDate.getTime()], settings);
+
+      app.logger.debug(`RAPTOR done`, job.id);
+
       const bestJourneys = McRAPTORInstance.getBestJourneys(ptId);
       /* bestJourneys.forEach((roundJourneys) =>
         roundJourneys.forEach((j) =>
