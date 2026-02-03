@@ -43,7 +43,7 @@
     "typescript-eslint": "^8.43.0"
   },
   "dependencies": {
-    "@feathersjs/typebox": "^5.0.35",
+    "@feathersjs/typebox": "^5.0.40",
     "@typegoose/typegoose": "^12.19.0"
   }
 }
