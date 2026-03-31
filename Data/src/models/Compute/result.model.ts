@@ -190,6 +190,7 @@ export function isJourneyStepVehicle(js: JourneyStepBase): js is JourneyStepVehi
   return js.type === JourneyStepType.Vehicle;
 }
 
+@modelOptions({ schemaOptions: { _id: false } })
 export class Journey {
   @prop({
     required: true,
