@@ -36,11 +36,23 @@ class Cache<D, I> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CacheData<C extends Cache<any, any>> = C extends Cache<infer D, any> ? D : never;
 
-function memoize<A extends unknown[], R>(f: (remove: () => void, ...args: A) => R) {
-  const cache = new Map<string, R>();
+/**
+ * Memoize a function, i.e., remember the result of a call to cache further identical calls
+ * @param f Function to memoize,
+ * plus an additional argument in 1st position to remove a memoized call, hence refreshing the cached call.
+ * @param serialize An optional function to serialize the arguments of an initial functional call
+ * (i.e., efficiently transform arguments in an identical representation).
+ * Defaults to string cast and concatenation.
+ * @returns The initial function, memoized
+ */
+function memoize<A extends unknown[], R>(
+  f: (remove: () => void, ...args: A) => R,
+  serialize: (...args: A) => number | string | symbol = (...args: A) => args.map(String).join(""),
+) {
+  const cache = new Map<number | string | symbol, R>();
 
   return (...args: A): R => {
-    const cacheKey = args.map(String).join("");
+    const cacheKey = serialize(...args);
     let cached = cache.get(cacheKey);
     if (cached !== undefined) return cached;
 

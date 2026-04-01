@@ -23,7 +23,7 @@ import { dbTBM_ScheduledRoutes } from "../TBM/TBMScheduledRoutes.model";
     _id: false,
   },
 })
-class RunSettings implements RAPTORRunSettings {
+export class RunSettings implements RAPTORRunSettings {
   @prop({ required: true })
   public maxTransferLength!: number;
 
@@ -42,7 +42,7 @@ export class JourneyStepBase {
   /** @description JourneyStep type */
   public type!: JourneyStepType;
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => [Number, Number] })
   public time!: InternalTimeInt;
 }
 
@@ -90,7 +90,7 @@ export function isPointSNCFStop(point: PointBase): point is SNCFStopPoint {
   return point.type === PointType.SNCFStop;
 }
 
-class Transfer {
+export class Transfer {
   @prop({
     required: true,
     type: PointBase,
@@ -152,7 +152,7 @@ export function isRouteTBM(route: RouteBase): route is TBMRoute {
 }
 
 export class SNCFRoute extends RouteBase {
-  @prop({ required: true, ref: () => dbTBM_Stops, type: () => Number })
+  @prop({ required: true, ref: () => dbTBM_Stops, type: () => String })
   public id!: Ref<dbSNCF_ScheduledRoutes>;
 }
 
@@ -190,14 +190,7 @@ export function isJourneyStepVehicle(js: JourneyStepBase): js is JourneyStepVehi
   return js.type === JourneyStepType.Vehicle;
 }
 
-export class Criterion {
-  @prop({ required: true })
-  public name!: string;
-
-  @prop({ required: true })
-  public value!: unknown;
-}
-
+@modelOptions({ schemaOptions: { _id: false } })
 export class Journey {
   @prop({
     required: true,
@@ -210,8 +203,10 @@ export class Journey {
   })
   public steps!: JourneyStepBase[];
 
-  @prop({ required: true })
-  public criteria!: Criterion[];
+  // https://mongoosejs.com/docs/schematypes.html#maps
+  // https://typegoose.github.io/typegoose/docs/api/decorators/prop/#map-options
+  @prop({ required: true, type: () => Number })
+  public criteria!: Map<string, number>;
 }
 
 @modelOptions({
@@ -220,7 +215,7 @@ export class Journey {
     _id: false,
   },
 })
-class LocationBase {
+export class LocationBase {
   @prop({ required: true })
   public type!: PointType;
 }
@@ -280,7 +275,7 @@ export class dbComputeResult extends TimeStamps {
   @prop({ required: true, type: () => RunSettings })
   settings!: RunSettings;
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => [Journey] })
   journeys!: Journey[];
 }
 

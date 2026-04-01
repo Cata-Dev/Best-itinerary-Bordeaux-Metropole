@@ -14,6 +14,8 @@ export function approachedStopName<Id extends StopId>(provider: Providers, _id: 
   return `as=${provider}-${_id}` as const;
 }
 
+// For Mongoose, we could use Union schema type https://github.com/Automattic/mongoose/pull/15574
+// Not yet with Typegoose...
 export type PathStep =
   | dbSections["rg_fv_graph_nd"]
   | dbSections["rg_fv_graph_na"]

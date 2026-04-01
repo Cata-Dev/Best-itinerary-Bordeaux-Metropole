@@ -7,6 +7,7 @@ import VecMap from "@/components/VecMap.vue";
 import {
   formatDate,
   formatInterval,
+  maxWith0,
   transportToIcon,
   type TransportMode,
   type TransportProvider,
@@ -41,9 +42,9 @@ interface Transport {
 }
 
 const transports = computed<Transport[]>(() =>
-  props.path.stages.map((p) => ({
-    provider: p.type,
-    mode: "type" in p.details ? p.details.type : "FOOT",
+  props.path.stages.map((stage) => ({
+    provider: stage.type,
+    mode: "type" in stage.details ? stage.details.type : "FOOT",
   })),
 );
 
@@ -58,15 +59,13 @@ const uniqueTransports = computed(() =>
     })),
 );
 
-const departure = computed(() => props.path.stages[0]!.departure);
-const lastStage = computed(() => props.path.stages.at(-1)!);
-const arrival = computed(
-  () =>
-    [
-      lastStage.value.departure[0] + lastStage.value.duration[0] * 1000,
-      lastStage.value.departure[1] + lastStage.value.duration[1] * 1000,
-    ] satisfies [unknown, unknown],
+const stages = computed<(Props["path"]["stages"][number] & { arrival: [number, number] })[]>(() =>
+  props.path.stages.map((stage) => ({
+    ...stage,
+    arrival: [stage.departure[0] + stage.duration[0] * 1000, stage.departure[1] + stage.duration[1] * 1000],
+  })),
 );
+const departure = computed(() => props.path.stages[0]!.departure);
 const totalDistance = computed(() =>
   props.path.stages.reduce((acc, v) => acc + ("distance" in v.details ? v.details.distance : 0), 0),
 );
@@ -205,7 +204,7 @@ async function displayMap() {
           formatInterval(
             ...(Array.from(
               { length: 2 },
-              (_, i) => duration(arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
+              (_, i) => duration(stages.at(-1)!.arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
             ) as [string, string]),
           )
         }}
@@ -254,10 +253,10 @@ async function displayMap() {
 
     <div
       class="grid gap-3 grid-cols-3-auto justify-items-center items-center mt-3"
-      :class="`grid-rows-${path.stages.length * 2 + 1}`"
+      :class="`grid-rows-${stages.length * 2 + 1}`"
     >
       <!-- First first row - departure -->
-      <div class="">
+      <div>
         {{ formatInterval(...(departure.map((time) => formatDate(time, true)) as [string, string])) }}
       </div>
       <FontAwesomeIcon
@@ -271,11 +270,11 @@ async function displayMap() {
         </span>
         <span class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
       </div>
-      <template v-for="(p, i) in path.stages" :key="i">
-        <!-- First row - header -->
+      <template v-for="(stage, i) in stages" :key="i">
+        <!-- First row - content (mode, details) -->
         <!-- First col : mode icon -->
         <FontAwesomeIcon
-          :icon="transportToIcon('type' in p.details ? p.details.type : p.type)"
+          :icon="transportToIcon('type' in stage.details ? stage.details.type : stage.type)"
           class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
         <!-- Second col : linkin el (vertical bar) -->
@@ -284,37 +283,90 @@ async function displayMap() {
         />
         <!-- Third col : details -->
         <div class="w-full pb-2">
-          <div v-if="p.type === 'SNCF' || p.type === 'TBM'" class="flex items-center">
+          <div v-if="stage.type === 'SNCF' || stage.type === 'TBM'" class="flex items-center">
             <TransportBadge
-              :type="p.type"
-              :custom-text="'line' in p.details ? p.details.line : 'unknown'"
+              :type="stage.type"
+              :custom-text="'line' in stage.details ? stage.details.line : 'unknown'"
               class="mr-2"
             />
-            <span class="text-sm"> ➜ {{ "direction" in p.details ? p.details.direction : "unknonw" }} </span>
+            <span class="text-sm">
+              ➜ {{ "direction" in stage.details ? stage.details.direction : "unknown" }}
+            </span>
           </div>
-          <div class="text-sm" :class="{ 'mt-1': p.type === 'SNCF' || p.type === 'TBM' }">
+          <div class="text-sm" :class="{ 'mt-1': stage.type === 'SNCF' || stage.type === 'TBM' }">
             {{
               formatInterval(
-                ...(p.duration.map((d) => duration(d * 1000, false, true) || "< 1m") as [string, string]),
+                ...(stage.duration.map((d) => duration(d * 1000, false, true) || "< 1m") as [string, string]),
               )
             }}
           </div>
         </div>
-        <!-- Second row - content -->
+        <template
+          v-if="
+            i < stages.length - 1 &&
+            stages[i + 1]!.type !== 'FOOT' &&
+            stages[i + 1]!.departure[1] - stage.arrival[0] > 60 * 1000
+          "
+        >
+          <!-- (optional) Pre-second rows (2) - waiting -->
+          <!-- (optional) row 1 - arrival -->
+          <!-- First col : time -->
+          <div>
+            {{ formatInterval(...(stage.arrival.map((time) => formatDate(time, true)) as [string, string])) }}
+          </div>
+          <!-- Second col : icon (start/bullet/end) -->
+          <FontAwesomeIcon
+            v-if="i === stages.length - 1"
+            :icon="faFlag"
+            class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
+          />
+          <div v-else class="bullet transition-darkmode bg-text-light-primary dark:bg-text-dark-primary" />
+          <!-- Third col : position -->
+          <div class="flex items-center w-full">
+            <span
+              class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
+            />
+            <span class="mx-2 text-center text-lg text-semibold">
+              {{ stage.to }}
+            </span>
+            <span
+              class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
+            />
+          </div>
+          <!-- (optional) row 2 - waiting details -->
+          <!-- First col : mode icon -->
+          <FontAwesomeIcon
+            :icon="faClock"
+            class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
+          />
+          <!-- Second col : linkin el (vertical bar) -->
+          <div
+            class="vertical-link transition-darkmode border-text-light-primary dark:border-text-dark-primary"
+          />
+          <!-- Third col : details -->
+          <div class="w-full pb-2">
+            {{
+              formatInterval(
+                duration(maxWith0(stages[i + 1]!.departure[0] - stage.arrival[1]), false, true) || "< 1m",
+                duration(maxWith0(stages[i + 1]!.departure[1] - stage.arrival[0]), false, true) || "< 1m",
+              )
+            }}
+          </div>
+        </template>
+        <!-- Second row - header (time, location) -->
         <!-- First col : time -->
         <div class="">
           {{
             formatInterval(
-              ...((path.stages[i + 1]?.departure ?? arrival).map((time) => formatDate(time, true)) as [
-                string,
-                string,
-              ]),
+              ...((stages[i + 1]?.departure ?? stages.at(-1)!.arrival).map((time) =>
+                formatDate(time, true),
+              ) as [string, string]),
             )
           }}
         </div>
         <!-- Second col : icon (start/bullet/end) -->
         <FontAwesomeIcon
-          v-if="i === path.stages.length - 1"
+          v-if="i === stages.length - 1"
           :icon="faFlag"
           class="transition-darkmode text-text-light-primary dark:text-text-dark-primary text-2xl"
         />
@@ -325,7 +377,7 @@ async function displayMap() {
             class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
           />
           <span class="mx-2 text-center text-lg text-semibold">
-            {{ p.to }}
+            {{ stage.to }}
           </span>
           <span
             class="h-px grow min-w-4 transition-darkmode bg-text-light-primary dark:bg-text-dark-primary"
@@ -368,7 +420,7 @@ async function displayMap() {
           formatInterval(
             ...(Array.from(
               { length: 2 },
-              (_, i) => duration(arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
+              (_, i) => duration(stages.at(-1)!.arrival[i]! - departure[(i + 1) % 2]!, false, true) || "< 1m",
             ) as [string, string]),
           )
         }}
@@ -431,9 +483,12 @@ async function displayMap() {
       <span class="text-right ml-auto">
         {{
           formatInterval(
-            ...(arrival.map((time) =>
-              formatDate(time, new Date(time).getDate() === new Date().getDate()),
-            ) as [string, string]),
+            ...(stages
+              .at(-1)!
+              .arrival.map((time) => formatDate(time, new Date(time).getDate() === new Date().getDate())) as [
+              string,
+              string,
+            ]),
           )
         }}
       </span>

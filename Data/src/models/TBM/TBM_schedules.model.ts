@@ -58,10 +58,10 @@ export class dbTBM_Schedules_rt extends dbTBM_Schedules implements Schedule {
   @prop({ required: true })
   public hor_estime!: Date;
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => [Date, Date] })
   public arr_int_hor!: [Date, Date];
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => [Date, Date] })
   public dep_int_hor!: [Date, Date];
 
   @prop({ required: true, enum: RtScheduleState })

@@ -1,18 +1,41 @@
 name: bibm
 
 services:
-  client:
-    container_name: bibm-client
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: client
-      args:
-        EXTERNAL_API_URL: ${EXTERNAL_API_URL}
-        EXTERNAL_API_PATH: ${EXTERNAL_API_PATH}
-    ports:
-      # Forward to busybox httpd server
-      - ${CLIENT_PORT}:8080
+  mongodb:
+    container_name: bibm-mongodb
+    image: mongo:latest
+    networks:
+      - mongodb
+    user: mongodb:mongodb
+    volumes:
+      # Permissions have to be 777 in order for rootless docker/podman to bind-mount folder
+      - ./data/mongodb:/data/db
+    environment:
+      # Temporary fix for https://jira.mongodb.org/browse/SERVER-120238, from https://github.com/docker-library/mongo/discussions/748#discussioncomment-16076069
+      GLIBC_TUNABLES: "glibc.pthread.rseq=1"
+    command: --quiet --logpath /dev/null
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  redis:
+    container_name: bibm-redis
+    image: redis:alpine
+    networks:
+      - redis
+    volumes:
+      - ./data/redis:/data
+    environment:
+      REDIS_ARGS: "--save 60 1 --loglevel warning"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   server:
     container_name: bibm-server
@@ -29,29 +52,25 @@ services:
       - mongodb
       - redis
     depends_on:
-      - mongodb
-      - redis
+      mongodb:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_healthy
+        restart: true
 
-  mongodb:
-    container_name: bibm-mongodb
-    image: mongo:latest
-    networks:
-      - mongodb
-    user: mongodb:mongodb
-    volumes:
-      # Permissions have to be 777 in order for rootless docker/podman to bind-mount folder
-      - ./data/mongodb:/data/db
-    command: --quiet --logpath /dev/null
-
-  redis:
-    container_name: bibm-redis
-    image: redis:alpine
-    networks:
-      - redis
-    volumes:
-      - ./data/redis:/data
-    environment:
-      REDIS_ARGS: "--save 60 1 --loglevel warning"
+  client:
+    container_name: bibm-client
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: client
+      args:
+        EXTERNAL_API_URL: ${EXTERNAL_API_URL}
+        EXTERNAL_API_PATH: ${EXTERNAL_API_PATH}
+    ports:
+      # Forward to busybox httpd server
+      - ${CLIENT_PORT}:8080
 
 networks:
   # "Shared" network for BIBM API

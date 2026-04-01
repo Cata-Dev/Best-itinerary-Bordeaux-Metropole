@@ -37,6 +37,7 @@ import {
   SharedRAPTORData,
   bufferTime,
   sharedTimeIntOrderLow,
+  successProbaInt,
 } from "raptor";
 import type { JobData, JobFn, JobResult } from ".";
 import type { BaseApplication } from "../base";
@@ -95,7 +96,7 @@ function unmapRAPTORStop(
 type DBJourney = Omit<Journey, "steps"> & {
   steps: (JourneyStepBase | JourneyStepFoot | JourneyStepVehicle)[];
 };
-function journeyDBFormatter<V, CA extends [V, string][]>(
+function journeyDBFormatter<V extends number, CA extends [V, string][]>(
   ps: [number, JobData<"compute">[0]["id"]],
   pt: [number, JobData<"compute">[1]["id"]],
   unmapStopId: ReturnType<typeof makeMapId<ProviderStopId>>[1],
@@ -156,18 +157,29 @@ function journeyDBFormatter<V, CA extends [V, string][]>(
         type: JourneyStepType.Base,
       } satisfies JourneyStepBase;
     }),
-    criteria: journey[0].label.criteria.map(({ name }) => ({
-      name,
-      value: journey.at(-1)!.label.value(name),
-    })),
+    criteria: journey[0].label.criteria.reduce<Map<string, number>>(
+      (acc, { name }) =>
+        acc.set(
+          name
+            // Dots are not forbidden but unusable in a field name
+            .replaceAll(".", ""),
+          journey.at(-1)!.label.value(name),
+        ),
+      new Map(),
+    ),
   };
 }
 
 // Acts as a factory
 export default function (data: ReturnType<makeComputeData>) {
   let RAPTORData = SharedRAPTORData.makeFromInternalData(sharedTimeIntOrderLow, data.RAPTORInternalData);
-  let McRAPTORInstance = new McSharedRAPTOR<InternalTimeInt, number, [[number, "bufferTime"]]>(RAPTORData, [
+  let McRAPTORInstance = new McSharedRAPTOR<
+    InternalTimeInt,
+    number,
+    [[number, (typeof bufferTime)["name"]], [number, (typeof successProbaInt)["name"]]]
+  >(RAPTORData, [
     bufferTime as Criterion<InternalTimeInt, SharedID, SharedID, number, "bufferTime">,
+    successProbaInt,
   ]);
   let stopsMapping = data.stopsMapping;
   let routesMapping = data.routesMapping;
@@ -180,8 +192,13 @@ export default function (data: ReturnType<makeComputeData>) {
 
   const updateData = (data: ReturnType<makeComputeData>) => {
     RAPTORData = SharedRAPTORData.makeFromInternalData(sharedTimeIntOrderLow, data.RAPTORInternalData);
-    McRAPTORInstance = new McSharedRAPTOR<InternalTimeInt, number, [[number, "bufferTime"]]>(RAPTORData, [
+    McRAPTORInstance = new McSharedRAPTOR<
+      InternalTimeInt,
+      number,
+      [[number, (typeof bufferTime)["name"]], [number, (typeof successProbaInt)["name"]]]
+    >(RAPTORData, [
       bufferTime as Criterion<InternalTimeInt, SharedID, SharedID, number, "bufferTime">,
+      successProbaInt,
     ]);
     stopsMapping = data.stopsMapping;
     routesMapping = data.routesMapping;
@@ -338,7 +355,12 @@ export default function (data: ReturnType<makeComputeData>) {
       // String because stringified by Redis
       const departureDate = new Date(departureDateStr);
 
+      app.logger.debug(`Starting RAPTOR`, job.id);
+
       McRAPTORInstance.run(psId, ptId, [departureDate.getTime(), departureDate.getTime()], settings);
+
+      app.logger.debug(`RAPTOR done`, job.id);
+
       const bestJourneys = McRAPTORInstance.getBestJourneys(ptId);
       /* bestJourneys.forEach((roundJourneys) =>
         roundJourneys.forEach((j) =>

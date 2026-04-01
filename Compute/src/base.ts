@@ -42,16 +42,21 @@ type DistributeJobSettings<J extends JobName> = J extends JobName ? JobSettings<
 
 // TODO: add to config ?
 // 30 minutes
-const MAX_STALL_TIME = 30 * 60 * 1_000;
+const COMPUTENSR_MAX_TIME = 30 * 60 * 1_000;
+// 1 minute
+const COMPUTE_MAX_TIME = 1 * 60 * 1_000;
 
 const jobs = [
-  { name: "compute", settings: {} },
+  { name: "compute", settings: { stalledInterval: COMPUTE_MAX_TIME, lockDuration: COMPUTE_MAX_TIME } },
   {
     name: "computeFp",
     settings: {},
   },
   { name: "computeFpOTA", settings: {} },
-  { name: "computeNSR", settings: { stalledInterval: MAX_STALL_TIME, lockDuration: MAX_STALL_TIME } },
+  {
+    name: "computeNSR",
+    settings: { stalledInterval: COMPUTENSR_MAX_TIME, lockDuration: COMPUTENSR_MAX_TIME },
+  },
 ] as const satisfies UnionToTuple<DistributeJobSettings<JobName>>;
 
 export interface BaseApplication {

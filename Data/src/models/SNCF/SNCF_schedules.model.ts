@@ -38,10 +38,10 @@ export class dbSNCF_Schedules extends TimeStamps implements Schedule {
   @prop({ required: true })
   public departure!: Date;
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => [Date, Date] })
   public arr_int_hor!: [Date, Date];
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => [Date, Date] })
   public dep_int_hor!: [Date, Date];
 
   @prop({ required: true, enum: () => SNCF_ScheduleFreshness })

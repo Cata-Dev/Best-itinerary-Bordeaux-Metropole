@@ -145,6 +145,10 @@ function formatDateToInput(date: Date) {
     .substring(0, 4 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 2);
 }
 
+function maxWith0(n: number): number {
+  return n < 0 ? 0 : n;
+}
+
 function parseJSON(json: string) {
   try {
     return JSON.parse(json);
@@ -188,6 +192,7 @@ export {
   formatInterval,
   getNewTopZIndex,
   hasMouse,
+  maxWith0,
   parseJSON,
   rebaseObject,
   transportToIcon,
