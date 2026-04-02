@@ -48,7 +48,7 @@
     "@catatomik/dijkstra": "github:catatomik/dijkstra",
     "@typegoose/typegoose": "^12.19.0",
     "bullmq": "^5.58.5",
-    "core-js": "^3.45.1",
+    "core-js": "^3.48.0",
     "mongoose": "^8.18.1",
     "raptor": "github:cata-dev/raptor",
     "shx": "^0.4.0"
