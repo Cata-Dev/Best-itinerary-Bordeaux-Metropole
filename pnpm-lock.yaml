@@ -13,13 +13,13 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: link:../Common
+        version: file:Common(mongoose@8.19.3)(typescript@5.9.2)
       '@bibm/data':
         specifier: workspace:*
-        version: link:../Data
+        version: file:Data(typescript@5.9.2)
       '@bibm/server':
         specifier: workspace:*
-        version: link:../Server
+        version: file:Server(mongodb@6.20.0)(typescript@5.9.2)
       '@feathersjs/socketio-client':
         specifier: ^5.0.35
         version: 5.0.35
@@ -107,7 +107,7 @@ importers:
         version: 5.0.35(typescript@5.9.2)
       '@typegoose/typegoose':
         specifier: ^12.19.0
-        version: 12.19.0(mongoose@8.18.1)
+        version: 12.19.0(mongoose@8.19.3)
     devDependencies:
       '@eslint/js':
         specifier: ^9.35.0
@@ -135,13 +135,13 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: link:../Common
+        version: file:Common(mongoose@8.18.1)(typescript@5.9.2)
       '@bibm/data':
         specifier: workspace:*
-        version: link:../Data
+        version: file:Data(typescript@5.9.2)
       '@bibm/server':
         specifier: workspace:*
-        version: link:../Server
+        version: file:Server(mongodb@6.20.0)(typescript@5.9.2)
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -159,7 +159,7 @@ importers:
         version: 8.18.1
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
       shx:
         specifier: ^0.4.0
         version: 0.4.0
@@ -190,7 +190,7 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: link:../Common
+        version: file:Common(mongoose@8.18.1)(typescript@5.9.2)
       '@feathersjs/schema':
         specifier: ^5.0.35
         version: 5.0.35(typescript@5.9.2)
@@ -208,7 +208,7 @@ importers:
         version: 8.18.1
       raptor:
         specifier: github:cata-dev/raptor
-        version: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb
+        version: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
     devDependencies:
       '@eslint/js':
         specifier: ^9.35.0
@@ -239,13 +239,13 @@ importers:
     dependencies:
       '@bibm/common':
         specifier: workspace:*
-        version: link:../Common
+        version: file:Common(mongoose@8.18.1)(typescript@5.9.2)
       '@bibm/compute':
         specifier: workspace:*
-        version: link:../Compute
+        version: file:Compute(mongodb@6.19.0)(typescript@5.9.2)
       '@bibm/data':
         specifier: workspace:*
-        version: link:../Data
+        version: file:Data(typescript@5.9.2)
       '@catatomik/dijkstra':
         specifier: github:catatomik/dijkstra
         version: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
@@ -326,8 +326,8 @@ importers:
         specifier: ^9.35.0
         version: 9.35.0(jiti@2.5.1)
       mocha:
-        specifier: ^11.7.2
-        version: 11.7.2
+        specifier: ^11.7.5
+        version: 11.7.5
       mongodb:
         specifier: ^6.18.0
         version: 6.19.0
@@ -504,6 +504,22 @@ packages:
   '@babel/types@7.28.4':
     resolution: {integrity: sha512-bkFqkLhh3pMBUQQkpVgWDWq/lqzc2678eUyDlTBhRqhCHFguYYGM0Efga7tYk4TogG/3x0EEl66/OQ+WGbWB/Q==}
     engines: {node: '>=6.9.0'}
+
+  '@bibm/common@file:Common':
+    resolution: {directory: Common, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/compute@file:Compute':
+    resolution: {directory: Compute, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/data@file:Data':
+    resolution: {directory: Data, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
+
+  '@bibm/server@file:Server':
+    resolution: {directory: Server, type: directory}
+    engines: {node: ^22.18.0, pnpm: ^10}
 
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     resolution: {tarball: https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed}
@@ -839,6 +855,9 @@ packages:
   '@ioredis/commands@1.3.1':
     resolution: {integrity: sha512-bYtU8avhGIcje3IhvF9aSjsa5URMZBHnwKtOvXsT4sfYy9gppW11gLPT/9oNqlJZD47yPKveQFTAFWpHjKvUoQ==}
 
+  '@ioredis/commands@1.4.0':
+    resolution: {integrity: sha512-aFT2yemJJo+TZCmieA7qnYGQooOS7QfNmYrzGtsYd3g9j5iDP8AimYYAesf79ohjbLG12XxC4nG5DyEnC88AsQ==}
+
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
@@ -875,6 +894,9 @@ packages:
 
   '@mongodb-js/saslprep@1.3.0':
     resolution: {integrity: sha512-zlayKCsIjYb7/IdfqxorK5+xUMyi4vOKcFy10wKJYc63NSdKI8mNME+uJqfatkPmOSMMUiojrL58IePKBm3gvQ==}
+
+  '@mongodb-js/saslprep@1.3.2':
+    resolution: {integrity: sha512-QgA5AySqB27cGTXBFmnpifAi7HxoGUeezwo6p9dI03MuDB6Pp33zgclqVb6oVK3j6I9Vesg0+oojW2XxB59SGg==}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
     resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
@@ -1170,6 +1192,12 @@ packages:
     engines: {node: '>=16.20.1'}
     peerDependencies:
       mongoose: ~8.18.0
+
+  '@typegoose/typegoose@12.20.0':
+    resolution: {integrity: sha512-xto62e4iHDj71il+nOSDutW1O3/sA4ItPUM6sesnKsoPqVIdKg6T76Kafc7fTin8QrknYeo2/UthcDhLBBm1iA==}
+    engines: {node: '>=16.20.1'}
+    peerDependencies:
+      mongoose: ~8.19.1
 
   '@types/accepts@1.3.7':
     resolution: {integrity: sha512-Pay9fq2lM2wXPWbteBsRAGiWH2hig4ZE2asK+mm7kUzlxRTfL961rj89I6zV/E3PcIkDqyuBEcMxFT7rccugeQ==}
@@ -1566,8 +1594,8 @@ packages:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
     engines: {node: '>=8'}
 
-  ansi-regex@6.2.0:
-    resolution: {integrity: sha512-TKY5pyBkHyADOPYlRT9Lx6F544mPl0vS5Ew7BJ45hA08Q+t3GjbueLliBWN3sMICk6+y7HdyxSzC4bWS8baBdg==}
+  ansi-regex@6.2.2:
+    resolution: {integrity: sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg==}
     engines: {node: '>=12'}
 
   ansi-styles@3.2.1:
@@ -1578,8 +1606,8 @@ packages:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
 
-  ansi-styles@6.2.1:
-    resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
+  ansi-styles@6.2.3:
+    resolution: {integrity: sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==}
     engines: {node: '>=12'}
 
   ansis@4.1.0:
@@ -1620,6 +1648,9 @@ packages:
 
   axios@1.12.2:
     resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
+
+  axios@1.13.2:
+    resolution: {integrity: sha512-VPk9ebNqPcy5lRGuSlKx752IlDatOjT9paPlm8A7yOuW2Fbvp4X3JznJtT4f0GzGLLiWE9W8onz51SqLYwzGaA==}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -1678,6 +1709,9 @@ packages:
 
   bullmq@5.58.5:
     resolution: {integrity: sha512-0A6Qjxdn8j7aOcxfRZY798vO/aMuwvoZwfE6a9EOXHb1pzpBVAogsc/OfRWeUf+5wMBoYB5nthstnJo/zrQOeQ==}
+
+  bullmq@5.63.0:
+    resolution: {integrity: sha512-HT1iM3Jt4bZeg3Ru/MxrOy2iIItxcl1Pz5Ync1Vrot70jBpVguMxFEiSaDU57BwYwR4iwnObDnzct2lirKkX5A==}
 
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
@@ -2458,6 +2492,10 @@ packages:
     resolution: {integrity: sha512-NUcA93i1lukyXU+riqEyPtSEkyFq8tX90uL659J+qpCZ3rEdViB/APC58oAhIh3+bJln2hzdlZbBZsGNrlsR8g==}
     engines: {node: '>=12.22.0'}
 
+  ioredis@5.8.2:
+    resolution: {integrity: sha512-C6uC+kleiIMmjViJINWk80sOQw5lEzse1ZmvD+S/s8p8CWapftSaC+kocGTx6xrbrJ4WmYQGC08ffHLr6ToR6Q==}
+    engines: {node: '>=12.22.0'}
+
   is-array-buffer@3.0.5:
     resolution: {integrity: sha512-DDfANUiiG2wC1qawP66qlTugJeL5HyzMpfr8lLK+jMQirGzNod0B12cFB/9q838Ru27sBwfw78/rdoU7RERz6A==}
     engines: {node: '>= 0.4'}
@@ -2546,6 +2584,10 @@ packages:
   is-number@7.0.0:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
+
+  is-path-inside@3.0.3:
+    resolution: {integrity: sha512-Fd4gABb+ycGAmKou8eMftCupSir5lRxqf4aD/vd0cD2qc4HL07OjCeuHMr8Ro4CoMaeCKDB0/ECBOVWjTwUvPQ==}
+    engines: {node: '>=8'}
 
   is-plain-obj@2.1.0:
     resolution: {integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==}
@@ -2681,6 +2723,7 @@ packages:
   keygrip@1.1.0:
     resolution: {integrity: sha512-iYSchDJ+liQ8iwbSI2QqsQOvqv58eJCEanyJPJi+Khyu8smkcKSFUCbPwzFcL7YVtZ6eONjqRX/38caJ7QjRAQ==}
     engines: {node: '>= 0.6'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -2931,8 +2974,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  mocha@11.7.2:
-    resolution: {integrity: sha512-lkqVJPmqqG/w5jmmFtiRvtA2jkDyNVUcefFJKb2uyX4dekk8Okgqop3cgbFiaIvj8uCRJVTP5x9dfxGyXm2jvQ==}
+  mocha@11.7.5:
+    resolution: {integrity: sha512-mTT6RgopEYABzXWFx+GcJ+ZQ32kp4fMf0xvpZIIfSq9Z8lC/++MtcCnQ9t5FP2veYEP95FIYSvW+U9fV4xrlig==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
 
@@ -2993,8 +3036,39 @@ packages:
       socks:
         optional: true
 
+  mongodb@6.20.0:
+    resolution: {integrity: sha512-Tl6MEIU3K4Rq3TSHd+sZQqRBoGlFsOgNrH5ltAcFBV62Re3Fd+FcaVf8uSEQFOJ51SDowDVttBTONMfoYWrWlQ==}
+    engines: {node: '>=16.20.1'}
+    peerDependencies:
+      '@aws-sdk/credential-providers': ^3.188.0
+      '@mongodb-js/zstd': ^1.1.0 || ^2.0.0
+      gcp-metadata: ^5.2.0
+      kerberos: ^2.0.1
+      mongodb-client-encryption: '>=6.0.0 <7'
+      snappy: ^7.3.2
+      socks: ^2.7.1
+    peerDependenciesMeta:
+      '@aws-sdk/credential-providers':
+        optional: true
+      '@mongodb-js/zstd':
+        optional: true
+      gcp-metadata:
+        optional: true
+      kerberos:
+        optional: true
+      mongodb-client-encryption:
+        optional: true
+      snappy:
+        optional: true
+      socks:
+        optional: true
+
   mongoose@8.18.1:
     resolution: {integrity: sha512-K0RfrUXXufqNRZZjvAGdyjydB91SnbWxlwFYi5t7zN2DxVWFD3c6puia0/7xfBwZm6RCpYOVdYFlRFpoDWiC+w==}
+    engines: {node: '>=16.20.1'}
+
+  mongoose@8.19.3:
+    resolution: {integrity: sha512-fTAGaIohkk8wCggMuBuqTVD4YrM1/J8cBr1ekqzFqtz65qkLjtX2dcy3NH1e+2rk2365dyrrsPAnt4YTxBhEiQ==}
     engines: {node: '>=16.20.1'}
 
   mpath@0.9.0:
@@ -3307,8 +3381,8 @@ packages:
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb:
-    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8:
+    resolution: {tarball: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8}
     version: 0.2.0
 
   raw-body@2.5.2:
@@ -3442,6 +3516,11 @@ packages:
 
   semver@7.7.2:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  semver@7.7.3:
+    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -3618,8 +3697,8 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
 
-  strip-ansi@7.1.0:
-    resolution: {integrity: sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==}
+  strip-ansi@7.1.2:
+    resolution: {integrity: sha512-gmBGslpoQJtgnMAvOVqGZpEz9dyoKTCzy2nfz/n8aIFhN/jCE/rCmcxabB6jOOHV+0WNnylOxaxBQPSvcWklhA==}
     engines: {node: '>=12'}
 
   strip-bom@3.0.0:
@@ -3984,8 +4063,8 @@ packages:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
 
-  workerpool@9.3.3:
-    resolution: {integrity: sha512-slxCaKbYjEdFT/o2rH9xS1hf4uRDch1w7Uo+apxhZ+sf/1d9e0ZVkn42kPNGP2dgjIx6YFvSevj0zHvbWe2jdw==}
+  workerpool@9.3.4:
+    resolution: {integrity: sha512-TmPRQYYSAnnDiEB0P/Ytip7bFGvqnSU6I2BcuSw7Hx+JSg/DsUi5ebYfc8GYaSdpuvOcEs6dXxPurOYpe9QFwg==}
 
   wrap-ansi@6.2.0:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
@@ -4097,7 +4176,7 @@ snapshots:
       '@babel/types': 7.28.4
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -4264,7 +4343,7 @@ snapshots:
       '@babel/parser': 7.28.4
       '@babel/template': 7.27.2
       '@babel/types': 7.28.4
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -4277,6 +4356,172 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
+
+  '@bibm/common@file:Common(mongoose@8.18.1)(typescript@5.9.2)':
+    dependencies:
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.18.1)
+    transitivePeerDependencies:
+      - mongoose
+      - typescript
+
+  '@bibm/common@file:Common(mongoose@8.19.3)(typescript@5.9.2)':
+    dependencies:
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.19.3)
+    transitivePeerDependencies:
+      - mongoose
+      - typescript
+
+  '@bibm/compute@file:Compute(mongodb@6.19.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@bibm/server': file:Server(mongodb@6.19.0)(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      bullmq: 5.63.0
+      core-js: 3.45.1
+      mongoose: 8.18.1
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
+      shx: 0.4.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@bibm/compute@file:Compute(mongodb@6.20.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.18.1)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@bibm/server': file:Server(mongodb@6.20.0)(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@typegoose/typegoose': 12.19.0(mongoose@8.18.1)
+      bullmq: 5.63.0
+      core-js: 3.45.1
+      mongoose: 8.18.1
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
+      shx: 0.4.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@bibm/data@file:Data(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.19.3)(typescript@5.9.2)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.19.3)
+      config: 4.1.1
+      mongoose: 8.19.3
+      raptor: https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+
+  '@bibm/server@file:Server(mongodb@6.19.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.19.3)(typescript@5.9.2)
+      '@bibm/compute': file:Compute(mongodb@6.19.0)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
+      '@feathersjs/authentication-client': 5.0.35(typescript@5.9.2)
+      '@feathersjs/configuration': 5.0.35(typescript@5.9.2)
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/koa': 5.0.35(typescript@5.9.2)
+      '@feathersjs/mongodb': 5.0.35(mongodb@6.19.0)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/socketio': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.19.3)
+      axios: 1.13.2
+      core-js: 3.45.1
+      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.35)
+      mongoose: 8.19.3
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
+
+  '@bibm/server@file:Server(mongodb@6.20.0)(typescript@5.9.2)':
+    dependencies:
+      '@bibm/common': file:Common(mongoose@8.19.3)(typescript@5.9.2)
+      '@bibm/compute': file:Compute(mongodb@6.20.0)(typescript@5.9.2)
+      '@bibm/data': file:Data(typescript@5.9.2)
+      '@catatomik/dijkstra': https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/authentication': 5.0.35(typescript@5.9.2)
+      '@feathersjs/authentication-client': 5.0.35(typescript@5.9.2)
+      '@feathersjs/configuration': 5.0.35(typescript@5.9.2)
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      '@feathersjs/koa': 5.0.35(typescript@5.9.2)
+      '@feathersjs/mongodb': 5.0.35(mongodb@6.20.0)
+      '@feathersjs/schema': 5.0.35(typescript@5.9.2)
+      '@feathersjs/socketio': 5.0.35
+      '@feathersjs/transport-commons': 5.0.35
+      '@feathersjs/typebox': 5.0.35(typescript@5.9.2)
+      '@typegoose/typegoose': 12.20.0(mongoose@8.19.3)
+      axios: 1.13.2
+      core-js: 3.45.1
+      feathers-hooks-common: 8.2.1(@feathersjs/feathers@5.0.35)
+      mongoose: 8.19.3
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - bufferutil
+      - debug
+      - gcp-metadata
+      - kerberos
+      - mongodb
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+      - typescript
+      - utf-8-validate
 
   '@catatomik/dijkstra@https://codeload.github.com/catatomik/dijkstra/tar.gz/e3304b71e4bda9aefb04d2d18b32e7aa369a4aed':
     dependencies:
@@ -4379,7 +4624,7 @@ snapshots:
   '@eslint/config-array@0.21.0':
     dependencies:
       '@eslint/object-schema': 2.1.6
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -4393,7 +4638,7 @@ snapshots:
   '@eslint/eslintrc@3.3.1':
     dependencies:
       ajv: 6.12.6
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
       espree: 10.4.0
       globals: 14.0.0
       ignore: 5.3.2
@@ -4517,6 +4762,14 @@ snapshots:
       '@feathersjs/feathers': 5.0.35
       mongodb: 6.19.0
 
+  '@feathersjs/mongodb@5.0.35(mongodb@6.20.0)':
+    dependencies:
+      '@feathersjs/adapter-commons': 5.0.35
+      '@feathersjs/commons': 5.0.35
+      '@feathersjs/errors': 5.0.35
+      '@feathersjs/feathers': 5.0.35
+      mongodb: 6.20.0
+
   '@feathersjs/rest-client@5.0.35':
     dependencies:
       '@feathersjs/commons': 5.0.35
@@ -4601,11 +4854,13 @@ snapshots:
 
   '@ioredis/commands@1.3.1': {}
 
+  '@ioredis/commands@1.4.0': {}
+
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
       string-width-cjs: string-width@4.2.3
-      strip-ansi: 7.1.0
+      strip-ansi: 7.1.2
       strip-ansi-cjs: strip-ansi@6.0.1
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
@@ -4648,6 +4903,10 @@ snapshots:
       vary: 1.1.2
 
   '@mongodb-js/saslprep@1.3.0':
+    dependencies:
+      sparse-bitfield: 3.0.3
+
+  '@mongodb-js/saslprep@1.3.2':
     dependencies:
       sparse-bitfield: 3.0.3
 
@@ -4859,6 +5118,33 @@ snapshots:
       semver: 7.7.2
       tslib: 2.8.1
 
+  '@typegoose/typegoose@12.19.0(mongoose@8.19.3)':
+    dependencies:
+      lodash: 4.17.21
+      loglevel: 1.9.2
+      mongoose: 8.19.3
+      reflect-metadata: 0.2.2
+      semver: 7.7.2
+      tslib: 2.8.1
+
+  '@typegoose/typegoose@12.20.0(mongoose@8.18.1)':
+    dependencies:
+      lodash: 4.17.21
+      loglevel: 1.9.2
+      mongoose: 8.18.1
+      reflect-metadata: 0.2.2
+      semver: 7.7.3
+      tslib: 2.8.1
+
+  '@typegoose/typegoose@12.20.0(mongoose@8.19.3)':
+    dependencies:
+      lodash: 4.17.21
+      loglevel: 1.9.2
+      mongoose: 8.19.3
+      reflect-metadata: 0.2.2
+      semver: 7.7.3
+      tslib: 2.8.1
+
   '@types/accepts@1.3.7':
     dependencies:
       '@types/node': 22.18.0
@@ -5049,7 +5335,7 @@ snapshots:
       '@typescript-eslint/types': 8.41.0
       '@typescript-eslint/typescript-estree': 8.41.0(typescript@5.9.2)
       '@typescript-eslint/visitor-keys': 8.41.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       eslint: 9.35.0(jiti@2.5.1)
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -5061,7 +5347,7 @@ snapshots:
       '@typescript-eslint/types': 8.43.0
       '@typescript-eslint/typescript-estree': 8.43.0(typescript@5.9.2)
       '@typescript-eslint/visitor-keys': 8.43.0
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
       eslint: 9.35.0(jiti@2.5.1)
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -5071,7 +5357,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/tsconfig-utils': 8.43.0(typescript@5.9.2)
       '@typescript-eslint/types': 8.43.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
@@ -5080,7 +5366,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/tsconfig-utils': 8.43.0(typescript@5.9.2)
       '@typescript-eslint/types': 8.43.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
@@ -5108,7 +5394,7 @@ snapshots:
       '@typescript-eslint/types': 8.41.0
       '@typescript-eslint/typescript-estree': 8.41.0(typescript@5.9.2)
       '@typescript-eslint/utils': 8.41.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       eslint: 9.35.0(jiti@2.5.1)
       ts-api-utils: 2.1.0(typescript@5.9.2)
       typescript: 5.9.2
@@ -5120,7 +5406,7 @@ snapshots:
       '@typescript-eslint/types': 8.43.0
       '@typescript-eslint/typescript-estree': 8.43.0(typescript@5.9.2)
       '@typescript-eslint/utils': 8.43.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.9.2)
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       eslint: 9.35.0(jiti@2.5.1)
       ts-api-utils: 2.1.0(typescript@5.9.2)
       typescript: 5.9.2
@@ -5137,11 +5423,11 @@ snapshots:
       '@typescript-eslint/tsconfig-utils': 8.41.0(typescript@5.9.2)
       '@typescript-eslint/types': 8.41.0
       '@typescript-eslint/visitor-keys': 8.41.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.7.2
+      semver: 7.7.3
       ts-api-utils: 2.1.0(typescript@5.9.2)
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -5153,7 +5439,7 @@ snapshots:
       '@typescript-eslint/tsconfig-utils': 8.43.0(typescript@5.9.2)
       '@typescript-eslint/types': 8.43.0
       '@typescript-eslint/visitor-keys': 8.43.0
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
@@ -5412,7 +5698,7 @@ snapshots:
 
   ansi-regex@5.0.1: {}
 
-  ansi-regex@6.2.0: {}
+  ansi-regex@6.2.2: {}
 
   ansi-styles@3.2.1:
     dependencies:
@@ -5422,7 +5708,7 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
 
-  ansi-styles@6.2.1: {}
+  ansi-styles@6.2.3: {}
 
   ansis@4.1.0: {}
 
@@ -5461,6 +5747,14 @@ snapshots:
       possible-typed-array-names: 1.1.0
 
   axios@1.12.2:
+    dependencies:
+      follow-redirects: 1.15.11
+      form-data: 4.0.4
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
+  axios@1.13.2:
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.4
@@ -5529,6 +5823,18 @@ snapshots:
       semver: 7.7.2
       tslib: 2.8.1
       uuid: 9.0.1
+    transitivePeerDependencies:
+      - supports-color
+
+  bullmq@5.63.0:
+    dependencies:
+      cron-parser: 4.9.0
+      ioredis: 5.8.2
+      msgpackr: 1.11.5
+      node-abort-controller: 3.1.1
+      semver: 7.7.3
+      tslib: 2.8.1
+      uuid: 11.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -5728,25 +6034,17 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  debug@4.4.1:
-    dependencies:
-      ms: 2.1.3
-
   debug@4.4.1(supports-color@5.5.0):
     dependencies:
       ms: 2.1.3
     optionalDependencies:
       supports-color: 5.5.0
 
-  debug@4.4.1(supports-color@8.1.1):
+  debug@4.4.3(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
     optionalDependencies:
       supports-color: 8.1.1
-
-  debug@4.4.3:
-    dependencies:
-      ms: 2.1.3
 
   decamelize@4.0.0: {}
 
@@ -6041,7 +6339,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.6
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
       escape-string-regexp: 4.0.0
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
@@ -6149,7 +6447,7 @@ snapshots:
       '@feathersjs/errors': 5.0.35
       '@feathersjs/feathers': 5.0.35
       ajv: 6.12.6
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
       graphql: 16.11.0
       lodash: 4.17.21
       neotraverse: 0.6.18
@@ -6422,7 +6720,21 @@ snapshots:
     dependencies:
       '@ioredis/commands': 1.3.1
       cluster-key-slot: 1.1.2
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
+      denque: 2.1.0
+      lodash.defaults: 4.2.0
+      lodash.isarguments: 3.1.0
+      redis-errors: 1.2.0
+      redis-parser: 3.0.0
+      standard-as-callback: 2.1.0
+    transitivePeerDependencies:
+      - supports-color
+
+  ioredis@5.8.2:
+    dependencies:
+      '@ioredis/commands': 1.4.0
+      cluster-key-slot: 1.1.2
+      debug: 4.4.3(supports-color@8.1.1)
       denque: 2.1.0
       lodash.defaults: 4.2.0
       lodash.isarguments: 3.1.0
@@ -6515,6 +6827,8 @@ snapshots:
       has-tostringtag: 1.0.2
 
   is-number@7.0.0: {}
+
+  is-path-inside@3.0.3: {}
 
   is-plain-obj@2.1.0: {}
 
@@ -6662,7 +6976,7 @@ snapshots:
 
   koa-send@5.0.1:
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       http-errors: 1.8.1
       resolve-path: 1.4.0
     transitivePeerDependencies:
@@ -6865,16 +7179,17 @@ snapshots:
 
   mkdirp@3.0.1: {}
 
-  mocha@11.7.2:
+  mocha@11.7.5:
     dependencies:
       browser-stdout: 1.3.1
       chokidar: 4.0.3
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3(supports-color@8.1.1)
       diff: 7.0.0
       escape-string-regexp: 4.0.0
       find-up: 5.0.0
       glob: 10.4.5
       he: 1.2.0
+      is-path-inside: 3.0.3
       js-yaml: 4.1.0
       log-symbols: 4.1.0
       minimatch: 9.0.5
@@ -6883,7 +7198,7 @@ snapshots:
       serialize-javascript: 6.0.2
       strip-json-comments: 3.1.1
       supports-color: 8.1.1
-      workerpool: 9.3.3
+      workerpool: 9.3.4
       yargs: 17.7.2
       yargs-parser: 21.1.1
       yargs-unparser: 2.0.0
@@ -6902,6 +7217,12 @@ snapshots:
   mongodb@6.19.0:
     dependencies:
       '@mongodb-js/saslprep': 1.3.0
+      bson: 6.10.4
+      mongodb-connection-string-url: 3.0.2
+
+  mongodb@6.20.0:
+    dependencies:
+      '@mongodb-js/saslprep': 1.3.2
       bson: 6.10.4
       mongodb-connection-string-url: 3.0.2
 
@@ -6924,11 +7245,30 @@ snapshots:
       - socks
       - supports-color
 
+  mongoose@8.19.3:
+    dependencies:
+      bson: 6.10.4
+      kareem: 2.6.3
+      mongodb: 6.20.0
+      mpath: 0.9.0
+      mquery: 5.0.0
+      ms: 2.1.3
+      sift: 17.1.3
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+
   mpath@0.9.0: {}
 
   mquery@5.0.0:
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -7224,7 +7564,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/df37be899f53953e77d10420d3f50e7ea6b882fb: {}
+  raptor@https://codeload.github.com/cata-dev/raptor/tar.gz/4b644e0d459fbfaab7504e0334a7d39c990a80e8: {}
 
   raw-body@2.5.2:
     dependencies:
@@ -7386,6 +7726,8 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.7.2: {}
+
+  semver@7.7.3: {}
 
   serialize-javascript@6.0.2:
     dependencies:
@@ -7573,7 +7915,7 @@ snapshots:
     dependencies:
       eastasianwidth: 0.2.0
       emoji-regex: 9.2.2
-      strip-ansi: 7.1.0
+      strip-ansi: 7.1.2
 
   string.prototype.padend@3.1.6:
     dependencies:
@@ -7613,9 +7955,9 @@ snapshots:
     dependencies:
       ansi-regex: 5.0.1
 
-  strip-ansi@7.1.0:
+  strip-ansi@7.1.2:
     dependencies:
-      ansi-regex: 6.2.0
+      ansi-regex: 6.2.2
 
   strip-bom@3.0.0: {}
 
@@ -7850,7 +8192,7 @@ snapshots:
   vite-plugin-inspect@11.3.3(vite@7.1.5(@types/node@22.18.0)(jiti@2.5.1)(lightningcss@1.30.1)(tsx@4.20.5)):
     dependencies:
       ansis: 4.1.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@8.1.1)
       error-stack-parser-es: 1.0.5
       ohash: 2.0.11
       open: 10.2.0
@@ -7911,7 +8253,7 @@ snapshots:
 
   vue-eslint-parser@10.2.0(eslint@9.35.0(jiti@2.5.1)):
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.1(supports-color@5.5.0)
       eslint: 9.35.0(jiti@2.5.1)
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
@@ -8008,7 +8350,7 @@ snapshots:
 
   word-wrap@1.2.5: {}
 
-  workerpool@9.3.3: {}
+  workerpool@9.3.4: {}
 
   wrap-ansi@6.2.0:
     dependencies:
@@ -8024,9 +8366,9 @@ snapshots:
 
   wrap-ansi@8.1.0:
     dependencies:
-      ansi-styles: 6.2.1
+      ansi-styles: 6.2.3
       string-width: 5.1.2
-      strip-ansi: 7.1.0
+      strip-ansi: 7.1.2
 
   wrappy@1.0.2: {}
 
